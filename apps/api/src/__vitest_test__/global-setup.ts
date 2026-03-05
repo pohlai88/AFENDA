@@ -69,7 +69,9 @@ export async function setup() {
     await seedClient.query("BEGIN");
 
     // ── Org party + organization ──────────────────────────────────────
-    const { rows: [orgParty] } = await seedClient.query(`
+    const {
+      rows: [orgParty],
+    } = await seedClient.query(`
       INSERT INTO party (kind, external_key)
       VALUES ('organization', 'org:test-org')
       ON CONFLICT (external_key) WHERE external_key IS NOT NULL
@@ -78,78 +80,115 @@ export async function setup() {
     `);
     if (!orgParty) throw new Error("party upsert failed");
 
-    const { rows: [org] } = await seedClient.query(`
+    const {
+      rows: [org],
+    } = await seedClient.query(
+      `
       INSERT INTO organization (id, slug, name, functional_currency)
       VALUES ($1, 'test-org', 'Test Organization', 'USD')
       ON CONFLICT (slug)
         DO UPDATE SET name = 'Test Organization', functional_currency = 'USD'
       RETURNING id
-    `, [orgParty.id]);
+    `,
+      [orgParty.id],
+    );
     if (!org) throw new Error("org upsert failed");
 
     // ── Submitter principal (admin@test.afenda) ───────────────────────
     const submitterPartyId = await upsertParty(seedClient, "person:admin@test.afenda", "person");
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO person (id, email, name)
       VALUES ($1, 'admin@test.afenda', 'Test Admin')
       ON CONFLICT (id)
         DO UPDATE SET email = 'admin@test.afenda', name = 'Test Admin'
-    `, [submitterPartyId]);
+    `,
+      [submitterPartyId],
+    );
 
-    const { rows: [submitterPrincipal] } = await seedClient.query(`
+    const {
+      rows: [submitterPrincipal],
+    } = await seedClient.query(
+      `
       INSERT INTO iam_principal (person_id, kind, email)
       VALUES ($1, 'user', 'admin@test.afenda')
       ON CONFLICT (email)
         DO UPDATE SET person_id = $1, kind = 'user'
       RETURNING id
-    `, [submitterPartyId]);
+    `,
+      [submitterPartyId],
+    );
 
-    const { rows: [submitterPartyRole] } = await seedClient.query(`
+    const {
+      rows: [submitterPartyRole],
+    } = await seedClient.query(
+      `
       INSERT INTO party_role (org_id, party_id, role_type)
       VALUES ($1, $2, 'employee')
       ON CONFLICT (org_id, party_id, role_type)
         DO UPDATE SET role_type = 'employee'
       RETURNING id
-    `, [org.id, submitterPartyId]);
+    `,
+      [org.id, submitterPartyId],
+    );
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO membership (principal_id, party_role_id)
       VALUES ($1, $2)
       ON CONFLICT DO NOTHING
-    `, [submitterPrincipal!.id, submitterPartyRole!.id]);
+    `,
+      [submitterPrincipal!.id, submitterPartyRole!.id],
+    );
 
     // ── Approver principal (approver@test.afenda) ─────────────────────
     const approverPartyId = await upsertParty(seedClient, "person:approver@test.afenda", "person");
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO person (id, email, name)
       VALUES ($1, 'approver@test.afenda', 'Test Approver')
       ON CONFLICT (id)
         DO UPDATE SET email = 'approver@test.afenda', name = 'Test Approver'
-    `, [approverPartyId]);
+    `,
+      [approverPartyId],
+    );
 
-    const { rows: [approverPrincipal] } = await seedClient.query(`
+    const {
+      rows: [approverPrincipal],
+    } = await seedClient.query(
+      `
       INSERT INTO iam_principal (person_id, kind, email)
       VALUES ($1, 'user', 'approver@test.afenda')
       ON CONFLICT (email)
         DO UPDATE SET person_id = $1, kind = 'user'
       RETURNING id
-    `, [approverPartyId]);
+    `,
+      [approverPartyId],
+    );
 
-    const { rows: [approverPartyRole] } = await seedClient.query(`
+    const {
+      rows: [approverPartyRole],
+    } = await seedClient.query(
+      `
       INSERT INTO party_role (org_id, party_id, role_type)
       VALUES ($1, $2, 'employee')
       ON CONFLICT (org_id, party_id, role_type)
         DO UPDATE SET role_type = 'employee'
       RETURNING id
-    `, [org.id, approverPartyId]);
+    `,
+      [org.id, approverPartyId],
+    );
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO membership (principal_id, party_role_id)
       VALUES ($1, $2)
       ON CONFLICT DO NOTHING
-    `, [approverPrincipal!.id, approverPartyRole!.id]);
+    `,
+      [approverPrincipal!.id, approverPartyRole!.id],
+    );
 
     // ── Permissions ──────────────────────────────────────────────────
     // Clean up stale permission rows + assignments from previous runs
@@ -165,124 +204,179 @@ export async function setup() {
       "audit.log.read",
     ];
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       DELETE FROM iam_role_permission
       WHERE permission_id IN (
         SELECT id FROM iam_permission WHERE key != ALL($1)
       )
-    `, [permKeys]);
-    await seedClient.query(`
+    `,
+      [permKeys],
+    );
+    await seedClient.query(
+      `
       DELETE FROM iam_permission WHERE key != ALL($1)
-    `, [permKeys]);
+    `,
+      [permKeys],
+    );
 
     for (const key of permKeys) {
-      await seedClient.query(`
+      await seedClient.query(
+        `
         INSERT INTO iam_permission (key) VALUES ($1)
         ON CONFLICT DO NOTHING
-      `, [key]);
+      `,
+        [key],
+      );
     }
 
-    const { rows: perms } = await seedClient.query(`
+    const { rows: perms } = await seedClient.query(
+      `
       SELECT id, key FROM iam_permission WHERE key = ANY($1)
-    `, [permKeys]);
+    `,
+      [permKeys],
+    );
 
     // ── Submitter IAM role (operator — submit only) ────────────────────
-    const { rows: [operatorRole] } = await seedClient.query(`
+    const {
+      rows: [operatorRole],
+    } = await seedClient.query(
+      `
       INSERT INTO iam_role (org_id, key, name)
       VALUES ($1, 'operator', 'Operator')
       ON CONFLICT (org_id, key)
         DO UPDATE SET name = 'Operator'
       RETURNING id
-    `, [org.id]);
+    `,
+      [org.id],
+    );
 
-    for (const p of perms.filter((p: { key: string }) => ["ap.invoice.submit", "evidence.attach"].includes(p.key))) {
-      await seedClient.query(`
+    for (const p of perms.filter((p: { key: string }) =>
+      ["ap.invoice.submit", "evidence.attach"].includes(p.key),
+    )) {
+      await seedClient.query(
+        `
         INSERT INTO iam_role_permission (role_id, permission_id)
         VALUES ($1, $2)
         ON CONFLICT DO NOTHING
-      `, [operatorRole!.id, p.id]);
+      `,
+        [operatorRole!.id, p.id],
+      );
     }
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO iam_principal_role (org_id, principal_id, role_id)
       VALUES ($1, $2, $3)
       ON CONFLICT DO NOTHING
-    `, [org.id, submitterPrincipal!.id, operatorRole!.id]);
+    `,
+      [org.id, submitterPrincipal!.id, operatorRole!.id],
+    );
 
     // ── Approver IAM role (approve + post) ─────────────────────────────
-    const { rows: [approverIamRole] } = await seedClient.query(`
+    const {
+      rows: [approverIamRole],
+    } = await seedClient.query(
+      `
       INSERT INTO iam_role (org_id, key, name)
       VALUES ($1, 'approver', 'Approver')
       ON CONFLICT (org_id, key)
         DO UPDATE SET name = 'Approver'
       RETURNING id
-    `, [org.id]);
+    `,
+      [org.id],
+    );
 
-    for (const p of perms.filter((p: { key: string }) => ["ap.invoice.approve", "ap.invoice.markpaid", "gl.journal.post", "audit.log.read"].includes(p.key))) {
-      await seedClient.query(`
+    for (const p of perms.filter((p: { key: string }) =>
+      ["ap.invoice.approve", "ap.invoice.markpaid", "gl.journal.post", "audit.log.read"].includes(
+        p.key,
+      ),
+    )) {
+      await seedClient.query(
+        `
         INSERT INTO iam_role_permission (role_id, permission_id)
         VALUES ($1, $2)
         ON CONFLICT DO NOTHING
-      `, [approverIamRole!.id, p.id]);
+      `,
+        [approverIamRole!.id, p.id],
+      );
     }
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO iam_principal_role (org_id, principal_id, role_id)
       VALUES ($1, $2, $3)
       ON CONFLICT DO NOTHING
-    `, [org.id, approverPrincipal!.id, approverIamRole!.id]);
+    `,
+      [org.id, approverPrincipal!.id, approverIamRole!.id],
+    );
 
     // ── Chart of Accounts ────────────────────────────────────────────
     const coa = [
-      { code: "1000", name: "Cash & Bank",          type: "asset"     },
-      { code: "1100", name: "Accounts Receivable",   type: "asset"     },
-      { code: "2000", name: "Accounts Payable",      type: "liability" },
-      { code: "3000", name: "Retained Earnings",     type: "equity"    },
-      { code: "4000", name: "Revenue",               type: "revenue"   },
-      { code: "5000", name: "Operating Expenses",    type: "expense"   },
+      { code: "1000", name: "Cash & Bank", type: "asset" },
+      { code: "1100", name: "Accounts Receivable", type: "asset" },
+      { code: "2000", name: "Accounts Payable", type: "liability" },
+      { code: "3000", name: "Retained Earnings", type: "equity" },
+      { code: "4000", name: "Revenue", type: "revenue" },
+      { code: "5000", name: "Operating Expenses", type: "expense" },
     ];
 
     for (const a of coa) {
-      await seedClient.query(`
+      await seedClient.query(
+        `
         INSERT INTO account (org_id, code, name, type)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT DO NOTHING
-      `, [org.id, a.code, a.name, a.type]);
+      `,
+        [org.id, a.code, a.name, a.type],
+      );
     }
 
     // ── Supplier ─────────────────────────────────────────────────────
     const supplierPartyId = await upsertParty(seedClient, "org:test-supplier", "organization");
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO organization (id, slug, name, functional_currency)
       VALUES ($1, 'test-supplier', 'Test Supplier Inc', 'USD')
       ON CONFLICT (slug)
         DO UPDATE SET name = 'Test Supplier Inc', functional_currency = 'USD'
-    `, [supplierPartyId]);
+    `,
+      [supplierPartyId],
+    );
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO supplier (org_id, supplier_org_id, name, contact_email, status, onboarded_by_principal_id, onboarded_at)
       VALUES ($1, $2, 'Test Supplier Inc', 'billing@test-supplier.example', 'active', $3, now())
       ON CONFLICT (org_id, supplier_org_id)
         DO UPDATE SET name = 'Test Supplier Inc', contact_email = 'billing@test-supplier.example', status = 'active'
-    `, [org.id, supplierPartyId, submitterPrincipal!.id]);
+    `,
+      [org.id, supplierPartyId, submitterPrincipal!.id],
+    );
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO party_role (org_id, party_id, role_type)
       VALUES ($1, $2, 'supplier')
       ON CONFLICT DO NOTHING
-    `, [org.id, supplierPartyId]);
+    `,
+      [org.id, supplierPartyId],
+    );
 
     // ── Sequences ────────────────────────────────────────────────────
     const year = new Date().getUTCFullYear();
     const periodKey = String(year);
 
-    await seedClient.query(`
+    await seedClient.query(
+      `
       INSERT INTO sequence (org_id, entity_type, period_key, prefix, pad_width, next_value)
       VALUES ($1, 'invoice', $2, $3, 4, 1),
              ($1, 'journalEntry', $2, $4, 4, 1)
       ON CONFLICT DO NOTHING
-    `, [org.id, periodKey, `INV-${year}`, `JE-${year}`]);
+    `,
+      [org.id, periodKey, `INV-${year}`, `JE-${year}`],
+    );
 
     await seedClient.query("COMMIT");
     console.log("✅ test fixtures seeded in afenda_test");
@@ -301,13 +395,18 @@ async function upsertParty(
   externalKey: string,
   kind: "person" | "organization",
 ): Promise<string> {
-  const { rows: [row] } = await client.query(`
+  const {
+    rows: [row],
+  } = await client.query(
+    `
     INSERT INTO party (kind, external_key)
     VALUES ($1, $2)
     ON CONFLICT (external_key) WHERE external_key IS NOT NULL
       DO UPDATE SET kind = $1
     RETURNING id
-  `, [kind, externalKey]);
+  `,
+    [kind, externalKey],
+  );
   if (!row) throw new Error(`party upsert failed for ${externalKey}`);
   return row.id;
 }

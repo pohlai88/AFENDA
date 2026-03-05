@@ -1,7 +1,6 @@
 ---
 name: two-factor-authentication-best-practices
-description:
-  This skill provides guidance and enforcement rules for implementing secure
+description: This skill provides guidance and enforcement rules for implementing secure
   two-factor authentication (2FA) using Better Auth's twoFactor plugin.
 ---
 
@@ -12,14 +11,14 @@ app name as the issuer. This name appears in authenticator apps when users scan
 the QR code.
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { twoFactor } from 'better-auth/plugins';
+import { betterAuth } from "better-auth";
+import { twoFactor } from "better-auth/plugins";
 
 export const auth = betterAuth({
-  appName: 'My App', // Used as the default issuer for TOTP
+  appName: "My App", // Used as the default issuer for TOTP
   plugins: [
     twoFactor({
-      issuer: 'My App', // Optional: override the app name for 2FA specifically
+      issuer: "My App", // Optional: override the app name for 2FA specifically
     }),
   ],
 });
@@ -33,14 +32,14 @@ required database fields and tables.
 Add the client plugin and configure the redirect behavior for 2FA verification:
 
 ```ts
-import { createAuthClient } from 'better-auth/client';
-import { twoFactorClient } from 'better-auth/client/plugins';
+import { createAuthClient } from "better-auth/client";
+import { twoFactorClient } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   plugins: [
     twoFactorClient({
       onTwoFactorRedirect() {
-        window.location.href = '/2fa'; // Redirect to your 2FA verification page
+        window.location.href = "/2fa"; // Redirect to your 2FA verification page
       },
     }),
   ],
@@ -94,7 +93,7 @@ Authenticator, Authy, etc.). Codes are valid for 30 seconds by default.
 Use the TOTP URI to generate a QR code for users to scan:
 
 ```tsx
-import QRCode from 'react-qr-code';
+import QRCode from "react-qr-code";
 
 const TotpSetup = ({ totpURI }: { totpURI: string }) => {
   return <QRCode value={totpURI} />;
@@ -134,9 +133,9 @@ OTP sends a one-time code to the user's email or phone. You must implement the
 ### Configuring OTP Delivery
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { twoFactor } from 'better-auth/plugins';
-import { sendEmail } from './email';
+import { betterAuth } from "better-auth";
+import { twoFactor } from "better-auth/plugins";
+import { sendEmail } from "./email";
 
 export const auth = betterAuth({
   plugins: [
@@ -145,7 +144,7 @@ export const auth = betterAuth({
         sendOTP: async ({ user, otp }, ctx) => {
           await sendEmail({
             to: user.email,
-            subject: 'Your verification code',
+            subject: "Your verification code",
             text: `Your code is: ${otp}`,
           });
         },
@@ -182,7 +181,7 @@ Configure how OTP codes are stored in the database:
 ```ts
 twoFactor({
   otpOptions: {
-    storeOTP: 'encrypted', // Options: "plain", "encrypted", "hashed"
+    storeOTP: "encrypted", // Options: "plain", "encrypted", "hashed"
   },
 });
 ```
@@ -260,7 +259,7 @@ twoFactor({
   backupCodeOptions: {
     amount: 10, // Number of codes to generate (default: 10)
     length: 10, // Length of each code (default: 10)
-    storeBackupCodes: 'encrypted', // Options: "plain", "encrypted"
+    storeBackupCodes: "encrypted", // Options: "plain", "encrypted"
   },
 });
 ```
@@ -281,10 +280,10 @@ const signIn = async (email: string, password: string) => {
       onSuccess(context) {
         if (context.data.twoFactorRedirect) {
           // Redirect to 2FA verification page
-          window.location.href = '/2fa';
+          window.location.href = "/2fa";
         }
       },
-    }
+    },
   );
 };
 ```
@@ -296,12 +295,12 @@ When using `auth.api.signInEmail` on the server, check for 2FA redirect:
 ```ts
 const response = await auth.api.signInEmail({
   body: {
-    email: 'user@example.com',
-    password: 'password',
+    email: "user@example.com",
+    password: "password",
   },
 });
 
-if ('twoFactorRedirect' in response) {
+if ("twoFactorRedirect" in response) {
   // Handle 2FA verification
 }
 ```
@@ -317,7 +316,7 @@ Pass `trustDevice: true` when verifying 2FA:
 
 ```ts
 await authClient.twoFactor.verifyTotp({
-  code: '123456',
+  code: "123456",
   trustDevice: true,
 });
 ```
@@ -399,16 +398,16 @@ const disable2FA = async (password: string) => {
 ## Complete Configuration Example
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { twoFactor } from 'better-auth/plugins';
-import { sendEmail } from './email';
+import { betterAuth } from "better-auth";
+import { twoFactor } from "better-auth/plugins";
+import { sendEmail } from "./email";
 
 export const auth = betterAuth({
-  appName: 'My App',
+  appName: "My App",
   plugins: [
     twoFactor({
       // TOTP settings
-      issuer: 'My App',
+      issuer: "My App",
       totpOptions: {
         digits: 6,
         period: 30,
@@ -418,19 +417,19 @@ export const auth = betterAuth({
         sendOTP: async ({ user, otp }) => {
           await sendEmail({
             to: user.email,
-            subject: 'Your verification code',
+            subject: "Your verification code",
             text: `Your code is: ${otp}`,
           });
         },
         period: 5,
         allowedAttempts: 5,
-        storeOTP: 'encrypted',
+        storeOTP: "encrypted",
       },
       // Backup code settings
       backupCodeOptions: {
         amount: 10,
         length: 10,
-        storeBackupCodes: 'encrypted',
+        storeBackupCodes: "encrypted",
       },
       // Session settings
       twoFactorCookieMaxAge: 600, // 10 minutes

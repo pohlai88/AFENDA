@@ -22,9 +22,7 @@ let _bootstrapped = false;
  * Returns `true` if the SDK was started, `false` if it was already
  * running or is disabled via env.
  */
-export async function bootstrapTelemetry(
-  serviceName?: string,
-): Promise<boolean> {
+export async function bootstrapTelemetry(serviceName?: string): Promise<boolean> {
   if (_bootstrapped) return false;
 
   const enabled = process.env["OTEL_ENABLED"] === "true";

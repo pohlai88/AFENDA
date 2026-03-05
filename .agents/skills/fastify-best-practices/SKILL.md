@@ -8,6 +8,7 @@ metadata:
 ## When to use
 
 Use this skill when you need to:
+
 - Develop backend applications using Fastify
 - Implement Fastify plugins and route handlers
 - Get guidance on Fastify architecture and patterns

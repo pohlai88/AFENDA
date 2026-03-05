@@ -21,10 +21,10 @@
   /* ═══════════════════════════════════════════════════════════════════════
      FOUNDATION — Density & Radius (base profile: 48px rows)
      ═══════════════════════════════════════════════════════════════════════ */
-  --spacing-row-h: 3rem;           /* 48px — legible macro view */
-  --spacing-col-pad: 1rem;         /* 16px — standard column padding */
-  --text-size-data: 0.875rem;      /* 14px — legible at arm's length */
-  --radius: 0.5rem;                /* 8px — base for shadcn radius scale */
+  --spacing-row-h: 3rem; /* 48px — legible macro view */
+  --spacing-col-pad: 1rem; /* 16px — standard column padding */
+  --text-size-data: 0.875rem; /* 14px — legible at arm's length */
+  --radius: 0.5rem; /* 8px — base for shadcn radius scale */
 
   /* ═══════════════════════════════════════════════════════════════════════
      SURFACES — 4-Tier Depth System
@@ -58,7 +58,7 @@
   --border-subtle: oklch(0.94 0 0);
   --border: oklch(0.88 0 0);
   --border-strong: oklch(0.6 0.05 260);
-  --input: oklch(0.88 0 0);        /* Form input border (matches --border) */
+  --input: oklch(0.88 0 0); /* Form input border (matches --border) */
 
   /* ═══════════════════════════════════════════════════════════════════════
      INTERACTION — Focus & Selection
@@ -153,12 +153,12 @@
      Each hue ≥60° apart on OKLCH wheel for colorblind safety.
      Optimized for financial dashboards with distinct, accessible colors. */
   --chart-1: oklch(0.55 0.18 250); /* vivid blue — primary metric */
-  --chart-2: oklch(0.6 0.14 175);  /* teal — secondary metric */
-  --chart-3: oklch(0.7 0.16 40);   /* warm orange — outflows/expenses */
-  --chart-4: oklch(0.78 0.12 80);  /* gold — variance / budget */
+  --chart-2: oklch(0.6 0.14 175); /* teal — secondary metric */
+  --chart-3: oklch(0.7 0.16 40); /* warm orange — outflows/expenses */
+  --chart-4: oklch(0.78 0.12 80); /* gold — variance / budget */
   --chart-5: oklch(0.62 0.18 145); /* green — inflows/revenue/positive */
   --chart-6: oklch(0.58 0.14 285); /* purple — provisions/accruals */
-  --chart-7: oklch(0.65 0.10 195); /* cyan — cash/treasury */
+  --chart-7: oklch(0.65 0.1 195); /* cyan — cash/treasury */
   --chart-8: oklch(0.55 0.14 320); /* magenta — taxes */
 
   /* ═══════════════════════════════════════════════════════════════════════
@@ -166,24 +166,24 @@
      ═══════════════════════════════════════════════════════════════════════
      Charts reference these semantic tokens for consistent meaning across
      all visualizations. Aliased from --chart-* palette. */
-  --viz-positive: var(--chart-5);      /* Green - inflows, favorable variance */
-  --viz-negative: var(--chart-3);      /* Orange - outflows, unfavorable variance */
-  --viz-neutral: var(--chart-1);       /* Blue - totals, baselines */
-  --viz-accent-1: var(--chart-2);      /* Teal - secondary series */
-  --viz-accent-2: var(--chart-4);      /* Gold - budget/plan */
-  --viz-accent-3: var(--chart-6);      /* Purple - provisions */
-  --viz-threshold: var(--chart-8);     /* Magenta - targets/thresholds */
-  --viz-target: var(--chart-7);        /* Cyan - goals */
+  --viz-positive: var(--chart-5); /* Green - inflows, favorable variance */
+  --viz-negative: var(--chart-3); /* Orange - outflows, unfavorable variance */
+  --viz-neutral: var(--chart-1); /* Blue - totals, baselines */
+  --viz-accent-1: var(--chart-2); /* Teal - secondary series */
+  --viz-accent-2: var(--chart-4); /* Gold - budget/plan */
+  --viz-accent-3: var(--chart-6); /* Purple - provisions */
+  --viz-threshold: var(--chart-8); /* Magenta - targets/thresholds */
+  --viz-target: var(--chart-7); /* Cyan - goals */
 
   /* Gauge zones (mapped from semantic roles) */
-  --gauge-danger: var(--viz-negative);    /* Red zone for ratios < threshold */
-  --gauge-warning: var(--chart-4);        /* Yellow zone for ratios near threshold */
-  --gauge-success: var(--viz-positive);   /* Green zone for ratios > threshold */
+  --gauge-danger: var(--viz-negative); /* Red zone for ratios < threshold */
+  --gauge-warning: var(--chart-4); /* Yellow zone for ratios near threshold */
+  --gauge-success: var(--viz-positive); /* Green zone for ratios > threshold */
 
   /* Waterfall (mapped from semantic roles) */
-  --waterfall-positive: var(--viz-positive);  /* Inflows, increases */
-  --waterfall-negative: var(--viz-negative);  /* Outflows, decreases */
-  --waterfall-total: var(--viz-neutral);      /* Opening/closing balances */
+  --waterfall-positive: var(--viz-positive); /* Inflows, increases */
+  --waterfall-negative: var(--viz-negative); /* Outflows, decreases */
+  --waterfall-total: var(--viz-neutral); /* Opening/closing balances */
 
   /* ═══════════════════════════════════════════════════════════════════════
      FINANCE DOCUMENT STATUS PALETTE
@@ -268,11 +268,11 @@
   /* ═══════════════════════════════════════════════════════════════════════
      IFRS CLASSIFICATION TOKENS (IFRS 9 / IFRS 16 / IAS 37)
      ═══════════════════════════════════════════════════════════════════════ */
-  --classification-ac: oklch(0.55 0.1 220);        /* Amortized Cost */
+  --classification-ac: oklch(0.55 0.1 220); /* Amortized Cost */
   --classification-ac-bg: oklch(0.95 0.03 220);
-  --classification-fvtpl: oklch(0.6 0.16 40);      /* Fair Value P&L */
+  --classification-fvtpl: oklch(0.6 0.16 40); /* Fair Value P&L */
   --classification-fvtpl-bg: oklch(0.95 0.05 40);
-  --classification-fvoci: oklch(0.55 0.12 280);    /* Fair Value OCI */
+  --classification-fvoci: oklch(0.55 0.12 280); /* Fair Value OCI */
   --classification-fvoci-bg: oklch(0.95 0.04 280);
 
   /* Hedge Accounting (HA-01→HA-10) */
@@ -344,10 +344,10 @@
   /* ═══════════════════════════════════════════════════════════════════════
      SHELL LAYOUT — Base-density defaults (overridden in _density.css)
      ═══════════════════════════════════════════════════════════════════════ */
-  --shell-header-h: 3.5rem;                          /* 56px — base header */
-  --shell-content-max-w: 80rem;                       /* 1280px — ultra-wide guardrail */
-  --shell-scroll-max-h: calc(100dvh - 3.5rem);       /* viewport minus header */
-  --shell-action-gap: 0.375rem;                       /* 6px — toolbar gap */
+  --shell-header-h: 3.5rem; /* 56px — base header */
+  --shell-content-max-w: 80rem; /* 1280px — ultra-wide guardrail */
+  --shell-scroll-max-h: calc(100dvh - 3.5rem); /* viewport minus header */
+  --shell-action-gap: 0.375rem; /* 6px — toolbar gap */
 
   /* ═══════════════════════════════════════════════════════════════════════
      LAYOUT TOKENS — Semantic Sizing (replaces hardcoded w-[...])
@@ -399,7 +399,8 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* ── Transition presets (composed from duration + easing) ── */
-  --transition-colors: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  --transition-colors:
+    color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
   --transition-shadow: box-shadow;
   --transition-transform: transform;
 
@@ -426,15 +427,15 @@
      SPACING SCALE — ERP-Specific Semantic Spacing
      ═══════════════════════════════════════════════════════════════════════
      Named spacing for common ERP patterns (supplements Tailwind's scale) */
-  --spacing-page-x: 1.5rem;        /* Page horizontal gutters */
-  --spacing-page-y: 1.5rem;        /* Page vertical padding */
-  --spacing-section-gap: 2rem;     /* Between major sections */
-  --spacing-card-pad: 1.5rem;      /* Card internal padding */
-  --spacing-form-gap: 1rem;        /* Between form fields */
-  --spacing-inline-gap: 0.5rem;    /* Between inline elements */
+  --spacing-page-x: 1.5rem; /* Page horizontal gutters */
+  --spacing-page-y: 1.5rem; /* Page vertical padding */
+  --spacing-section-gap: 2rem; /* Between major sections */
+  --spacing-card-pad: 1.5rem; /* Card internal padding */
+  --spacing-form-gap: 1rem; /* Between form fields */
+  --spacing-inline-gap: 0.5rem; /* Between inline elements */
   --spacing-table-cell-x: 0.75rem; /* Table cell horizontal padding */
-  --spacing-table-cell-y: 0.5rem;  /* Table cell vertical padding */
-  --spacing-wizard-step: 2.5rem;   /* Wizard step indicator gap */
-  --spacing-split-gap: 0.5rem;     /* Resizable split-panel gap */
-  --spacing-tree-indent: 1.25rem;  /* Tree hierarchy indent per level */
+  --spacing-table-cell-y: 0.5rem; /* Table cell vertical padding */
+  --spacing-wizard-step: 2.5rem; /* Wizard step indicator gap */
+  --spacing-split-gap: 0.5rem; /* Resizable split-panel gap */
+  --spacing-tree-indent: 1.25rem; /* Tree hierarchy indent per level */
 }

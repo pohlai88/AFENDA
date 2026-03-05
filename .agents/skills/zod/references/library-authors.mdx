@@ -1,9 +1,9 @@
 ---
 title: For library authors
-description: 'Guidelines and best practices for library authors integrating with Zod'
+description: "Guidelines and best practices for library authors integrating with Zod"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 <Callout title="Update — July 10th, 2025">
 Zod `4.0.0` has been released on `npm`. This completes the incremental rollout process described below. To add support, bump your peer dependency to include `zod@^4.0.0`:
@@ -81,7 +81,7 @@ To support Zod 4, update the minimum version for your `"zod"` peer dependency to
 Starting with `v3.25.0`, the Zod 4 core package is available at the `"zod/v4/core"` subpath. Read the [Versioning in Zod 4](https://github.com/colinhacks/zod/issues/4371) writeup for full context on this versioning approach.
 
 ```ts
-import * as z4 from 'zod/v4/core';
+import * as z4 from "zod/v4/core";
 ```
 
 Import from these subpaths only. Think of them like "permalinks" to their respective Zod versions. These will remain available forever.
@@ -105,8 +105,8 @@ You will need to bump your peer dependency to `^3.25.0`, thus your users will ne
 Starting in `v3.25.0`, the package contains copies of both Zod 3 and Zod 4 at their respective subpaths. This makes it easy to support both versions simultaneously.
 
 ```ts
-import * as z3 from 'zod/v3';
-import * as z4 from 'zod/v4/core';
+import * as z3 from "zod/v3";
+import * as z4 from "zod/v4/core";
 
 type Schema = z3.ZodTypeAny | z4.$ZodType;
 
@@ -118,12 +118,12 @@ function acceptUserSchema(schema: z3.ZodTypeAny | z4.$ZodType) {
 To differentiate between Zod 3 and Zod 4 schemas at runtime, check for the `"_zod"` property. This property is only defined on Zod 4 schemas.
 
 ```ts
-import type * as z3 from 'zod/v3';
-import type * as z4 from 'zod/v4/core';
+import type * as z3 from "zod/v3";
+import type * as z4 from "zod/v4/core";
 
 declare const schema: z3.ZodTypeAny | z4.$ZodType;
 
-if ('_zod' in schema) {
+if ("_zod" in schema) {
   schema._zod.def; // Zod 4 schema
 } else {
   schema._def; // Zod 3 schema
@@ -136,7 +136,7 @@ Your library code should only import from `"zod/v4/core"`. This sub-package defi
 
 ```ts
 // library code
-import * as z4 from 'zod/v4/core';
+import * as z4 from "zod/v4/core";
 
 export function acceptObjectSchema<T extends z4.$ZodObject>(schema: T) {
   // parse data
@@ -152,14 +152,14 @@ By building against the shared base interfaces, you can reliably support both su
 
 ```ts
 // user code
-import { acceptObjectSchema } from 'your-library';
+import { acceptObjectSchema } from "your-library";
 
 // Zod 4
-import * as z from 'zod';
+import * as z from "zod";
 acceptObjectSchema(z.object({ name: z.string() }));
 
 // Zod 4 Mini
-import * as zm from 'zod/mini';
+import * as zm from "zod/mini";
 acceptObjectSchema(zm.object({ name: zm.string() }));
 ```
 
@@ -175,10 +175,10 @@ One common pattern when introspecting Zod schemas is to write a switch statement
 const schema = {} as z.$ZodTypes;
 const def = schema._zod.def;
 switch (def.type) {
-  case 'string':
+  case "string":
     // ...
     break;
-  case 'object':
+  case "object":
     // ...
     break;
   default:
@@ -198,7 +198,7 @@ Accepting user-defined schemas is the a fundamental operation for any library bu
 When starting out, it may be tempting to write a function that accepts a Zod schema like this:
 
 ```ts
-import * as z4 from 'zod/v4/core';
+import * as z4 from "zod/v4/core";
 
 function inferSchema<T>(schema: z4.$ZodType<T>) {
   return schema;
@@ -226,7 +226,7 @@ inferSchema(z.string());
 To constrain the input schema to a specific subclass:
 
 ```ts
-import * as z4 from 'zod/v4/core';
+import * as z4 from "zod/v4/core";
 
 // only accepts object schemas
 function inferSchema<T extends z4.$ZodObject>(schema: T) {
@@ -237,7 +237,7 @@ function inferSchema<T extends z4.$ZodObject>(schema: T) {
 To constrain the inferred output type of the input schema:
 
 ```ts
-import * as z4 from 'zod/v4/core';
+import * as z4 from "zod/v4/core";
 
 // only accepts string schemas
 function inferSchema<T extends z4.$ZodType<string>>(schema: T) {
@@ -258,6 +258,6 @@ function parseData<T extends z4.$ZodType>(data: unknown, schema: T): z4.output<T
   return z.parse(schema, data);
 }
 
-parseData('sup', z.string());
+parseData("sup", z.string());
 // => string
 ```

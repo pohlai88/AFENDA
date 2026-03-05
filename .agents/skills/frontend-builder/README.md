@@ -24,6 +24,7 @@ Use this skill when you need to:
 **Fastest path to a production-ready frontend:**
 
 1. **Choose framework**
+
    - Next.js: SEO, SSR, file routing (recommended for most)
    - React + Vite: Client-side only, simpler setup
 
@@ -54,11 +55,13 @@ Use this skill when you need to:
    ```
 
 5. **Build components**
+
    - Start with UI components (Button, Input, etc.)
    - Build feature components (UserList, Dashboard, etc.)
    - Compose pages from components
 
 6. **Add data fetching** (React Query)
+
    - Queries for GET requests
    - Mutations for POST/PUT/DELETE
    - Automatic caching and revalidation

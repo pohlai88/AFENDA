@@ -7,10 +7,10 @@ description: Specification extensions (x-) in OpenAPI 3.2
 
 Additional data can be added at certain points using **patterned fields** prefixed with `x-`.
 
-| Field Pattern | Type | Description |
-|---------------|------|-------------|
-| ^x-           | Any  | Extension property. Name MUST start with `x-` (e.g. `x-internal-id`). Value = any valid JSON. |
-| x-oai-*, x-oas-* | — | Reserved for OpenAPI Initiative. |
+| Field Pattern    | Type | Description                                                                                   |
+| ---------------- | ---- | --------------------------------------------------------------------------------------------- |
+| ^x-              | Any  | Extension property. Name MUST start with `x-` (e.g. `x-internal-id`). Value = any valid JSON. |
+| x-oai-_, x-oas-_ | —    | Reserved for OpenAPI Initiative.                                                              |
 
 Extensions are a way to prove viability of proposed spec additions. Implementations are RECOMMENDED to support extensibility. Support for any one extension is OPTIONAL.
 

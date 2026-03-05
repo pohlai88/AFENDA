@@ -6,12 +6,12 @@ n8n runs as a Docker service — defined in `/docker-compose.dev.yml` — and is
 
 ## Local service
 
-| Detail        | Value                          |
-|---------------|-------------------------------|
-| Version (dev) | 2.9.4                         |
-| URL           | http://localhost:5678          |
-| Data volume   | `afenda_n8n` (Docker volume)  |
-| Depends on    | `postgres` (healthy)          |
+| Detail        | Value                        |
+| ------------- | ---------------------------- |
+| Version (dev) | 2.9.4                        |
+| URL           | http://localhost:5678        |
+| Data volume   | `afenda_n8n` (Docker volume) |
+| Depends on    | `postgres` (healthy)         |
 
 ## Workflow directory
 
@@ -40,20 +40,20 @@ n8n is **edge-only** in this architecture. It is not used for core business logi
 
 Planned edge workflows:
 
-| Workflow          | Sprint | Trigger                        |
-|-------------------|--------|-------------------------------|
-| Invoice due alert | 1      | Outbox `invoice.due_soon`     |
-| Xero sync         | 2      | Outbox `journal.posted`       |
+| Workflow          | Sprint | Trigger                           |
+| ----------------- | ------ | --------------------------------- |
+| Invoice due alert | 1      | Outbox `invoice.due_soon`         |
+| Xero sync         | 2      | Outbox `journal.posted`           |
 | Slack approval    | 2      | Outbox `invoice.pending_approval` |
 
 ## Environment variables (set in n8n container via docker-compose)
 
-| Variable              | Purpose                                 |
-|-----------------------|-----------------------------------------|
-| `N8N_PORT`            | Port override (default 5678)            |
-| `N8N_BASIC_AUTH_*`    | Basic auth (dev only, disable in prod)  |
-| `DB_TYPE=postgresdb`  | Persist workflows to Postgres           |
-| `DB_POSTGRESDB_*`     | Postgres connection details             |
-| `WEBHOOK_URL`         | Public URL for webhook triggers         |
+| Variable             | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `N8N_PORT`           | Port override (default 5678)           |
+| `N8N_BASIC_AUTH_*`   | Basic auth (dev only, disable in prod) |
+| `DB_TYPE=postgresdb` | Persist workflows to Postgres          |
+| `DB_POSTGRESDB_*`    | Postgres connection details            |
+| `WEBHOOK_URL`        | Public URL for webhook triggers        |
 
 See `.env.example` in the repo root for all `N8N_*` variables.

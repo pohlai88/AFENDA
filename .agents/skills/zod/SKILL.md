@@ -1,7 +1,6 @@
 ---
 name: zod
-description:
-  Complete Zod validation library documentation. Use when working with Zod
+description: Complete Zod validation library documentation. Use when working with Zod
   schema validation, TypeScript type inference, form validation, API validation,
   error handling, or data parsing. Covers schema definition, refinements,
   transforms, error customization, and ecosystem integrations.

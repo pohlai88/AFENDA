@@ -14,10 +14,12 @@ audit data that simulates real openclaw security audit output.
 ### Mock Data Created
 
 1. **mock-audit.json**: Simulates standard audit findings
+
    - 1 critical finding from `clawsec-suite` (code_safety check)
    - 1 warning finding from `example-skill` (permissions check)
 
 2. **mock-deep.json**: Simulates deep scan findings
+
    - 1 critical finding from `openclaw-audit-watchdog` (code_safety check)
    - 1 warning finding from `network-tool` (network check)
 
@@ -130,6 +132,7 @@ INFO-SUPPRESSED:
 ### 🔧 Improvements Made During Testing
 
 1. **Bug Fix**: Added --config flag passthrough in run_audit_and_format.sh
+
    - Script was accepting --config but not passing it to render_report.mjs
    - Fixed by building RENDER_ARGS array with conditional --config inclusion
 

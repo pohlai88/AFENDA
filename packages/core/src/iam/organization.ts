@@ -32,10 +32,7 @@ import { OrgIdSchema, type OrgId } from "@afenda/contracts";
  *
  * @returns Branded `OrgId` or `null` if not found / invalid slug.
  */
-export async function resolveOrgId(
-  db: DbClient,
-  slug: string,
-): Promise<OrgId | null> {
+export async function resolveOrgId(db: DbClient, slug: string): Promise<OrgId | null> {
   const s = slug.trim().toLowerCase();
   if (!s) return null;
 

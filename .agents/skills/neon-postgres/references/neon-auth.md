@@ -211,11 +211,7 @@ import { AuthView } from "@neondatabase/auth/react";
 
 export const dynamicParams = false;
 
-export default async function AuthPage({
-  params,
-}: {
-  params: Promise<{ path: string }>;
-}) {
+export default async function AuthPage({ params }: { params: Promise<{ path: string }> }) {
   const { path } = await params;
   return <AuthView path={path} />;
 }
@@ -237,11 +233,7 @@ export function generateStaticParams() {
   return Object.values(accountViewPaths).map((path) => ({ path }));
 }
 
-export default async function AccountPage({
-  params,
-}: {
-  params: Promise<{ path: string }>;
-}) {
+export default async function AccountPage({ params }: { params: Promise<{ path: string }> }) {
   const { path } = await params;
   return <AccountView path={path} />;
 }

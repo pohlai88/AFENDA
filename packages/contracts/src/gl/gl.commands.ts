@@ -29,12 +29,18 @@ import { IdempotencyKeySchema } from "../shared/idempotency.js";
  */
 export const JournalLineInputSchema = z
   .object({
-    accountId:    AccountIdSchema,
+    accountId: AccountIdSchema,
 
     // Either debitMinor or creditMinor must be > 0; the other must be absent
     // or 0. The refine below enforces this invariant.
-    debitMinor:  z.coerce.bigint().refine((n) => n >= 0n, { message: "debitMinor must be non-negative" }).optional(),
-    creditMinor: z.coerce.bigint().refine((n) => n >= 0n, { message: "creditMinor must be non-negative" }).optional(),
+    debitMinor: z.coerce
+      .bigint()
+      .refine((n) => n >= 0n, { message: "debitMinor must be non-negative" })
+      .optional(),
+    creditMinor: z.coerce
+      .bigint()
+      .refine((n) => n >= 0n, { message: "creditMinor must be non-negative" })
+      .optional(),
 
     currencyCode: CurrencyCodeSchema,
 
@@ -45,11 +51,11 @@ export const JournalLineInputSchema = z
   })
   .transform((l) => ({
     ...l,
-    debitMinor:  l.debitMinor  ?? 0n,
+    debitMinor: l.debitMinor ?? 0n,
     creditMinor: l.creditMinor ?? 0n,
   }))
   .superRefine((l, ctx) => {
-    const dPos = l.debitMinor  > 0n;
+    const dPos = l.debitMinor > 0n;
     const cPos = l.creditMinor > 0n;
 
     if (dPos === cPos) {
@@ -77,8 +83,8 @@ export type JournalLineInput = z.infer<typeof JournalLineInputSchema>;
  */
 export const PostToGLCommandSchema = z
   .object({
-    idempotencyKey:  IdempotencyKeySchema,
-    correlationId:   CorrelationIdSchema,
+    idempotencyKey: IdempotencyKeySchema,
+    correlationId: CorrelationIdSchema,
 
     // If you need to support non-invoice sources later, replace this with a
     // discriminated "source" union: { sourceType, sourceId }.
@@ -90,7 +96,7 @@ export const PostToGLCommandSchema = z
   })
   .superRefine((cmd, ctx) => {
     // .safe() on each amount guarantees no overflow in this sum.
-    const totalDebits  = cmd.lines.reduce((s, l) => s + l.debitMinor,  0n);
+    const totalDebits = cmd.lines.reduce((s, l) => s + l.debitMinor, 0n);
     const totalCredits = cmd.lines.reduce((s, l) => s + l.creditMinor, 0n);
 
     if (totalDebits !== totalCredits) {
@@ -105,10 +111,10 @@ export const PostToGLCommandSchema = z
 export type PostToGLCommand = z.infer<typeof PostToGLCommandSchema>;
 
 export const ReverseEntryCommandSchema = z.object({
-  idempotencyKey:  IdempotencyKeySchema,
-  correlationId:   CorrelationIdSchema,
-  journalEntryId:  JournalEntryIdSchema,
-  memo:            z.string().trim().min(1).max(255),
+  idempotencyKey: IdempotencyKeySchema,
+  correlationId: CorrelationIdSchema,
+  journalEntryId: JournalEntryIdSchema,
+  memo: z.string().trim().min(1).max(255),
 });
 
 export type ReverseEntryCommand = z.infer<typeof ReverseEntryCommandSchema>;

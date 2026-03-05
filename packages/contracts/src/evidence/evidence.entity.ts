@@ -57,12 +57,12 @@ export const MimeTypeSchema = z.string().trim().min(1).max(255);
  * trail requires its own fields (attachedAt, attachedByUserId, label).
  */
 export const DocumentSchema = z.object({
-  id:    DocumentIdSchema,
+  id: DocumentIdSchema,
   orgId: OrgIdSchema,
 
   objectKey: z.string().trim().min(1).max(1024),
-  sha256:    Sha256Schema,
-  mime:      MimeTypeSchema,
+  sha256: Sha256Schema,
+  mime: MimeTypeSchema,
 
   // JS safe integer covers all real-world file sizes (up to ~8 PB).
   // Must be positive — zero-byte documents are rejected at the boundary.
@@ -91,9 +91,9 @@ export type Document = z.infer<typeof DocumentSchema>;
 // GOVERNANCE: adding a new variant ripples through the API route, worker job,
 // DB insert, and audit log. Coordinate with all OWNERS before adding a variant.
 export const EvidenceTargetSchema = z.discriminatedUnion("entityType", [
-  z.object({ entityType: z.literal("invoice"),      entityId: InvoiceIdSchema }),
+  z.object({ entityType: z.literal("invoice"), entityId: InvoiceIdSchema }),
   z.object({ entityType: z.literal("journalEntry"), entityId: JournalEntryIdSchema }),
-  z.object({ entityType: z.literal("supplier"),     entityId: SupplierIdSchema }),
+  z.object({ entityType: z.literal("supplier"), entityId: SupplierIdSchema }),
 ]);
 
 export type EvidenceTarget = z.infer<typeof EvidenceTargetSchema>;
@@ -113,17 +113,16 @@ export type EvidenceTarget = z.infer<typeof EvidenceTargetSchema>;
  */
 export const EvidenceLinkSchema = z.intersection(
   z.object({
-    id:         EntityIdSchema,  // PK of the evidence join row (not a document ID)
-    orgId:      OrgIdSchema,
+    id: EntityIdSchema, // PK of the evidence join row (not a document ID)
+    orgId: OrgIdSchema,
     documentId: DocumentIdSchema,
 
-    label:                 z.string().trim().min(1).max(64).nullable(),
-    attachedAt:            UtcDateTimeSchema,
+    label: z.string().trim().min(1).max(64).nullable(),
+    attachedAt: UtcDateTimeSchema,
     attachedByPrincipalId: PrincipalIdSchema.nullable(),
-    idempotencyKey:        IdempotencyKeySchema.optional(),
+    idempotencyKey: IdempotencyKeySchema.optional(),
   }),
   EvidenceTargetSchema,
 );
 
 export type EvidenceLink = z.infer<typeof EvidenceLinkSchema>;
-

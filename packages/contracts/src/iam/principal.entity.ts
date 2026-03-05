@@ -28,10 +28,10 @@ export const PrincipalKindSchema = z.enum(PrincipalKindValues);
  * - `passwordHash` is null for SSO-only users and service accounts.
  */
 export const PrincipalSchema = z.object({
-  id:        PrincipalIdSchema,
-  personId:  PersonIdSchema.nullable(),
-  kind:      PrincipalKindSchema,
-  email:     z.string().email().nullable(),
+  id: PrincipalIdSchema,
+  personId: PersonIdSchema.nullable(),
+  kind: PrincipalKindSchema,
+  email: z.string().email().nullable(),
   createdAt: UtcDateTimeSchema,
 });
 

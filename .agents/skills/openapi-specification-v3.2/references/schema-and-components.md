@@ -23,26 +23,26 @@ OAS-defined formats (examples): `int32`, `int64`, `float`, `double`, `password` 
 
 Reusable objects. Keys MUST match `^[a-zA-Z0-9\.\-_]+$`. No effect on API until referenced from outside Components.
 
-| Field           | Type   | Description |
-|-----------------|--------|-------------|
-| schemas         | Map[string, Schema] | Reusable Schema Objects. |
-| responses       | Map[string, Response \| Reference] | Reusable Response Objects. |
-| parameters      | Map[string, Parameter \| Reference] | Reusable Parameter Objects. |
-| examples        | Map[string, Example \| Reference] | Reusable Example Objects. |
-| requestBodies   | Map[string, Request Body \| Reference] | Reusable Request Body Objects. |
-| headers         | Map[string, Header \| Reference] | Reusable Header Objects. |
+| Field           | Type                                      | Description                       |
+| --------------- | ----------------------------------------- | --------------------------------- |
+| schemas         | Map[string, Schema]                       | Reusable Schema Objects.          |
+| responses       | Map[string, Response \| Reference]        | Reusable Response Objects.        |
+| parameters      | Map[string, Parameter \| Reference]       | Reusable Parameter Objects.       |
+| examples        | Map[string, Example \| Reference]         | Reusable Example Objects.         |
+| requestBodies   | Map[string, Request Body \| Reference]    | Reusable Request Body Objects.    |
+| headers         | Map[string, Header \| Reference]          | Reusable Header Objects.          |
 | securitySchemes | Map[string, Security Scheme \| Reference] | Reusable Security Scheme Objects. |
-| links           | Map[string, Link \| Reference] | Reusable Link Objects. |
-| callbacks       | Map[string, Callback \| Reference] | Reusable Callback Objects. |
-| pathItems       | Map[string, Path Item] | Reusable Path Item Objects. |
-| mediaTypes      | Map[string, Media Type \| Reference] | Reusable Media Type Objects. |
+| links           | Map[string, Link \| Reference]            | Reusable Link Objects.            |
+| callbacks       | Map[string, Callback \| Reference]        | Reusable Callback Objects.        |
+| pathItems       | Map[string, Path Item]                    | Reusable Path Item Objects.       |
+| mediaTypes      | Map[string, Media Type \| Reference]      | Reusable Media Type Objects.      |
 
 ## Reference Object
 
-| Field       | Type   | Description |
-|------------|--------|-------------|
-| $ref       | string | **REQUIRED**. URI identifying the target. |
-| summary    | string | Overrides referenced component summary (if that type allows summary). |
+| Field       | Type   | Description                                                                   |
+| ----------- | ------ | ----------------------------------------------------------------------------- |
+| $ref        | string | **REQUIRED**. URI identifying the target.                                     |
+| summary     | string | Overrides referenced component summary (if that type allows summary).         |
 | description | string | Overrides referenced component description (if that type allows description). |
 
 No additional properties; any added SHALL be ignored. Differs from Schema Object containing a `$ref` keyword (which may have other keywords).

@@ -12,7 +12,12 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { ApiErrorResponseSchema, makeSuccessSchema, requireOrg, requireAuth } from "../helpers/responses.js";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireOrg,
+  requireAuth,
+} from "../helpers/responses.js";
 import {
   PostToGLCommandSchema,
   ReverseEntryCommandSchema,
@@ -127,7 +132,9 @@ function buildCtx(orgId: string): OrgScopedContext {
   return { activeContext: { orgId: orgId as OrgId } };
 }
 
-function buildPolicyCtx(req: { ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> } }): PolicyContext {
+function buildPolicyCtx(req: {
+  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
+}): PolicyContext {
   return {
     principalId: req.ctx?.principalId,
     permissionsSet: req.ctx?.permissionsSet ?? new Set(),
@@ -164,25 +171,20 @@ export async function glRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const result = await postToGL(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        {
-          correlationId: req.body.correlationId,
-          sourceInvoiceId: req.body.sourceInvoiceId,
-          memo: req.body.memo,
-          idempotencyKey: req.body.idempotencyKey,
-          lines: req.body.lines.map((l) => ({
-            accountId: l.accountId,
-            debitMinor: l.debitMinor,
-            creditMinor: l.creditMinor,
-            currencyCode: l.currencyCode,
-            memo: l.memo,
-            dimensions: l.dimensions,
-          })),
-        },
-      );
+      const result = await postToGL(app.db, buildCtx(orgId), buildPolicyCtx(req), {
+        correlationId: req.body.correlationId,
+        sourceInvoiceId: req.body.sourceInvoiceId,
+        memo: req.body.memo,
+        idempotencyKey: req.body.idempotencyKey,
+        lines: req.body.lines.map((l) => ({
+          accountId: l.accountId,
+          debitMinor: l.debitMinor,
+          creditMinor: l.creditMinor,
+          currencyCode: l.currencyCode,
+          memo: l.memo,
+          dimensions: l.dimensions,
+        })),
+      });
 
       if (!result.ok) {
         const status = mapErrorStatus(result.error.code);

@@ -177,8 +177,7 @@ for (const filePath of sqlFiles) {
   // ── Rule 4: MIGRATION_MISSING_ANALYZE ────────────────────────────────
   const upper = content.toUpperCase();
   const hasDataChange =
-    /\bUPDATE\b[^;]*\bSET\b/i.test(content) ||
-    /\bINSERT\b[^;]*\bSELECT\b/i.test(content);
+    /\bUPDATE\b[^;]*\bSET\b/i.test(content) || /\bINSERT\b[^;]*\bSELECT\b/i.test(content);
   const hasAnalyze = /\bANALYZE\b/i.test(content);
 
   if (hasDataChange && !hasAnalyze) {

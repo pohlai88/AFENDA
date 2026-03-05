@@ -10,7 +10,7 @@ description: Test context, custom fixtures with test.extend
 Every test receives context as first argument:
 
 ```ts
-test('context', ({ task, expect, skip }) => {
+test("context", ({ task, expect, skip }) => {
   console.log(task.name); // Test name
   expect(1).toBe(1); // Context-bound expect
   skip(); // Skip test dynamically
@@ -30,7 +30,7 @@ test('context', ({ task, expect, skip }) => {
 Create reusable test utilities:
 
 ```ts
-import { test as base } from 'vitest';
+import { test as base } from "vitest";
 
 // Define fixture types
 interface Fixtures {
@@ -49,7 +49,7 @@ export const test = base.extend<Fixtures>({
 
   // Fixture depending on another fixture
   user: async ({ db }, use) => {
-    const user = await db.createUser({ name: 'Test' });
+    const user = await db.createUser({ name: "Test" });
     await use(user);
     await db.deleteUser(user.id);
   },
@@ -59,7 +59,7 @@ export const test = base.extend<Fixtures>({
 Using fixtures:
 
 ```ts
-test('query user', async ({ db, user }) => {
+test("query user", async ({ db, user }) => {
   const found = await db.findUser(user.id);
   expect(found).toEqual(user);
 });
@@ -72,13 +72,13 @@ Fixtures only initialize when accessed:
 ```ts
 const test = base.extend({
   expensive: async ({}, use) => {
-    console.log('initializing'); // Only runs if test uses it
-    await use('value');
+    console.log("initializing"); // Only runs if test uses it
+    await use("value");
   },
 });
 
-test('no fixture', () => {}); // expensive not called
-test('uses fixture', ({ expensive }) => {}); // expensive called
+test("no fixture", () => {}); // expensive not called
+test("uses fixture", ({ expensive }) => {}); // expensive called
 ```
 
 ## Auto Fixtures
@@ -112,7 +112,7 @@ const test = base.extend({
       await use(conn);
       await conn.close();
     },
-    { scope: 'file' },
+    { scope: "file" },
   ],
 });
 ```
@@ -127,7 +127,7 @@ const test = base.extend({
     async ({}, use) => {
       await use(globalResource);
     },
-    { scope: 'worker' },
+    { scope: "worker" },
   ],
 });
 ```
@@ -139,7 +139,7 @@ Override fixtures per project:
 ```ts
 // test file
 const test = base.extend({
-  apiUrl: ['/default', { injected: true }],
+  apiUrl: ["/default", { injected: true }],
 });
 
 // vitest.config.ts
@@ -148,8 +148,8 @@ defineConfig({
     projects: [
       {
         test: {
-          name: 'prod',
-          provide: { apiUrl: 'https://api.prod.com' },
+          name: "prod",
+          provide: { apiUrl: "https://api.prod.com" },
         },
       },
     ],
@@ -163,19 +163,19 @@ Override fixture for specific suite:
 
 ```ts
 const test = base.extend({
-  environment: 'development',
+  environment: "development",
 });
 
-describe('production tests', () => {
-  test.scoped({ environment: 'production' });
+describe("production tests", () => {
+  test.scoped({ environment: "production" });
 
-  test('uses production', ({ environment }) => {
-    expect(environment).toBe('production');
+  test("uses production", ({ environment }) => {
+    expect(environment).toBe("production");
   });
 });
 
-test('uses default', ({ environment }) => {
-  expect(environment).toBe('development');
+test("uses default", ({ environment }) => {
+  expect(environment).toBe("development");
 });
 ```
 
@@ -215,7 +215,7 @@ export const test = base.extend<{ db: Database }>({
 });
 
 // admin-test.ts
-import { test as dbTest } from './base-test';
+import { test as dbTest } from "./base-test";
 
 export const test = dbTest.extend<{ admin: User }>({
   admin: async ({ db }, use) => {

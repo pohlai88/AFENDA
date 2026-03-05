@@ -33,10 +33,7 @@ type Permission = (typeof Permissions)[keyof typeof Permissions];
  * Stable, contract-safe denial codes. UI/API translate these — never parse `reason`.
  * MISSING_CONTEXT: fail-closed policy for missing principal/submitter IDs during migration.
  */
-export type PolicyDenialCode =
-  | "MISSING_PERMISSION"
-  | "SOD_SAME_PRINCIPAL"
-  | "MISSING_CONTEXT";
+export type PolicyDenialCode = "MISSING_PERMISSION" | "SOD_SAME_PRINCIPAL" | "MISSING_CONTEXT";
 
 /**
  * Policy result with structured metadata.
@@ -66,11 +63,7 @@ export type PolicyContext = Readonly<{
 /**
  * Helper: construct a uniform denial result with optional structured metadata.
  */
-function deny(
-  code: PolicyDenialCode,
-  reason: string,
-  meta?: Record<string, string>
-): PolicyResult {
+function deny(code: PolicyDenialCode, reason: string, meta?: Record<string, string>): PolicyResult {
   return { allowed: false, code, reason, meta };
 }
 
@@ -80,10 +73,7 @@ function deny(
  * O(1) check via centralized hasPermission() from auth module.
  * Ensures all permission checks are uniform and auditable.
  */
-function requirePermission(
-  ctx: PolicyContext,
-  perm: Permission
-): PolicyResult | null {
+function requirePermission(ctx: PolicyContext, perm: Permission): PolicyResult | null {
   if (!hasPermission(ctx, perm)) {
     return deny("MISSING_PERMISSION", `Missing permission: ${perm}`, {
       permission: perm,
@@ -101,32 +91,25 @@ function requirePermission(
  */
 export function canApproveInvoice(
   ctx: PolicyContext,
-  submittedByPrincipalId?: PrincipalId | null
+  submittedByPrincipalId?: PrincipalId | null,
 ): PolicyResult {
   const permDenied = requirePermission(ctx, Permissions.apInvoiceApprove);
   if (permDenied) return permDenied;
 
   if (!ctx.principalId) {
-    return deny(
-      "MISSING_CONTEXT",
-      "Missing principalId in request context",
-      { field: "principalId" }
-    );
+    return deny("MISSING_CONTEXT", "Missing principalId in request context", {
+      field: "principalId",
+    });
   }
 
   if (!submittedByPrincipalId) {
-    return deny(
-      "MISSING_CONTEXT",
-      "Missing invoice submitter principalId",
-      { field: "submittedByPrincipalId" }
-    );
+    return deny("MISSING_CONTEXT", "Missing invoice submitter principalId", {
+      field: "submittedByPrincipalId",
+    });
   }
 
   if (ctx.principalId === submittedByPrincipalId) {
-    return deny(
-      "SOD_SAME_PRINCIPAL",
-      "SoD violation: invoice submitter cannot be the approver"
-    );
+    return deny("SOD_SAME_PRINCIPAL", "SoD violation: invoice submitter cannot be the approver");
   }
 
   return { allowed: true };

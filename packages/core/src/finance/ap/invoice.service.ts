@@ -16,12 +16,7 @@
  */
 
 import type { DbClient } from "@afenda/db";
-import {
-  invoice,
-  invoiceStatusHistory,
-  outboxEvent,
-  supplier,
-} from "@afenda/db";
+import { invoice, invoiceStatusHistory, outboxEvent, supplier } from "@afenda/db";
 import { eq, and, sql } from "drizzle-orm";
 import type {
   OrgId,
@@ -41,13 +36,13 @@ import type { PolicyContext } from "../sod.js";
 
 /** Valid status transitions. Key = from, value = allowed to-states. */
 const TRANSITIONS: Record<InvoiceStatus, readonly InvoiceStatus[]> = {
-  draft:     ["submitted"],
+  draft: ["submitted"],
   submitted: ["approved", "rejected", "voided"],
-  approved:  ["posted", "voided"],
-  posted:    ["paid"],
-  paid:      [],
-  rejected:  [],
-  voided:    [],
+  approved: ["posted", "voided"],
+  posted: ["paid"],
+  paid: [],
+  rejected: [],
+  voided: [],
 };
 
 export type InvoiceServiceError = {
@@ -116,63 +111,58 @@ export async function submitInvoice(
     },
   };
 
-  const result = await withAudit(
-    db,
-    ctx,
-    auditEntry,
-    async (tx) => {
-      // Gap-free invoice number inside the same transaction
-      const invoiceNumber = await nextNumber(tx, orgId, "invoice");
+  const result = await withAudit(db, ctx, auditEntry, async (tx) => {
+    // Gap-free invoice number inside the same transaction
+    const invoiceNumber = await nextNumber(tx, orgId, "invoice");
 
-      const [row] = await tx
-        .insert(invoice)
-        .values({
-          orgId,
-          supplierId: params.supplierId,
-          invoiceNumber,
-          amountMinor: params.amountMinor,
-          currencyCode: params.currencyCode,
-          status: "submitted",
-          dueDate: params.dueDate ?? null,
-          poReference: params.poReference ?? null,
-          submittedByPrincipalId: policyCtx.principalId ?? null,
-          submittedAt: sql`now()`,
-        })
-        .returning({ id: invoice.id });
+    const [row] = await tx
+      .insert(invoice)
+      .values({
+        orgId,
+        supplierId: params.supplierId,
+        invoiceNumber,
+        amountMinor: params.amountMinor,
+        currencyCode: params.currencyCode,
+        status: "submitted",
+        dueDate: params.dueDate ?? null,
+        poReference: params.poReference ?? null,
+        submittedByPrincipalId: policyCtx.principalId ?? null,
+        submittedAt: sql`now()`,
+      })
+      .returning({ id: invoice.id });
 
-      if (!row) throw new Error("Failed to insert invoice");
+    if (!row) throw new Error("Failed to insert invoice");
 
-      // Back-fill entityId now that we have the generated ID
-      auditEntry.entityId = row.id as unknown as EntityId;
+    // Back-fill entityId now that we have the generated ID
+    auditEntry.entityId = row.id as unknown as EntityId;
 
-      // Status history — initial transition
-      await tx.insert(invoiceStatusHistory).values({
+    // Status history — initial transition
+    await tx.insert(invoiceStatusHistory).values({
+      invoiceId: row.id,
+      orgId,
+      fromStatus: null,
+      toStatus: "submitted",
+      actorPrincipalId: policyCtx.principalId ?? null,
+      correlationId,
+    });
+
+    // Outbox event
+    await tx.insert(outboxEvent).values({
+      orgId,
+      type: "AP.INVOICE_SUBMITTED",
+      version: "1",
+      correlationId,
+      payload: {
         invoiceId: row.id,
-        orgId,
-        fromStatus: null,
-        toStatus: "submitted",
-        actorPrincipalId: policyCtx.principalId ?? null,
-        correlationId,
-      });
+        invoiceNumber,
+        supplierId: params.supplierId,
+        amountMinor: params.amountMinor.toString(),
+        currencyCode: params.currencyCode,
+      },
+    });
 
-      // Outbox event
-      await tx.insert(outboxEvent).values({
-        orgId,
-        type: "AP.INVOICE_SUBMITTED",
-        version: "1",
-        correlationId,
-        payload: {
-          invoiceId: row.id,
-          invoiceNumber,
-          supplierId: params.supplierId,
-          amountMinor: params.amountMinor.toString(),
-          currencyCode: params.currencyCode,
-        },
-      });
-
-      return { id: row.id as InvoiceId, invoiceNumber };
-    },
-  );
+    return { id: row.id as InvoiceId, invoiceNumber };
+  });
 
   return { ok: true, data: result };
 }
@@ -209,7 +199,9 @@ export async function approveInvoice(
   // Status transition guard
   if (!TRANSITIONS[inv.status as InvoiceStatus]?.includes("approved")) {
     const code =
-      inv.status === "approved" ? "AP_INVOICE_ALREADY_APPROVED" : "AP_INVOICE_INVALID_STATUS_TRANSITION";
+      inv.status === "approved"
+        ? "AP_INVOICE_ALREADY_APPROVED"
+        : "AP_INVOICE_INVALID_STATUS_TRANSITION";
     return {
       ok: false,
       error: {
@@ -221,15 +213,15 @@ export async function approveInvoice(
   }
 
   // SoD — submitter ≠ approver
-  const sodResult = canApproveInvoice(
-    policyCtx,
-    inv.submittedByPrincipalId as PrincipalId | null,
-  );
+  const sodResult = canApproveInvoice(policyCtx, inv.submittedByPrincipalId as PrincipalId | null);
   if (!sodResult.allowed) {
     return {
       ok: false,
       error: {
-        code: sodResult.code === "MISSING_PERMISSION" ? "IAM_INSUFFICIENT_PERMISSIONS" : "SHARED_FORBIDDEN",
+        code:
+          sodResult.code === "MISSING_PERMISSION"
+            ? "IAM_INSUFFICIENT_PERMISSIONS"
+            : "SHARED_FORBIDDEN",
         message: sodResult.reason,
         meta: sodResult.meta,
       },
@@ -251,11 +243,9 @@ export async function approveInvoice(
       const [updated] = await tx
         .update(invoice)
         .set({ status: "approved", updatedAt: sql`now()` })
-        .where(and(
-          eq(invoice.id, invoiceId),
-          eq(invoice.orgId, orgId),
-          eq(invoice.status, inv.status),
-        ))
+        .where(
+          and(eq(invoice.id, invoiceId), eq(invoice.orgId, orgId), eq(invoice.status, inv.status)),
+        )
         .returning({ id: invoice.id });
 
       if (!updated) {
@@ -335,11 +325,9 @@ export async function rejectInvoice(
       const [updated] = await tx
         .update(invoice)
         .set({ status: "rejected", updatedAt: sql`now()` })
-        .where(and(
-          eq(invoice.id, invoiceId),
-          eq(invoice.orgId, orgId),
-          eq(invoice.status, inv.status),
-        ))
+        .where(
+          and(eq(invoice.id, invoiceId), eq(invoice.orgId, orgId), eq(invoice.status, inv.status)),
+        )
         .returning({ id: invoice.id });
 
       if (!updated) {
@@ -427,11 +415,9 @@ export async function voidInvoice(
       const [updated] = await tx
         .update(invoice)
         .set({ status: "voided", updatedAt: sql`now()` })
-        .where(and(
-          eq(invoice.id, invoiceId),
-          eq(invoice.orgId, orgId),
-          eq(invoice.status, inv.status),
-        ))
+        .where(
+          and(eq(invoice.id, invoiceId), eq(invoice.orgId, orgId), eq(invoice.status, inv.status)),
+        )
         .returning({ id: invoice.id });
 
       if (!updated) {
@@ -487,7 +473,10 @@ export async function markPaid(
     return {
       ok: false,
       error: {
-        code: sodResult.code === "MISSING_PERMISSION" ? "IAM_INSUFFICIENT_PERMISSIONS" : "SHARED_FORBIDDEN",
+        code:
+          sodResult.code === "MISSING_PERMISSION"
+            ? "IAM_INSUFFICIENT_PERMISSIONS"
+            : "SHARED_FORBIDDEN",
         message: sodResult.reason,
         meta: sodResult.meta,
       },
@@ -548,11 +537,13 @@ export async function markPaid(
           paymentReference: params.paymentReference,
           updatedAt: sql`now()`,
         })
-        .where(and(
-          eq(invoice.id, params.invoiceId),
-          eq(invoice.orgId, orgId),
-          eq(invoice.status, inv.status),
-        ))
+        .where(
+          and(
+            eq(invoice.id, params.invoiceId),
+            eq(invoice.orgId, orgId),
+            eq(invoice.status, inv.status),
+          ),
+        )
         .returning({ id: invoice.id });
 
       if (!updated) {

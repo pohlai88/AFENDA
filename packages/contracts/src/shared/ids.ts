@@ -76,25 +76,25 @@ export type PartyRoleId = z.infer<typeof PartyRoleIdSchema>;
 // ─── Domain IDs kept in shared because they are referenced across 3+ domains ──
 
 // cross-domain: referenced by invoice, gl (journal lines), evidence, audit
-export const InvoiceIdSchema      = uuid.brand<"InvoiceId">();
-export type  InvoiceId            = z.infer<typeof InvoiceIdSchema>;
+export const InvoiceIdSchema = uuid.brand<"InvoiceId">();
+export type InvoiceId = z.infer<typeof InvoiceIdSchema>;
 
 // cross-domain: referenced by invoice (foreign key), gl (memo), evidence (attach target)
-export const SupplierIdSchema     = uuid.brand<"SupplierId">();
-export type  SupplierId           = z.infer<typeof SupplierIdSchema>;
+export const SupplierIdSchema = uuid.brand<"SupplierId">();
+export type SupplierId = z.infer<typeof SupplierIdSchema>;
 
 // cross-domain: referenced by invoice commands, evidence attach, supplier onboarding
-export const DocumentIdSchema     = uuid.brand<"DocumentId">();
-export type  DocumentId           = z.infer<typeof DocumentIdSchema>;
+export const DocumentIdSchema = uuid.brand<"DocumentId">();
+export type DocumentId = z.infer<typeof DocumentIdSchema>;
 
 // cross-domain: referenced by gl commands, journal reversal, evidence attach target
 export const JournalEntryIdSchema = uuid.brand<"JournalEntryId">();
-export type  JournalEntryId       = z.infer<typeof JournalEntryIdSchema>;
+export type JournalEntryId = z.infer<typeof JournalEntryIdSchema>;
 
 // cross-domain: referenced by gl journal lines and invoice → GL posting
-export const AccountIdSchema      = uuid.brand<"AccountId">();
-export type  AccountId            = z.infer<typeof AccountIdSchema>;
+export const AccountIdSchema = uuid.brand<"AccountId">();
+export type AccountId = z.infer<typeof AccountIdSchema>;
 
 // cross-domain: referenced by audit service, evidence trails, compliance queries
-export const AuditLogIdSchema     = uuid.brand<"AuditLogId">();
-export type  AuditLogId           = z.infer<typeof AuditLogIdSchema>;
+export const AuditLogIdSchema = uuid.brand<"AuditLogId">();
+export type AuditLogId = z.infer<typeof AuditLogIdSchema>;

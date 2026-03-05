@@ -8,14 +8,14 @@ description: Mock functions, modules, timers, and dates with vi utilities
 ## Mock Functions
 
 ```ts
-import { expect, vi } from 'vitest';
+import { expect, vi } from "vitest";
 
 // Create mock function
 const fn = vi.fn();
-fn('hello');
+fn("hello");
 
 expect(fn).toHaveBeenCalled();
-expect(fn).toHaveBeenCalledWith('hello');
+expect(fn).toHaveBeenCalledWith("hello");
 
 // With implementation
 const add = vi.fn((a, b) => a + b);
@@ -25,11 +25,11 @@ expect(add(1, 2)).toBe(3);
 fn.mockReturnValue(42);
 fn.mockReturnValueOnce(1).mockReturnValueOnce(2);
 fn.mockResolvedValue({ data: true });
-fn.mockRejectedValue(new Error('fail'));
+fn.mockRejectedValue(new Error("fail"));
 
 // Mock implementation
 fn.mockImplementation((x) => x * 2);
-fn.mockImplementationOnce(() => 'first call');
+fn.mockImplementationOnce(() => "first call");
 ```
 
 ## Spying on Objects
@@ -39,7 +39,7 @@ const cart = {
   getTotal: () => 100,
 };
 
-const spy = vi.spyOn(cart, 'getTotal');
+const spy = vi.spyOn(cart, "getTotal");
 cart.getTotal();
 
 expect(spy).toHaveBeenCalled();
@@ -56,21 +56,21 @@ spy.mockRestore();
 
 ```ts
 // vi.mock is hoisted to top of file
-vi.mock('./api', () => ({
-  fetchUser: vi.fn(() => ({ id: 1, name: 'Mock' })),
+vi.mock("./api", () => ({
+  fetchUser: vi.fn(() => ({ id: 1, name: "Mock" })),
 }));
 
-import { fetchUser } from './api';
+import { fetchUser } from "./api";
 
-test('mocked module', () => {
-  expect(fetchUser()).toEqual({ id: 1, name: 'Mock' });
+test("mocked module", () => {
+  expect(fetchUser()).toEqual({ id: 1, name: "Mock" });
 });
 ```
 
 ### Partial Mock
 
 ```ts
-vi.mock('./utils', async (importOriginal) => {
+vi.mock("./utils", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -83,11 +83,11 @@ vi.mock('./utils', async (importOriginal) => {
 
 ```ts
 // Keep implementation but spy on calls
-vi.mock('./calculator', { spy: true });
+vi.mock("./calculator", { spy: true });
 
-import { add } from './calculator';
+import { add } from "./calculator";
 
-test('spy on module', () => {
+test("spy on module", () => {
   const result = add(1, 2); // Real implementation
   expect(result).toBe(3);
   expect(add).toHaveBeenCalledWith(1, 2);
@@ -108,8 +108,8 @@ src/
 
 ```ts
 // Just call vi.mock with no factory
-vi.mock('axios');
-vi.mock('./api/client');
+vi.mock("axios");
+vi.mock("./api/client");
 ```
 
 ## Dynamic Mocking (vi.doMock)
@@ -117,22 +117,22 @@ vi.mock('./api/client');
 Not hoisted - use for dynamic imports:
 
 ```ts
-test('dynamic mock', async () => {
-  vi.doMock('./config', () => ({
-    apiUrl: 'http://test.local',
+test("dynamic mock", async () => {
+  vi.doMock("./config", () => ({
+    apiUrl: "http://test.local",
   }));
 
-  const { apiUrl } = await import('./config');
-  expect(apiUrl).toBe('http://test.local');
+  const { apiUrl } = await import("./config");
+  expect(apiUrl).toBe("http://test.local");
 
-  vi.doUnmock('./config');
+  vi.doUnmock("./config");
 });
 ```
 
 ## Mock Timers
 
 ```ts
-import { afterEach, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from "vitest";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -142,7 +142,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-test('timers', () => {
+test("timers", () => {
   const fn = vi.fn();
   setTimeout(fn, 1000);
 
@@ -161,7 +161,7 @@ vi.advanceTimersToNextTimer(); // Advance to next timer
 ### Async Timer Methods
 
 ```ts
-test('async timers', async () => {
+test("async timers", async () => {
   vi.useFakeTimers();
 
   let resolved = false;
@@ -170,7 +170,7 @@ test('async timers', async () => {
       Promise.resolve().then(() => {
         resolved = true;
       }),
-    100
+    100,
   );
 
   await vi.advanceTimersByTimeAsync(100);
@@ -181,7 +181,7 @@ test('async timers', async () => {
 ## Mock Dates
 
 ```ts
-vi.setSystemTime(new Date('2024-01-01'));
+vi.setSystemTime(new Date("2024-01-01"));
 expect(new Date().getFullYear()).toBe(2024);
 
 vi.useRealTimers(); // Restore
@@ -191,8 +191,8 @@ vi.useRealTimers(); // Restore
 
 ```ts
 vi.stubGlobal(
-  'fetch',
-  vi.fn(() => Promise.resolve({ json: () => ({ data: 'mock' }) }))
+  "fetch",
+  vi.fn(() => Promise.resolve({ json: () => ({ data: "mock" }) })),
 );
 
 // Restore
@@ -202,8 +202,8 @@ vi.unstubAllGlobals();
 ## Mock Environment Variables
 
 ```ts
-vi.stubEnv('API_KEY', 'test-key');
-expect(import.meta.env.API_KEY).toBe('test-key');
+vi.stubEnv("API_KEY", "test-key");
+expect(import.meta.env.API_KEY).toBe("test-key");
 
 // Restore
 vi.unstubAllEnvs();
@@ -245,15 +245,15 @@ defineConfig({
 ```ts
 const mockFn = vi.hoisted(() => vi.fn());
 
-vi.mock('./module', () => ({
+vi.mock("./module", () => ({
   getData: mockFn,
 }));
 
-import { getData } from './module';
+import { getData } from "./module";
 
-test('hoisted mock', () => {
-  mockFn.mockReturnValue('test');
-  expect(getData()).toBe('test');
+test("hoisted mock", () => {
+  mockFn.mockReturnValue("test");
+  expect(getData()).toBe("test");
 });
 ```
 

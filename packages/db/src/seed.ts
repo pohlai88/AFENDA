@@ -222,8 +222,22 @@ async function main() {
       await tx
         .insert(s.sequence)
         .values([
-          { orgId: org.id, entityType: "invoice", periodKey, prefix: `INV-${year}`, padWidth: 4, nextValue: 1 },
-          { orgId: org.id, entityType: "journalEntry", periodKey, prefix: `JE-${year}`, padWidth: 4, nextValue: 1 },
+          {
+            orgId: org.id,
+            entityType: "invoice",
+            periodKey,
+            prefix: `INV-${year}`,
+            padWidth: 4,
+            nextValue: 1,
+          },
+          {
+            orgId: org.id,
+            entityType: "journalEntry",
+            periodKey,
+            prefix: `JE-${year}`,
+            padWidth: 4,
+            nextValue: 1,
+          },
         ])
         .onConflictDoNothing();
     });

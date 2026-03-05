@@ -1,7 +1,6 @@
 ---
 name: skill-name-here
-description:
-  Brief description that helps Cascade understand when to invoke this skill (1-2
+description: Brief description that helps Cascade understand when to invoke this skill (1-2
   sentences)
 category: nextjs | monorepo | database | validation | ui | tools | security
 priority: high | medium | low

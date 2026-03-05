@@ -60,7 +60,14 @@ const origins = z
   .string()
   .transform((s) => s.trim())
   .optional()
-  .transform((s) => (s ? s.split(",").map((x) => x.trim()).filter(Boolean) : []))
+  .transform((s) =>
+    s
+      ? s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean)
+      : [],
+  )
   .superRefine((list, ctx) => {
     for (const o of list) {
       if (o === "*") continue;
@@ -68,7 +75,10 @@ const origins = z
         const u = new URL(o);
         if (!["http:", "https:"].includes(u.protocol)) throw new Error();
         if (u.pathname !== "/" || u.search || u.hash) {
-          ctx.addIssue({ code: "custom", message: `Origin must not include path/query/hash: ${o}` });
+          ctx.addIssue({
+            code: "custom",
+            message: `Origin must not include path/query/hash: ${o}`,
+          });
         }
       } catch {
         ctx.addIssue({ code: "custom", message: `Invalid origin: ${o}` });
@@ -82,15 +92,14 @@ const s3Bucket = z
   .min(3)
   .max(63)
   .regex(/^[a-z0-9][a-z0-9.-]+[a-z0-9]$/, {
-    message: "S3_BUCKET must be a valid bucket name (3-63 lowercase chars, no leading/trailing dot or hyphen)",
+    message:
+      "S3_BUCKET must be a valid bucket name (3-63 lowercase chars, no leading/trailing dot or hyphen)",
   });
 
 // ── Shared ───────────────────────────────────────────────────────────────────
 
 export const BaseEnvSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   DATABASE_URL: pgUrl,
 });
 

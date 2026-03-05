@@ -4,7 +4,7 @@ description: Build accessible forms with React Hook Form + Zod
 license: MIT
 metadata:
   author: danielmeppiel
-  version: '1.0.0'
+  version: "1.0.0"
 compatibility: React 18+, TypeScript 5+
 ---
 

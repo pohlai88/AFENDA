@@ -14,13 +14,13 @@
  * Run: node skills/clawsec-suite/test/advisory_suppression.test.mjs
  */
 
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LIB_PATH = path.resolve(__dirname, '..', 'hooks', 'clawsec-advisory-guardian', 'lib');
+const LIB_PATH = path.resolve(__dirname, "..", "hooks", "clawsec-advisory-guardian", "lib");
 
 const { isAdvisorySuppressed, loadAdvisorySuppression } = await import(
   `${LIB_PATH}/suppression.mjs`
@@ -42,7 +42,7 @@ function fail(name, error) {
 }
 
 async function setupTestDir() {
-  tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'advisory-suppression-test-'));
+  tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "advisory-suppression-test-"));
 }
 
 async function cleanupTestDir() {
@@ -51,9 +51,9 @@ async function cleanupTestDir() {
   }
 }
 
-function makeMatch(advisoryId, skillName, version = '1.0.0') {
+function makeMatch(advisoryId, skillName, version = "1.0.0") {
   return {
-    advisory: { id: advisoryId, severity: 'high', title: `Advisory ${advisoryId}` },
+    advisory: { id: advisoryId, severity: "high", title: `Advisory ${advisoryId}` },
     skill: { name: skillName, dirName: skillName, version },
     matchedAffected: [`${skillName}@<=${version}`],
   };
@@ -63,8 +63,8 @@ function makeRules(entries) {
   return entries.map(([checkId, skill, reason]) => ({
     checkId,
     skill,
-    reason: reason || 'Test suppression',
-    suppressedAt: '2026-02-15',
+    reason: reason || "Test suppression",
+    suppressedAt: "2026-02-15",
   }));
 }
 
@@ -73,14 +73,14 @@ function makeRules(entries) {
 // ---------------------------------------------------------------------------
 
 async function testExactMatch() {
-  const testName = 'isAdvisorySuppressed: exact match suppresses';
+  const testName = "isAdvisorySuppressed: exact match suppresses";
   try {
-    const match = makeMatch('CVE-2026-25593', 'clawsec-suite');
-    const rules = makeRules([['CVE-2026-25593', 'clawsec-suite']]);
+    const match = makeMatch("CVE-2026-25593", "clawsec-suite");
+    const rules = makeRules([["CVE-2026-25593", "clawsec-suite"]]);
     if (isAdvisorySuppressed(match, rules) === true) {
       pass(testName);
     } else {
-      fail(testName, 'Expected suppression but got false');
+      fail(testName, "Expected suppression but got false");
     }
   } catch (error) {
     fail(testName, error);
@@ -88,14 +88,14 @@ async function testExactMatch() {
 }
 
 async function testCaseInsensitiveSkillMatch() {
-  const testName = 'isAdvisorySuppressed: case-insensitive skill name match';
+  const testName = "isAdvisorySuppressed: case-insensitive skill name match";
   try {
-    const match = makeMatch('CVE-2026-25593', 'ClawSec-Suite');
-    const rules = makeRules([['CVE-2026-25593', 'clawsec-suite']]);
+    const match = makeMatch("CVE-2026-25593", "ClawSec-Suite");
+    const rules = makeRules([["CVE-2026-25593", "clawsec-suite"]]);
     if (isAdvisorySuppressed(match, rules) === true) {
       pass(testName);
     } else {
-      fail(testName, 'Expected case-insensitive match to suppress');
+      fail(testName, "Expected case-insensitive match to suppress");
     }
   } catch (error) {
     fail(testName, error);
@@ -103,14 +103,14 @@ async function testCaseInsensitiveSkillMatch() {
 }
 
 async function testCheckIdMismatch() {
-  const testName = 'isAdvisorySuppressed: checkId mismatch does not suppress';
+  const testName = "isAdvisorySuppressed: checkId mismatch does not suppress";
   try {
-    const match = makeMatch('CVE-2026-99999', 'clawsec-suite');
-    const rules = makeRules([['CVE-2026-25593', 'clawsec-suite']]);
+    const match = makeMatch("CVE-2026-99999", "clawsec-suite");
+    const rules = makeRules([["CVE-2026-25593", "clawsec-suite"]]);
     if (isAdvisorySuppressed(match, rules) === false) {
       pass(testName);
     } else {
-      fail(testName, 'Expected no suppression for mismatched checkId');
+      fail(testName, "Expected no suppression for mismatched checkId");
     }
   } catch (error) {
     fail(testName, error);
@@ -118,14 +118,14 @@ async function testCheckIdMismatch() {
 }
 
 async function testSkillMismatch() {
-  const testName = 'isAdvisorySuppressed: skill mismatch does not suppress';
+  const testName = "isAdvisorySuppressed: skill mismatch does not suppress";
   try {
-    const match = makeMatch('CVE-2026-25593', 'other-skill');
-    const rules = makeRules([['CVE-2026-25593', 'clawsec-suite']]);
+    const match = makeMatch("CVE-2026-25593", "other-skill");
+    const rules = makeRules([["CVE-2026-25593", "clawsec-suite"]]);
     if (isAdvisorySuppressed(match, rules) === false) {
       pass(testName);
     } else {
-      fail(testName, 'Expected no suppression for mismatched skill');
+      fail(testName, "Expected no suppression for mismatched skill");
     }
   } catch (error) {
     fail(testName, error);
@@ -133,13 +133,13 @@ async function testSkillMismatch() {
 }
 
 async function testEmptySuppressions() {
-  const testName = 'isAdvisorySuppressed: empty suppressions never suppress';
+  const testName = "isAdvisorySuppressed: empty suppressions never suppress";
   try {
-    const match = makeMatch('CVE-2026-25593', 'clawsec-suite');
+    const match = makeMatch("CVE-2026-25593", "clawsec-suite");
     if (isAdvisorySuppressed(match, []) === false) {
       pass(testName);
     } else {
-      fail(testName, 'Expected no suppression with empty rules');
+      fail(testName, "Expected no suppression with empty rules");
     }
   } catch (error) {
     fail(testName, error);
@@ -147,17 +147,17 @@ async function testEmptySuppressions() {
 }
 
 async function testMultipleRules() {
-  const testName = 'isAdvisorySuppressed: multiple rules match correct one';
+  const testName = "isAdvisorySuppressed: multiple rules match correct one";
   try {
-    const match = makeMatch('CLAW-2026-0001', 'openclaw-audit-watchdog');
+    const match = makeMatch("CLAW-2026-0001", "openclaw-audit-watchdog");
     const rules = makeRules([
-      ['CVE-2026-25593', 'clawsec-suite'],
-      ['CLAW-2026-0001', 'openclaw-audit-watchdog'],
+      ["CVE-2026-25593", "clawsec-suite"],
+      ["CLAW-2026-0001", "openclaw-audit-watchdog"],
     ]);
     if (isAdvisorySuppressed(match, rules) === true) {
       pass(testName);
     } else {
-      fail(testName, 'Expected match against second rule');
+      fail(testName, "Expected match against second rule");
     }
   } catch (error) {
     fail(testName, error);
@@ -165,18 +165,18 @@ async function testMultipleRules() {
 }
 
 async function testMissingAdvisoryId() {
-  const testName = 'isAdvisorySuppressed: missing advisory.id does not suppress';
+  const testName = "isAdvisorySuppressed: missing advisory.id does not suppress";
   try {
     const match = {
-      advisory: { severity: 'high', title: 'No ID advisory' },
-      skill: { name: 'clawsec-suite', dirName: 'clawsec-suite', version: '1.0.0' },
+      advisory: { severity: "high", title: "No ID advisory" },
+      skill: { name: "clawsec-suite", dirName: "clawsec-suite", version: "1.0.0" },
       matchedAffected: [],
     };
-    const rules = makeRules([['CVE-2026-25593', 'clawsec-suite']]);
+    const rules = makeRules([["CVE-2026-25593", "clawsec-suite"]]);
     if (isAdvisorySuppressed(match, rules) === false) {
       pass(testName);
     } else {
-      fail(testName, 'Expected no suppression when advisory has no id');
+      fail(testName, "Expected no suppression when advisory has no id");
     }
   } catch (error) {
     fail(testName, error);
@@ -188,22 +188,22 @@ async function testMissingAdvisoryId() {
 // ---------------------------------------------------------------------------
 
 async function testLoadWithAdvisorySentinel() {
-  const testName = 'loadAdvisorySuppression: loads config with advisory sentinel';
+  const testName = "loadAdvisorySuppression: loads config with advisory sentinel";
   try {
-    const configFile = path.join(tempDir, 'advisory-config.json');
+    const configFile = path.join(tempDir, "advisory-config.json");
     await fs.writeFile(
       configFile,
       JSON.stringify({
-        enabledFor: ['advisory'],
+        enabledFor: ["advisory"],
         suppressions: [
           {
-            checkId: 'CVE-2026-25593',
-            skill: 'clawsec-suite',
-            reason: 'First-party tooling',
-            suppressedAt: '2026-02-15',
+            checkId: "CVE-2026-25593",
+            skill: "clawsec-suite",
+            reason: "First-party tooling",
+            suppressedAt: "2026-02-15",
           },
         ],
-      })
+      }),
     );
 
     const config = await loadAdvisorySuppression(configFile);
@@ -218,21 +218,21 @@ async function testLoadWithAdvisorySentinel() {
 }
 
 async function testLoadWithMissingSentinel() {
-  const testName = 'loadAdvisorySuppression: missing sentinel returns empty config';
+  const testName = "loadAdvisorySuppression: missing sentinel returns empty config";
   try {
-    const configFile = path.join(tempDir, 'no-sentinel.json');
+    const configFile = path.join(tempDir, "no-sentinel.json");
     await fs.writeFile(
       configFile,
       JSON.stringify({
         suppressions: [
           {
-            checkId: 'CVE-2026-25593',
-            skill: 'clawsec-suite',
-            reason: 'First-party tooling',
-            suppressedAt: '2026-02-15',
+            checkId: "CVE-2026-25593",
+            skill: "clawsec-suite",
+            reason: "First-party tooling",
+            suppressedAt: "2026-02-15",
           },
         ],
-      })
+      }),
     );
 
     const config = await loadAdvisorySuppression(configFile);
@@ -241,7 +241,7 @@ async function testLoadWithMissingSentinel() {
     } else {
       fail(
         testName,
-        `Expected empty suppressions without sentinel, got: ${JSON.stringify(config)}`
+        `Expected empty suppressions without sentinel, got: ${JSON.stringify(config)}`,
       );
     }
   } catch (error) {
@@ -250,22 +250,22 @@ async function testLoadWithMissingSentinel() {
 }
 
 async function testLoadWithAuditOnlySentinel() {
-  const testName = 'loadAdvisorySuppression: audit-only sentinel returns empty for advisory';
+  const testName = "loadAdvisorySuppression: audit-only sentinel returns empty for advisory";
   try {
-    const configFile = path.join(tempDir, 'audit-only.json');
+    const configFile = path.join(tempDir, "audit-only.json");
     await fs.writeFile(
       configFile,
       JSON.stringify({
-        enabledFor: ['audit'],
+        enabledFor: ["audit"],
         suppressions: [
           {
-            checkId: 'CVE-2026-25593',
-            skill: 'clawsec-suite',
-            reason: 'First-party tooling',
-            suppressedAt: '2026-02-15',
+            checkId: "CVE-2026-25593",
+            skill: "clawsec-suite",
+            reason: "First-party tooling",
+            suppressedAt: "2026-02-15",
           },
         ],
-      })
+      }),
     );
 
     const config = await loadAdvisorySuppression(configFile);
@@ -280,22 +280,22 @@ async function testLoadWithAuditOnlySentinel() {
 }
 
 async function testLoadWithBothSentinels() {
-  const testName = 'loadAdvisorySuppression: both audit+advisory sentinels activates advisory';
+  const testName = "loadAdvisorySuppression: both audit+advisory sentinels activates advisory";
   try {
-    const configFile = path.join(tempDir, 'both-sentinel.json');
+    const configFile = path.join(tempDir, "both-sentinel.json");
     await fs.writeFile(
       configFile,
       JSON.stringify({
-        enabledFor: ['audit', 'advisory'],
+        enabledFor: ["audit", "advisory"],
         suppressions: [
           {
-            checkId: 'CVE-2026-25593',
-            skill: 'clawsec-suite',
-            reason: 'First-party tooling',
-            suppressedAt: '2026-02-15',
+            checkId: "CVE-2026-25593",
+            skill: "clawsec-suite",
+            reason: "First-party tooling",
+            suppressedAt: "2026-02-15",
           },
         ],
-      })
+      }),
     );
 
     const config = await loadAdvisorySuppression(configFile);
@@ -310,12 +310,12 @@ async function testLoadWithBothSentinels() {
 }
 
 async function testLoadNonexistentExplicitPath() {
-  const testName = 'loadAdvisorySuppression: explicit nonexistent path throws';
+  const testName = "loadAdvisorySuppression: explicit nonexistent path throws";
   try {
-    await loadAdvisorySuppression(path.join(tempDir, 'does-not-exist.json'));
-    fail(testName, 'Expected error for nonexistent explicit path');
+    await loadAdvisorySuppression(path.join(tempDir, "does-not-exist.json"));
+    fail(testName, "Expected error for nonexistent explicit path");
   } catch (error) {
-    if (String(error).includes('not found')) {
+    if (String(error).includes("not found")) {
       pass(testName);
     } else {
       fail(testName, `Unexpected error: ${error}`);
@@ -324,7 +324,7 @@ async function testLoadNonexistentExplicitPath() {
 }
 
 async function testLoadNoConfigReturnsEmpty() {
-  const testName = 'loadAdvisorySuppression: no config available returns empty';
+  const testName = "loadAdvisorySuppression: no config available returns empty";
   try {
     // Clear env var to ensure no ambient config
     const savedEnv = process.env.OPENCLAW_AUDIT_CONFIG;
@@ -334,7 +334,7 @@ async function testLoadNoConfigReturnsEmpty() {
       // Call without explicit path and with no env var — falls through to default paths
       // which likely don't exist in test environment
       const config = await loadAdvisorySuppression();
-      if (config.suppressions.length === 0 && config.source === 'none') {
+      if (config.suppressions.length === 0 && config.source === "none") {
         pass(testName);
       } else {
         fail(testName, `Expected empty config, got: ${JSON.stringify(config)}`);
@@ -352,7 +352,7 @@ async function testLoadNoConfigReturnsEmpty() {
 // Main test runner
 // ---------------------------------------------------------------------------
 async function runAllTests() {
-  console.log('=== Advisory Suppression Tests ===\n');
+  console.log("=== Advisory Suppression Tests ===\n");
 
   await setupTestDir();
 
@@ -377,7 +377,7 @@ async function runAllTests() {
     await cleanupTestDir();
   }
 
-  console.log('');
+  console.log("");
   console.log(`=== Results: ${passCount} passed, ${failCount} failed ===`);
 
   if (failCount > 0) {
@@ -386,6 +386,6 @@ async function runAllTests() {
 }
 
 runAllTests().catch((err) => {
-  console.error('Test runner failed:', err);
+  console.error("Test runner failed:", err);
   process.exit(1);
 });

@@ -1,9 +1,9 @@
 ---
 title: Versioning
-description: 'Versioning strategy and compatibility information for Zod 4'
+description: "Versioning strategy and compatibility information for Zod 4"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Callout } from "fumadocs-ui/components/callout";
 
 ### **Update — July 8th, 2025**
 
@@ -78,8 +78,8 @@ With subpath versioning, we solve this problem. it provides a straightforward wa
 Libraries will need to bump the minimum version of their `"zod"` peer dependency to `zod@^3.25.0`. They can then reference both Zod 3 and Zod 4 in their implementation:
 
 ```ts
-import * as z3 from 'zod/v3';
-import * as z4 from 'zod/v4';
+import * as z3 from "zod/v3";
+import * as z4 from "zod/v4";
 ```
 
 Later, once there's broad support for v4, we'll bump the major version on `npm` and start exporting Zod 4 from the package root, completing the transition. (This has now happened—see the note at the top of this page.)

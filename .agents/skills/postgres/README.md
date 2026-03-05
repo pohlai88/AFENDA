@@ -5,11 +5,13 @@ Read-only PostgreSQL query skill. Query multiple databases safely with write pro
 ## Setup
 
 1. Copy the example config:
+
 ```bash
 cp connections.example.json connections.json
 ```
 
 2. Add your database credentials:
+
 ```json
 {
   "databases": [
@@ -28,6 +30,7 @@ cp connections.example.json connections.json
 ```
 
 3. Secure the config:
+
 ```bash
 chmod 600 connections.json
 ```
@@ -50,16 +53,16 @@ python3 scripts/query.py --db prod --query "SELECT * FROM users" --limit 100
 
 ## Config Fields
 
-| Field | Required | Default | Description |
-|-------|----------|---------|-------------|
-| name | Yes | - | Database identifier |
-| description | Yes | - | What data it contains (for auto-selection) |
-| host | Yes | - | Hostname |
-| port | No | 5432 | Port |
-| database | Yes | - | Database name |
-| user | Yes | - | Username |
-| password | Yes | - | Password |
-| sslmode | No | prefer | disable, allow, prefer, require, verify-ca, verify-full |
+| Field       | Required | Default | Description                                             |
+| ----------- | -------- | ------- | ------------------------------------------------------- |
+| name        | Yes      | -       | Database identifier                                     |
+| description | Yes      | -       | What data it contains (for auto-selection)              |
+| host        | Yes      | -       | Hostname                                                |
+| port        | No       | 5432    | Port                                                    |
+| database    | Yes      | -       | Database name                                           |
+| user        | Yes      | -       | Username                                                |
+| password    | Yes      | -       | Password                                                |
+| sslmode     | No       | prefer  | disable, allow, prefer, require, verify-ca, verify-full |
 
 ## Safety Features
 

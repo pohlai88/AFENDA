@@ -1,5 +1,14 @@
 import {
-  pgTable, text, uuid, bigint, integer, boolean, jsonb, index, primaryKey, check,
+  pgTable,
+  text,
+  uuid,
+  bigint,
+  integer,
+  boolean,
+  jsonb,
+  index,
+  primaryKey,
+  check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { organization, iamPrincipal } from "./iam.js";
@@ -12,7 +21,9 @@ export const outboxEvent = pgTable(
   "outbox_event",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    orgId: uuid("org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     type: text("type").notNull(),
     version: text("version").notNull().default("1"),
     correlationId: text("correlation_id").notNull(),
@@ -34,7 +45,9 @@ export const outboxEvent = pgTable(
 export const idempotency = pgTable(
   "idempotency",
   {
-    orgId: uuid("org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     command: text("command").notNull(),
     key: text("key").notNull(),
     requestHash: text("request_hash").notNull(),
@@ -61,8 +74,12 @@ export const auditLog = pgTable(
   "audit_log",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    orgId: uuid("org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
-    actorPrincipalId: uuid("actor_principal_id").references(() => iamPrincipal.id, { onDelete: "set null" }),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    actorPrincipalId: uuid("actor_principal_id").references(() => iamPrincipal.id, {
+      onDelete: "set null",
+    }),
     action: text("action").notNull(), // e.g. "invoice.submitted"
     entityType: text("entity_type").notNull(),
     entityId: uuid("entity_id"),
@@ -85,18 +102,17 @@ export const auditLog = pgTable(
 export const sequence = pgTable(
   "sequence",
   {
-    orgId: uuid("org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     entityType: text("entity_type").notNull(), // SequenceEntityType: "invoice" | "journalEntry" | ...
     periodKey: text("period_key").notNull().default(""), // e.g. "2026", or "" for unpartitioned
-    prefix: text("prefix").notNull(),          // "INV-2026" | "JE-2026"
+    prefix: text("prefix").notNull(), // "INV-2026" | "JE-2026"
     nextValue: bigint("next_value", { mode: "number" }).notNull().default(1),
     padWidth: integer("pad_width").notNull().default(4),
     updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
-  (t) => [
-    primaryKey({ columns: [t.orgId, t.entityType, t.periodKey] }),
-    rlsOrg,
-  ],
+  (t) => [primaryKey({ columns: [t.orgId, t.entityType, t.periodKey] }), rlsOrg],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -113,7 +129,5 @@ export const deadLetterJob = pgTable(
     attempts: bigint("attempts", { mode: "number" }).notNull(),
     failedAt: tsz("failed_at").defaultNow().notNull(),
   },
-  (t) => [
-    index("dead_letter_org_idx").on(t.orgId),
-  ],
+  (t) => [index("dead_letter_org_idx").on(t.orgId)],
 );

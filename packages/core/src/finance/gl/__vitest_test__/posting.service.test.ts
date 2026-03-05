@@ -65,7 +65,9 @@ const ACCOUNT_2 = "22222222-aaaa-aaaa-aaaa-222222222222" as AccountId;
 
 const CTX: OrgScopedContext = { activeContext: { orgId: ORG_ID } };
 
-function makePolicyCtx(overrides: Partial<PolicyContext> & { permissions?: string[] } = {}): PolicyContext {
+function makePolicyCtx(
+  overrides: Partial<PolicyContext> & { permissions?: string[] } = {},
+): PolicyContext {
   const { permissions, ...rest } = overrides as any;
   return {
     principalId: PRINCIPAL_A,
@@ -102,16 +104,11 @@ describe("postToGL", () => {
     // Insert journal entry returning id
     mockInsertReturning.mockResolvedValueOnce([{ id: ENTRY_ID }]);
 
-    const result = await postToGL(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      {
-        correlationId: CORRELATION_ID,
-        idempotencyKey: "idem-1",
-        lines: BALANCED_LINES,
-      },
-    );
+    const result = await postToGL(mockDb, CTX, makePolicyCtx(), {
+      correlationId: CORRELATION_ID,
+      idempotencyKey: "idem-1",
+      lines: BALANCED_LINES,
+    });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -122,16 +119,11 @@ describe("postToGL", () => {
   it("returns INSUFFICIENT_PERMISSIONS when missing gl.journal.post", async () => {
     const pCtx = makePolicyCtx({ permissions: [] });
 
-    const result = await postToGL(
-      mockDb,
-      CTX,
-      pCtx,
-      {
-        correlationId: CORRELATION_ID,
-        idempotencyKey: "idem-2",
-        lines: BALANCED_LINES,
-      },
-    );
+    const result = await postToGL(mockDb, CTX, pCtx, {
+      correlationId: CORRELATION_ID,
+      idempotencyKey: "idem-2",
+      lines: BALANCED_LINES,
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -140,19 +132,14 @@ describe("postToGL", () => {
   });
 
   it("returns GL_JOURNAL_UNBALANCED when lines do not balance", async () => {
-    const result = await postToGL(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      {
-        correlationId: CORRELATION_ID,
-        idempotencyKey: "idem-3",
-        lines: [
-          { accountId: ACCOUNT_1, debitMinor: 10000n, creditMinor: 0n, currencyCode: "USD" },
-          { accountId: ACCOUNT_2, debitMinor: 0n, creditMinor: 5000n, currencyCode: "USD" },
-        ],
-      },
-    );
+    const result = await postToGL(mockDb, CTX, makePolicyCtx(), {
+      correlationId: CORRELATION_ID,
+      idempotencyKey: "idem-3",
+      lines: [
+        { accountId: ACCOUNT_1, debitMinor: 10000n, creditMinor: 0n, currencyCode: "USD" },
+        { accountId: ACCOUNT_2, debitMinor: 0n, creditMinor: 5000n, currencyCode: "USD" },
+      ],
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -162,20 +149,13 @@ describe("postToGL", () => {
 
   it("returns GL_ACCOUNT_NOT_FOUND when an account does not exist", async () => {
     // Only one account found
-    mockSelectWhere.mockResolvedValueOnce([
-      { id: ACCOUNT_1, isActive: true },
-    ]);
+    mockSelectWhere.mockResolvedValueOnce([{ id: ACCOUNT_1, isActive: true }]);
 
-    const result = await postToGL(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      {
-        correlationId: CORRELATION_ID,
-        idempotencyKey: "idem-4",
-        lines: BALANCED_LINES,
-      },
-    );
+    const result = await postToGL(mockDb, CTX, makePolicyCtx(), {
+      correlationId: CORRELATION_ID,
+      idempotencyKey: "idem-4",
+      lines: BALANCED_LINES,
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -189,16 +169,11 @@ describe("postToGL", () => {
       { id: ACCOUNT_2, isActive: false },
     ]);
 
-    const result = await postToGL(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      {
-        correlationId: CORRELATION_ID,
-        idempotencyKey: "idem-5",
-        lines: BALANCED_LINES,
-      },
-    );
+    const result = await postToGL(mockDb, CTX, makePolicyCtx(), {
+      correlationId: CORRELATION_ID,
+      idempotencyKey: "idem-5",
+      lines: BALANCED_LINES,
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -212,16 +187,36 @@ describe("postToGL", () => {
 describe("reverseJournalEntry", () => {
   it("returns ok with reversal entry id and number", async () => {
     // Original entry exists
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: ENTRY_ID,
-      orgId: ORG_ID,
-      entryNumber: "JE-2026-0001",
-      sourceInvoiceId: null,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: ENTRY_ID,
+        orgId: ORG_ID,
+        entryNumber: "JE-2026-0001",
+        sourceInvoiceId: null,
+      },
+    ]);
     // Original lines
     mockSelectWhere.mockResolvedValueOnce([
-      { id: "l1", journalEntryId: ENTRY_ID, accountId: ACCOUNT_1, debitMinor: 10000n, creditMinor: 0n, currencyCode: "USD", memo: null, dimensions: null },
-      { id: "l2", journalEntryId: ENTRY_ID, accountId: ACCOUNT_2, debitMinor: 0n, creditMinor: 10000n, currencyCode: "USD", memo: null, dimensions: null },
+      {
+        id: "l1",
+        journalEntryId: ENTRY_ID,
+        accountId: ACCOUNT_1,
+        debitMinor: 10000n,
+        creditMinor: 0n,
+        currencyCode: "USD",
+        memo: null,
+        dimensions: null,
+      },
+      {
+        id: "l2",
+        journalEntryId: ENTRY_ID,
+        accountId: ACCOUNT_2,
+        debitMinor: 0n,
+        creditMinor: 10000n,
+        currencyCode: "USD",
+        memo: null,
+        dimensions: null,
+      },
     ]);
     // Insert reversal
     mockInsertReturning.mockResolvedValueOnce([{ id: "rev-id" }]);
@@ -244,9 +239,7 @@ describe("reverseJournalEntry", () => {
   it("returns INSUFFICIENT_PERMISSIONS when missing gl.journal.post", async () => {
     const pCtx = makePolicyCtx({ permissions: [] });
 
-    const result = await reverseJournalEntry(
-      mockDb, CTX, pCtx, CORRELATION_ID, ENTRY_ID,
-    );
+    const result = await reverseJournalEntry(mockDb, CTX, pCtx, CORRELATION_ID, ENTRY_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -258,7 +251,11 @@ describe("reverseJournalEntry", () => {
     mockSelectWhere.mockResolvedValueOnce([]);
 
     const result = await reverseJournalEntry(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, ENTRY_ID,
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      ENTRY_ID,
     );
 
     expect(result.ok).toBe(false);

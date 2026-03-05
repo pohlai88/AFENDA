@@ -20,9 +20,9 @@ export const handleInvoiceRejected: Task = async (payload, helpers) => {
 
   helpers.logger.info(
     `invoice rejected: invoiceId=${event.payload.invoiceId} ` +
-    `rejectedBy=${event.payload.rejectedBy ?? "system"} ` +
-    `reason=${event.payload.reason} ` +
-    `correlationId=${event.correlationId}`,
+      `rejectedBy=${event.payload.rejectedBy ?? "system"} ` +
+      `reason=${event.payload.reason} ` +
+      `correlationId=${event.correlationId}`,
   );
 
   // Future Sprint 2+:

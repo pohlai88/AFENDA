@@ -74,22 +74,22 @@
 
   /* Directional glyph indicators — preserve meaning when colors are nuked */
   .trade-up::before {
-    content: '▲ ';
+    content: "▲ ";
   }
   .trade-down::before {
-    content: '▼ ';
+    content: "▼ ";
   }
   .trade-flat::before {
-    content: '■ ';
+    content: "■ ";
   }
   .halted::before {
-    content: '⏸ ';
+    content: "⏸ ";
   }
   .stale::before {
-    content: '◌ ';
+    content: "◌ ";
   }
   .afterhours::before {
-    content: '☾ ';
+    content: "☾ ";
   }
 
   /* Ensure links remain distinguishable */
@@ -169,60 +169,132 @@
   }
 
   /* Extended glyph indicators for document statuses */
-  .badge-approved::before { content: '✓ '; }
-  .badge-rejected::before { content: '✗ '; }
-  .badge-on-hold::before { content: '⏳ '; }
-  .badge-locked::before { content: '▣ '; }
-  .badge-overdue::before { content: '⚠ '; }
-  .badge-voided::before { content: '○ '; }
+  .badge-approved::before {
+    content: "✓ ";
+  }
+  .badge-rejected::before {
+    content: "✗ ";
+  }
+  .badge-on-hold::before {
+    content: "⏳ ";
+  }
+  .badge-locked::before {
+    content: "▣ ";
+  }
+  .badge-overdue::before {
+    content: "⚠ ";
+  }
+  .badge-voided::before {
+    content: "○ ";
+  }
 
   /* Domain badge glyph indicators — Supplier Compliance */
-  .badge-compliance-valid::before { content: '✓ '; }
-  .badge-compliance-expiring::before { content: '⏳ '; }
-  .badge-compliance-expired::before { content: '✗ '; }
+  .badge-compliance-valid::before {
+    content: "✓ ";
+  }
+  .badge-compliance-expiring::before {
+    content: "⏳ ";
+  }
+  .badge-compliance-expired::before {
+    content: "✗ ";
+  }
 
   /* Domain badge glyph indicators — Fixed Asset Lifecycle */
-  .badge-asset-cwip::before { content: '⚙ '; }
-  .badge-asset-active::before { content: '● '; }
-  .badge-asset-impaired::before { content: '▼ '; }
-  .badge-asset-disposed::before { content: '○ '; }
+  .badge-asset-cwip::before {
+    content: "⚙ ";
+  }
+  .badge-asset-active::before {
+    content: "● ";
+  }
+  .badge-asset-impaired::before {
+    content: "▼ ";
+  }
+  .badge-asset-disposed::before {
+    content: "○ ";
+  }
 
   /* Domain badge glyph indicators — Tax Lifecycle */
-  .badge-tax-open::before { content: '○ '; }
-  .badge-tax-filed::before { content: '↗ '; }
-  .badge-tax-assessed::before { content: '● '; }
-  .badge-tax-adjusted::before { content: '↻ '; }
+  .badge-tax-open::before {
+    content: "○ ";
+  }
+  .badge-tax-filed::before {
+    content: "↗ ";
+  }
+  .badge-tax-assessed::before {
+    content: "● ";
+  }
+  .badge-tax-adjusted::before {
+    content: "↻ ";
+  }
 
   /* Domain badge glyph indicators — IFRS Classification */
-  .badge-classification-ac::before { content: '▬ '; }
-  .badge-classification-fvtpl::before { content: '◆ '; }
-  .badge-classification-fvoci::before { content: '◇ '; }
+  .badge-classification-ac::before {
+    content: "▬ ";
+  }
+  .badge-classification-fvtpl::before {
+    content: "◆ ";
+  }
+  .badge-classification-fvoci::before {
+    content: "◇ ";
+  }
 
   /* Domain badge glyph indicators — Hedge Accounting */
-  .badge-hedge-designated::before { content: '⊕ '; }
-  .badge-hedge-effective::before { content: '✓ '; }
-  .badge-hedge-ineffective::before { content: '✗ '; }
-  .badge-hedge-discontinued::before { content: '⊘ '; }
+  .badge-hedge-designated::before {
+    content: "⊕ ";
+  }
+  .badge-hedge-effective::before {
+    content: "✓ ";
+  }
+  .badge-hedge-ineffective::before {
+    content: "✗ ";
+  }
+  .badge-hedge-discontinued::before {
+    content: "⊘ ";
+  }
 
   /* Domain badge glyph indicators — Provisions (IAS 37) */
-  .badge-provision-recognized::before { content: '▶ '; }
-  .badge-provision-utilized::before { content: '◀ '; }
-  .badge-provision-unwound::before { content: '↻ '; }
+  .badge-provision-recognized::before {
+    content: "▶ ";
+  }
+  .badge-provision-utilized::before {
+    content: "◀ ";
+  }
+  .badge-provision-unwound::before {
+    content: "↻ ";
+  }
 
   /* Domain badge glyph indicators — Budget & Scenario */
-  .badge-scenario-base::before { content: '▬ '; }
-  .badge-scenario-upside::before { content: '▲ '; }
-  .badge-scenario-downside::before { content: '▼ '; }
+  .badge-scenario-base::before {
+    content: "▬ ";
+  }
+  .badge-scenario-upside::before {
+    content: "▲ ";
+  }
+  .badge-scenario-downside::before {
+    content: "▼ ";
+  }
 
   /* Domain badge glyph indicators — Credit Management */
-  .badge-credit-hold::before { content: '⛔ '; }
-  .badge-credit-warning::before { content: '⚠ '; }
-  .badge-credit-released::before { content: '✓ '; }
+  .badge-credit-hold::before {
+    content: "⛔ ";
+  }
+  .badge-credit-warning::before {
+    content: "⚠ ";
+  }
+  .badge-credit-released::before {
+    content: "✓ ";
+  }
 
   /* Domain badge glyph indicators — Bank Reconciliation */
-  .badge-recon-matched::before { content: '⇄ '; }
-  .badge-recon-unmatched::before { content: '≠ '; }
-  .badge-recon-suggested::before { content: '? '; }
+  .badge-recon-matched::before {
+    content: "⇄ ";
+  }
+  .badge-recon-unmatched::before {
+    content: "≠ ";
+  }
+  .badge-recon-suggested::before {
+    content: "? ";
+  }
 
   /* SLA badges need forced-color border */
   .sla-ok,
@@ -256,7 +328,7 @@
   }
 
   /* Boost all badge border contrast */
-  [class*='badge-'] {
+  [class*="badge-"] {
     border: 1px solid currentColor;
   }
 

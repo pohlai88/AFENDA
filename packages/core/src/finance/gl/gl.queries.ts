@@ -9,11 +9,7 @@
  */
 
 import type { DbClient } from "@afenda/db";
-import {
-  journalEntry,
-  journalLine,
-  account,
-} from "@afenda/db";
+import { journalEntry, journalLine, account } from "@afenda/db";
 import { eq, and, gt, asc, sql } from "drizzle-orm";
 import type { OrgId, JournalEntryId, CursorPage } from "@afenda/contracts";
 import { CURSOR_LIMIT_DEFAULT, CURSOR_LIMIT_MAX } from "@afenda/contracts";
@@ -133,10 +129,7 @@ export async function getJournalEntryById(
 
   if (!entry) return null;
 
-  const lines = await db
-    .select()
-    .from(journalLine)
-    .where(eq(journalLine.journalEntryId, entryId));
+  const lines = await db.select().from(journalLine).where(eq(journalLine.journalEntryId, entryId));
 
   return { ...entry, lines };
 }
@@ -185,10 +178,7 @@ export async function listAccounts(
  * Returns only accounts with non-zero balances.
  * Does NOT use a materialised view — suitable for Day-1 volumes.
  */
-export async function getTrialBalance(
-  db: DbClient,
-  orgId: OrgId,
-): Promise<TrialBalanceRow[]> {
+export async function getTrialBalance(db: DbClient, orgId: OrgId): Promise<TrialBalanceRow[]> {
   const rows = await db
     .select({
       accountId: journalLine.accountId,
@@ -202,12 +192,7 @@ export async function getTrialBalance(
     .innerJoin(account, eq(journalLine.accountId, account.id))
     .innerJoin(journalEntry, eq(journalLine.journalEntryId, journalEntry.id))
     .where(eq(journalEntry.orgId, orgId))
-    .groupBy(
-      journalLine.accountId,
-      account.code,
-      account.name,
-      account.type,
-    )
+    .groupBy(journalLine.accountId, account.code, account.name, account.type)
     .orderBy(asc(account.code));
 
   return rows;

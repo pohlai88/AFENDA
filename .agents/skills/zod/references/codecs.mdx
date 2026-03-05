@@ -1,10 +1,10 @@
 ---
 title: Codecs
-description: 'Bidirectional transformations with encode and decode'
+description: "Bidirectional transformations with encode and decode"
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { ThemedImage } from '@/components/themed-image';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { ThemedImage } from "@/components/themed-image";
 
 > ✨ **New** — Introduced in `zod@4.1`
 
@@ -56,7 +56,7 @@ const stringToDate = z.codec(
   {
     decode: (isoString) => new Date(isoString), // ISO string → Date
     encode: (date) => date.toISOString(), // Date → ISO string
-  }
+  },
 );
 ```
 
@@ -107,7 +107,7 @@ const payloadSchema = z.object({
 });
 
 payloadSchema.decode({
-  startDate: '2024-01-15T10:30:00.000Z',
+  startDate: "2024-01-15T10:30:00.000Z",
 }); // => { startDate: Date }
 ```
 
@@ -149,16 +149,16 @@ const asyncCodec = z.codec(z.string(), z.number(), {
 As with regular `parse()`, there are "safe" and "async" variants of `decode()` and `encode()`.
 
 ```ts
-stringToDate.decode('2024-01-15T10:30:00.000Z');
+stringToDate.decode("2024-01-15T10:30:00.000Z");
 // => Date
 
-stringToDate.decodeAsync('2024-01-15T10:30:00.000Z');
+stringToDate.decodeAsync("2024-01-15T10:30:00.000Z");
 // => Promise<Date>
 
-stringToDate.safeDecode('2024-01-15T10:30:00.000Z');
+stringToDate.safeDecode("2024-01-15T10:30:00.000Z");
 // => { success: true, data: Date } | { success: false, error: ZodError }
 
-stringToDate.safeDecodeAsync('2024-01-15T10:30:00.000Z');
+stringToDate.safeDecodeAsync("2024-01-15T10:30:00.000Z");
 // => Promise<{ success: true, data: Date } | { success: false, error: ZodError }>
 ```
 
@@ -177,13 +177,13 @@ const stringToDate = z.codec(
   {
     decode: (isoString) => new Date(isoString), // ISO string → Date
     encode: (date) => date.toISOString(), // Date → ISO string
-  }
+  },
 );
 
-stringToDate.decode('2024-01-15T10:30:00.000Z');
+stringToDate.decode("2024-01-15T10:30:00.000Z");
 // => Date
 
-stringToDate.encode(new Date('2024-01-15'));
+stringToDate.encode(new Date("2024-01-15"));
 // => string
 ```
 
@@ -198,12 +198,12 @@ During regular decoding, a `ZodPipe<A, B>` schema will first parse the data with
 All checks (`.refine()`, `.min()`, `.max()`, etc.) are still executed in both directions.
 
 ```ts
-const schema = stringToDate.refine((date) => date.getFullYear() >= 2000, 'Must be this millennium');
+const schema = stringToDate.refine((date) => date.getFullYear() >= 2000, "Must be this millennium");
 
-schema.encode(new Date('2000-01-01'));
+schema.encode(new Date("2000-01-01"));
 // => Date
 
-schema.encode(new Date('1999-01-01'));
+schema.encode(new Date("1999-01-01"));
 // => ❌ ZodError: [
 //   {
 //     "code": "custom",
@@ -220,10 +220,10 @@ This approach also supports "mutating transforms" like `z.string().trim()` or `z
 ```ts
 const schema = z.string().trim();
 
-schema.decode('  hello  ');
+schema.decode("  hello  ");
 // => "hello"
 
-schema.encode('  hello  ');
+schema.encode("  hello  ");
 // => "hello"
 ```
 
@@ -232,7 +232,7 @@ schema.encode('  hello  ');
 Defaults and prefaults are only applied in the "forward" direction.
 
 ```ts
-const stringWithDefault = z.string().default('hello');
+const stringWithDefault = z.string().default("hello");
 
 stringWithDefault.decode(undefined);
 // => "hello"
@@ -248,7 +248,7 @@ When you attach a default value to a schema, the input becomes optional (`| unde
 Similarly, `.catch()` is only applied in the "forward" direction.
 
 ```ts
-const stringWithCatch = z.string().catch('hello');
+const stringWithCatch = z.string().catch("hello");
 
 stringWithCatch.decode(1234);
 // => "hello"
@@ -266,8 +266,8 @@ The `z.stringbool()` API converts string values (`"true"`, `"false"`, `"yes"`, `
 ```ts
 const stringbool = z.stringbool();
 
-stringbool.decode('true'); // => true
-stringbool.decode('false'); // => false
+stringbool.decode("true"); // => true
+stringbool.decode("false"); // => false
 
 stringbool.encode(true); // => "true"
 stringbool.encode(false); // => "false"
@@ -276,7 +276,7 @@ stringbool.encode(false); // => "false"
 If you specify a custom set of `truthy` and `falsy` values, the _first element in the array_ will be used instead.
 
 ```ts
-const stringbool = z.stringbool({ truthy: ['yes', 'y'], falsy: ['no', 'n'] });
+const stringbool = z.stringbool({ truthy: ["yes", "y"], falsy: ["no", "n"] });
 
 stringbool.encode(true); // => "yes"
 stringbool.encode(false); // => "no"
@@ -338,7 +338,7 @@ const stringToInt = z.codec(z.string().regex(z.regexes.integer), z.int(), {
   encode: (num) => num.toString(),
 });
 
-stringToInt.decode('42'); // => 42
+stringToInt.decode("42"); // => 42
 stringToInt.encode(42); // => "42"
 ```
 
@@ -352,7 +352,7 @@ const stringToBigInt = z.codec(z.string(), z.bigint(), {
   encode: (bigint) => bigint.toString(),
 });
 
-stringToBigInt.decode('12345'); // => 12345n
+stringToBigInt.decode("12345"); // => 12345n
 stringToBigInt.encode(12345n); // => "12345"
 ```
 
@@ -380,8 +380,8 @@ const isoDatetimeToDate = z.codec(z.iso.datetime(), z.date(), {
   encode: (date) => date.toISOString(),
 });
 
-isoDatetimeToDate.decode('2024-01-15T10:30:00.000Z'); // => Date object
-isoDatetimeToDate.encode(new Date('2024-01-15')); // => "2024-01-15T00:00:00.000Z"
+isoDatetimeToDate.decode("2024-01-15T10:30:00.000Z"); // => Date object
+isoDatetimeToDate.encode(new Date("2024-01-15")); // => "2024-01-15T00:00:00.000Z"
 ```
 
 ### `epochSecondsToDate`
@@ -424,8 +424,8 @@ const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
         return JSON.parse(jsonString);
       } catch (err: any) {
         ctx.issues.push({
-          code: 'invalid_format',
-          format: 'json',
+          code: "invalid_format",
+          format: "json",
           input: jsonString,
           message: err.message,
         });
@@ -444,10 +444,10 @@ const jsonToObject = jsonCodec(z.object({ name: z.string(), age: z.number() }));
 jsonToObject.decode('{"name":"Alice","age":30}');
 // => { name: "Alice", age: 30 }
 
-jsonToObject.encode({ name: 'Bob', age: 25 });
+jsonToObject.encode({ name: "Bob", age: 25 });
 // => '{"name":"Bob","age":25}'
 
-jsonToObject.decode('~~invalid~~');
+jsonToObject.decode("~~invalid~~");
 // ZodError: [
 //   {
 //     "code": "invalid_format",
@@ -468,7 +468,7 @@ const utf8ToBytes = z.codec(z.string(), z.instanceof(Uint8Array), {
   encode: (bytes) => new TextDecoder().decode(bytes),
 });
 
-utf8ToBytes.decode('Hello, 世界!'); // => Uint8Array
+utf8ToBytes.decode("Hello, 世界!"); // => Uint8Array
 utf8ToBytes.encode(bytes); // => "Hello, 世界!"
 ```
 
@@ -483,7 +483,7 @@ const bytesToUtf8 = z.codec(z.instanceof(Uint8Array), z.string(), {
 });
 
 bytesToUtf8.decode(bytes); // => "Hello, 世界!"
-bytesToUtf8.encode('Hello, 世界!'); // => Uint8Array
+bytesToUtf8.encode("Hello, 世界!"); // => Uint8Array
 ```
 
 ### `base64ToBytes`
@@ -496,7 +496,7 @@ const base64ToBytes = z.codec(z.base64(), z.instanceof(Uint8Array), {
   encode: (bytes) => z.util.uint8ArrayToBase64(bytes),
 });
 
-base64ToBytes.decode('SGVsbG8='); // => Uint8Array([72, 101, 108, 108, 111])
+base64ToBytes.decode("SGVsbG8="); // => Uint8Array([72, 101, 108, 108, 111])
 base64ToBytes.encode(bytes); // => "SGVsbG8="
 ```
 
@@ -510,7 +510,7 @@ const base64urlToBytes = z.codec(z.base64url(), z.instanceof(Uint8Array), {
   encode: (bytes) => z.util.uint8ArrayToBase64url(bytes),
 });
 
-base64urlToBytes.decode('SGVsbG8'); // => Uint8Array([72, 101, 108, 108, 111])
+base64urlToBytes.decode("SGVsbG8"); // => Uint8Array([72, 101, 108, 108, 111])
 base64urlToBytes.encode(bytes); // => "SGVsbG8"
 ```
 
@@ -524,7 +524,7 @@ const hexToBytes = z.codec(z.hex(), z.instanceof(Uint8Array), {
   encode: (bytes) => z.util.uint8ArrayToHex(bytes),
 });
 
-hexToBytes.decode('48656c6c6f'); // => Uint8Array([72, 101, 108, 108, 111])
+hexToBytes.decode("48656c6c6f"); // => Uint8Array([72, 101, 108, 108, 111])
 hexToBytes.encode(bytes); // => "48656c6c6f"
 ```
 
@@ -538,8 +538,8 @@ const stringToURL = z.codec(z.url(), z.instanceof(URL), {
   encode: (url) => url.href,
 });
 
-stringToURL.decode('https://example.com/path'); // => URL object
-stringToURL.encode(new URL('https://example.com')); // => "https://example.com/"
+stringToURL.decode("https://example.com/path"); // => URL object
+stringToURL.encode(new URL("https://example.com")); // => "https://example.com/"
 ```
 
 ### `stringToHttpURL`
@@ -552,7 +552,7 @@ const stringToHttpURL = z.codec(z.httpUrl(), z.instanceof(URL), {
   encode: (url) => url.href,
 });
 
-stringToHttpURL.decode('https://api.example.com/v1'); // => URL object
+stringToHttpURL.decode("https://api.example.com/v1"); // => URL object
 stringToHttpURL.encode(url); // => "https://api.example.com/v1"
 ```
 
@@ -566,6 +566,6 @@ const uriComponent = z.codec(z.string(), z.string(), {
   encode: (decodedString) => encodeURIComponent(decodedString),
 });
 
-uriComponent.decode('Hello%20World%21'); // => "Hello World!"
-uriComponent.encode('Hello World!'); // => "Hello%20World!"
+uriComponent.decode("Hello%20World%21"); // => "Hello World!"
+uriComponent.encode("Hello World!"); // => "Hello%20World!"
 ```

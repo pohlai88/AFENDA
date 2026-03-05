@@ -15,7 +15,12 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { ApiErrorResponseSchema, makeSuccessSchema, requireOrg, ERR } from "../helpers/responses.js";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireOrg,
+  ERR,
+} from "../helpers/responses.js";
 import {
   AttachEvidenceCommandSchema,
   RegisterDocumentCommandSchema,
@@ -25,7 +30,13 @@ import {
   type AuditAction,
   type AuditEntityType,
 } from "@afenda/contracts";
-import { registerDocument, RegisterDocumentError, EvidencePolicyError, attachEvidence, writeAuditLog } from "@afenda/core";
+import {
+  registerDocument,
+  RegisterDocumentError,
+  EvidencePolicyError,
+  attachEvidence,
+  writeAuditLog,
+} from "@afenda/core";
 import type { EvidencePolicyContext, UserId, WorkspaceId, EvidenceOperationId } from "@afenda/core";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 
@@ -36,27 +47,33 @@ const PresignBodySchema = z.object({
   contentType: z.string().trim().min(1).max(100).describe("MIME type of the file"),
 });
 
-const PresignResponseSchema = makeSuccessSchema(z.object({
-  url: z.string().url().describe("Presigned S3 PUT URL — upload directly to this URL"),
-  objectKey: z.string().describe("S3 object key (use when registering the document)"),
-  bucket: z.string().describe("S3 bucket name"),
-  expiresAt: z.string().datetime().describe("ISO 8601 expiry timestamp for the presigned URL"),
-}));
+const PresignResponseSchema = makeSuccessSchema(
+  z.object({
+    url: z.string().url().describe("Presigned S3 PUT URL — upload directly to this URL"),
+    objectKey: z.string().describe("S3 object key (use when registering the document)"),
+    bucket: z.string().describe("S3 bucket name"),
+    expiresAt: z.string().datetime().describe("ISO 8601 expiry timestamp for the presigned URL"),
+  }),
+);
 
 // ── Register document schemas ────────────────────────────────────────────────
 
-const RegisterDocumentResponseSchema = makeSuccessSchema(z.object({
-  id: z.string().uuid().describe("Document ID"),
-  created: z.boolean().describe("Whether a new document row was created"),
-  deduped: z.boolean().describe("Whether the document was deduplicated by SHA-256"),
-  idempotentHit: z.boolean().describe("Whether this was an idempotent replay"),
-}));
+const RegisterDocumentResponseSchema = makeSuccessSchema(
+  z.object({
+    id: z.string().uuid().describe("Document ID"),
+    created: z.boolean().describe("Whether a new document row was created"),
+    deduped: z.boolean().describe("Whether the document was deduplicated by SHA-256"),
+    idempotentHit: z.boolean().describe("Whether this was an idempotent replay"),
+  }),
+);
 
 // ── Attach evidence schemas ──────────────────────────────────────────────────
 
-const AttachEvidenceResponseSchema = makeSuccessSchema(z.object({
-  id: z.string().uuid().describe("Evidence link ID"),
-}));
+const AttachEvidenceResponseSchema = makeSuccessSchema(
+  z.object({
+    id: z.string().uuid().describe("Evidence link ID"),
+  }),
+);
 
 export async function evidenceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -198,7 +215,12 @@ export async function evidenceRoutes(app: FastifyInstance) {
       }
 
       return reply.status(result.created ? 201 : 200).send({
-        data: { id: result.id, created: result.created, deduped: result.deduped, idempotentHit: result.idempotentHit },
+        data: {
+          id: result.id,
+          created: result.created,
+          deduped: result.deduped,
+          idempotentHit: result.idempotentHit,
+        },
         correlationId: req.correlationId,
       });
     },

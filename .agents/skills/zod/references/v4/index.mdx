@@ -1,11 +1,11 @@
 ---
 title: Release notes
-description: 'Zod 4 release notes and new features including performance improvements and breaking changes'
+description: "Zod 4 release notes and new features including performance improvements and breaking changes"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 
 After a year of active development: Zod 4 is now stable! It's faster, slimmer, more `tsc`-efficient, and implements some long-requested features.
 
@@ -123,7 +123,7 @@ summary for z.object() safeParse
 Consider the following simple file:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 export const A = z.object({
   a: z.string(),
@@ -156,7 +156,7 @@ $ pnpm bench object-with-extend
 More importantly, Zod 4 has redesigned and simplified the generics of `ZodObject` and other schema classes to avoid some pernicious "instantiation explosions". For instance, chaining `.extend()` and `.omit()` repeatedly—something that previously caused compiler issues:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 export const a = z.object({
   a: z.string(),
@@ -270,7 +270,7 @@ In Zod 3, this took `4000ms` to compile; and adding additional calls to `.extend
 Consider the following simple script.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.boolean();
 
@@ -326,12 +326,12 @@ z.object({ /* ... */ }).extend({ age: z.number() });
 Not all methods are gone! The parsing methods are identical in Zod and Zod Mini:
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
-z.string().parse('asdf');
-z.string().safeParse('asdf');
-await z.string().parseAsync('asdf');
-await z.string().safeParseAsync('asdf');
+z.string().parse("asdf");
+z.string().safeParse("asdf");
+await z.string().parseAsync("asdf");
+await z.string().safeParseAsync("asdf");
 ```
 
 There's also a general-purpose `.check()` method used to add refinements.
@@ -365,7 +365,7 @@ z.array(z.number())
 The following top-level refinements are available in Zod Mini. It should be fairly self-explanatory which Zod methods they correspond to.
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 // custom checks
 z.refine();
@@ -410,7 +410,7 @@ This more functional API makes it easier for bundlers to tree-shake the APIs you
 Here's the script from above, updated to use `"zod/mini"` instead of `"zod"`.
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 const schema = z.boolean();
 schema.parse(false);
@@ -431,7 +431,7 @@ Learn more on the dedicated [`zod/mini`](/packages/mini) docs page. Complete API
 Zod 4 introduces a new system for adding strongly-typed metadata to your schemas. Metadata isn't stored inside the schema itself; instead it's stored in a "schema registry" that associates a schema with some typed metadata. To create a registry with `z.registry()`:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const myRegistry = z.registry<{ title: string; description: string }>();
 ```
@@ -441,7 +441,7 @@ To add schemas to your registry:
 ```ts
 const emailSchema = z.string().email();
 
-myRegistry.add(emailSchema, { title: 'Email address', description: '...' });
+myRegistry.add(emailSchema, { title: "Email address", description: "..." });
 myRegistry.get(emailSchema);
 // => { title: "Email address", ... }
 ```
@@ -451,7 +451,7 @@ Alternatively, you can use the `.register()` method on a schema for convenience:
 {/* > Unlike all other Zod methods, `.register()` is *not* immutable, it returns the original schema. */}
 
 ```ts
-emailSchema.register(myRegistry, { title: 'Email address', description: '...' });
+emailSchema.register(myRegistry, { title: "Email address", description: "..." });
 // => returns emailSchema
 ```
 
@@ -461,11 +461,11 @@ Zod also exports a global registry `z.globalRegistry` that accepts some common J
 
 ```ts
 z.globalRegistry.add(z.string(), {
-  id: 'email_address',
-  title: 'Email address',
-  description: 'Provide your email',
-  examples: ['naomie@example.com'],
-  extraKey: 'Additional properties are also allowed',
+  id: "email_address",
+  title: "Email address",
+  description: "Provide your email",
+  examples: ["naomie@example.com"],
+  extraKey: "Additional properties are also allowed",
 });
 ```
 
@@ -477,10 +477,10 @@ To conveniently add a schema to `z.globalRegistry`, use the `.meta()` method.
 
 ```ts
 z.string().meta({
-  id: 'email_address',
-  title: 'Email address',
-  description: 'Provide your email',
-  examples: ['naomie@example.com'],
+  id: "email_address",
+  title: "Email address",
+  description: "Provide your email",
+  examples: ["naomie@example.com"],
   // ...
 });
 ```
@@ -489,10 +489,10 @@ z.string().meta({
 For compatibility with Zod 3, `.describe()` is still available, but `.meta()` is preferred.
 
 ```ts
-z.string().describe('An email address');
+z.string().describe("An email address");
 
 // equivalent to
-z.string().meta({ description: 'An email address' });
+z.string().meta({ description: "An email address" });
 ```
 
 </Callout>
@@ -502,7 +502,7 @@ z.string().meta({ description: 'An email address' });
 Zod 4 introduces first-party JSON Schema conversion via `z.toJSONSchema()`.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const mySchema = z.object({ name: z.string(), points: z.number() });
 
@@ -521,8 +521,8 @@ Any metadata in `z.globalRegistry` is automatically included in the JSON Schema 
 
 ```ts
 const mySchema = z.object({
-  firstName: z.string().describe('Your first name'),
-  lastName: z.string().meta({ title: 'last_name' }),
+  firstName: z.string().describe("Your first name"),
+  lastName: z.string().meta({ title: "last_name" }),
   age: z.number().meta({ examples: [12, 99] }),
 });
 
@@ -591,7 +591,7 @@ const fileSchema = z.file();
 
 fileSchema.min(10_000); // minimum .size (bytes)
 fileSchema.max(1_000_000); // maximum .size (bytes)
-fileSchema.mime(['image/png']); // MIME type
+fileSchema.mime(["image/png"]); // MIME type
 ```
 
 ## Internationalization
@@ -599,7 +599,7 @@ fileSchema.mime(['image/png']); // MIME type
 Zod 4 introduces a new `locales` API for globally translating error messages into different languages.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 // configure English locale (default)
 z.config(z.locales.en());
@@ -616,24 +616,24 @@ Zod now implements a top-level `z.prettifyError` function for converting a `ZodE
 ```ts
 const myError = new z.ZodError([
   {
-    code: 'unrecognized_keys',
-    keys: ['extraField'],
+    code: "unrecognized_keys",
+    keys: ["extraField"],
     path: [],
     message: 'Unrecognized key: "extraField"',
   },
   {
-    expected: 'string',
-    code: 'invalid_type',
-    path: ['username'],
-    message: 'Invalid input: expected string, received number',
+    expected: "string",
+    code: "invalid_type",
+    path: ["username"],
+    message: "Invalid input: expected string, received number",
   },
   {
-    origin: 'number',
-    code: 'too_small',
+    origin: "number",
+    code: "too_small",
     minimum: 0,
     inclusive: true,
-    path: ['favoriteNumbers', 1],
-    message: 'Too small: expected number to be >=0',
+    path: ["favoriteNumbers", 1],
+    message: "Too small: expected number to be >=0",
   },
 ]);
 
@@ -702,14 +702,14 @@ z.email({ pattern: z.regexes.unicodeEmail });
 Zod 4 implements `z.templateLiteral()`. Template literal types are perhaps the biggest feature of TypeScript's type system that wasn't previously representable.
 
 ```ts
-const hello = z.templateLiteral(['hello, ', z.string()]);
+const hello = z.templateLiteral(["hello, ", z.string()]);
 // `hello, ${string}`
 
-const cssUnits = z.enum(['px', 'em', 'rem', '%']);
+const cssUnits = z.enum(["px", "em", "rem", "%"]);
 const css = z.templateLiteral([z.number(), cssUnits]);
 // `${number}px` | `${number}em` | `${number}rem` | `${number}%`
 
-const email = z.templateLiteral([z.string().min(1), '@', z.string().max(64)]);
+const email = z.templateLiteral([z.string().min(1), "@", z.string().max(64)]);
 // `${string}@${string}` (the min/max refinements are enforced!)
 ```
 
@@ -745,19 +745,19 @@ This is still a good API, and its behavior aligns with the other `z.coerce` APIs
 ```ts
 const strbool = z.stringbool();
 
-strbool.parse('true'); // => true
-strbool.parse('1'); // => true
-strbool.parse('yes'); // => true
-strbool.parse('on'); // => true
-strbool.parse('y'); // => true
-strbool.parse('enabled'); // => true
+strbool.parse("true"); // => true
+strbool.parse("1"); // => true
+strbool.parse("yes"); // => true
+strbool.parse("on"); // => true
+strbool.parse("y"); // => true
+strbool.parse("enabled"); // => true
 
-strbool.parse('false'); // => false
-strbool.parse('0'); // => false
-strbool.parse('no'); // => false
-strbool.parse('off'); // => false
-strbool.parse('n'); // => false
-strbool.parse('disabled'); // => false
+strbool.parse("false"); // => false
+strbool.parse("0"); // => false
+strbool.parse("no"); // => false
+strbool.parse("off"); // => false
+strbool.parse("n"); // => false
+strbool.parse("disabled"); // => false
 
 strbool.parse(/* anything else */); // ZodError<[{ code: "invalid_value" }]>
 ```
@@ -766,8 +766,8 @@ To customize the truthy and falsy values:
 
 ```ts
 z.stringbool({
-  truthy: ['yes', 'true'],
-  falsy: ['no', 'false'],
+  truthy: ["yes", "true"],
+  falsy: ["no", "false"],
 });
 ```
 
@@ -830,24 +830,24 @@ Replace `errorMap` with `error` (function syntax):
 Discriminated unions now support a number of schema types not previously supported, including unions and pipes:
 
 ```ts
-const MyResult = z.discriminatedUnion('status', [
+const MyResult = z.discriminatedUnion("status", [
   // simple literal
-  z.object({ status: z.literal('aaa'), data: z.string() }),
+  z.object({ status: z.literal("aaa"), data: z.string() }),
   // union discriminator
-  z.object({ status: z.union([z.literal('bbb'), z.literal('ccc')]) }),
+  z.object({ status: z.union([z.literal("bbb"), z.literal("ccc")]) }),
   // pipe discriminator
-  z.object({ status: z.literal('fail').transform((val) => val.toUpperCase()) }),
+  z.object({ status: z.literal("fail").transform((val) => val.toUpperCase()) }),
 ]);
 ```
 
 Perhaps most importantly, discriminated unions now _compose_—you can use one discriminated union as a member of another.
 
 ```ts
-const BaseError = z.object({ status: z.literal('failed'), message: z.string() });
+const BaseError = z.object({ status: z.literal("failed"), message: z.string() });
 
-const MyResult = z.discriminatedUnion('status', [
-  z.object({ status: z.literal('success'), data: z.string() }),
-  z.discriminatedUnion('code', [
+const MyResult = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("success"), data: z.string() }),
+  z.discriminatedUnion("code", [
     BaseError.extend({ code: z.literal(400) }),
     BaseError.extend({ code: z.literal(401) }),
     BaseError.extend({ code: z.literal(500) }),
@@ -881,7 +881,7 @@ In Zod 3, they were stored in a `ZodEffects` class that wrapped the original sch
 
 ```ts
 z.string()
-  .refine((val) => val.includes('@'))
+  .refine((val) => val.includes("@"))
   .min(5);
 // ^ ❌ Property 'min' does not exist on type ZodEffects<ZodString, string, string>
 ```
@@ -890,7 +890,7 @@ In Zod 4, refinements are stored inside the schemas themselves, so the code abov
 
 ```ts
 z.string()
-  .refine((val) => val.includes('@'))
+  .refine((val) => val.includes("@"))
   .min(5); // ✅
 ```
 

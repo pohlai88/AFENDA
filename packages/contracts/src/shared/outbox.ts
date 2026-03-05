@@ -24,20 +24,13 @@ import { UtcDateTimeSchema } from "./datetime.js";
 // ─── Patterns ────────────────────────────────────────────────────────────────
 
 /** Each segment: uppercase letter, then uppercase letters/digits/underscores. */
-const OUTBOX_TYPE_PATTERN =
-  /^[A-Z][A-Z0-9]*(\.[A-Z][A-Z0-9_]*)+$/;
+const OUTBOX_TYPE_PATTERN = /^[A-Z][A-Z0-9]*(\.[A-Z][A-Z0-9_]*)+$/;
 
 const OUTBOX_VERSION_PATTERN = /^\d+(\.\d+)?$/;
 
 // ─── JSON-safe value schema ───────────────────────────────────────────────────
 
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 /**
  * Recursive JSON-safe value. Lazy to support self-reference.
@@ -52,7 +45,7 @@ export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
     z.null(),
     z.array(JsonValueSchema),
     z.record(z.string(), JsonValueSchema),
-  ])
+  ]),
 );
 
 export const JsonObjectSchema = z.record(z.string(), JsonValueSchema);
@@ -65,14 +58,15 @@ export const OutboxEventSchema = z
     /** Dot-namespaced event name, e.g. "AP.INVOICE_SUBMITTED", "GL.JOURNAL.LINE_POSTED". */
     type: z
       .string()
-      .regex(OUTBOX_TYPE_PATTERN, 'type must be dot-namespaced UPPER (e.g. "AP.INVOICE_SUBMITTED")'),
+      .regex(
+        OUTBOX_TYPE_PATTERN,
+        'type must be dot-namespaced UPPER (e.g. "AP.INVOICE_SUBMITTED")',
+      ),
 
     /** Semver-lite: "1" or "1.0". Bump MAJOR for breaking payload changes only. */
-    version: z
-      .string()
-      .regex(OUTBOX_VERSION_PATTERN, "version must be '1' or '1.0'"),
+    version: z.string().regex(OUTBOX_VERSION_PATTERN, "version must be '1' or '1.0'"),
 
-    orgId:         OrgIdSchema,
+    orgId: OrgIdSchema,
     correlationId: CorrelationIdSchema,
 
     /** UTC timestamp — Z suffix enforced to prevent silent timezone drift. */

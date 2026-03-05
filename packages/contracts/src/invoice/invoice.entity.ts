@@ -56,13 +56,13 @@ export type InvoiceStatus = z.infer<typeof InvoiceStatusSchema>;
  *                 ceiling. Negative values represent credit notes/memos.
  */
 export const InvoiceSchema = z.object({
-  id:         InvoiceIdSchema,
-  orgId:      OrgIdSchema,
+  id: InvoiceIdSchema,
+  orgId: OrgIdSchema,
   supplierId: SupplierIdSchema,
 
   invoiceNumber: z.string().trim().min(1).max(64),
 
-  amountMinor:  z.coerce.bigint(),
+  amountMinor: z.coerce.bigint(),
   currencyCode: CurrencyCodeSchema,
 
   status: InvoiceStatusSchema,

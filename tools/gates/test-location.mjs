@@ -97,9 +97,7 @@ for (const scanDir of SCAN_DIRS) {
 
       // Check if the file is inside the required convention folder
       const normalised = relFile.split("/");
-      const isInRequiredDir = normalised.some(
-        (segment) => segment === pattern.requiredDir,
-      );
+      const isInRequiredDir = normalised.some((segment) => segment === pattern.requiredDir);
 
       if (!isInRequiredDir) {
         violations.push({

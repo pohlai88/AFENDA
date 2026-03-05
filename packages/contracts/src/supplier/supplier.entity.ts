@@ -12,22 +12,14 @@
  *   5. Mutation commands (onboard, suspend, reactivate) live in `supplier.commands.ts`.
  */
 import { z } from "zod";
-import {
-  SupplierIdSchema,
-  OrgIdSchema,
-  PrincipalIdSchema,
-} from "../shared/ids.js";
+import { SupplierIdSchema, OrgIdSchema, PrincipalIdSchema } from "../shared/ids.js";
 import { UtcDateTimeSchema } from "../shared/datetime.js";
 
 /**
  * Status values as a const tuple — import in @afenda/db:
  * pgEnum('supplier_status', SupplierStatusValues)
  */
-export const SupplierStatusValues = [
-  "draft",
-  "active",
-  "suspended",
-] as const;
+export const SupplierStatusValues = ["draft", "active", "suspended"] as const;
 
 export const SupplierStatusSchema = z.enum(SupplierStatusValues);
 
@@ -43,15 +35,15 @@ export type SupplierStatus = z.infer<typeof SupplierStatusSchema>;
  * so that the buyer's relationship controls status, suspension, and terms.
  */
 export const SupplierSchema = z.object({
-  id:            SupplierIdSchema,
+  id: SupplierIdSchema,
 
-  orgId:         OrgIdSchema,
+  orgId: OrgIdSchema,
   supplierOrgId: OrgIdSchema,
 
-  name:         z.string().trim().min(1).max(255),
+  name: z.string().trim().min(1).max(255),
 
   // Tax IDs vary widely by jurisdiction; format validation belongs in core.
-  taxId:        z.string().trim().min(1).max(64).nullable(),
+  taxId: z.string().trim().min(1).max(64).nullable(),
 
   // Optional: draft suppliers may be created before contact info is known.
   contactEmail: z.string().email().nullable(),
@@ -80,9 +72,9 @@ export type Supplier = z.infer<typeof SupplierSchema>;
  */
 export const CreateSupplierSchema = z.object({
   supplierOrgId: OrgIdSchema.optional(),
-  name:          z.string().trim().min(1).max(255),
-  taxId:         z.string().trim().min(1).max(64).nullable().optional(),
-  contactEmail:  z.string().email().nullable().optional(),
+  name: z.string().trim().min(1).max(255),
+  taxId: z.string().trim().min(1).max(64).nullable().optional(),
+  contactEmail: z.string().email().nullable().optional(),
 });
 
 export type CreateSupplier = z.infer<typeof CreateSupplierSchema>;

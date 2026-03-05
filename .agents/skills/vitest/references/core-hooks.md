@@ -8,7 +8,7 @@ description: beforeEach, afterEach, beforeAll, afterAll, and around hooks
 ## Basic Hooks
 
 ```ts
-import { afterAll, afterEach, beforeAll, beforeEach, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, test } from "vitest";
 
 beforeAll(async () => {
   // Runs once before all tests in file/suite
@@ -58,15 +58,15 @@ beforeEach(async () => {
 Hooks apply to current suite and nested suites:
 
 ```ts
-describe('outer', () => {
-  beforeEach(() => console.log('outer before'));
+describe("outer", () => {
+  beforeEach(() => console.log("outer before"));
 
-  test('test 1', () => {}); // outer before → test
+  test("test 1", () => {}); // outer before → test
 
-  describe('inner', () => {
-    beforeEach(() => console.log('inner before'));
+  describe("inner", () => {
+    beforeEach(() => console.log("inner before"));
 
-    test('test 2', () => {}); // outer before → inner before → test
+    test("test 2", () => {}); // outer before → inner before → test
   });
 });
 ```
@@ -84,7 +84,7 @@ beforeAll(async () => {
 Wrap tests with setup/teardown context:
 
 ```ts
-import { aroundEach, test } from 'vitest';
+import { aroundEach, test } from "vitest";
 
 // Wrap each test in database transaction
 aroundEach(async (runTest) => {
@@ -93,8 +93,8 @@ aroundEach(async (runTest) => {
   await db.rollback();
 });
 
-test('insert user', async () => {
-  await db.insert({ name: 'Alice' });
+test("insert user", async () => {
+  await db.insert({ name: "Alice" });
   // Automatically rolled back after test
 });
 ```
@@ -104,12 +104,12 @@ test('insert user', async () => {
 Wrap entire suite:
 
 ```ts
-import { aroundAll, test } from 'vitest';
+import { aroundAll, test } from "vitest";
 
 aroundAll(async (runSuite) => {
-  console.log('before all tests');
+  console.log("before all tests");
   await runSuite(); // Must be called!
-  console.log('after all tests');
+  console.log("after all tests");
 });
 ```
 
@@ -119,15 +119,15 @@ Nested like onion layers:
 
 ```ts
 aroundEach(async (runTest) => {
-  console.log('outer before');
+  console.log("outer before");
   await runTest();
-  console.log('outer after');
+  console.log("outer after");
 });
 
 aroundEach(async (runTest) => {
-  console.log('inner before');
+  console.log("inner before");
   await runTest();
-  console.log('inner after');
+  console.log("inner after");
 });
 
 // Order: outer before → inner before → test → inner after → outer after
@@ -138,9 +138,9 @@ aroundEach(async (runTest) => {
 Inside test body:
 
 ```ts
-import { onTestFailed, onTestFinished, test } from 'vitest';
+import { onTestFailed, onTestFinished, test } from "vitest";
 
-test('with cleanup', () => {
+test("with cleanup", () => {
   const db = connect();
 
   // Runs after test finishes (pass or fail)
@@ -148,10 +148,10 @@ test('with cleanup', () => {
 
   // Only runs if test fails
   onTestFailed(({ task }) => {
-    console.log('Failed:', task.result?.errors);
+    console.log("Failed:", task.result?.errors);
   });
 
-  db.query('SELECT * FROM users');
+  db.query("SELECT * FROM users");
 });
 ```
 
@@ -164,14 +164,14 @@ function useTestDb() {
   return db;
 }
 
-test('query users', () => {
+test("query users", () => {
   const db = useTestDb();
-  expect(db.query('SELECT * FROM users')).toBeDefined();
+  expect(db.query("SELECT * FROM users")).toBeDefined();
 });
 
-test('query orders', () => {
+test("query orders", () => {
   const db = useTestDb(); // Fresh connection, auto-closed
-  expect(db.query('SELECT * FROM orders')).toBeDefined();
+  expect(db.query("SELECT * FROM orders")).toBeDefined();
 });
 ```
 
@@ -180,7 +180,7 @@ test('query orders', () => {
 For concurrent tests, use context's hooks:
 
 ```ts
-test.concurrent('concurrent', ({ onTestFinished }) => {
+test.concurrent("concurrent", ({ onTestFinished }) => {
   const resource = allocate();
   onTestFinished(() => resource.release());
 });
@@ -225,7 +225,7 @@ Configure with `sequence.hooks`:
 defineConfig({
   test: {
     sequence: {
-      hooks: 'list', // 'stack' (default), 'list', 'parallel'
+      hooks: "list", // 'stack' (default), 'list', 'parallel'
     },
   },
 });

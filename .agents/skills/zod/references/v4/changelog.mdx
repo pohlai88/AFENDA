@@ -1,10 +1,10 @@
 ---
 title: Migration guide
-description: 'Complete changelog and migration guide for upgrading from Zod 3 to Zod 4'
+description: "Complete changelog and migration guide for upgrading from Zod 3 to Zod 4"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
 
 This migration guide aims to list the breaking changes in Zod 4 in order of highest to lowest impact. To learn more about the performance enhancements and new features of Zod 4, read the [introductory post](/v4).
 
@@ -182,7 +182,7 @@ Vitest uses special handling for `Error` subclasses that ignores enumerable prop
 The issue formats have been dramatically streamlined.
 
 ```ts
-import * as z from 'zod'; // v4
+import * as z from "zod"; // v4
 
 type IssueFormats =
   | z.core.$ZodIssueInvalidType
@@ -201,7 +201,7 @@ type IssueFormats =
 Below is the list of Zod 3 issues types and their Zod 4 equivalent:
 
 ```ts
-import * as z from 'zod'; // v3
+import * as z from "zod"; // v3
 
 export type IssueFormats =
   | z.ZodInvalidTypeIssue // ♻️ renamed to z.core.$ZodIssueInvalidType
@@ -238,13 +238,13 @@ export interface $ZodIssueBase {
 The error map precedence has been changed to be more consistent. Specifically, an error map passed into `.parse()` _no longer_ takes precedence over a schema-level error map.
 
 ```ts
-const mySchema = z.string({ error: () => 'Schema-level error' });
+const mySchema = z.string({ error: () => "Schema-level error" });
 
 // in Zod 3
-mySchema.parse(12, { error: () => 'Contextual error' }); // => "Contextual error"
+mySchema.parse(12, { error: () => "Contextual error" }); // => "Contextual error"
 
 // in Zod 4
-mySchema.parse(12, { error: () => 'Contextual error' }); // => "Schema-level error"
+mySchema.parse(12, { error: () => "Contextual error" }); // => "Schema-level error"
 ```
 
 ### deprecates `.format()`
@@ -398,7 +398,7 @@ In Zod 3, `.default()` expected a value that matched the _input type_. `ZodDefau
 const schema = z
   .string()
   .transform((val) => val.length)
-  .default('tuna');
+  .default("tuna");
 schema.parse(undefined); // => 4
 ```
 
@@ -409,7 +409,7 @@ To replicate the old behavior, Zod implements a new `.prefault()` API. This is s
 const schema = z
   .string()
   .transform((val) => val.length)
-  .prefault('tuna');
+  .prefault("tuna");
 schema.parse(undefined); // => 4
 ```
 
@@ -421,7 +421,7 @@ Defaults inside your properties are applied, even within optional fields. This a
 
 ```ts
 const schema = z.object({
-  a: z.string().default('tuna').optional(),
+  a: z.string().default("tuna").optional(),
 });
 
 schema.parse({});
@@ -496,9 +496,9 @@ The `z.nativeEnum()` function is now deprecated in favor of just `z.enum()`. The
 
 ```ts
 enum Color {
-  Red = 'red',
-  Green = 'green',
-  Blue = 'blue',
+  Red = "red",
+  Green = "green",
+  Blue = "blue",
 }
 
 const ColorSchema = z.enum(Color); // ✅
@@ -597,7 +597,7 @@ In Zod 3, passing a [type predicate](https://www.typescriptlang.org/docs/handboo
 
 ```ts
 const mySchema = z.unknown().refine((val): val is string => {
-  return typeof val === 'string';
+  return typeof val === "string";
 });
 
 type MySchema = z.infer<typeof mySchema>;
@@ -622,7 +622,7 @@ The following horrifying overload has been removed.
 ```ts
 const longString = z.string().refine(
   (val) => val.length > 10,
-  (val) => ({ message: `${val} is not more than 10 characters` })
+  (val) => ({ message: `${val} is not more than 10 characters` }),
 );
 ```
 
@@ -692,21 +692,21 @@ z.record(z.string(), z.string()); // ✅
 Records have gotten a lot smarter. In Zod 3, passing an enum into `z.record()` as a key schema would result in a partial type
 
 ```ts
-const myRecord = z.record(z.enum(['a', 'b', 'c']), z.number());
+const myRecord = z.record(z.enum(["a", "b", "c"]), z.number());
 // { a?: number; b?: number; c?: number; }
 ```
 
 In Zod 4, this is no longer the case. The inferred type is what you'd expect, and Zod ensures exhaustiveness; that is, it makes sure all enum keys exist in the input during parsing.
 
 ```ts
-const myRecord = z.record(z.enum(['a', 'b', 'c']), z.number());
+const myRecord = z.record(z.enum(["a", "b", "c"]), z.number());
 // { a: number; b: number; c: number; }
 ```
 
 To replicate the old behavior with optional keys, use `z.partialRecord()`:
 
 ```ts
-const myRecord = z.partialRecord(z.enum(['a', 'b', 'c']), z.number());
+const myRecord = z.partialRecord(z.enum(["a", "b", "c"]), z.number());
 // { a?: number; b?: number; c?: number; }
 ```
 
@@ -757,7 +757,7 @@ The need for `z.ZodTypeAny` has been eliminated; just use `z.ZodType` instead.
 Many utility functions and types have been moved to the new `zod/v4/core` sub-package, to facilitate code sharing between Zod and Zod Mini.
 
 ```ts
-import * as z from 'zod/v4/core';
+import * as z from "zod/v4/core";
 
 function handleError(iss: z.$ZodError) {
   // do stuff
@@ -767,7 +767,7 @@ function handleError(iss: z.$ZodError) {
 For convenience, the contents of `zod/v4/core` are also re-exported from `zod` and `zod/mini` under the `z.core` namespace.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 function handleError(iss: z.core.$ZodError) {
   // do stuff
@@ -789,7 +789,7 @@ Previously both refinements and transformations lived inside a wrapper class cal
 This is particularly apparent in the Zod Mini API, which heavily relies on the `.check()` method to compose various validations together.
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 z.string().check(z.minLength(10), z.maxLength(100), z.toLowerCase(), z.trim());
 ```
@@ -799,7 +799,7 @@ z.string().check(z.minLength(10), z.maxLength(100), z.toLowerCase(), z.trim());
 Meanwhile, transforms have been moved into a dedicated `ZodTransform` class. This schema class represents an input transform; in fact, you can actually define standalone transformations now:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.transform((input) => String(input));
 
@@ -838,7 +838,7 @@ The `.refine()` method used to accept a function as the second argument.
 // no longer supported
 const longString = z.string().refine(
   (val) => val.length > 10,
-  (val) => ({ message: `${val} is not more than 10 characters` })
+  (val) => ({ message: `${val} is not more than 10 characters` }),
 );
 ```
 

@@ -3,20 +3,20 @@
  *
  * Patterns for testing custom React hooks with renderHook.
  */
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useCounter } from './useCounter';
-import { useUsers } from './useUsers';
+import { renderHook, act, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useCounter } from "./useCounter";
+import { useUsers } from "./useUsers";
 
 // ---------- Simple Synchronous Hook ----------
 
-describe('useCounter', () => {
-  it('starts with initial value', () => {
+describe("useCounter", () => {
+  it("starts with initial value", () => {
     const { result } = renderHook(() => useCounter(10));
     expect(result.current.count).toBe(10);
   });
 
-  it('increments the count', () => {
+  it("increments the count", () => {
     const { result } = renderHook(() => useCounter(0));
 
     act(() => {
@@ -26,7 +26,7 @@ describe('useCounter', () => {
     expect(result.current.count).toBe(1);
   });
 
-  it('decrements the count', () => {
+  it("decrements the count", () => {
     const { result } = renderHook(() => useCounter(5));
 
     act(() => {
@@ -36,7 +36,7 @@ describe('useCounter', () => {
     expect(result.current.count).toBe(4);
   });
 
-  it('resets to initial value', () => {
+  it("resets to initial value", () => {
     const { result } = renderHook(() => useCounter(0));
 
     act(() => {
@@ -51,7 +51,7 @@ describe('useCounter', () => {
 
 // ---------- Hook with Changing Props ----------
 
-describe('useDebounce', () => {
+describe("useDebounce", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -60,21 +60,21 @@ describe('useDebounce', () => {
     vi.useRealTimers();
   });
 
-  it('returns initial value immediately', () => {
-    const { result } = renderHook(() => useDebounce('hello', 300));
-    expect(result.current).toBe('hello');
+  it("returns initial value immediately", () => {
+    const { result } = renderHook(() => useDebounce("hello", 300));
+    expect(result.current).toBe("hello");
   });
 
-  it('updates value after delay', () => {
+  it("updates value after delay", () => {
     const { result, rerender } = renderHook(({ value }) => useDebounce(value, 300), {
-      initialProps: { value: 'hello' },
+      initialProps: { value: "hello" },
     });
 
     // Change the value
-    rerender({ value: 'world' });
+    rerender({ value: "world" });
 
     // Not yet updated
-    expect(result.current).toBe('hello');
+    expect(result.current).toBe("hello");
 
     // Advance timers past the delay
     act(() => {
@@ -82,7 +82,7 @@ describe('useDebounce', () => {
     });
 
     // Now updated
-    expect(result.current).toBe('world');
+    expect(result.current).toBe("world");
   });
 });
 
@@ -104,8 +104,8 @@ function createTestWrapper() {
   };
 }
 
-describe('useUsers (TanStack Query hook)', () => {
-  it('starts in pending state', () => {
+describe("useUsers (TanStack Query hook)", () => {
+  it("starts in pending state", () => {
     const { result } = renderHook(() => useUsers(), {
       wrapper: createTestWrapper(),
     });
@@ -114,7 +114,7 @@ describe('useUsers (TanStack Query hook)', () => {
     expect(result.current.data).toBeUndefined();
   });
 
-  it('returns user data on success', async () => {
+  it("returns user data on success", async () => {
     const { result } = renderHook(() => useUsers(), {
       wrapper: createTestWrapper(),
     });
@@ -124,18 +124,18 @@ describe('useUsers (TanStack Query hook)', () => {
     });
 
     expect(result.current.data).toHaveLength(2);
-    expect(result.current.data![0].displayName).toBe('Alice');
+    expect(result.current.data![0].displayName).toBe("Alice");
   });
 
-  it('returns error on failure', async () => {
+  it("returns error on failure", async () => {
     // Override MSW handler for this test
     server.use(
-      http.get('/api/users', () => {
+      http.get("/api/users", () => {
         return HttpResponse.json(
-          { detail: 'Server error', code: 'INTERNAL_ERROR' },
-          { status: 500 }
+          { detail: "Server error", code: "INTERNAL_ERROR" },
+          { status: 500 },
         );
-      })
+      }),
     );
 
     const { result } = renderHook(() => useUsers(), {
@@ -152,31 +152,31 @@ describe('useUsers (TanStack Query hook)', () => {
 
 // ---------- Hook with Side Effects ----------
 
-describe('useLocalStorage', () => {
+describe("useLocalStorage", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('returns initial value when no stored value exists', () => {
-    const { result } = renderHook(() => useLocalStorage('theme', 'light'));
-    expect(result.current[0]).toBe('light');
+  it("returns initial value when no stored value exists", () => {
+    const { result } = renderHook(() => useLocalStorage("theme", "light"));
+    expect(result.current[0]).toBe("light");
   });
 
-  it('returns stored value when it exists', () => {
-    localStorage.setItem('theme', JSON.stringify('dark'));
+  it("returns stored value when it exists", () => {
+    localStorage.setItem("theme", JSON.stringify("dark"));
 
-    const { result } = renderHook(() => useLocalStorage('theme', 'light'));
-    expect(result.current[0]).toBe('dark');
+    const { result } = renderHook(() => useLocalStorage("theme", "light"));
+    expect(result.current[0]).toBe("dark");
   });
 
-  it('updates localStorage when value changes', () => {
-    const { result } = renderHook(() => useLocalStorage('theme', 'light'));
+  it("updates localStorage when value changes", () => {
+    const { result } = renderHook(() => useLocalStorage("theme", "light"));
 
     act(() => {
-      result.current[1]('dark');
+      result.current[1]("dark");
     });
 
-    expect(result.current[0]).toBe('dark');
-    expect(JSON.parse(localStorage.getItem('theme')!)).toBe('dark');
+    expect(result.current[0]).toBe("dark");
+    expect(JSON.parse(localStorage.getItem("theme")!)).toBe("dark");
   });
 });

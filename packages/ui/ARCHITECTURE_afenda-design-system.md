@@ -77,7 +77,7 @@ The `index.css` entry **must** import pillars in this exact order:
 
 ```css
 /* apps/web/src/app/globals.css */
-@import '@afenda/design-system/styles';
+@import "@afenda/design-system/styles";
 ```
 
 Or selectively import individual pillars if building a custom entry.

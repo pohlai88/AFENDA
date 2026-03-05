@@ -9,10 +9,10 @@ Allows referencing other components in the OAD internally or externally. Used wh
 
 ## Fixed fields
 
-| Field       | Type   | Description |
-|------------|--------|-------------|
-| $ref       | string | **REQUIRED**. Reference identifier; MUST be a URI. |
-| summary    | string | Short summary; by default SHOULD override referenced component's summary (if that type allows summary). |
+| Field       | Type   | Description                                                                                                          |
+| ----------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
+| $ref        | string | **REQUIRED**. Reference identifier; MUST be a URI.                                                                   |
+| summary     | string | Short summary; by default SHOULD override referenced component's summary (if that type allows summary).              |
 | description | string | By default SHOULD override referenced component's description (if that type allows description); CommonMark allowed. |
 
 No additional properties; any added SHALL be ignored. Differs from a Schema Object that contains a `$ref` keyword (which may have other JSON Schema keywords).

@@ -1,15 +1,15 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import os from 'node:os';
-import { isObject, normalizeSkillName } from './utils.mjs';
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { isObject, normalizeSkillName } from "./utils.mjs";
 
-const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), '.openclaw', 'security-audit.json');
-const DEFAULT_FALLBACK_PATH = '.clawsec/allowlist.json';
+const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), ".openclaw", "security-audit.json");
+const DEFAULT_FALLBACK_PATH = ".clawsec/allowlist.json";
 
 const EMPTY_CONFIG = Object.freeze({
   suppressions: [],
   enabledFor: [],
-  source: 'none',
+  source: "none",
 });
 
 /**
@@ -23,26 +23,26 @@ function normalizeRule(entry, index, source) {
     throw new Error(`Suppression entry at index ${index} in ${source} must be an object`);
   }
 
-  const checkId = typeof entry.checkId === 'string' ? entry.checkId.trim() : '';
-  const skill = typeof entry.skill === 'string' ? entry.skill.trim() : '';
-  const reason = typeof entry.reason === 'string' ? entry.reason.trim() : '';
-  const suppressedAt = typeof entry.suppressedAt === 'string' ? entry.suppressedAt.trim() : '';
+  const checkId = typeof entry.checkId === "string" ? entry.checkId.trim() : "";
+  const skill = typeof entry.skill === "string" ? entry.skill.trim() : "";
+  const reason = typeof entry.reason === "string" ? entry.reason.trim() : "";
+  const suppressedAt = typeof entry.suppressedAt === "string" ? entry.suppressedAt.trim() : "";
 
   if (!checkId)
     throw new Error(
-      `Suppression entry at index ${index} in ${source} missing required field: checkId`
+      `Suppression entry at index ${index} in ${source} missing required field: checkId`,
     );
   if (!skill)
     throw new Error(
-      `Suppression entry at index ${index} in ${source} missing required field: skill`
+      `Suppression entry at index ${index} in ${source} missing required field: skill`,
     );
   if (!reason)
     throw new Error(
-      `Suppression entry at index ${index} in ${source} missing required field: reason`
+      `Suppression entry at index ${index} in ${source} missing required field: reason`,
     );
   if (!suppressedAt)
     throw new Error(
-      `Suppression entry at index ${index} in ${source} missing required field: suppressedAt`
+      `Suppression entry at index ${index} in ${source} missing required field: suppressedAt`,
     );
 
   return { checkId, skill, reason, suppressedAt };
@@ -69,7 +69,7 @@ function parseConfig(raw, source) {
 
   const enabledFor = Array.isArray(raw.enabledFor)
     ? raw.enabledFor
-        .filter((v) => typeof v === 'string' && v.trim() !== '')
+        .filter((v) => typeof v === "string" && v.trim() !== "")
         .map((v) => v.trim().toLowerCase())
     : [];
 
@@ -82,11 +82,11 @@ function parseConfig(raw, source) {
  */
 async function loadConfigFromPath(configPath) {
   try {
-    const raw = await fs.readFile(configPath, 'utf8');
+    const raw = await fs.readFile(configPath, "utf8");
     return parseConfig(JSON.parse(raw), configPath);
   } catch (err) {
-    if (err.code === 'ENOENT') return null;
-    if (err.code === 'EACCES')
+    if (err.code === "ENOENT") return null;
+    if (err.code === "EACCES")
       throw new Error(`Permission denied reading config: ${configPath}`, { cause: err });
     if (err instanceof SyntaxError)
       throw new Error(`Malformed JSON in ${configPath}: ${err.message}`, { cause: err });
@@ -110,25 +110,25 @@ export async function loadAdvisorySuppression(configPath) {
   if (configPath) {
     const config = await loadConfigFromPath(configPath);
     if (!config) throw new Error(`Advisory suppression config not found: ${configPath}`);
-    if (!config.enabledFor.includes('advisory')) return { ...EMPTY_CONFIG };
+    if (!config.enabledFor.includes("advisory")) return { ...EMPTY_CONFIG };
     return config;
   }
 
   // Priority 2: Environment variable
   const envPath = process.env.OPENCLAW_AUDIT_CONFIG;
-  if (typeof envPath === 'string' && envPath.trim()) {
+  if (typeof envPath === "string" && envPath.trim()) {
     const config = await loadConfigFromPath(envPath.trim());
-    if (config && config.enabledFor.includes('advisory')) return config;
+    if (config && config.enabledFor.includes("advisory")) return config;
     return { ...EMPTY_CONFIG };
   }
 
   // Priority 3: Primary default path
   const primary = await loadConfigFromPath(DEFAULT_PRIMARY_PATH);
-  if (primary && primary.enabledFor.includes('advisory')) return primary;
+  if (primary && primary.enabledFor.includes("advisory")) return primary;
 
   // Priority 4: Fallback path
   const fallback = await loadConfigFromPath(DEFAULT_FALLBACK_PATH);
-  if (fallback && fallback.enabledFor.includes('advisory')) return fallback;
+  if (fallback && fallback.enabledFor.includes("advisory")) return fallback;
 
   return { ...EMPTY_CONFIG };
 }
@@ -147,10 +147,10 @@ export async function loadAdvisorySuppression(configPath) {
 export function isAdvisorySuppressed(match, suppressions) {
   if (!Array.isArray(suppressions) || suppressions.length === 0) return false;
 
-  const advisoryId = match.advisory.id ?? '';
+  const advisoryId = match.advisory.id ?? "";
   const skillName = normalizeSkillName(match.skill.name);
 
   return suppressions.some(
-    (rule) => rule.checkId === advisoryId && normalizeSkillName(rule.skill) === skillName
+    (rule) => rule.checkId === advisoryId && normalizeSkillName(rule.skill) === skillName,
   );
 }

@@ -1,10 +1,10 @@
 ---
-title: 'Metadata and registries'
-description: 'Attaching and manipulatinvg metadata on Zod schemas'
+title: "Metadata and registries"
+description: "Attaching and manipulatinvg metadata on Zod schemas"
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 
 {/* > Zod 4+ provides native `.toJSONSChema()` functionality that leverages registries to generate idiomatic JSON Schema from Zod. Refer to the [JSON SChema docs](/json-schema) page for more information. */}
 
@@ -15,7 +15,7 @@ It's often useful to associate a schema with some additional _metadata_ for docu
 Metadata in Zod is handled via _registries_. Registries are collections of schemas, each associated with some _strongly-typed_ metadata. To create a simple registry:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const myRegistry = z.registry<{ description: string }>();
 ```
@@ -25,7 +25,7 @@ To register, lookup, and remove schemas from this registry:
 ```ts
 const mySchema = z.string();
 
-myRegistry.add(mySchema, { description: 'A cool schema!' });
+myRegistry.add(mySchema, { description: "A cool schema!" });
 myRegistry.has(mySchema); // => true
 myRegistry.get(mySchema); // => { description: "A cool schema!" }
 myRegistry.remove(mySchema);
@@ -35,7 +35,7 @@ myRegistry.clear(); // wipe registry
 TypeScript enforces that the metadata for each schema matches the registry's **metadata type**.
 
 ```ts
-myRegistry.add(mySchema, { description: 'A cool schema!' }); // ✅
+myRegistry.add(mySchema, { description: "A cool schema!" }); // ✅
 myRegistry.add(mySchema, { description: 123 }); // ❌
 ```
 
@@ -50,7 +50,7 @@ Schemas provide a `.register()` method to more conveniently add it to a registry
 ```ts
 const mySchema = z.string();
 
-mySchema.register(myRegistry, { description: 'A cool schema!' });
+mySchema.register(myRegistry, { description: "A cool schema!" });
 // => mySchema
 ```
 
@@ -94,20 +94,20 @@ export interface GlobalMeta {
 To register some metadata in `z.globalRegistry` for a schema:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const emailSchema = z.email().register(z.globalRegistry, {
-  id: 'email_address',
-  title: 'Email address',
-  description: 'Your email address',
-  examples: ['first.last@example.com'],
+  id: "email_address",
+  title: "Email address",
+  description: "Your email address",
+  examples: ["first.last@example.com"],
 });
 ```
 
 To globally augment the `GlobalMeta` interface, use [_declaration merging_](https://www.typescriptlang.org/docs/handbook/declaration-merging.html). Add the following anywhere in your codebase. Creating a `zod.d.ts` file in your project root is a common convention.
 
 ```ts
-declare module 'zod' {
+declare module "zod" {
   interface GlobalMeta {
     // add new fields here
     examples?: unknown[];
@@ -155,7 +155,7 @@ emailSchema.meta();
 Metadata is associated with a _specific schema instance._ This is important to keep in mind, especially since Zod methods are immutable—they always return a new instance.
 
 ```ts
-const A = z.string().meta({ description: 'A cool string' });
+const A = z.string().meta({ description: "A cool string" });
 A.meta(); // => { description: "A cool string" }
 
 const B = A.refine((_) => true);
@@ -210,12 +210,12 @@ Let's look at some more advanced patterns.
 It's often valuable for the metadata type to reference the _inferred type_ of a schema. For instance, you may want an `examples` field to contain examples of the schema's output.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 type MyMeta = { examples: z.$output[] };
 const myRegistry = z.registry<MyMeta>();
 
-myRegistry.add(z.string(), { examples: ['hello', 'world'] });
+myRegistry.add(z.string(), { examples: ["hello", "world"] });
 myRegistry.add(z.number(), { examples: [1, 2, 3] });
 ```
 
@@ -226,11 +226,11 @@ The special symbol `z.$output` is a reference to the schemas inferred output typ
 Pass a second generic to `z.registry()` to constrain the schema types that can be added to a registry. This registry only accepts string schemas.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const myRegistry = z.registry<{ description: string }, z.ZodString>();
 
-myRegistry.add(z.string(), { description: 'A number' }); // ✅
-myRegistry.add(z.number(), { description: 'A number' }); // ❌
+myRegistry.add(z.string(), { description: "A number" }); // ✅
+myRegistry.add(z.number(), { description: "A number" }); // ❌
 //             ^ 'ZodNumber' is not assignable to parameter of type 'ZodString'
 ```

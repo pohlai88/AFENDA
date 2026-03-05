@@ -136,7 +136,12 @@ for (const [depName, usages] of depMap) {
           field: u.field,
           version: u.version,
           message: `"${depName}" is used by ${usages.length} packages — all must use "catalog:" (found "${u.version}" in ${u.field})`,
-          fix: suggestFix("DUPLICATE_NOT_IN_CATALOG", { depName, version: u.version, catalogVersion, usages }),
+          fix: suggestFix("DUPLICATE_NOT_IN_CATALOG", {
+            depName,
+            version: u.version,
+            catalogVersion,
+            usages,
+          }),
         });
       }
     }

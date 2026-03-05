@@ -11,10 +11,10 @@ description: Security scheme types (apiKey, http, mutualTLS, oauth2, openIdConne
 
 API key in header, query, or cookie. **Required:** `type`, `name`, `in`.
 
-| Field | Type   | Description |
-|-------|--------|-------------|
+| Field | Type   | Description                                                                     |
+| ----- | ------ | ------------------------------------------------------------------------------- |
 | name  | string | **REQUIRED**. Header/query/cookie parameter name (e.g. `X-API-Key`, `api_key`). |
-| in    | string | **REQUIRED**. `"query"`, `"header"`, or `"cookie"`. |
+| in    | string | **REQUIRED**. `"query"`, `"header"`, or `"cookie"`.                             |
 
 ```yaml
 type: apiKey
@@ -27,10 +27,10 @@ description: API key in header
 
 HTTP authentication (e.g. Basic, Bearer). **Required:** `type`, `scheme`.
 
-| Field       | Type   | Applies To | Description |
-|------------|--------|------------|-------------|
-| scheme     | string | **REQUIRED**. IANA Auth Scheme (e.g. `basic`, `bearer`); case-insensitive. |
-| bearerFormat | string | http (bearer) | Hint for token format (e.g. JWT). |
+| Field        | Type   | Applies To                                                                 | Description                       |
+| ------------ | ------ | -------------------------------------------------------------------------- | --------------------------------- |
+| scheme       | string | **REQUIRED**. IANA Auth Scheme (e.g. `basic`, `bearer`); case-insensitive. |
+| bearerFormat | string | http (bearer)                                                              | Hint for token format (e.g. JWT). |
 
 **Basic:**
 

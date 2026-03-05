@@ -1,18 +1,18 @@
 ---
-title: 'Intro'
-mode: 'center'
-description: 'Introduction to Zod - TypeScript-first schema validation library with static type inference'
+title: "Intro"
+mode: "center"
+description: "Introduction to Zod - TypeScript-first schema validation library with static type inference"
 ---
 
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
-import { Tabs } from 'fumadocs-ui/components/tabs';
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
+import { Tabs } from "fumadocs-ui/components/tabs";
 
-import { Featured } from '../components/featured';
-import { Platinum } from '../components/platinum';
-import { Gold } from '../components/gold';
-import { Silver } from '../components/silver';
-import { Bronze } from '../components/bronze';
-import { HeroLogo } from '../components/hero-logo';
+import { Featured } from "../components/featured";
+import { Platinum } from "../components/platinum";
+import { Gold } from "../components/gold";
+import { Silver } from "../components/silver";
+import { Bronze } from "../components/bronze";
+import { HeroLogo } from "../components/hero-logo";
 
 <div className="flex flex-col items-stretch text-center">
   <HeroLogo />
@@ -20,7 +20,7 @@ import { HeroLogo } from '../components/hero-logo';
   <p className="mt-2 mb-1">
     TypeScript-first schema validation with static type inference
     <br />
-    by <a href="https://x.com/colinhacks">@colinhacks</a>{' '}
+    by <a href="https://x.com/colinhacks">@colinhacks</a>{" "}
   </p>
   <br />
   <div className="flex flex-row flex-wrap justify-center gap-1 py-2">
@@ -81,11 +81,12 @@ An example of a parameter field
 
 <ParamField body="user_age" type="integer" default="0" required>
   The age of the user. Cannot be less than 0
-</ParamField> */}
+</ParamField>
+*/}
 
 <div className="mt-5 font-gray-100 mx-auto text-center pt-12">
   <span className="">
-    Zod 4 is now stable! Read the{' '}
+    Zod 4 is now stable! Read the{" "}
     <a rel="noopener noreferrer" href="/v4" alt="zod 4 release notes">
       release notes here
     </a>
@@ -115,7 +116,7 @@ An example of a parameter field
 Zod is a TypeScript-first validation library. Using Zod, you can define _schemas_ you can use to validate data, from a simple `string` to a complex nested object.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const User = z.object({
   name: z.string(),

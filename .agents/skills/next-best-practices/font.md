@@ -6,15 +6,11 @@ Use `next/font` for automatic font optimization with zero layout shift.
 
 ```tsx
 // app/layout.tsx
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.className}>
       <body>{children}</body>
@@ -26,23 +22,19 @@ export default function RootLayout({
 ## Multiple Fonts
 
 ```tsx
-import { Inter, Roboto_Mono } from 'next/font/google';
+import { Inter, Roboto_Mono } from "next/font/google";
 
 const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 const robotoMono = Roboto_Mono({
-  subsets: ['latin'],
-  variable: '--font-roboto-mono',
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${robotoMono.variable}`}>
       <body>{children}</body>
@@ -68,58 +60,58 @@ code {
 ```tsx
 // Single weight
 const inter = Inter({
-  subsets: ['latin'],
-  weight: '400',
+  subsets: ["latin"],
+  weight: "400",
 });
 
 // Multiple weights
 const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
 });
 
 // Variable font (recommended) - includes all weights
 const inter = Inter({
-  subsets: ['latin'],
+  subsets: ["latin"],
   // No weight needed - variable fonts support all weights
 });
 
 // With italic
 const inter = Inter({
-  subsets: ['latin'],
-  style: ['normal', 'italic'],
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 ```
 
 ## Local Fonts
 
 ```tsx
-import localFont from 'next/font/local';
+import localFont from "next/font/local";
 
 const myFont = localFont({
-  src: './fonts/MyFont.woff2',
+  src: "./fonts/MyFont.woff2",
 });
 
 // Multiple files for different weights
 const myFont = localFont({
   src: [
     {
-      path: './fonts/MyFont-Regular.woff2',
-      weight: '400',
-      style: 'normal',
+      path: "./fonts/MyFont-Regular.woff2",
+      weight: "400",
+      style: "normal",
     },
     {
-      path: './fonts/MyFont-Bold.woff2',
-      weight: '700',
-      style: 'normal',
+      path: "./fonts/MyFont-Bold.woff2",
+      weight: "700",
+      style: "normal",
     },
   ],
 });
 
 // Variable font
 const myFont = localFont({
-  src: './fonts/MyFont-Variable.woff2',
-  variable: '--font-my-font',
+  src: "./fonts/MyFont-Variable.woff2",
+  variable: "--font-my-font",
 });
 ```
 
@@ -127,11 +119,11 @@ const myFont = localFont({
 
 ```tsx
 // app/layout.tsx
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 
 const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export default function RootLayout({ children }) {
@@ -149,7 +141,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-inter)'],
+        sans: ["var(--font-inter)"],
       },
     },
   },
@@ -162,10 +154,10 @@ Only load needed character subsets:
 
 ```tsx
 // Latin only (most common)
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 // Multiple subsets
-const inter = Inter({ subsets: ['latin', 'latin-ext', 'cyrillic'] });
+const inter = Inter({ subsets: ["latin", "latin-ext", "cyrillic"] });
 ```
 
 ## Display Strategy
@@ -174,8 +166,8 @@ Control font loading behavior:
 
 ```tsx
 const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap', // Default - shows fallback, swaps when loaded
+  subsets: ["latin"],
+  display: "swap", // Default - shows fallback, swaps when loaded
 });
 
 // Options:
@@ -240,16 +232,16 @@ const inter = Inter({ subsets: ['latin'] })
 ```tsx
 // For component-specific fonts, export from a shared file
 // lib/fonts.ts
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Inter, Playfair_Display } from "next/font/google";
 
-export const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+export const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair',
+  subsets: ["latin"],
+  variable: "--font-playfair",
 });
 
 // components/Heading.tsx
-import { playfair } from '@/lib/fonts';
+import { playfair } from "@/lib/fonts";
 
 export function Heading({ children }) {
   return <h1 className={playfair.className}>{children}</h1>;

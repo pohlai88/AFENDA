@@ -30,21 +30,13 @@ export interface AttachEvidenceParams {
  * @returns The generated `evidence.id` (UUID).
  * @throws If the referenced document does not exist within the caller's org.
  */
-export async function attachEvidence(
-  db: DbClient,
-  params: AttachEvidenceParams,
-): Promise<string> {
+export async function attachEvidence(db: DbClient, params: AttachEvidenceParams): Promise<string> {
   // 1. Verify the document exists AND belongs to the same org.
   //    The orgId guard prevents cross-org document hijacking.
   const docs = await db
     .select({ id: document.id })
     .from(document)
-    .where(
-      and(
-        eq(document.id, params.documentId),
-        eq(document.orgId, params.orgId),
-      ),
-    )
+    .where(and(eq(document.id, params.documentId), eq(document.orgId, params.orgId)))
     .limit(1);
 
   if (docs.length === 0) {

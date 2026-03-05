@@ -31,26 +31,29 @@ Adopt a **Party + Principal + PartyRole + Membership** model with full referenti
 ### Why Principal ≠ Person
 
 Real systems have:
+
 - **Service accounts** — ETL, integrations, scheduled jobs (no human)
 - **Merged identities** — one person with SSO + email/password logins
 - **Headless contacts** — imported contacts, ex-employees, legal signers (no login)
 
 So:
+
 - `Token.sub` = **PrincipalId** (authenticated actor)
 - Principal → Person is **nullable** (service accounts have no person)
 - Person can have **multiple principals** (merged accounts)
 
 ### ID Hierarchy
 
-| ID | Meaning | FK Target |
-|---|---|---|
-| `PersonId` | Human being — stable identity | `person.id` |
+| ID            | Meaning                                       | FK Target          |
+| ------------- | --------------------------------------------- | ------------------ |
+| `PersonId`    | Human being — stable identity                 | `person.id`        |
 | `PrincipalId` | Authenticated actor (user or service account) | `iam_principal.id` |
-| `OrgId` | Organization — legal entity | `organization.id` |
-| `PartyId` | Either a person or organization | `party.id` |
-| `PartyRoleId` | "Party X plays role Y in org Z" — the hat | `party_role.id` |
+| `OrgId`       | Organization — legal entity                   | `organization.id`  |
+| `PartyId`     | Either a person or organization               | `party.id`         |
+| `PartyRoleId` | "Party X plays role Y in org Z" — the hat     | `party_role.id`    |
 
 Role types (controlled vocab, not separate IDs):
+
 - `employee`, `shareholder`, `customer`, `supplier`, `investor`, `franchisee`, `franchisor`, `contractor`, `auditor`
 
 ### Data Model
@@ -112,7 +115,7 @@ CREATE TABLE party_role (
   org_id    uuid NOT NULL REFERENCES organization(id),
   party_id  uuid NOT NULL REFERENCES party(id),
   role_type text NOT NULL,  -- employee | supplier | customer | shareholder | ...
-  
+
   UNIQUE (org_id, party_id, role_type)
 );
 
@@ -128,7 +131,7 @@ CREATE TABLE membership (
   principal_id   uuid NOT NULL REFERENCES iam_principal(id),
   party_role_id  uuid NOT NULL REFERENCES party_role(id),
   created_at     timestamptz NOT NULL DEFAULT now(),
-  
+
   UNIQUE (principal_id, party_role_id)
 );
 
@@ -174,6 +177,7 @@ CREATE POLICY po_by_supplier ON purchase_order
 ```
 
 **Key details:**
+
 - Always use `current_setting('x', true)` — missing settings return NULL, not error
 - Keep `org_id` on business tables — still the strongest isolation + performance lever
 - Middleware fails fast if membership doesn't exist for requested context
@@ -181,14 +185,15 @@ CREATE POLICY po_by_supplier ON purchase_order
 ### OAuth Token Structure (Lean JWT)
 
 **Don't** embed full membership graph in JWT — causes huge headers, stale permissions, graph leakage.
+
 ```typescript
 interface TokenClaims {
-  sub: PrincipalId;           // authenticated actor
+  sub: PrincipalId; // authenticated actor
   activeContext?: {
     partyRoleId: PartyRoleId; // the "hat"
     orgId: OrgId;
   };
-  ctxVersion?: number;        // for cache invalidation
+  ctxVersion?: number; // for cache invalidation
   iat: number;
   exp: number;
 }
@@ -249,6 +254,7 @@ This keeps JWTs small, permissions fresh, and org graph server-side.
 ## Implementation Checklist
 
 ### Phase 1: Contracts + Types ✅
+
 - [x] Add `PersonId`, `PrincipalId`, `OrgId`, `PartyId`, `PartyRoleId` to `ids.ts`
 - [x] Deprecate `TenantId` with alias to `OrgId`
 - [x] Create `RoleTypeSchema` controlled vocabulary
@@ -256,6 +262,7 @@ This keeps JWTs small, permissions fresh, and org graph server-side.
 - [x] Update `RequestContextSchema` with `principalId`, `activeContext`
 
 ### Phase 2: Database Schema ✅
+
 - [x] Create `party` table (base)
 - [x] Create `person` table (extends party)
 - [x] Create `organization` table (extends party) — coexists with `tenant`
@@ -267,6 +274,7 @@ This keeps JWTs small, permissions fresh, and org graph server-side.
 - [x] Update RLS policies to use `SET LOCAL app.*` context → `withOrgContext()` in `@afenda/db`
 
 ### Phase 3: Core + API ✅
+
 - [x] Update `auth.ts` to resolve party_roles → added `resolvePrincipalContext`, `listPrincipalContexts`
 - [x] Update `tenant.ts` → added `resolveOrgId`
 - [x] Update `audit.ts` — supports `orgId`/`tenantId` and `actorPrincipalId`/`actorUserId`
@@ -275,6 +283,7 @@ This keeps JWTs small, permissions fresh, and org graph server-side.
 - [x] Update API middleware — supports `orgSlug`/`orgId` + deprecated aliases, uses `principalId` for rate limiting
 
 ### Phase 4: Deprecation Cleanup ✅
+
 - [x] Remove `TenantId` alias after all usages migrated
 - [x] Drop old `iam_user`, `iam_membership`, `tenant` tables → `0005_phase4_deprecation_cleanup.sql`
 - [x] Rename `tenant_id` → `org_id` in all business tables
@@ -291,17 +300,17 @@ This keeps JWTs small, permissions fresh, and org graph server-side.
 ```typescript
 export const RoleTypeValues = [
   "employee",
-  "shareholder", 
+  "shareholder",
   "customer",
   "supplier",
   "investor",
   "franchisee",
   "franchisor",
-  "contractor",   // future
-  "auditor",      // future
+  "contractor", // future
+  "auditor", // future
 ] as const;
 
-export type RoleType = typeof RoleTypeValues[number];
+export type RoleType = (typeof RoleTypeValues)[number];
 ```
 
 ## Appendix: Example — Supplier Portal Flow

@@ -3,11 +3,11 @@
  * @returns {[number, number, number] | null}
  */
 export function parseSemver(version) {
-  const cleaned = String(version ?? '')
+  const cleaned = String(version ?? "")
     .trim()
-    .replace(/^v/i, '')
-    .split('-')[0];
-  const parts = cleaned.split('.');
+    .replace(/^v/i, "")
+    .split("-")[0];
+  const parts = cleaned.split(".");
   if (parts.length === 0) return null;
 
   const normalized = parts.slice(0, 3).map((part) => Number.parseInt(part, 10));
@@ -43,7 +43,7 @@ export function compareSemver(left, right) {
  * @returns {string}
  */
 export function escapeRegex(value) {
-  return String(value ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -52,14 +52,14 @@ export function escapeRegex(value) {
  * @returns {boolean}
  */
 export function versionMatches(version, rawSpec) {
-  const spec = String(rawSpec ?? '').trim();
-  if (!spec || spec === '*' || spec.toLowerCase() === 'any') return true;
-  if (!version || String(version).trim().toLowerCase() === 'unknown') return false;
+  const spec = String(rawSpec ?? "").trim();
+  if (!spec || spec === "*" || spec.toLowerCase() === "any") return true;
+  if (!version || String(version).trim().toLowerCase() === "unknown") return false;
 
-  const normalizedVersion = String(version).trim().replace(/^v/i, '');
+  const normalizedVersion = String(version).trim().replace(/^v/i, "");
 
-  if (spec.includes('*')) {
-    const regex = new RegExp(`^${escapeRegex(spec).replace(/\\\*/g, '.*')}$`);
+  if (spec.includes("*")) {
+    const regex = new RegExp(`^${escapeRegex(spec).replace(/\\\*/g, ".*")}$`);
     return regex.test(normalizedVersion);
   }
 
@@ -69,14 +69,14 @@ export function versionMatches(version, rawSpec) {
     const targetVersion = comparatorMatch[2].trim();
     const compared = compareSemver(normalizedVersion, targetVersion);
     if (compared === null) return false;
-    if (operator === '>=') return compared >= 0;
-    if (operator === '<=') return compared <= 0;
-    if (operator === '>') return compared > 0;
-    if (operator === '<') return compared < 0;
+    if (operator === ">=") return compared >= 0;
+    if (operator === "<=") return compared <= 0;
+    if (operator === ">") return compared > 0;
+    if (operator === "<") return compared < 0;
     return compared === 0;
   }
 
-  if (spec.startsWith('^')) {
+  if (spec.startsWith("^")) {
     const target = parseSemver(spec.slice(1));
     const current = parseSemver(normalizedVersion);
     if (!target || !current) return false;
@@ -85,7 +85,7 @@ export function versionMatches(version, rawSpec) {
     return compareSemver(normalizedVersion, spec.slice(1)) !== -1;
   }
 
-  if (spec.startsWith('~')) {
+  if (spec.startsWith("~")) {
     const target = parseSemver(spec.slice(1));
     const current = parseSemver(normalizedVersion);
     if (!target || !current) return false;
@@ -96,5 +96,5 @@ export function versionMatches(version, rawSpec) {
     );
   }
 
-  return normalizedVersion === spec || normalizedVersion === spec.replace(/^v/i, '');
+  return normalizedVersion === spec || normalizedVersion === spec.replace(/^v/i, "");
 }

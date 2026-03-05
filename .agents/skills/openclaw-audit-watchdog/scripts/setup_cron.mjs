@@ -8,91 +8,91 @@
  * Uses the `openclaw cron` CLI so it can run on a host without direct Gateway RPC access.
  */
 
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import readline from 'node:readline';
-import { fileURLToPath } from 'node:url';
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import readline from "node:readline";
+import { fileURLToPath } from "node:url";
 
-const JOB_NAME = 'Daily security audit (Prompt Security)';
-const COMPANY_EMAIL = 'target@example.com';
-const DEFAULT_TZ = 'UTC';
-const DEFAULT_EXPR = '0 23 * * *'; // 23:00 daily
+const JOB_NAME = "Daily security audit (Prompt Security)";
+const COMPANY_EMAIL = "target@example.com";
+const DEFAULT_TZ = "UTC";
+const DEFAULT_EXPR = "0 23 * * *"; // 23:00 daily
 
-const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SCRIPT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function sh(cmd, args, { input } = {}) {
   const res = spawnSync(cmd, args, {
-    encoding: 'utf8',
+    encoding: "utf8",
     input: input ?? undefined,
-    stdio: [input ? 'pipe' : 'ignore', 'pipe', 'pipe'],
+    stdio: [input ? "pipe" : "ignore", "pipe", "pipe"],
   });
   if (res.error) throw res.error;
   if (res.status !== 0) {
-    const msg = (res.stderr || res.stdout || '').trim();
-    throw new Error(`${cmd} ${args.join(' ')} failed (code ${res.status})${msg ? `: ${msg}` : ''}`);
+    const msg = (res.stderr || res.stdout || "").trim();
+    throw new Error(`${cmd} ${args.join(" ")} failed (code ${res.status})${msg ? `: ${msg}` : ""}`);
   }
   return res.stdout;
 }
 
-async function prompt(question, { defaultValue = '' } = {}) {
+async function prompt(question, { defaultValue = "" } = {}) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const q = defaultValue ? `${question} [${defaultValue}]: ` : `${question}: `;
   const answer = await new Promise((resolve) => rl.question(q, resolve));
   rl.close();
-  const trimmed = String(answer ?? '').trim();
+  const trimmed = String(answer ?? "").trim();
   return trimmed || defaultValue;
 }
 
 function envOrEmpty(name) {
   const v = process.env[name];
-  return typeof v === 'string' ? v.trim() : '';
+  return typeof v === "string" ? v.trim() : "";
 }
 
 function oneline(v) {
-  return String(v ?? '')
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/\\/g, '\\\\')
+  return String(v ?? "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"')
     .trim();
 }
 
 function escapeForShellEnvVar(v) {
-  return String(v ?? '')
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/\\/g, '\\\\')
-    .replace(/\$/g, '\\$')
-    .replace(/`/g, '\\`')
+  return String(v ?? "")
+    .replace(/[\r\n]+/g, " ")
+    .replace(/\\/g, "\\\\")
+    .replace(/\$/g, "\\$")
+    .replace(/`/g, "\\`")
     .replace(/"/g, '\\"')
     .trim();
 }
 
 function defaultInstallDir() {
-  const env = envOrEmpty('PROMPTSEC_INSTALL_DIR');
+  const env = envOrEmpty("PROMPTSEC_INSTALL_DIR");
   if (env) return env;
-  const home = envOrEmpty('HOME');
-  if (home) return path.join(home, '.config', 'security-checkup');
+  const home = envOrEmpty("HOME");
+  if (home) return path.join(home, ".config", "security-checkup");
   return SCRIPT_ROOT;
 }
 
 function buildAgentMessage({ dmChannel, dmTo, hostLabel, installDir }) {
-  const safeDir = escapeForShellEnvVar(installDir || '');
+  const safeDir = escapeForShellEnvVar(installDir || "");
   const escapedHostLabel = escapeForShellEnvVar(hostLabel);
 
   return [
-    'Run daily openclaw security audits and deliver report (DM + email).',
-    '',
+    "Run daily openclaw security audits and deliver report (DM + email).",
+    "",
     `Delivery DM: ${oneline(dmChannel)}:${oneline(dmTo)}`,
     `Email: ${COMPANY_EMAIL} (local sendmail)`,
-    '',
-    'Execute:',
+    "",
+    "Execute:",
     `- Run via exec: cd "${safeDir}" && PROMPTSEC_HOST_LABEL="${escapedHostLabel}" ./scripts/runner.sh`,
-    '',
-    'Output requirements:',
-    '- Print the report to stdout (cron deliver will DM it).',
+    "",
+    "Output requirements:",
+    "- Print the report to stdout (cron deliver will DM it).",
     `- Also email the same report to ${COMPANY_EMAIL}; if email fails, append a NOTE line to stdout.`,
-    '- Do not apply fixes automatically.',
-  ].join('\n');
+    "- Do not apply fixes automatically.",
+  ].join("\n");
 }
 
 function findExistingJobId(listJson) {
@@ -103,50 +103,50 @@ function findExistingJobId(listJson) {
 
 async function run() {
   // Non-interactive first (MDM-friendly)
-  const tzEnv = envOrEmpty('PROMPTSEC_TZ');
-  const dmChannelEnv = envOrEmpty('PROMPTSEC_DM_CHANNEL');
-  const dmToEnv = envOrEmpty('PROMPTSEC_DM_TO');
-  const hostLabelEnv = envOrEmpty('PROMPTSEC_HOST_LABEL');
+  const tzEnv = envOrEmpty("PROMPTSEC_TZ");
+  const dmChannelEnv = envOrEmpty("PROMPTSEC_DM_CHANNEL");
+  const dmToEnv = envOrEmpty("PROMPTSEC_DM_TO");
+  const hostLabelEnv = envOrEmpty("PROMPTSEC_HOST_LABEL");
 
   const interactive = !(tzEnv && dmChannelEnv && dmToEnv);
 
   const tz = interactive
-    ? await prompt('Timezone for daily 11pm run (IANA)', { defaultValue: tzEnv || DEFAULT_TZ })
+    ? await prompt("Timezone for daily 11pm run (IANA)", { defaultValue: tzEnv || DEFAULT_TZ })
     : tzEnv || DEFAULT_TZ;
 
   const dmChannel = interactive
-    ? await prompt('DM channel (e.g. telegram, slack, discord)', { defaultValue: dmChannelEnv })
+    ? await prompt("DM channel (e.g. telegram, slack, discord)", { defaultValue: dmChannelEnv })
     : dmChannelEnv;
 
   const dmTo = interactive
-    ? await prompt('DM recipient id (Telegram numeric chatId/userId preferred)', {
+    ? await prompt("DM recipient id (Telegram numeric chatId/userId preferred)", {
         defaultValue: dmToEnv,
       })
     : dmToEnv;
 
   const hostLabel = interactive
-    ? await prompt('Optional host label to include in report', { defaultValue: hostLabelEnv })
+    ? await prompt("Optional host label to include in report", { defaultValue: hostLabelEnv })
     : hostLabelEnv;
 
   const installDirDefault = defaultInstallDir();
   const installDir = interactive
-    ? await prompt('Install dir containing scripts/runner.sh', { defaultValue: installDirDefault })
+    ? await prompt("Install dir containing scripts/runner.sh", { defaultValue: installDirDefault })
     : installDirDefault;
 
   if (!dmChannel || !dmTo) {
     throw new Error(
-      'Missing DM target. Set PROMPTSEC_DM_CHANNEL and PROMPTSEC_DM_TO (or run interactively). '
+      "Missing DM target. Set PROMPTSEC_DM_CHANNEL and PROMPTSEC_DM_TO (or run interactively). ",
     );
   }
 
-  const runnerPath = path.join(installDir, 'scripts', 'runner.sh');
+  const runnerPath = path.join(installDir, "scripts", "runner.sh");
   if (!fs.existsSync(runnerPath)) {
     throw new Error(
-      `runner.sh not found at ${runnerPath}; set PROMPTSEC_INSTALL_DIR to the deployed path`
+      `runner.sh not found at ${runnerPath}; set PROMPTSEC_INSTALL_DIR to the deployed path`,
     );
   }
 
-  const listOut = sh('openclaw', ['cron', 'list', '--json']);
+  const listOut = sh("openclaw", ["cron", "list", "--json"]);
   const listJson = JSON.parse(listOut);
   const existingId = findExistingJobId(listJson);
 
@@ -155,72 +155,72 @@ async function run() {
 
   if (!existingId) {
     const args = [
-      'cron',
-      'add',
-      '--name',
+      "cron",
+      "add",
+      "--name",
       JOB_NAME,
-      '--description',
+      "--description",
       description,
-      '--session',
-      'isolated',
-      '--wake',
-      'now',
-      '--cron',
+      "--session",
+      "isolated",
+      "--wake",
+      "now",
+      "--cron",
       DEFAULT_EXPR,
-      '--tz',
+      "--tz",
       tz,
-      '--message',
+      "--message",
       agentMessage,
-      '--deliver',
-      '--channel',
+      "--deliver",
+      "--channel",
       dmChannel,
-      '--to',
+      "--to",
       dmTo,
-      '--best-effort-deliver',
-      '--post-prefix',
-      '[daily security audit]',
-      '--post-mode',
-      'summary',
-      '--json',
+      "--best-effort-deliver",
+      "--post-prefix",
+      "[daily security audit]",
+      "--post-mode",
+      "summary",
+      "--json",
     ];
-    const out = sh('openclaw', args);
+    const out = sh("openclaw", args);
     const job = JSON.parse(out);
     process.stdout.write(`Created cron job ${job.id}: ${JOB_NAME}\n`);
   } else {
     const args = [
-      'cron',
-      'edit',
+      "cron",
+      "edit",
       existingId,
-      '--name',
+      "--name",
       JOB_NAME,
-      '--description',
+      "--description",
       description,
-      '--enable',
-      '--session',
-      'isolated',
-      '--wake',
-      'now',
-      '--cron',
+      "--enable",
+      "--session",
+      "isolated",
+      "--wake",
+      "now",
+      "--cron",
       DEFAULT_EXPR,
-      '--tz',
+      "--tz",
       tz,
-      '--message',
+      "--message",
       agentMessage,
-      '--deliver',
-      '--channel',
+      "--deliver",
+      "--channel",
       dmChannel,
-      '--to',
+      "--to",
       dmTo,
-      '--best-effort-deliver',
-      '--post-prefix',
-      '[daily security audit]',
+      "--best-effort-deliver",
+      "--post-prefix",
+      "[daily security audit]",
     ];
-    sh('openclaw', args);
+    sh("openclaw", args);
     process.stdout.write(`Updated cron job ${existingId}: ${JOB_NAME}\n`);
   }
 }
 
 run().catch((err) => {
-  process.stderr.write(String(err?.stack || err) + '\n');
+  process.stderr.write(String(err?.stack || err) + "\n");
   process.exit(1);
 });

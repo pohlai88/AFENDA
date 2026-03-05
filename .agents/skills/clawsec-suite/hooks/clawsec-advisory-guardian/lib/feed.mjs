@@ -1,18 +1,18 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
-import https from 'node:https';
-import path from 'node:path';
-import { isObject } from './utils.mjs';
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import https from "node:https";
+import path from "node:path";
+import { isObject } from "./utils.mjs";
 
 /**
  * Allowed domains for feed/signature fetching.
  * Only connections to these domains are permitted for security.
  */
 const ALLOWED_DOMAINS = [
-  'clawsec.prompt.security',
-  'prompt.security',
-  'raw.githubusercontent.com',
-  'github.com',
+  "clawsec.prompt.security",
+  "prompt.security",
+  "raw.githubusercontent.com",
+  "github.com",
 ];
 
 /**
@@ -22,7 +22,7 @@ const ALLOWED_DOMAINS = [
 class SecurityPolicyError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'SecurityPolicyError';
+    this.name = "SecurityPolicyError";
   }
 }
 
@@ -33,11 +33,11 @@ class SecurityPolicyError extends Error {
 function createSecureAgent() {
   return new https.Agent({
     // Enforce minimum TLS 1.2 (eliminate TLS 1.0, 1.1)
-    minVersion: 'TLSv1.2',
+    minVersion: "TLSv1.2",
     // Ensure certificate validation is enabled (reject unauthorized certificates)
     rejectUnauthorized: true,
     // Use strong cipher suites
-    ciphers: 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256',
+    ciphers: "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256",
   });
 }
 
@@ -51,7 +51,7 @@ function isAllowedDomain(url) {
     const parsed = new URL(url);
 
     // Only allow HTTPS protocol
-    if (parsed.protocol !== 'https:') {
+    if (parsed.protocol !== "https:") {
       return false;
     }
 
@@ -59,7 +59,7 @@ function isAllowedDomain(url) {
 
     // Check if hostname matches any allowed domain
     return ALLOWED_DOMAINS.some(
-      (allowed) => hostname === allowed || hostname.endsWith(`.${allowed}`)
+      (allowed) => hostname === allowed || hostname.endsWith(`.${allowed}`),
     );
   } catch {
     return false;
@@ -78,8 +78,8 @@ async function secureFetch(url, options = {}) {
   if (!isAllowedDomain(url)) {
     throw new SecurityPolicyError(
       `Security policy violation: URL domain not allowed. ` +
-        `Only connections to ${ALLOWED_DOMAINS.join(', ')} are permitted. ` +
-        `Blocked: ${url}`
+        `Only connections to ${ALLOWED_DOMAINS.join(", ")} are permitted. ` +
+        `Blocked: ${url}`,
     );
   }
 
@@ -99,12 +99,12 @@ async function secureFetch(url, options = {}) {
  * @returns {{ name: string; versionSpec: string } | null}
  */
 export function parseAffectedSpecifier(rawSpecifier) {
-  const specifier = String(rawSpecifier ?? '').trim();
+  const specifier = String(rawSpecifier ?? "").trim();
   if (!specifier) return null;
 
-  const atIndex = specifier.lastIndexOf('@');
+  const atIndex = specifier.lastIndexOf("@");
   if (atIndex <= 0) {
-    return { name: specifier, versionSpec: '*' };
+    return { name: specifier, versionSpec: "*" };
   }
 
   return {
@@ -119,15 +119,15 @@ export function parseAffectedSpecifier(rawSpecifier) {
  */
 export function isValidFeedPayload(raw) {
   if (!isObject(raw)) return false;
-  if (typeof raw.version !== 'string' || !raw.version.trim()) return false;
+  if (typeof raw.version !== "string" || !raw.version.trim()) return false;
   if (!Array.isArray(raw.advisories)) return false;
 
   for (const advisory of raw.advisories) {
     if (!isObject(advisory)) return false;
-    if (typeof advisory.id !== 'string' || !advisory.id.trim()) return false;
-    if (typeof advisory.severity !== 'string' || !advisory.severity.trim()) return false;
+    if (typeof advisory.id !== "string" || !advisory.id.trim()) return false;
+    if (typeof advisory.severity !== "string" || !advisory.severity.trim()) return false;
     if (!Array.isArray(advisory.affected)) return false;
-    if (!advisory.affected.every((entry) => typeof entry === 'string' && entry.trim()))
+    if (!advisory.affected.every((entry) => typeof entry === "string" && entry.trim()))
       return false;
   }
 
@@ -139,14 +139,14 @@ export function isValidFeedPayload(raw) {
  * @returns {Buffer | null}
  */
 function decodeSignature(signatureRaw) {
-  const trimmed = String(signatureRaw ?? '').trim();
+  const trimmed = String(signatureRaw ?? "").trim();
   if (!trimmed) return null;
 
   let encoded = trimmed;
-  if (trimmed.startsWith('{')) {
+  if (trimmed.startsWith("{")) {
     try {
       const parsed = JSON.parse(trimmed);
-      if (isObject(parsed) && typeof parsed.signature === 'string') {
+      if (isObject(parsed) && typeof parsed.signature === "string") {
         encoded = parsed.signature;
       }
     } catch {
@@ -154,11 +154,11 @@ function decodeSignature(signatureRaw) {
     }
   }
 
-  const normalized = encoded.replace(/\s+/g, '');
+  const normalized = encoded.replace(/\s+/g, "");
   if (!normalized) return null;
 
   try {
-    return Buffer.from(normalized, 'base64');
+    return Buffer.from(normalized, "base64");
   } catch {
     return null;
   }
@@ -174,12 +174,12 @@ export function verifySignedPayload(payloadRaw, signatureRaw, publicKeyPem) {
   const signature = decodeSignature(signatureRaw);
   if (!signature) return false;
 
-  const keyPem = String(publicKeyPem ?? '').trim();
+  const keyPem = String(publicKeyPem ?? "").trim();
   if (!keyPem) return false;
 
   try {
     const publicKey = crypto.createPublicKey(keyPem);
-    return crypto.verify(null, Buffer.from(payloadRaw, 'utf8'), publicKey, signature);
+    return crypto.verify(null, Buffer.from(payloadRaw, "utf8"), publicKey, signature);
   } catch {
     return false;
   }
@@ -190,7 +190,7 @@ export function verifySignedPayload(payloadRaw, signatureRaw, publicKeyPem) {
  * @returns {string}
  */
 function sha256Hex(content) {
-  return crypto.createHash('sha256').update(content).digest('hex');
+  return crypto.createHash("sha256").update(content).digest("hex");
 }
 
 /**
@@ -198,12 +198,12 @@ function sha256Hex(content) {
  * @returns {string | null}
  */
 function extractSha256Value(value) {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const normalized = value.trim().toLowerCase();
     return /^[a-f0-9]{64}$/.test(normalized) ? normalized : null;
   }
 
-  if (isObject(value) && typeof value.sha256 === 'string') {
+  if (isObject(value) && typeof value.sha256 === "string") {
     const normalized = value.sha256.trim().toLowerCase();
     return /^[a-f0-9]{64}$/.test(normalized) ? normalized : null;
   }
@@ -220,17 +220,17 @@ function parseChecksumsManifest(manifestRaw) {
   try {
     parsed = JSON.parse(manifestRaw);
   } catch {
-    throw new Error('Checksum manifest is not valid JSON');
+    throw new Error("Checksum manifest is not valid JSON");
   }
 
   if (!isObject(parsed)) {
-    throw new Error('Checksum manifest must be an object');
+    throw new Error("Checksum manifest must be an object");
   }
 
   const algorithmRaw =
-    typeof parsed.algorithm === 'string' ? parsed.algorithm.trim().toLowerCase() : 'sha256';
-  if (algorithmRaw !== 'sha256') {
-    throw new Error(`Unsupported checksum manifest algorithm: ${algorithmRaw || '(empty)'}`);
+    typeof parsed.algorithm === "string" ? parsed.algorithm.trim().toLowerCase() : "sha256";
+  if (algorithmRaw !== "sha256") {
+    throw new Error(`Unsupported checksum manifest algorithm: ${algorithmRaw || "(empty)"}`);
   }
 
   // Support legacy manifest formats:
@@ -239,20 +239,20 @@ function parseChecksumsManifest(manifestRaw) {
   // - deploy-pages.yml (pre-fix): generated_at field (e.g., "2026-02-08T...")
   // - Ultimate fallback: "1"
   const schemaVersion =
-    typeof parsed.schema_version === 'string'
+    typeof parsed.schema_version === "string"
       ? parsed.schema_version.trim()
-      : typeof parsed.version === 'string'
+      : typeof parsed.version === "string"
         ? parsed.version.trim()
-        : typeof parsed.generated_at === 'string'
+        : typeof parsed.generated_at === "string"
           ? parsed.generated_at.trim()
-          : '1';
+          : "1";
 
   if (!schemaVersion) {
-    throw new Error('Checksum manifest missing schema_version');
+    throw new Error("Checksum manifest missing schema_version");
   }
 
   if (!isObject(parsed.files)) {
-    throw new Error('Checksum manifest missing files object');
+    throw new Error("Checksum manifest missing files object");
   }
 
   const files = /** @type {Record<string, string>} */ ({});
@@ -266,7 +266,7 @@ function parseChecksumsManifest(manifestRaw) {
   }
 
   if (Object.keys(files).length === 0) {
-    throw new Error('Checksum manifest has no usable file digests');
+    throw new Error("Checksum manifest has no usable file digests");
   }
 
   return {
@@ -281,11 +281,11 @@ function parseChecksumsManifest(manifestRaw) {
  * @returns {string}
  */
 function normalizeChecksumEntryName(entryName) {
-  return String(entryName ?? '')
+  return String(entryName ?? "")
     .trim()
-    .replace(/\\/g, '/')
-    .replace(/^(?:\.\/)+/, '')
-    .replace(/^\/+/, '');
+    .replace(/\\/g, "/")
+    .replace(/^(?:\.\/)+/, "")
+    .replace(/^\/+/, "");
 }
 
 /**
@@ -320,7 +320,7 @@ function resolveChecksumManifestEntry(files, entryName) {
   if (basenameMatches.length > 1) {
     throw new Error(
       `Checksum manifest entry is ambiguous for ${entryName}; ` +
-        `multiple manifest keys share basename ${basename}`
+        `multiple manifest keys share basename ${basename}`,
     );
   }
 
@@ -358,9 +358,9 @@ function verifyChecksums(manifest, expectedEntries) {
  */
 export function defaultChecksumsUrl(feedUrl) {
   try {
-    return new URL('checksums.json', feedUrl).toString();
+    return new URL("checksums.json", feedUrl).toString();
   } catch {
-    const fallbackBase = String(feedUrl ?? '').replace(/\/?[^/]*$/, '');
+    const fallbackBase = String(feedUrl ?? "").replace(/\/?[^/]*$/, "");
     return `${fallbackBase}/checksums.json`;
   }
 }
@@ -376,14 +376,14 @@ function safeBasename(urlOrPath, fallback) {
     // Try parsing as URL first
     const parsed = new URL(urlOrPath);
     const pathname = parsed.pathname;
-    const lastSlash = pathname.lastIndexOf('/');
+    const lastSlash = pathname.lastIndexOf("/");
     if (lastSlash >= 0 && lastSlash < pathname.length - 1) {
       return pathname.slice(lastSlash + 1);
     }
   } catch {
     // Not a URL, try as path
-    const normalized = String(urlOrPath ?? '').trim();
-    const lastSlash = normalized.lastIndexOf('/');
+    const normalized = String(urlOrPath ?? "").trim();
+    const lastSlash = normalized.lastIndexOf("/");
     if (lastSlash >= 0 && lastSlash < normalized.length - 1) {
       return normalized.slice(lastSlash + 1);
     }
@@ -402,9 +402,9 @@ async function fetchText(fetchFn, targetUrl) {
 
   try {
     const response = await fetchFn(targetUrl, {
-      method: 'GET',
+      method: "GET",
       signal: controller.signal,
-      headers: { accept: 'application/json,text/plain;q=0.9,*/*;q=0.8' },
+      headers: { accept: "application/json,text/plain;q=0.9,*/*;q=0.8" },
     });
     if (!response.ok) return null;
     return await response.text();
@@ -439,24 +439,24 @@ async function fetchText(fetchFn, targetUrl) {
 export async function loadLocalFeed(feedPath, options = {}) {
   const signaturePath = options.signaturePath ?? `${feedPath}.sig`;
   const checksumsPath =
-    options.checksumsPath ?? path.join(path.dirname(feedPath), 'checksums.json');
+    options.checksumsPath ?? path.join(path.dirname(feedPath), "checksums.json");
   const checksumsSignaturePath = options.checksumsSignaturePath ?? `${checksumsPath}.sig`;
-  const publicKeyPem = String(options.publicKeyPem ?? '');
+  const publicKeyPem = String(options.publicKeyPem ?? "");
   const checksumsPublicKeyPem = String(options.checksumsPublicKeyPem ?? publicKeyPem);
   const allowUnsigned = options.allowUnsigned === true;
   const verifyChecksumManifest = options.verifyChecksumManifest !== false;
 
-  const payloadRaw = await fs.readFile(feedPath, 'utf8');
+  const payloadRaw = await fs.readFile(feedPath, "utf8");
 
   if (!allowUnsigned) {
-    const signatureRaw = await fs.readFile(signaturePath, 'utf8');
+    const signatureRaw = await fs.readFile(signaturePath, "utf8");
     if (!verifySignedPayload(payloadRaw, signatureRaw, publicKeyPem)) {
       throw new Error(`Feed signature verification failed for local feed: ${feedPath}`);
     }
 
     if (verifyChecksumManifest) {
-      const checksumsRaw = await fs.readFile(checksumsPath, 'utf8');
-      const checksumsSignatureRaw = await fs.readFile(checksumsSignaturePath, 'utf8');
+      const checksumsRaw = await fs.readFile(checksumsPath, "utf8");
+      const checksumsSignatureRaw = await fs.readFile(checksumsSignaturePath, "utf8");
 
       if (!verifySignedPayload(checksumsRaw, checksumsSignatureRaw, checksumsPublicKeyPem)) {
         throw new Error(`Checksum manifest signature verification failed: ${checksumsPath}`);
@@ -503,12 +503,12 @@ export async function loadLocalFeed(feedPath, options = {}) {
 export async function loadRemoteFeed(feedUrl, options = {}) {
   // Use secure fetch with TLS 1.2+ enforcement and domain validation
   const fetchFn = secureFetch;
-  if (typeof fetchFn !== 'function') return null;
+  if (typeof fetchFn !== "function") return null;
 
   const signatureUrl = options.signatureUrl ?? `${feedUrl}.sig`;
   const checksumsUrl = options.checksumsUrl ?? defaultChecksumsUrl(feedUrl);
   const checksumsSignatureUrl = options.checksumsSignatureUrl ?? `${checksumsUrl}.sig`;
-  const publicKeyPem = String(options.publicKeyPem ?? '');
+  const publicKeyPem = String(options.publicKeyPem ?? "");
   const checksumsPublicKeyPem = String(options.checksumsPublicKeyPem ?? publicKeyPem);
   const allowUnsigned = options.allowUnsigned === true;
   const verifyChecksumManifest = options.verifyChecksumManifest !== false;
@@ -540,9 +540,9 @@ export async function loadRemoteFeed(feedUrl, options = {}) {
 
           const checksumsManifest = parseChecksumsManifest(checksumsRaw);
           // Derive checksum entry names from actual URLs (supports any filename, not just feed.json)
-          const checksumFeedEntry = options.checksumFeedEntry ?? safeBasename(feedUrl, 'feed.json');
+          const checksumFeedEntry = options.checksumFeedEntry ?? safeBasename(feedUrl, "feed.json");
           const checksumSignatureEntry =
-            options.checksumSignatureEntry ?? safeBasename(signatureUrl, 'feed.json.sig');
+            options.checksumSignatureEntry ?? safeBasename(signatureUrl, "feed.json.sig");
           verifyChecksums(checksumsManifest, {
             [checksumFeedEntry]: payloadRaw,
             [checksumSignatureEntry]: signatureRaw,

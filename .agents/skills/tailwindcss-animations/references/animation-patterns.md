@@ -16,13 +16,21 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes slide-up {
@@ -107,9 +115,7 @@
 <div class="transition ease-in-out">Ease in-out</div>
 
 <!-- Custom cubic-bezier -->
-<div class="transition ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]">
-  Bouncy
-</div>
+<div class="transition ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]">Bouncy</div>
 ```
 
 ### Delay
@@ -128,29 +134,29 @@
 
 ```html
 <!-- Scale on hover -->
-<div class="transition-transform duration-200 hover:scale-105">
-  Grows on hover
-</div>
+<div class="transition-transform duration-200 hover:scale-105">Grows on hover</div>
 
 <!-- Lift effect -->
-<div class="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-  Lifts on hover
-</div>
+<div class="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">Lifts on hover</div>
 
 <!-- Color shift -->
-<button class="
+<button
+  class="
   bg-blue-600 text-white
   transition-colors duration-200
   hover:bg-blue-700
-">
+"
+>
   Button
 </button>
 
 <!-- Multi-property -->
-<div class="
+<div
+  class="
   transition-all duration-300
   hover:scale-105 hover:shadow-xl hover:bg-gray-50
-">
+"
+>
   Complex hover
 </div>
 ```
@@ -158,17 +164,21 @@
 ### Focus Effects
 
 ```html
-<input class="
+<input
+  class="
   border border-gray-300
   transition-all duration-200
   focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
   focus:outline-none
-" />
+"
+/>
 
-<button class="
+<button
+  class="
   transition-all duration-200
   focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-">
+"
+>
   Accessible focus
 </button>
 ```
@@ -176,10 +186,12 @@
 ### Active States
 
 ```html
-<button class="
+<button
+  class="
   transition-transform duration-100
   active:scale-95
-">
+"
+>
   Press effect
 </button>
 ```
@@ -192,10 +204,12 @@
 <div class="group cursor-pointer p-4 border rounded-lg hover:border-blue-500">
   <h3 class="transition-colors group-hover:text-blue-600">Title</h3>
   <p class="transition-colors group-hover:text-gray-600">Description</p>
-  <span class="
+  <span
+    class="
     inline-block transition-transform
     group-hover:translate-x-1
-  ">
+  "
+  >
     → Read more
   </span>
 </div>
@@ -206,21 +220,23 @@
 ```html
 <div class="group/card p-4 border rounded-lg">
   <div class="group/image relative overflow-hidden">
-    <img class="
+    <img
+      class="
       transition-transform duration-300
       group-hover/image:scale-110
-    " />
-    <div class="
+    "
+    />
+    <div
+      class="
       absolute inset-0 bg-black/50
       opacity-0 transition-opacity
       group-hover/image:opacity-100
-    ">
+    "
+    >
       Overlay
     </div>
   </div>
-  <h3 class="transition-colors group-hover/card:text-blue-600">
-    Title
-  </h3>
+  <h3 class="transition-colors group-hover/card:text-blue-600">Title</h3>
 </div>
 ```
 
@@ -240,18 +256,20 @@
 ### React Pattern
 
 ```tsx
-{items.map((item, index) => (
-  <div
-    key={item.id}
-    className="animate-slide-up opacity-0"
-    style={{
-      animationDelay: `${index * 100}ms`,
-      animationFillMode: 'forwards',
-    }}
-  >
-    {item.content}
-  </div>
-))}
+{
+  items.map((item, index) => (
+    <div
+      key={item.id}
+      className="animate-slide-up opacity-0"
+      style={{
+        animationDelay: `${index * 100}ms`,
+        animationFillMode: "forwards",
+      }}
+    >
+      {item.content}
+    </div>
+  ));
+}
 ```
 
 ## Loading Animations
@@ -262,16 +280,14 @@
 <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
   <circle
     class="opacity-25"
-    cx="12" cy="12" r="10"
+    cx="12"
+    cy="12"
+    r="10"
     stroke="currentColor"
     stroke-width="4"
     fill="none"
   />
-  <path
-    class="opacity-75"
-    fill="currentColor"
-    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-  />
+  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
 </svg>
 ```
 
@@ -302,8 +318,12 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 ```
 
@@ -327,12 +347,14 @@
 
 ```html
 <!-- Respect user preferences -->
-<div class="
+<div
+  class="
   transition-transform duration-300
   motion-safe:hover:scale-105
   motion-reduce:transition-none
   motion-reduce:hover:scale-100
-">
+"
+>
   Respects motion preferences
 </div>
 ```
@@ -356,10 +378,12 @@
 ### GPU-Accelerated Properties
 
 Prefer these for smooth 60fps animations:
+
 - `transform` (translate, scale, rotate)
 - `opacity`
 
 Avoid animating:
+
 - `width`, `height`
 - `top`, `left`, `right`, `bottom`
 - `margin`, `padding`
@@ -369,18 +393,14 @@ Avoid animating:
 
 ```html
 <!-- Use sparingly for complex animations -->
-<div class="will-change-transform hover:scale-105">
-  Optimized for transform
-</div>
+<div class="will-change-transform hover:scale-105">Optimized for transform</div>
 ```
 
 ### contain
 
 ```html
 <!-- Isolate repaints -->
-<div class="contain-layout">
-  Animation won't affect siblings
-</div>
+<div class="contain-layout">Animation won't affect siblings</div>
 ```
 
 ## Common Animation Recipes
@@ -388,14 +408,18 @@ Avoid animating:
 ### Modal Entrance
 
 ```html
-<div class="
+<div
+  class="
   fixed inset-0 bg-black/50
   animate-fade-in
-">
-  <div class="
+"
+>
+  <div
+    class="
     bg-white rounded-xl p-6
     animate-scale-in
-  ">
+  "
+  >
     Modal content
   </div>
 </div>
@@ -404,11 +428,13 @@ Avoid animating:
 ### Toast Notification
 
 ```html
-<div class="
+<div
+  class="
   fixed bottom-4 right-4
   animate-slide-up
   bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg
-">
+"
+>
   Notification message
 </div>
 ```
@@ -416,12 +442,14 @@ Avoid animating:
 ### Menu Dropdown
 
 ```html
-<div class="
+<div
+  class="
   absolute top-full left-0 mt-2
   origin-top-left
   animate-scale-in
   bg-white rounded-lg shadow-xl
-">
+"
+>
   Menu items
 </div>
 ```

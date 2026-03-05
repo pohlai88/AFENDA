@@ -12,7 +12,12 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { ApiErrorResponseSchema, makeSuccessSchema, requireOrg, requireAuth } from "../helpers/responses.js";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireOrg,
+  requireAuth,
+} from "../helpers/responses.js";
 import {
   SubmitInvoiceCommandSchema,
   ApproveInvoiceCommandSchema,
@@ -109,9 +114,7 @@ const InvoiceHistorySchema = makeSuccessSchema(
   ),
 );
 
-const ActionResponseSchema = makeSuccessSchema(
-  z.object({ id: z.string().uuid() }),
-);
+const ActionResponseSchema = makeSuccessSchema(z.object({ id: z.string().uuid() }));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -119,7 +122,9 @@ function buildCtx(orgId: string): OrgScopedContext {
   return { activeContext: { orgId: orgId as OrgId } };
 }
 
-function buildPolicyCtx(req: { ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> } }): PolicyContext {
+function buildPolicyCtx(req: {
+  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
+}): PolicyContext {
   return {
     principalId: req.ctx?.principalId,
     permissionsSet: req.ctx?.permissionsSet ?? new Set(),
@@ -501,11 +506,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const inv = await getInvoiceById(
-        app.db,
-        orgId as OrgId,
-        req.params.invoiceId as InvoiceId,
-      );
+      const inv = await getInvoiceById(app.db, orgId as OrgId, req.params.invoiceId as InvoiceId);
 
       if (!inv) {
         return reply.status(404).send({

@@ -33,9 +33,7 @@ async function UsersPage() {
   const users = await db.user.findMany();
 
   // Or fetch from external API
-  const posts = await fetch('https://api.example.com/posts').then((r) =>
-    r.json()
-  );
+  const posts = await fetch("https://api.example.com/posts").then((r) => r.json());
 
   return (
     <ul>
@@ -60,28 +58,28 @@ Server Actions are the recommended way to handle mutations.
 
 ```tsx
 // app/actions.ts
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from "next/cache";
 
 export async function createPost(formData: FormData) {
-  const title = formData.get('title') as string;
+  const title = formData.get("title") as string;
 
   await db.post.create({ data: { title } });
 
-  revalidatePath('/posts');
+  revalidatePath("/posts");
 }
 
 export async function deletePost(id: string) {
   await db.post.delete({ where: { id } });
 
-  revalidateTag('posts');
+  revalidateTag("posts");
 }
 ```
 
 ```tsx
 // app/posts/new/page.tsx
-import { createPost } from '@/app/actions';
+import { createPost } from "@/app/actions";
 
 export default function NewPost() {
   return (
@@ -112,7 +110,7 @@ Use Route Handlers when you need a REST API.
 
 ```tsx
 // app/api/posts/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // GET is cacheable
 export async function GET(request: NextRequest) {
@@ -160,11 +158,7 @@ async function Dashboard() {
 ```tsx
 // Good: Parallel fetching
 async function Dashboard() {
-  const [user, posts, comments] = await Promise.all([
-    getUser(),
-    getPosts(),
-    getComments(),
-  ]);
+  const [user, posts, comments] = await Promise.all([getUser(), getPosts(), getComments()]);
 
   return <div>...</div>;
 }
@@ -174,7 +168,7 @@ async function Dashboard() {
 
 ```tsx
 // Good: Show content progressively
-import { Suspense } from 'react';
+import { Suspense } from "react";
 
 async function Dashboard() {
   return (
@@ -204,7 +198,7 @@ async function PostsSection() {
 
 ```tsx
 // lib/data.ts
-import { cache } from 'react';
+import { cache } from "react";
 
 export const getUser = cache(async (id: string) => {
   return db.user.findUnique({ where: { id } });
@@ -217,7 +211,7 @@ export const preloadUser = (id: string) => {
 
 ```tsx
 // app/user/[id]/page.tsx
-import { getUser, preloadUser } from '@/lib/data';
+import { getUser, preloadUser } from "@/lib/data";
 
 export default async function UserPage({ params }) {
   const { id } = await params;
@@ -247,7 +241,7 @@ async function Page() {
 }
 
 // Client Component
-('use client');
+("use client");
 function ClientComponent({ initialData }) {
   const [data, setData] = useState(initialData);
   // ...
@@ -257,14 +251,14 @@ function ClientComponent({ initialData }) {
 ### Option 2: Fetch on Mount (When Necessary)
 
 ```tsx
-'use client';
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState } from "react";
 
 function ClientComponent() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch('/api/data')
+    fetch("/api/data")
       .then((r) => r.json())
       .then(setData);
   }, []);
@@ -280,9 +274,9 @@ Server Actions can be called from Client Components for reads, but this is not
 their intended purpose:
 
 ```tsx
-'use client';
-import { getData } from './actions';
-import { useEffect, useState } from 'react';
+"use client";
+import { getData } from "./actions";
+import { useEffect, useState } from "react";
 
 function ClientComponent() {
   const [data, setData] = useState(null);

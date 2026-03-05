@@ -9,10 +9,7 @@
  *   4. `reason` is required on reject and void — mandatory for audit trails.
  */
 import { z } from "zod";
-import {
-  InvoiceIdSchema,
-  SupplierIdSchema,
-} from "../shared/ids.js";
+import { InvoiceIdSchema, SupplierIdSchema } from "../shared/ids.js";
 import { IdempotencyKeySchema } from "../shared/idempotency.js";
 import { CurrencyCodeSchema } from "../shared/money.js";
 import { DateSchema } from "../shared/datetime.js";
@@ -27,10 +24,10 @@ export const SubmitInvoiceCommandSchema = z.object({
 
   // Integer minor-unit (cents, fils, etc.) as bigint. Accepts bigint or numeric
   // string from JSON. Negative allowed (credit notes/memos).
-  amountMinor:  z.coerce.bigint(),
+  amountMinor: z.coerce.bigint(),
   currencyCode: CurrencyCodeSchema,
 
-  dueDate:     DateSchema.optional(),
+  dueDate: DateSchema.optional(),
   poReference: z.string().trim().min(1).max(64).optional(),
 });
 
@@ -38,16 +35,16 @@ export const SubmitInvoiceCommandSchema = z.object({
 
 export const ApproveInvoiceCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  invoiceId:      InvoiceIdSchema,
-  reason:         z.string().trim().min(1).max(500).optional(),
+  invoiceId: InvoiceIdSchema,
+  reason: z.string().trim().min(1).max(500).optional(),
 });
 
 // ─── Reject ───────────────────────────────────────────────────────────────────
 
 export const RejectInvoiceCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  invoiceId:      InvoiceIdSchema,
-  reason:         z.string().trim().min(1).max(500),
+  invoiceId: InvoiceIdSchema,
+  reason: z.string().trim().min(1).max(500),
 });
 
 // ─── Void ─────────────────────────────────────────────────────────────────────
@@ -59,8 +56,8 @@ export const RejectInvoiceCommandSchema = z.object({
  */
 export const VoidInvoiceCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  invoiceId:      InvoiceIdSchema,
-  reason:         z.string().trim().min(1).max(500),
+  invoiceId: InvoiceIdSchema,
+  reason: z.string().trim().min(1).max(500),
 });
 
 // ─── Mark Paid ────────────────────────────────────────────────────────────────
@@ -71,16 +68,15 @@ export const VoidInvoiceCommandSchema = z.object({
  * Transition guard (only `posted → paid` allowed) belongs in `@afenda/core`.
  */
 export const MarkPaidCommandSchema = z.object({
-  idempotencyKey:   IdempotencyKeySchema,
-  invoiceId:        InvoiceIdSchema,
+  idempotencyKey: IdempotencyKeySchema,
+  invoiceId: InvoiceIdSchema,
   paymentReference: z.string().trim().min(1).max(128),
-  paidAt:           DateSchema.optional(),
-  reason:           z.string().trim().min(1).max(500).optional(),
+  paidAt: DateSchema.optional(),
+  reason: z.string().trim().min(1).max(500).optional(),
 });
 
-export type SubmitInvoiceCommand  = z.infer<typeof SubmitInvoiceCommandSchema>;
+export type SubmitInvoiceCommand = z.infer<typeof SubmitInvoiceCommandSchema>;
 export type ApproveInvoiceCommand = z.infer<typeof ApproveInvoiceCommandSchema>;
-export type RejectInvoiceCommand  = z.infer<typeof RejectInvoiceCommandSchema>;
-export type VoidInvoiceCommand    = z.infer<typeof VoidInvoiceCommandSchema>;
-export type MarkPaidCommand       = z.infer<typeof MarkPaidCommandSchema>;
-
+export type RejectInvoiceCommand = z.infer<typeof RejectInvoiceCommandSchema>;
+export type VoidInvoiceCommand = z.infer<typeof VoidInvoiceCommandSchema>;
+export type MarkPaidCommand = z.infer<typeof MarkPaidCommandSchema>;

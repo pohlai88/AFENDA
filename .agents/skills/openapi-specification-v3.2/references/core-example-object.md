@@ -9,14 +9,14 @@ Groups an internal or external example with `summary` and `description`. Used in
 
 ## Fixed fields
 
-| Field         | Type   | Description |
-|---------------|--------|-------------|
-| summary       | string | Short description. |
-| description   | string | Long description; CommonMark allowed. |
-| dataValue     | Any    | Data structure valid per Schema; if present, `value` MUST be absent. |
+| Field           | Type   | Description                                                                                                                                                                                                       |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| summary         | string | Short description.                                                                                                                                                                                                |
+| description     | string | Long description; CommonMark allowed.                                                                                                                                                                             |
+| dataValue       | Any    | Data structure valid per Schema; if present, `value` MUST be absent.                                                                                                                                              |
 | serializedValue | string | Serialized form (encoding/escaping per Validating Examples). If `dataValue` present, SHOULD be its serialization. If present, `value` and `externalValue` MUST be absent. Prefer not for JSON (data form easier). |
-| externalValue | string | URI to serialized example in separate document. If present, `serializedValue` and `value` MUST be absent. |
-| value         | Any    | Embedded literal. Mutually exclusive with `externalValue`. **Deprecated for non-JSON targets:** use `dataValue` and/or `serializedValue`. |
+| externalValue   | string | URI to serialized example in separate document. If present, `serializedValue` and `value` MUST be absent.                                                                                                         |
+| value           | Any    | Embedded literal. Mutually exclusive with `externalValue`. **Deprecated for non-JSON targets:** use `dataValue` and/or `serializedValue`.                                                                         |
 
 Example SHOULD be compatible with associated schema; tooling MAY validate and reject.
 

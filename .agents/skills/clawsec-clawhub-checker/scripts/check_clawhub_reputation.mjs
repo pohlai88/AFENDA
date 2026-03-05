@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
-import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 /**
  * Check ClawHub reputation for a skill
@@ -38,8 +38,8 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
 
   try {
     // Check 1: Try to inspect the skill via clawhub
-    const inspectResult = spawnSync('clawhub', ['inspect', skillSlug, '--json'], {
-      encoding: 'utf-8',
+    const inspectResult = spawnSync("clawhub", ["inspect", skillSlug, "--json"], {
+      encoding: "utf-8",
     });
 
     if (inspectResult.status !== 0) {
@@ -79,14 +79,14 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
 
         // Check 4: Author reputation
         if (skillInfo.owner?.handle) {
-          const authorResult = spawnSync('clawhub', ['search', skillInfo.owner.handle], {
-            encoding: 'utf-8',
+          const authorResult = spawnSync("clawhub", ["search", skillInfo.owner.handle], {
+            encoding: "utf-8",
           });
 
           if (authorResult.status === 0) {
             const lines = authorResult.stdout
               .trim()
-              .split('\n')
+              .split("\n")
               .filter((l) => l);
             const skillCount = lines.length - 1; // First line is header
 
@@ -95,7 +95,7 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
               result.score -= 10;
             } else if (skillCount < 3) {
               result.warnings.push(
-                `Author "${skillInfo.owner.handle}" has only ${skillCount} published skills`
+                `Author "${skillInfo.owner.handle}" has only ${skillCount} published skills`,
               );
               result.score -= 5;
             }
@@ -125,37 +125,37 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     // - Depends on clawhub's prompting behavior (sending "n\n" to decline)
     // - If clawhub inspect provided security flags, we'd use that instead
     // This is the only way to programmatically access VirusTotal warnings currently
-    const installArgs = ['install', skillSlug];
-    if (version) installArgs.push('--version', version);
-    const installCheck = spawnSync('clawhub', installArgs, {
-      input: 'n\n', // Automatically decline the installation prompt
-      encoding: 'utf-8',
+    const installArgs = ["install", skillSlug];
+    if (version) installArgs.push("--version", version);
+    const installCheck = spawnSync("clawhub", installArgs, {
+      input: "n\n", // Automatically decline the installation prompt
+      encoding: "utf-8",
     });
 
-    const output = (installCheck.stdout || '') + (installCheck.stderr || '');
+    const output = (installCheck.stdout || "") + (installCheck.stderr || "");
     if (
-      output.includes('suspicious') ||
-      output.includes('VirusTotal') ||
-      output.includes('flagged')
+      output.includes("suspicious") ||
+      output.includes("VirusTotal") ||
+      output.includes("flagged")
     ) {
       result.virustotal.push("Flagged by ClawHub's VirusTotal Code Insight");
       result.score -= 40; // More severe penalty for VirusTotal flag
 
       // Extract specific warnings
-      const lines = output.split('\n');
+      const lines = output.split("\n");
       for (const line of lines) {
         if (
-          line.includes('Warning:') ||
-          line.includes('risky patterns') ||
-          line.includes('crypto keys') ||
-          line.includes('external APIs') ||
-          line.includes('eval') ||
-          line.includes('VirusTotal Code Insight')
+          line.includes("Warning:") ||
+          line.includes("risky patterns") ||
+          line.includes("crypto keys") ||
+          line.includes("external APIs") ||
+          line.includes("eval") ||
+          line.includes("VirusTotal Code Insight")
         ) {
           const cleanLine = line
             .trim()
-            .replace(/^⚠️\s*/, '')
-            .replace(/^\s*Warning:\s*/, '');
+            .replace(/^⚠️\s*/, "")
+            .replace(/^\s*Warning:\s*/, "");
           if (cleanLine && !result.virustotal.includes(cleanLine)) {
             result.virustotal.push(cleanLine);
           }
@@ -166,9 +166,9 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     // Check 7: If version specified, check if it exists
     if (version) {
       const versionCheck = spawnSync(
-        'clawhub',
-        ['inspect', skillSlug, '--version', version, '--json'],
-        { encoding: 'utf-8' }
+        "clawhub",
+        ["inspect", skillSlug, "--version", version, "--json"],
+        { encoding: "utf-8" },
       );
 
       if (versionCheck.status !== 0) {
@@ -184,7 +184,7 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     // Add summary warning if below threshold
     if (!result.safe) {
       result.warnings.unshift(
-        `Reputation score ${result.score}/100 below threshold ${threshold}/100`
+        `Reputation score ${result.score}/100 below threshold ${threshold}/100`,
       );
     }
   } catch (error) {
@@ -205,18 +205,18 @@ if (isCliEntrypoint) {
   async function main() {
     const args = process.argv.slice(2);
     if (args.length < 1) {
-      console.error('Usage: node check_clawhub_reputation.mjs <skill-slug> [version] [threshold]');
+      console.error("Usage: node check_clawhub_reputation.mjs <skill-slug> [version] [threshold]");
       process.exit(1);
     }
 
     const skillSlug = args[0];
-    const version = args[1] || '';
+    const version = args[1] || "";
     let threshold = 70;
     if (args[2] !== undefined) {
       const parsedThreshold = parseInt(args[2], 10);
       if (!Number.isInteger(parsedThreshold) || parsedThreshold < 0 || parsedThreshold > 100) {
         console.error(
-          `Invalid threshold: "${args[2]}". Threshold must be an integer between 0 and 100.`
+          `Invalid threshold: "${args[2]}". Threshold must be an integer between 0 and 100.`,
         );
         process.exit(1);
       }

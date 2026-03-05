@@ -11,13 +11,13 @@
  * Run: node skills/clawsec-suite/test/skill_catalog_discovery.test.mjs
  */
 
-import http from 'node:http';
-import path from 'node:path';
-import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import http from "node:http";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SCRIPT_PATH = path.resolve(__dirname, '..', 'scripts', 'discover_skill_catalog.mjs');
+const SCRIPT_PATH = path.resolve(__dirname, "..", "scripts", "discover_skill_catalog.mjs");
 
 let passCount = 0;
 let failCount = 0;
@@ -35,23 +35,23 @@ function fail(name, error) {
 
 function runCatalogScript(args, env = {}) {
   return new Promise((resolve) => {
-    const proc = spawn('node', [SCRIPT_PATH, ...args], {
+    const proc = spawn("node", [SCRIPT_PATH, ...args], {
       env: { ...process.env, ...env },
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
-    let stdout = '';
-    let stderr = '';
+    let stdout = "";
+    let stderr = "";
 
-    proc.stdout.on('data', (chunk) => {
+    proc.stdout.on("data", (chunk) => {
       stdout += chunk.toString();
     });
 
-    proc.stderr.on('data', (chunk) => {
+    proc.stderr.on("data", (chunk) => {
       stderr += chunk.toString();
     });
 
-    proc.on('close', (code) => {
+    proc.on("close", (code) => {
       resolve({ code, stdout, stderr });
     });
   });
@@ -60,10 +60,10 @@ function runCatalogScript(args, env = {}) {
 function withServer(handler) {
   return new Promise((resolve, reject) => {
     const server = http.createServer(handler);
-    server.listen(0, '127.0.0.1', () => {
+    server.listen(0, "127.0.0.1", () => {
       const addr = server.address();
-      if (!addr || typeof addr === 'string') {
-        reject(new Error('Failed to bind test server'));
+      if (!addr || typeof addr === "string") {
+        reject(new Error("Failed to bind test server"));
         return;
       }
 
@@ -76,7 +76,7 @@ function withServer(handler) {
       });
     });
 
-    server.on('error', reject);
+    server.on("error", reject);
   });
 }
 
@@ -84,49 +84,49 @@ function withServer(handler) {
 // Test: remote index is used when valid
 // -----------------------------------------------------------------------------
 async function testRemoteCatalogSuccess() {
-  const testName = 'discover_skill_catalog: uses remote index when valid';
+  const testName = "discover_skill_catalog: uses remote index when valid";
   let fixture = null;
 
   try {
     fixture = await withServer((req, res) => {
-      if (req.url !== '/index.json') {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'not found' }));
+      if (req.url !== "/index.json") {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "not found" }));
         return;
       }
 
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          version: '1.0.0',
-          updated: '2026-02-16T08:20:00Z',
+          version: "1.0.0",
+          updated: "2026-02-16T08:20:00Z",
           skills: [
             {
-              id: 'soul-guardian',
-              name: 'soul-guardian',
-              version: '9.9.9',
-              description: 'Remote skill metadata',
-              emoji: '👻',
-              category: 'security',
-              tag: 'soul-guardian-v9.9.9',
+              id: "soul-guardian",
+              name: "soul-guardian",
+              version: "9.9.9",
+              description: "Remote skill metadata",
+              emoji: "👻",
+              category: "security",
+              tag: "soul-guardian-v9.9.9",
             },
             {
-              id: 'clawtributor',
-              name: 'clawtributor',
-              version: '1.2.3',
-              description: 'Remote clawtributor metadata',
-              emoji: '🤝',
-              category: 'security',
-              tag: 'clawtributor-v1.2.3',
+              id: "clawtributor",
+              name: "clawtributor",
+              version: "1.2.3",
+              description: "Remote clawtributor metadata",
+              emoji: "🤝",
+              category: "security",
+              tag: "clawtributor-v1.2.3",
             },
           ],
-        })
+        }),
       );
     });
 
-    const result = await runCatalogScript(['--json'], {
+    const result = await runCatalogScript(["--json"], {
       CLAWSEC_SKILLS_INDEX_URL: `${fixture.url}/index.json`,
-      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: '2000',
+      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: "2000",
     });
 
     if (result.code !== 0) {
@@ -135,13 +135,13 @@ async function testRemoteCatalogSuccess() {
     }
 
     const payload = JSON.parse(result.stdout);
-    const clawtributor = payload.skills.find((entry) => entry.id === 'clawtributor');
-    const soulGuardian = payload.skills.find((entry) => entry.id === 'soul-guardian');
+    const clawtributor = payload.skills.find((entry) => entry.id === "clawtributor");
+    const soulGuardian = payload.skills.find((entry) => entry.id === "soul-guardian");
 
     if (
-      payload.source === 'remote' &&
-      payload.updated === '2026-02-16T08:20:00Z' &&
-      soulGuardian?.version === '9.9.9' &&
+      payload.source === "remote" &&
+      payload.updated === "2026-02-16T08:20:00Z" &&
+      soulGuardian?.version === "9.9.9" &&
       clawtributor?.requires_explicit_consent === true
     ) {
       pass(testName);
@@ -161,18 +161,18 @@ async function testRemoteCatalogSuccess() {
 // Test: invalid remote payload falls back to suite-local catalog
 // -----------------------------------------------------------------------------
 async function testInvalidRemotePayloadFallsBack() {
-  const testName = 'discover_skill_catalog: invalid remote payload falls back';
+  const testName = "discover_skill_catalog: invalid remote payload falls back";
   let fixture = null;
 
   try {
     fixture = await withServer((_req, res) => {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ version: '1.0.0', note: 'missing skills' }));
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ version: "1.0.0", note: "missing skills" }));
     });
 
-    const result = await runCatalogScript(['--json'], {
+    const result = await runCatalogScript(["--json"], {
       CLAWSEC_SKILLS_INDEX_URL: `${fixture.url}/index.json`,
-      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: '2000',
+      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: "2000",
     });
 
     if (result.code !== 0) {
@@ -182,13 +182,13 @@ async function testInvalidRemotePayloadFallsBack() {
 
     const payload = JSON.parse(result.stdout);
     const hasSoulGuardian = Array.isArray(payload.skills)
-      ? payload.skills.some((entry) => entry.id === 'soul-guardian')
+      ? payload.skills.some((entry) => entry.id === "soul-guardian")
       : false;
 
     if (
-      payload.source === 'fallback' &&
+      payload.source === "fallback" &&
       hasSoulGuardian &&
-      String(payload.warning).includes('skills array')
+      String(payload.warning).includes("skills array")
     ) {
       pass(testName);
     } else {
@@ -207,12 +207,12 @@ async function testInvalidRemotePayloadFallsBack() {
 // Test: unreachable remote index falls back to suite-local catalog
 // -----------------------------------------------------------------------------
 async function testUnreachableRemoteFallsBack() {
-  const testName = 'discover_skill_catalog: unreachable remote index falls back';
+  const testName = "discover_skill_catalog: unreachable remote index falls back";
 
   try {
-    const result = await runCatalogScript(['--json'], {
-      CLAWSEC_SKILLS_INDEX_URL: 'http://127.0.0.1:9/index.json',
-      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: '250',
+    const result = await runCatalogScript(["--json"], {
+      CLAWSEC_SKILLS_INDEX_URL: "http://127.0.0.1:9/index.json",
+      CLAWSEC_SKILLS_INDEX_TIMEOUT_MS: "250",
     });
 
     if (result.code !== 0) {
@@ -222,7 +222,7 @@ async function testUnreachableRemoteFallsBack() {
 
     const payload = JSON.parse(result.stdout);
     if (
-      payload.source === 'fallback' &&
+      payload.source === "fallback" &&
       Array.isArray(payload.skills) &&
       payload.skills.length > 0
     ) {
@@ -239,7 +239,7 @@ async function testUnreachableRemoteFallsBack() {
 // Main test runner
 // -----------------------------------------------------------------------------
 async function runTests() {
-  console.log('=== ClawSec Skill Catalog Discovery Tests ===\n');
+  console.log("=== ClawSec Skill Catalog Discovery Tests ===\n");
 
   await testRemoteCatalogSuccess();
   await testInvalidRemotePayloadFallsBack();
@@ -253,6 +253,6 @@ async function runTests() {
 }
 
 runTests().catch((error) => {
-  console.error('Test runner failed:', error);
+  console.error("Test runner failed:", error);
   process.exit(1);
 });

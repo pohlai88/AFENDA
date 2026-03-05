@@ -10,12 +10,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
 import {
   SUBMITTER_EMAIL,
   APPROVER_EMAIL,
@@ -82,7 +77,9 @@ describe("audit log completeness (EC-5)", () => {
     const result = await app.db.execute(
       /* sql */ `SELECT action, entity_type, entity_id FROM audit_log ORDER BY occurred_at ASC`,
     );
-    const rows = (result as { rows: Array<{ action: string; entity_type: string; entity_id: string }> }).rows;
+    const rows = (
+      result as { rows: Array<{ action: string; entity_type: string; entity_id: string }> }
+    ).rows;
 
     // Must have at least 3 audit rows for the 3 commands
     expect(rows.length).toBeGreaterThanOrEqual(3);

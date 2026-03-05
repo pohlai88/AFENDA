@@ -19,18 +19,20 @@ import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth } from "../helpe
 
 // ── Response schemas ─────────────────────────────────────────────────────────
 
-const MeResponseSchema = makeSuccessSchema(z.object({
-  principalId: z.string().describe("Authenticated principal UUID"),
-  activeContext: z
-    .object({
-      orgId: z.string().uuid().describe("Active organization UUID"),
-      orgSlug: z.string().optional().describe("Active organization slug"),
-    })
-    .nullable()
-    .describe("Current active organization context (null if no context is active)"),
-  roles: z.array(z.string()).describe("Role names assigned to this principal"),
-  permissions: z.array(z.string()).describe("Flattened permission set"),
-}));
+const MeResponseSchema = makeSuccessSchema(
+  z.object({
+    principalId: z.string().describe("Authenticated principal UUID"),
+    activeContext: z
+      .object({
+        orgId: z.string().uuid().describe("Active organization UUID"),
+        orgSlug: z.string().optional().describe("Active organization slug"),
+      })
+      .nullable()
+      .describe("Current active organization context (null if no context is active)"),
+    roles: z.array(z.string()).describe("Role names assigned to this principal"),
+    permissions: z.array(z.string()).describe("Flattened permission set"),
+  }),
+);
 
 const ContextItemSchema = z.object({
   partyRoleId: z.string().uuid().describe("Party role membership ID"),
@@ -40,9 +42,11 @@ const ContextItemSchema = z.object({
   partyName: z.string().describe("Party display name"),
 });
 
-const ContextsResponseSchema = makeSuccessSchema(z.object({
-  contexts: z.array(ContextItemSchema).describe("Available contexts (hats) for this principal"),
-}));
+const ContextsResponseSchema = makeSuccessSchema(
+  z.object({
+    contexts: z.array(ContextItemSchema).describe("Available contexts (hats) for this principal"),
+  }),
+);
 
 export async function iamRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

@@ -22,17 +22,17 @@ Expressions preserve the type of the referenced value. Embed in string values by
 
 ## Example expressions
 
-| Source | Example expression | Notes |
-|--------|--------------------|-------|
-| HTTP Method | `$method` | POST, GET, etc. |
-| Request URL | `$url` | Full request URL |
-| Request header | `$request.header.content-type` | Single header value |
-| Request path param | `$request.path.id` | Path param must be declared on operation |
-| Request query param | `$request.query.queryUrl` | Query param must be declared |
-| Request body | `$request.body#/user/uuid` | JSON Pointer into request body |
-| Response header | `$response.header.Location` | Single header value |
-| Response body | `$response.body#/status` | JSON Pointer into response body |
-| Status code | `$statusCode` | HTTP status code |
+| Source              | Example expression             | Notes                                    |
+| ------------------- | ------------------------------ | ---------------------------------------- |
+| HTTP Method         | `$method`                      | POST, GET, etc.                          |
+| Request URL         | `$url`                         | Full request URL                         |
+| Request header      | `$request.header.content-type` | Single header value                      |
+| Request path param  | `$request.path.id`             | Path param must be declared on operation |
+| Request query param | `$request.query.queryUrl`      | Query param must be declared             |
+| Request body        | `$request.body#/user/uuid`     | JSON Pointer into request body           |
+| Response header     | `$response.header.Location`    | Single header value                      |
+| Response body       | `$response.body#/status`       | JSON Pointer into response body          |
+| Status code         | `$statusCode`                  | HTTP status code                         |
 
 ## Usage in Link Object
 
@@ -53,11 +53,11 @@ Callback key is a runtime expression that evaluates to the callback URL. Example
 ```yaml
 callbacks:
   myCallback:
-    '{$request.query.queryUrl}':
+    "{$request.query.queryUrl}":
       post:
         requestBody: { ... }
         responses:
-          '200':
+          "200":
             description: callback processed
 ```
 

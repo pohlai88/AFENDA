@@ -20,9 +20,9 @@ export const handleInvoiceVoided: Task = async (payload, helpers) => {
 
   helpers.logger.info(
     `invoice voided: invoiceId=${event.payload.invoiceId} ` +
-    `voidedBy=${event.payload.voidedBy ?? "system"} ` +
-    `reason=${event.payload.reason} ` +
-    `correlationId=${event.correlationId}`,
+      `voidedBy=${event.payload.voidedBy ?? "system"} ` +
+      `reason=${event.payload.reason} ` +
+      `correlationId=${event.correlationId}`,
   );
 
   // Auto-reverse GL journal entries linked to this invoice
@@ -44,16 +44,14 @@ export const handleInvoiceVoided: Task = async (payload, helpers) => {
     );
 
     if (entries.length === 0) {
-      helpers.logger.info(
-        `no GL entries to reverse for voided invoice ${event.payload.invoiceId}`,
-      );
+      helpers.logger.info(`no GL entries to reverse for voided invoice ${event.payload.invoiceId}`);
       return;
     }
 
     for (const entry of entries) {
       helpers.logger.info(
         `queueing GL reversal for entry=${entry.id} (${entry.entry_number}) ` +
-        `due to voided invoice=${event.payload.invoiceId}`,
+          `due to voided invoice=${event.payload.invoiceId}`,
       );
 
       // Dispatch GL reversal as a new outbox-style job so it goes through

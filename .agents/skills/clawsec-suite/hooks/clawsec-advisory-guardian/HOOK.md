@@ -1,9 +1,8 @@
 ---
 name: clawsec-advisory-guardian
-description:
-  Detect advisory matches for installed skills and require explicit user
+description: Detect advisory matches for installed skills and require explicit user
   approval before any removal action.
-metadata: { 'openclaw': { 'events': ['agent:bootstrap', 'command:new'] } }
+metadata: { "openclaw": { "events": ["agent:bootstrap", "command:new"] } }
 ---
 
 # ClawSec Advisory Guardian Hook

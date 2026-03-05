@@ -10,17 +10,8 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
-import {
-  APPROVER_EMAIL,
-  uniqueKey,
-  getAccountIdByCode,
-} from "./helpers/factories.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
+import { APPROVER_EMAIL, uniqueKey, getAccountIdByCode } from "./helpers/factories.js";
 
 describe("transaction atomicity (EC-8)", () => {
   let app: FastifyInstance;
@@ -80,9 +71,7 @@ describe("transaction atomicity (EC-8)", () => {
     const auditResult = await app.db.execute(
       /* sql */ `SELECT count(*) AS cnt FROM audit_log WHERE action = 'gl.journal.posted'`,
     );
-    const auditCount = Number(
-      (auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0,
-    );
+    const auditCount = Number((auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
     expect(auditCount).toBe(0);
   });
 
@@ -104,9 +93,7 @@ describe("transaction atomicity (EC-8)", () => {
     const auditResult = await app.db.execute(
       /* sql */ `SELECT count(*) AS cnt FROM audit_log WHERE action = 'invoice.approved'`,
     );
-    const auditCount = Number(
-      (auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0,
-    );
+    const auditCount = Number((auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
     expect(auditCount).toBe(0);
   });
 });

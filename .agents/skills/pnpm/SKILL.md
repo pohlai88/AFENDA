@@ -1,7 +1,6 @@
 ---
 name: pnpm
-description:
-  Use when managing Node.js dependencies with pnpm - provides workspace setup,
+description: Use when managing Node.js dependencies with pnpm - provides workspace setup,
   catalogs, CLI commands, overrides, and CI configuration
 license: MIT
 ---
@@ -34,8 +33,8 @@ pnpm --filter @myorg/app build    # Run in specific package
 ```yaml
 # pnpm-workspace.yaml
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  - "packages/*"
+  - "apps/*"
 
 # Catalogs for centralized version management
 catalog:

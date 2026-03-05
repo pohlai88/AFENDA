@@ -11,27 +11,27 @@ Identity & Access Management schemas: organizations, principals, roles, permissi
 
 **IAM contracts define identifiers and vocabulary — not authorization decisions.**
 
-| ✅ Belongs | ❌ Never here |
-|---|---|
-| Permission keys, role keys, request context shape | `isAllowed()`, role inheritance, SoD matrices |
-| Canonical entity DTOs (read shapes) | Policy engines, default role assignment rules |
-| Create/update command schemas | JWT signing/verifying, cookie parsing, session persistence |
-| `*Values` arrays for DB enum sync | Password hashing, MFA, OAuth provider config |
+| ✅ Belongs                                        | ❌ Never here                                              |
+| ------------------------------------------------- | ---------------------------------------------------------- |
+| Permission keys, role keys, request context shape | `isAllowed()`, role inheritance, SoD matrices              |
+| Canonical entity DTOs (read shapes)               | Policy engines, default role assignment rules              |
+| Create/update command schemas                     | JWT signing/verifying, cookie parsing, session persistence |
+| `*Values` arrays for DB enum sync                 | Password hashing, MFA, OAuth provider config               |
 
 ---
 
 ## Files
 
-| File | Key exports | Notes |
-|---|---|---|
-| `role.entity.ts` | `Permissions`, `PermissionKey`, `PermissionKeyValues`, `PermissionKeySchema`, `RoleKeyValues`, `RoleKeySchema`, `RoleKey` | Single source of truth for all keys; see rules below |
-| `role-type.ts` | `RoleTypeValues`, `RoleType`, `isRoleType` | Business relationship types (employee, supplier, customer, …) |
-| `party.entity.ts` | `PartyKindValues`, `PartyKindSchema`, `PartyKind`, `PartySchema`, `Party`, `PersonSchema`, `Person`, `OrganizationSchema`, `Organization` | ADR-0003 party model |
-| `principal.entity.ts` | `PrincipalKindValues`, `PrincipalKindSchema`, `PrincipalKind`, `PrincipalSchema`, `Principal`, `CreatePrincipalSchema`, `CreatePrincipal` | Authenticated actor (user or service account) |
-| `membership.entity.ts` | `PartyRoleSchema`, `PartyRole`, `MembershipSchema`, `Membership`, `MembershipId`, `ActiveContextSchema`, `ActiveContext`, `ContextItemSchema`, `ContextItem` | Hat model + context switching |
-| `tenant.entity.ts` | *(deprecated)* `TenantTypeValues`, `TenantSchema`, `Tenant`, `CreateTenantSchema` | Use `OrganizationSchema` from `party.entity.ts` instead |
-| `user.entity.ts` | `UserSchema`, `User`, `RequestContextSchema`, `RequestContext` | `RequestContextSchema` must stay lean — see rule below |
-| `index.ts` | Domain barrel — re-exports all of the above | Role vocabulary exported first (user.entity depends on it) |
+| File                   | Key exports                                                                                                                                                  | Notes                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `role.entity.ts`       | `Permissions`, `PermissionKey`, `PermissionKeyValues`, `PermissionKeySchema`, `RoleKeyValues`, `RoleKeySchema`, `RoleKey`                                    | Single source of truth for all keys; see rules below          |
+| `role-type.ts`         | `RoleTypeValues`, `RoleType`, `isRoleType`                                                                                                                   | Business relationship types (employee, supplier, customer, …) |
+| `party.entity.ts`      | `PartyKindValues`, `PartyKindSchema`, `PartyKind`, `PartySchema`, `Party`, `PersonSchema`, `Person`, `OrganizationSchema`, `Organization`                    | ADR-0003 party model                                          |
+| `principal.entity.ts`  | `PrincipalKindValues`, `PrincipalKindSchema`, `PrincipalKind`, `PrincipalSchema`, `Principal`, `CreatePrincipalSchema`, `CreatePrincipal`                    | Authenticated actor (user or service account)                 |
+| `membership.entity.ts` | `PartyRoleSchema`, `PartyRole`, `MembershipSchema`, `Membership`, `MembershipId`, `ActiveContextSchema`, `ActiveContext`, `ContextItemSchema`, `ContextItem` | Hat model + context switching                                 |
+| `tenant.entity.ts`     | _(deprecated)_ `TenantTypeValues`, `TenantSchema`, `Tenant`, `CreateTenantSchema`                                                                            | Use `OrganizationSchema` from `party.entity.ts` instead       |
+| `user.entity.ts`       | `UserSchema`, `User`, `RequestContextSchema`, `RequestContext`                                                                                               | `RequestContextSchema` must stay lean — see rule below        |
+| `index.ts`             | Domain barrel — re-exports all of the above                                                                                                                  | Role vocabulary exported first (user.entity depends on it)    |
 
 > **Splitting rule:** Create/update schemas live in the same `*.entity.ts` file
 > until it exceeds ~150 lines, then split into a `*.commands.ts` sibling.
@@ -44,6 +44,7 @@ Identity & Access Management schemas: organizations, principals, roles, permissi
 decoded JWT claims). It must not trigger or imply a DB lookup.
 
 Allowed fields:
+
 - `orgId` — from `OrgIdSchema`
 - `principalId` — from `PrincipalIdSchema`
 - `roles` — array of `RoleKeySchema`; duplicates removed at parse time
@@ -97,21 +98,23 @@ into edge/serverless DB workers.
 
 ```ts
 // ✅ packages/db/src/schema/iam.ts
-import { OrgTypeValues, RoleKeyValues } from '@afenda/contracts';
-import type { OrgId, PrincipalId } from '@afenda/contracts';
+import { OrgTypeValues, RoleKeyValues } from "@afenda/contracts";
+import type { OrgId, PrincipalId } from "@afenda/contracts";
 
-export const orgTypeEnum = pgEnum('org_type', OrgTypeValues);
-export const roleKeyEnum    = pgEnum('role_key',    RoleKeyValues);
+export const orgTypeEnum = pgEnum("org_type", OrgTypeValues);
+export const roleKeyEnum = pgEnum("role_key", RoleKeyValues);
 ```
 
 ---
 
 ## Belongs Here
+
 - `OrgSchema` and org status values
 - `PrincipalSchema`, `RequestContextSchema` (claims-only)
 - `RoleKeySchema`, `PermissionKeySchema`, `Permissions` metadata const
 
 ## Does NOT Belong Here
+
 - Database column definitions → `packages/db/src/schema/iam.ts`
 - Permission-checking / SoD logic → `packages/core/src/sod.ts`
 - JWT signing/verifying, cookie parsing, session persistence → `apps/api` or a dedicated auth package

@@ -29,12 +29,7 @@ export type JournalLineInput = {
 };
 
 /** Stable, contract-safe validation failure codes. */
-export type PostingValidationCode =
-  | "EMPTY"
-  | "MISSING_ACCOUNT"
-  | "NEGATIVE"
-  | "XOR"
-  | "UNBALANCED";
+export type PostingValidationCode = "EMPTY" | "MISSING_ACCOUNT" | "NEGATIVE" | "XOR" | "UNBALANCED";
 
 export type PostingValidation =
   | { valid: true }
@@ -44,7 +39,7 @@ export type PostingValidation =
 
 /** True when exactly one of debit/credit is positive. */
 function isXorPositive(debitMinor: bigint, creditMinor: bigint): boolean {
-  return (debitMinor > 0n) !== (creditMinor > 0n);
+  return debitMinor > 0n !== creditMinor > 0n;
 }
 
 function fail(
@@ -89,11 +84,7 @@ export function validateJournalBalance(
 
     // accountId is required and must be non-empty
     if (!line.accountId) {
-      const err = fail(
-        "MISSING_ACCOUNT",
-        `Line ${i}: accountId is required`,
-        { lineIndex: i },
-      );
+      const err = fail("MISSING_ACCOUNT", `Line ${i}: accountId is required`, { lineIndex: i });
       if (mode === "first") return err;
       errors.push(err);
       continue; // skip further checks on this line
@@ -149,16 +140,12 @@ export function validateJournalBalance(
   for (const [currency, t] of totals.entries()) {
     if (t.debit !== t.credit) {
       const delta = t.debit - t.credit;
-      const result = fail(
-        "UNBALANCED",
-        `Journal imbalance for ${currency}`,
-        {
-          currency,
-          debits: t.debit.toString(),
-          credits: t.credit.toString(),
-          delta: delta.toString(),
-        },
-      );
+      const result = fail("UNBALANCED", `Journal imbalance for ${currency}`, {
+        currency,
+        debits: t.debit.toString(),
+        credits: t.credit.toString(),
+        delta: delta.toString(),
+      });
       if (mode === "all") return [result];
       return result;
     }

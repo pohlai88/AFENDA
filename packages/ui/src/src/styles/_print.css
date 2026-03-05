@@ -34,7 +34,7 @@
 
   /* ── Hide navigation elements ── */
   [data-sidebar],
-  [role='navigation'],
+  [role="navigation"],
   .no-print {
     display: none !important;
   }
@@ -59,8 +59,8 @@
   }
 
   /* ── Expose URLs for audit trail ── */
-  a[href^='http']::after {
-    content: ' (' attr(href) ')';
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
     font-size: 8pt;
     color: #666;
   }
@@ -68,11 +68,11 @@
   /* ── Financial data: ensure tabular alignment prints correctly ── */
   .tnum {
     font-variant-numeric: tabular-nums;
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
   }
 
   /* ── Status badges: border-only for monochrome printers ── */
-  [class*='badge-'] {
+  [class*="badge-"] {
     background: transparent !important;
     border: 1px solid currentColor;
     color: black !important;
@@ -130,7 +130,7 @@
   .amount-right,
   .text-mono-data,
   .currency-pair {
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-variant-numeric: tabular-nums;
   }
 
@@ -148,7 +148,7 @@
   }
 
   /* ── Tree indent: preserve hierarchy in print ── */
-  [class*='tree-indent-'] {
+  [class*="tree-indent-"] {
     border-left: 1pt solid #999;
   }
 

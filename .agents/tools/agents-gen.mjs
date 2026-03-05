@@ -9,19 +9,19 @@
  * Zero dependencies — uses only Node.js built-ins.
  */
 
-import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { readFileSync, writeFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const AGENTS_ROOT = resolve(__dirname, '..');
-const SKILLS_DIR = join(AGENTS_ROOT, 'skills');
-const REGISTRY_PATH = join(AGENTS_ROOT, 'skills-registry.json');
-const INDEX_PATH = join(AGENTS_ROOT, 'INDEX.md');
-const INSTALLED_PATH = join(AGENTS_ROOT, 'skills', 'INSTALLED-SKILLS.md');
+const AGENTS_ROOT = resolve(__dirname, "..");
+const SKILLS_DIR = join(AGENTS_ROOT, "skills");
+const REGISTRY_PATH = join(AGENTS_ROOT, "skills-registry.json");
+const INDEX_PATH = join(AGENTS_ROOT, "INDEX.md");
+const INSTALLED_PATH = join(AGENTS_ROOT, "skills", "INSTALLED-SKILLS.md");
 
-const CHECK_MODE = process.argv.includes('--check');
+const CHECK_MODE = process.argv.includes("--check");
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ function parseFrontmatter(content) {
   if (!match) return {};
   const fm = {};
   for (const line of match[1].split(/\r?\n/)) {
-    const idx = line.indexOf(':');
+    const idx = line.indexOf(":");
     if (idx === -1) continue;
     const key = line.slice(0, idx).trim();
     let val = line.slice(idx + 1).trim();
@@ -49,12 +49,12 @@ function discoverSkillsOnDisk() {
     .sort();
 
   return dirs.map((name) => {
-    const skillMd = join(SKILLS_DIR, name, 'SKILL.md');
+    const skillMd = join(SKILLS_DIR, name, "SKILL.md");
     const hasSkillMd = existsSync(skillMd);
     let frontmatter = {};
     if (hasSkillMd) {
       try {
-        frontmatter = parseFrontmatter(readFileSync(skillMd, 'utf-8'));
+        frontmatter = parseFrontmatter(readFileSync(skillMd, "utf-8"));
       } catch {
         /* ignore parse errors */
       }
@@ -68,7 +68,7 @@ function loadRegistry() {
     console.error(`ERROR: Registry not found at ${REGISTRY_PATH}`);
     process.exit(1);
   }
-  return JSON.parse(readFileSync(REGISTRY_PATH, 'utf-8'));
+  return JSON.parse(readFileSync(REGISTRY_PATH, "utf-8"));
 }
 
 // ─── Validation ─────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ function validate(registry, diskSkills) {
     if (!skill.description) errors.push(`INVALID_ENTRY: "${skill.name}" missing "description"`);
     if (!registry.categories[skill.category]) {
       errors.push(
-        `UNKNOWN_CATEGORY: "${skill.name}" has category "${skill.category}" not in categories map`
+        `UNKNOWN_CATEGORY: "${skill.name}" has category "${skill.category}" not in categories map`,
       );
     }
   }
@@ -131,7 +131,7 @@ function generateIndex(registry) {
   for (const [catKey, catLabel] of Object.entries(registry.categories)) {
     const skills = byCategory[catKey];
     if (!skills || skills.length === 0) continue;
-    const links = skills.map((s) => `[${s.name}](#${s.name})`).join(', ');
+    const links = skills.map((s) => `[${s.name}](#${s.name})`).join(", ");
     md += `| **${catLabel}** | ${links} |\n`;
   }
 
@@ -180,7 +180,7 @@ function generateInstalled(registry) {
     if (!skills || skills.length === 0) continue;
     md += `## ${catLabel}\n\n`;
     for (const s of skills) {
-      const priority = s.priority === 'high' ? '★★★' : s.priority === 'medium' ? '★★' : '★';
+      const priority = s.priority === "high" ? "★★★" : s.priority === "medium" ? "★★" : "★";
       md += `### ${idx}. ${s.name} ${priority}\n\n`;
       md += `- **Source:** \`${s.source}\`\n`;
       md += `- **Description:** ${s.description}\n`;
@@ -222,9 +222,9 @@ function main() {
   if (errors.length > 0) {
     console.error(`\n[FAIL] Validation errors (${errors.length}):\n`);
     for (const e of errors) console.error(`  - ${e}`);
-    console.error('');
+    console.error("");
     if (CHECK_MODE) process.exit(1);
-    console.warn('[WARN] Generating docs despite errors. Fix the above issues.\n');
+    console.warn("[WARN] Generating docs despite errors. Fix the above issues.\n");
   } else {
     console.log(`[PASS] Registry validated -- ${registry.skills.length} skills, 0 errors`);
   }
@@ -233,37 +233,37 @@ function main() {
   const installedContent = generateInstalled(registry);
 
   if (CHECK_MODE) {
-    const currentIndex = existsSync(INDEX_PATH) ? readFileSync(INDEX_PATH, 'utf-8') : '';
+    const currentIndex = existsSync(INDEX_PATH) ? readFileSync(INDEX_PATH, "utf-8") : "";
     const currentInstalled = existsSync(INSTALLED_PATH)
-      ? readFileSync(INSTALLED_PATH, 'utf-8')
-      : '';
+      ? readFileSync(INSTALLED_PATH, "utf-8")
+      : "";
 
     let drifted = false;
     if (currentIndex !== indexContent) {
-      console.error('DRIFT: INDEX.md is out of date');
+      console.error("DRIFT: INDEX.md is out of date");
       drifted = true;
     }
     if (currentInstalled !== installedContent) {
-      console.error('DRIFT: INSTALLED-SKILLS.md is out of date');
+      console.error("DRIFT: INSTALLED-SKILLS.md is out of date");
       drifted = true;
     }
     if (drifted) {
-      console.error('\nRun `node .agents/tools/agents-gen.mjs` to regenerate.\n');
+      console.error("\nRun `node .agents/tools/agents-gen.mjs` to regenerate.\n");
       process.exit(1);
     }
-    console.log('[PASS] Generated docs are up to date');
+    console.log("[PASS] Generated docs are up to date");
     return;
   }
 
-  writeFileSync(INDEX_PATH, indexContent, 'utf-8');
+  writeFileSync(INDEX_PATH, indexContent, "utf-8");
   console.log(`Generated ${INDEX_PATH}`);
 
-  writeFileSync(INSTALLED_PATH, installedContent, 'utf-8');
+  writeFileSync(INSTALLED_PATH, installedContent, "utf-8");
   console.log(`Generated ${INSTALLED_PATH}`);
 
   // Update registry timestamp
   registry.generatedAt = new Date().toISOString();
-  writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2) + '\n', 'utf-8');
+  writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2) + "\n", "utf-8");
   console.log(`Updated registry timestamp`);
 
   console.log(`\n[PASS] Done -- ${registry.skills.length} skills documented\n`);

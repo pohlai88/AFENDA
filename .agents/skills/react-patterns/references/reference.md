@@ -12,24 +12,26 @@ const [state, setState] = useState(() => computeInitialState());
 ```
 
 **Parameters:**
+
 - `initialState`: Initial state value or function
 - Returns: `[state, setState]` tuple
 
 **Examples:**
+
 ```typescript
 // Basic counter
 const [count, setCount] = useState(0);
 
 // With function initializer
 const [data, setData] = useState(() => {
-  return JSON.parse(localStorage.getItem('data') || '[]');
+  return JSON.parse(localStorage.getItem("data") || "[]");
 });
 
 // Object state
 const [user, setUser] = useState({
-  name: '',
-  email: '',
-  age: 0
+  name: "",
+  email: "",
+  age: 0,
 });
 ```
 
@@ -45,10 +47,12 @@ useEffect(() => {
 ```
 
 **Parameters:**
+
 - Setup function (can return cleanup function)
 - Dependency array (optional)
 
 **Common Patterns:**
+
 ```typescript
 // Data fetching
 useEffect(() => {
@@ -90,6 +94,7 @@ const value = useContext(MyContext);
 ```
 
 **Usage:**
+
 ```typescript
 // Create context
 const ThemeContext = createContext('light');
@@ -118,6 +123,7 @@ const [state, dispatch] = useReducer(reducer, initialState, init);
 ```
 
 **Example:**
+
 ```typescript
 interface State {
   count: number;
@@ -161,6 +167,7 @@ const ref = useRef(initialValue);
 ```
 
 **Use Cases:**
+
 ```typescript
 // DOM reference
 const inputRef = useRef<HTMLInputElement>(null);
@@ -185,10 +192,7 @@ const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 ### useCallback
 
 ```typescript
-const memoizedCallback = useCallback(
-  () => doSomething(a, b),
-  [a, b]
-);
+const memoizedCallback = useCallback(() => doSomething(a, b), [a, b]);
 ```
 
 ### useLayoutEffect
@@ -208,6 +212,7 @@ const value = use(resource);
 ```
 
 **Reading Promises:**
+
 ```typescript
 function Message({ messagePromise }) {
   const message = use(messagePromise);
@@ -216,6 +221,7 @@ function Message({ messagePromise }) {
 ```
 
 **Reading Context:**
+
 ```typescript
 function ThemeButton() {
   if (condition) {
@@ -229,10 +235,7 @@ function ThemeButton() {
 ### useOptimistic
 
 ```typescript
-const [optimisticState, addOptimistic] = useOptimistic(
-  state,
-  updateFn
-);
+const [optimisticState, addOptimistic] = useOptimistic(state, updateFn);
 ```
 
 ### useFormStatus
@@ -302,7 +305,7 @@ const RefComponent = forwardRef((props, ref) => {
 ### lazy
 
 ```typescript
-const LazyComponent = lazy(() => import('./Component'));
+const LazyComponent = lazy(() => import("./Component"));
 ```
 
 ## Server Components APIs
@@ -310,7 +313,7 @@ const LazyComponent = lazy(() => import('./Component'));
 ### Server Actions
 
 ```typescript
-'use server';
+"use server";
 
 async function myAction(formData: FormData) {
   // Server-side logic
@@ -406,14 +409,17 @@ function useLocalStorage(key, initialValue) {
     }
   });
 
-  const setValue = useCallback((value) => {
-    try {
-      setStoredValue(value);
-      window.localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.error(error);
-    }
-  }, [key]);
+  const setValue = useCallback(
+    (value) => {
+      try {
+        setStoredValue(value);
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [key],
+  );
 
   return [storedValue, setValue];
 }
@@ -629,9 +635,9 @@ function renderWithProviders(
 ### Testing Custom Hooks
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act } from "@testing-library/react";
 
-test('useCounter increments', () => {
+test("useCounter increments", () => {
   const { result } = renderHook(() => useCounter());
 
   expect(result.current.count).toBe(0);
@@ -674,7 +680,7 @@ useEffect(() => {
 // ✅ Functional update
 useEffect(() => {
   const interval = setInterval(() => {
-    setCount(c => c + 1);
+    setCount((c) => c + 1);
   }, 1000);
   return () => clearInterval(interval);
 }, []);
@@ -702,18 +708,18 @@ useEffect(() => {
 function useResizeObserver(elementRef) {
   const [dimensions, setDimensions] = useState({
     width: 0,
-    height: 0
+    height: 0,
   });
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
 
-    const observer = new ResizeObserver(entries => {
+    const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       setDimensions({
         width: entry.contentRect.width,
-        height: entry.contentRect.height
+        height: entry.contentRect.height,
       });
     });
 
@@ -738,7 +744,7 @@ function useIntersectionObserver(elementRef, options) {
 
     const observer = new IntersectionObserver(
       ([entry]) => setIsIntersecting(entry.isIntersecting),
-      options
+      options,
     );
 
     observer.observe(element);

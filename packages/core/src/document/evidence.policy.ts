@@ -37,24 +37,11 @@ export type EvidenceKind =
   | "scan"
   | "email";
 
-export type EvidenceScanStatus =
-  | "pending"
-  | "clean"
-  | "infected"
-  | "failed"
-  | "quarantined";
+export type EvidenceScanStatus = "pending" | "clean" | "infected" | "failed" | "quarantined";
 
-export type EvidenceLifecycleState =
-  | "active"
-  | "archived"
-  | "soft_deleted"
-  | "hard_deleted";
+export type EvidenceLifecycleState = "active" | "archived" | "soft_deleted" | "hard_deleted";
 
-export type EvidenceSensitivity =
-  | "public"
-  | "internal"
-  | "confidential"
-  | "restricted";
+export type EvidenceSensitivity = "public" | "internal" | "confidential" | "restricted";
 
 export interface EvidenceLegalHold {
   /** If true: destructive actions are blocked (soft_delete, purge). */
@@ -264,70 +251,66 @@ export interface RetentionRule {
   rationale?: string;
 }
 
-export const DefaultRetentionRules: Readonly<
-  Record<EvidenceEntityType, RetentionRule>
-> = Object.freeze({
-  invoice: {
-    entityType: "invoice",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  bill: {
-    entityType: "bill",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  payment: {
-    entityType: "payment",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  receipt: {
-    entityType: "receipt",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  journal_entry: {
-    entityType: "journal_entry",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  bank_statement: {
-    entityType: "bank_statement",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-  contract: {
-    entityType: "contract",
-    minRetentionDays: 365 * 10,
-    purgeAllowed: true,
-  },
-  tax_filing: {
-    entityType: "tax_filing",
-    minRetentionDays: 365 * 10,
-    purgeAllowed: true,
-  },
-  payroll: {
-    entityType: "payroll",
-    minRetentionDays: 365 * 10,
-    purgeAllowed: true,
-  },
-  fixed_asset: {
-    entityType: "fixed_asset",
-    minRetentionDays: 365 * 10,
-    purgeAllowed: true,
-  },
-  other: {
-    entityType: "other",
-    minRetentionDays: 365 * 7,
-    purgeAllowed: true,
-  },
-});
+export const DefaultRetentionRules: Readonly<Record<EvidenceEntityType, RetentionRule>> =
+  Object.freeze({
+    invoice: {
+      entityType: "invoice",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    bill: {
+      entityType: "bill",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    payment: {
+      entityType: "payment",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    receipt: {
+      entityType: "receipt",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    journal_entry: {
+      entityType: "journal_entry",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    bank_statement: {
+      entityType: "bank_statement",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+    contract: {
+      entityType: "contract",
+      minRetentionDays: 365 * 10,
+      purgeAllowed: true,
+    },
+    tax_filing: {
+      entityType: "tax_filing",
+      minRetentionDays: 365 * 10,
+      purgeAllowed: true,
+    },
+    payroll: {
+      entityType: "payroll",
+      minRetentionDays: 365 * 10,
+      purgeAllowed: true,
+    },
+    fixed_asset: {
+      entityType: "fixed_asset",
+      minRetentionDays: 365 * 10,
+      purgeAllowed: true,
+    },
+    other: {
+      entityType: "other",
+      minRetentionDays: 365 * 7,
+      purgeAllowed: true,
+    },
+  });
 
-export function computeRetention(
-  meta: EvidenceMetadata,
-  rules = DefaultRetentionRules,
-) {
+export function computeRetention(meta: EvidenceMetadata, rules = DefaultRetentionRules) {
   const rule = rules[meta.entityType] ?? rules.other;
   const anchorUtc = meta.retentionAnchorUtc ?? meta.createdAtUtc;
   const purgeEligibleUtc = addDaysUtc(anchorUtc, rule.minRetentionDays);
@@ -370,11 +353,7 @@ export function decideEvidenceIntent(
   // 3) Legal hold blocks destructive actions
   if (meta.legalHold?.onHold) {
     if (intent === "purge" || intent === "soft_delete") {
-      return deny(
-        intent,
-        "EVIDENCE_ON_LEGAL_HOLD",
-        meta.legalHold.reason ?? "Legal hold active.",
-      );
+      return deny(intent, "EVIDENCE_ON_LEGAL_HOLD", meta.legalHold.reason ?? "Legal hold active.");
     }
   }
 
@@ -389,10 +368,7 @@ export function decideEvidenceIntent(
   }
 
   // 5) Locked evidence cannot be modified (except purge under strict rules)
-  if (
-    meta.isLocked &&
-    (intent === "archive" || intent === "soft_delete" || intent === "restore")
-  ) {
+  if (meta.isLocked && (intent === "archive" || intent === "soft_delete" || intent === "restore")) {
     return deny(intent, "EVIDENCE_LOCKED");
   }
 
@@ -416,12 +392,9 @@ export function decideEvidenceIntent(
   if (intent === "purge") {
     // Require soft-delete first
     if (meta.lifecycle !== "soft_deleted") {
-      return deny(
-        intent,
-        "RETENTION_NOT_MET",
-        "Must be soft-deleted before purge.",
-        { audit: { required: true, eventType: "evidence.purge" } },
-      );
+      return deny(intent, "RETENTION_NOT_MET", "Must be soft-deleted before purge.", {
+        audit: { required: true, eventType: "evidence.purge" },
+      });
     }
     if (!isRetentionMetForPurge(meta, nowUtc, rules)) {
       return deny(intent, "RETENTION_NOT_MET", "Retention window not met.", {
@@ -539,11 +512,7 @@ function decideScanGate(
   // Quarantined: override requires permission + break-glass
   if (meta.scanStatus === "quarantined") {
     if (!ctx.permissions.includes(EvidencePermissions.overrideQuarantine)) {
-      return deny(
-        intent,
-        "QUARANTINED",
-        meta.quarantinedReason ?? "Evidence quarantined.",
-      );
+      return deny(intent, "QUARANTINED", meta.quarantinedReason ?? "Evidence quarantined.");
     }
     if (!ctx.isBreakGlass) {
       return deny(intent, "QUARANTINED", "Override requires break-glass.");
@@ -558,15 +527,9 @@ function decideScanGate(
 
   // Infected/failed: strict break-glass + override only
   if (meta.scanStatus === "infected" || meta.scanStatus === "failed") {
-    const hasOverride = ctx.permissions.includes(
-      EvidencePermissions.overrideQuarantine,
-    );
+    const hasOverride = ctx.permissions.includes(EvidencePermissions.overrideQuarantine);
     if (!hasOverride || !ctx.isBreakGlass) {
-      return deny(
-        intent,
-        "INFECTED_OR_FAILED",
-        "Unsafe evidence. Break-glass override required.",
-      );
+      return deny(intent, "INFECTED_OR_FAILED", "Unsafe evidence. Break-glass override required.");
     }
     return allow(intent, {
       audit: { required: true, eventType: "evidence.override_quarantine" },
@@ -618,11 +581,7 @@ function mergeObligations(
 export class EvidencePolicyError extends Error {
   readonly code: EvidenceDenyReasonCode;
   readonly details?: Record<string, unknown>;
-  constructor(
-    code: EvidenceDenyReasonCode,
-    message: string,
-    details?: Record<string, unknown>,
-  ) {
+  constructor(code: EvidenceDenyReasonCode, message: string, details?: Record<string, unknown>) {
     super(message);
     this.name = "EvidencePolicyError";
     this.code = code;
@@ -640,11 +599,10 @@ export function assertEvidenceAllowed(
 ): EvidencePolicyDecision {
   const d = decideEvidenceIntent(ctx, meta, intent, nowUtc, rules);
   if (!d.ok) {
-    throw new EvidencePolicyError(
-      d.reasonCode ?? "UNKNOWN",
-      d.reason ?? "Evidence policy denied",
-      { intent, evidenceId: meta.evidenceId },
-    );
+    throw new EvidencePolicyError(d.reasonCode ?? "UNKNOWN", d.reason ?? "Evidence policy denied", {
+      intent,
+      evidenceId: meta.evidenceId,
+    });
   }
   assertObligationsSatisfied(d, proof);
 
@@ -662,11 +620,9 @@ export function assertObligationsSatisfied(
   if (o.operation?.required) {
     const op = proof?.operationId;
     if (!op || String(op).trim().length < 8) {
-      throw new EvidencePolicyError(
-        "OBLIGATION_NOT_MET",
-        "operationId required.",
-        { intent: decision.intent },
-      );
+      throw new EvidencePolicyError("OBLIGATION_NOT_MET", "operationId required.", {
+        intent: decision.intent,
+      });
     }
   }
 
@@ -685,11 +641,9 @@ export function assertObligationsSatisfied(
   // MFA
   if (o.mfa?.required) {
     if (!proof?.mfaVerified) {
-      throw new EvidencePolicyError(
-        "OBLIGATION_NOT_MET",
-        `${o.mfa.mode.toUpperCase()} required.`,
-        { intent: decision.intent },
-      );
+      throw new EvidencePolicyError("OBLIGATION_NOT_MET", `${o.mfa.mode.toUpperCase()} required.`, {
+        intent: decision.intent,
+      });
     }
   }
 
@@ -718,11 +672,9 @@ export function assertObligationsSatisfied(
   // safe preview sandbox
   if (o.previewSandbox?.required) {
     if (!proof?.previewSandboxed) {
-      throw new EvidencePolicyError(
-        "OBLIGATION_NOT_MET",
-        "Safe preview sandbox required.",
-        { intent: decision.intent },
-      );
+      throw new EvidencePolicyError("OBLIGATION_NOT_MET", "Safe preview sandbox required.", {
+        intent: decision.intent,
+      });
     }
   }
 }
@@ -834,9 +786,7 @@ export function buildEvidenceAuditEvent(
   if (!audit?.required) return null;
 
   const rawText = proof?.justificationText?.trim() || undefined;
-  const redacted = rawText
-    ? redactJustificationForStorage(rawText, redact)
-    : undefined;
+  const redacted = rawText ? redactJustificationForStorage(rawText, redact) : undefined;
 
   // NOTE: we intentionally do NOT enforce obligations here;
   // call assertEvidenceAllowed() first (it will validate proof).
@@ -882,11 +832,7 @@ export function buildEvidenceAuditEvent(
  * Choose per environment: dev/staging can use `"full"`, production restricted
  * tenants might require `"hash"` or `"redact"` to satisfy data-minimization rules.
  */
-export type JustificationRedactionStrategy =
-  | "full"
-  | "truncate"
-  | "hash"
-  | "redact";
+export type JustificationRedactionStrategy = "full" | "truncate" | "hash" | "redact";
 
 const JUSTIFICATION_TRUNCATE_LENGTH = 120;
 
@@ -951,9 +897,13 @@ export function assertEvidenceRegisterAllowed(
   proof?: EvidencePolicyProof,
 ): EvidencePolicyDecision {
   if (!ctx.permissions.includes(EvidencePermissions.register)) {
-    throw new EvidencePolicyError("MISSING_PERMISSION", `Requires ${EvidencePermissions.register}`, {
-      nowUtc,
-    });
+    throw new EvidencePolicyError(
+      "MISSING_PERMISSION",
+      `Requires ${EvidencePermissions.register}`,
+      {
+        nowUtc,
+      },
+    );
   }
 
   const decision: EvidencePolicyDecision = {
@@ -1035,11 +985,9 @@ export function buildEvidenceRegisterAuditEvent(
 //
 
 function toMillis(utcIso: string): number {
-  if (!utcIso.endsWith("Z"))
-    throw new Error(`UTC datetime must end with 'Z': ${utcIso}`);
+  if (!utcIso.endsWith("Z")) throw new Error(`UTC datetime must end with 'Z': ${utcIso}`);
   const ms = Date.parse(utcIso);
-  if (!Number.isFinite(ms))
-    throw new Error(`Invalid UTC ISO datetime: ${utcIso}`);
+  if (!Number.isFinite(ms)) throw new Error(`Invalid UTC ISO datetime: ${utcIso}`);
   return ms;
 }
 

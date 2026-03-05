@@ -13,7 +13,7 @@
 import { z } from "zod";
 
 export const CURSOR_LIMIT_DEFAULT = 20 as const;
-export const CURSOR_LIMIT_MAX     = 100 as const;
+export const CURSOR_LIMIT_MAX = 100 as const;
 
 /**
  * Coerces empty query-string values to `undefined` so `?cursor=` and

@@ -11,11 +11,7 @@
 import type { DbClient } from "@afenda/db";
 import { auditLog } from "@afenda/db";
 import { eq, and, gt, gte, lte, asc } from "drizzle-orm";
-import type {
-  OrgId,
-  CursorPage,
-  AuditLogFilter,
-} from "@afenda/contracts";
+import type { OrgId, CursorPage, AuditLogFilter } from "@afenda/contracts";
 import { CURSOR_LIMIT_DEFAULT, CURSOR_LIMIT_MAX } from "@afenda/contracts";
 
 // ── Types ────────────────────────────────────────────────────────────────────

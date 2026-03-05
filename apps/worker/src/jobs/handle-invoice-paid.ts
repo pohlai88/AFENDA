@@ -20,9 +20,9 @@ export const handleInvoicePaid: Task = async (payload, helpers) => {
 
   helpers.logger.info(
     `invoice paid: invoiceId=${event.payload.invoiceId} ` +
-    `paidBy=${event.payload.paidBy ?? "system"} ` +
-    `paymentRef=${event.payload.paymentReference} ` +
-    `correlationId=${event.correlationId}`,
+      `paidBy=${event.payload.paidBy ?? "system"} ` +
+      `paymentRef=${event.payload.paymentReference} ` +
+      `correlationId=${event.correlationId}`,
   );
 
   // Future Sprint 3+:

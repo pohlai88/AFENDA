@@ -38,10 +38,7 @@ export interface CreateDbOptions {
  *
  * Returns `{ db, pool }` so callers can `await pool.end()` on shutdown.
  */
-export function createDb(
-  connectionString: string,
-  opts: CreateDbOptions = {},
-) {
+export function createDb(connectionString: string, opts: CreateDbOptions = {}) {
   const pool = new Pool({
     connectionString,
     max: opts.max ?? 10,
@@ -149,9 +146,7 @@ export async function checkDbHealth(db: DbClient): Promise<DbHealthResult> {
       const result = await db.execute(
         sql`SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY created_at DESC LIMIT 1`,
       );
-      const row = result.rows[0] as
-        | Record<string, unknown>
-        | undefined;
+      const row = result.rows[0] as Record<string, unknown> | undefined;
       if (row) {
         migrationHash = String(row["hash"]);
         migratedAt = Number(row["created_at"]);

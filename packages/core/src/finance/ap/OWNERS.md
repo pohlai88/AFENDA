@@ -9,13 +9,13 @@
 Accounts Payable domain — invoice lifecycle (state machine), status
 transitions, and AP-specific query functions.
 
-| ✅ Belongs | ❌ Never here |
-|---|---|
+| ✅ Belongs                                            | ❌ Never here                                            |
+| ----------------------------------------------------- | -------------------------------------------------------- |
 | Invoice state machine (submit, approve, reject, void) | Zod schemas for invoice commands (→ `@afenda/contracts`) |
-| Status transition guards (TRANSITIONS map) | Invoice DB table DDL (→ `@afenda/db`) |
-| AP query functions (list, get-by-id, history) | HTTP route handlers (→ `apps/api`) |
-| Cursor-paginated read models | S3 / document operations (→ `document/`) |
-| Future: 3-way matching, AP aging buckets | UI components (→ `@afenda/ui`) |
+| Status transition guards (TRANSITIONS map)            | Invoice DB table DDL (→ `@afenda/db`)                    |
+| AP query functions (list, get-by-id, history)         | HTTP route handlers (→ `apps/api`)                       |
+| Cursor-paginated read models                          | S3 / document operations (→ `document/`)                 |
+| Future: 3-way matching, AP aging buckets              | UI components (→ `@afenda/ui`)                           |
 
 ---
 
@@ -23,23 +23,23 @@ transitions, and AP-specific query functions.
 
 `finance/ap/` may import:
 
-| Allowed import | Why |
-|---|---|
-| `@afenda/contracts` | Types, branded IDs, pagination constants |
-| `@afenda/db` | Table references for queries and mutations |
-| `drizzle-orm` | Query operators (`eq`, `and`, `desc`, `gt`, `inArray`, `sql`) |
-| Sibling barrels within `@afenda/core` (`../../infra/*.js`, `../sod.js`) | Audit, numbering, SoD policies |
+| Allowed import                                                          | Why                                                           |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `@afenda/contracts`                                                     | Types, branded IDs, pagination constants                      |
+| `@afenda/db`                                                            | Table references for queries and mutations                    |
+| `drizzle-orm`                                                           | Query operators (`eq`, `and`, `desc`, `gt`, `inArray`, `sql`) |
+| Sibling barrels within `@afenda/core` (`../../infra/*.js`, `../sod.js`) | Audit, numbering, SoD policies                                |
 
 ---
 
 ## Files
 
-| File | Key exports | Notes |
-|---|---|---|
-| `invoice.service.ts` | `submitInvoice`, `approveInvoice`, `rejectInvoice`, `voidInvoice`, `TRANSITIONS`, `InvoiceServiceResult<T>`, `InvoiceServiceError` | State machine with transition guards. Uses `withAudit` + `nextNumber` in same tx for gap-free INV numbers. Emits outbox events (`AP.INVOICE_SUBMITTED`, `AP.INVOICE_APPROVED`) atomically. SoD enforcement via `canApproveInvoice`. |
-| `invoice.queries.ts` | `listInvoices`, `getInvoiceById`, `getInvoiceHistory`, `InvoiceRow`, `InvoiceListParams`, `CursorPage<T>`, `InvoiceHistoryRow` | Read-only queries with cursor pagination (base64url ID cursor, fetch limit+1 pattern). Status filter on list. History ordered by `occurredAt DESC`. |
-| `index.ts` | Barrel — re-exports service + queries | No logic. |
-| `__vitest_test__/invoice.service.test.ts` | 14 tests | Covers: submitInvoice (success, supplier not found), approveInvoice (success, not found, already approved, invalid transition, SoD violation, missing permissions), rejectInvoice (success, not found, invalid transition), voidInvoice (success, already voided, invalid transition, not found). |
+| File                                      | Key exports                                                                                                                        | Notes                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `invoice.service.ts`                      | `submitInvoice`, `approveInvoice`, `rejectInvoice`, `voidInvoice`, `TRANSITIONS`, `InvoiceServiceResult<T>`, `InvoiceServiceError` | State machine with transition guards. Uses `withAudit` + `nextNumber` in same tx for gap-free INV numbers. Emits outbox events (`AP.INVOICE_SUBMITTED`, `AP.INVOICE_APPROVED`) atomically. SoD enforcement via `canApproveInvoice`.                                                               |
+| `invoice.queries.ts`                      | `listInvoices`, `getInvoiceById`, `getInvoiceHistory`, `InvoiceRow`, `InvoiceListParams`, `CursorPage<T>`, `InvoiceHistoryRow`     | Read-only queries with cursor pagination (base64url ID cursor, fetch limit+1 pattern). Status filter on list. History ordered by `occurredAt DESC`.                                                                                                                                               |
+| `index.ts`                                | Barrel — re-exports service + queries                                                                                              | No logic.                                                                                                                                                                                                                                                                                         |
+| `__vitest_test__/invoice.service.test.ts` | 14 tests                                                                                                                           | Covers: submitInvoice (success, supplier not found), approveInvoice (success, not found, already approved, invalid transition, SoD violation, missing permissions), rejectInvoice (success, not found, invalid transition), voidInvoice (success, already voided, invalid transition, not found). |
 
 ---
 
@@ -66,16 +66,18 @@ TRANSITIONS:
 ## Service Function Shape
 
 All service functions follow:
+
 ```ts
 async function action(
   db: DbClient,
   ctx: OrgScopedContext,
   policyCtx: PolicyContext,
   ...params
-): Promise<InvoiceServiceResult<T>>
+): Promise<InvoiceServiceResult<T>>;
 ```
 
 `InvoiceServiceResult<T>` is a discriminated union:
+
 - `{ ok: true; data: T }`
 - `{ ok: false; error: InvoiceServiceError }`
 
@@ -83,7 +85,7 @@ async function action(
 
 ## Future Growth
 
-| File (expected) | Purpose |
-|---|---|
-| `match.ts` | 3-way matching (PO ↔ GRN ↔ invoice) |
-| `aging.ts` | AP aging buckets (current, 30, 60, 90+ days) |
+| File (expected) | Purpose                                      |
+| --------------- | -------------------------------------------- |
+| `match.ts`      | 3-way matching (PO ↔ GRN ↔ invoice)        |
+| `aging.ts`      | AP aging buckets (current, 30, 60, 90+ days) |

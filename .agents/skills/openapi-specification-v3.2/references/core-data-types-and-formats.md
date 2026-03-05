@@ -16,12 +16,12 @@ Optional modifier on types; per JSON Schema, `format` is typically **non-validat
 
 OAS-defined formats (examples):
 
-| format   | JSON type | Comments |
-|----------|-----------|----------|
-| int32    | number    | Signed 32-bit. |
-| int64    | number    | Signed 64-bit (long). |
-| float    | number    | |
-| double   | number    | |
+| format   | JSON type | Comments               |
+| -------- | --------- | ---------------------- |
+| int32    | number    | Signed 32-bit.         |
+| int64    | number    | Signed 64-bit (long).  |
+| float    | number    |                        |
+| double   | number    |                        |
 | password | string    | Hint to obscure value. |
 
 Full set and JSON data type per format: see [Format Registry](https://spec.openapis.org/registry/format/). For binary/string encoding in 3.1+, JSON Schema's `contentEncoding` and `contentMediaType` are used (not `format` for content-encoding).

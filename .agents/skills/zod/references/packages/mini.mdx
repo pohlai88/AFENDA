@@ -1,10 +1,10 @@
 ---
 title: Zod Mini
-description: 'Zod Mini - a tree-shakable Zod'
+description: "Zod Mini - a tree-shakable Zod"
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
 
 <Callout type="info">
   **Note** — The docs for Zod Mini are interleaved with the regular Zod docs via tabbed code blocks.
@@ -21,7 +21,7 @@ npm install zod@^4.0.0
 To import it:
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 ```
 
 Zod Mini implements the exact same functionality as `zod`, but using a _functional_, _tree-shakable_ API. If you're coming from `zod`, this means you generally will use _functions_ in place of methods.
@@ -67,7 +67,7 @@ With a marginally more complex schema that involves object types:
 const schema = z.object({ a: z.string(), b: z.number(), c: z.boolean() });
 
 schema.parse({
-  a: 'asdf',
+  a: "asdf",
   b: 123,
   c: true,
 });
@@ -118,14 +118,14 @@ All Zod Mini schemas extend the `z.ZodMiniType` base class, which in turn extend
 This is an obvious one. All Zod Mini schemas implement the same parsing methods as `zod`.
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 const mySchema = z.string();
 
-mySchema.parse('asdf');
-await mySchema.parseAsync('asdf');
-mySchema.safeParse('asdf');
-await mySchema.safeParseAsync('asdf');
+mySchema.parse("asdf");
+await mySchema.parseAsync("asdf");
+mySchema.safeParse("asdf");
+await mySchema.safeParseAsync("asdf");
 ```
 
 ### `.check()`
@@ -133,25 +133,25 @@ await mySchema.safeParseAsync('asdf');
 In regular Zod there are dedicated methods on schema subclasses for performing common checks:
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 z.string()
   .min(5)
   .max(10)
-  .refine((val) => val.includes('@'))
+  .refine((val) => val.includes("@"))
   .trim();
 ```
 
 In Zod Mini such methods aren't implemented. Instead you pass these checks into schemas using the `.check()` method:
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 z.string().check(
   z.minLength(5),
   z.maxLength(10),
-  z.refine((val) => val.includes('@')),
-  z.trim()
+  z.refine((val) => val.includes("@")),
+  z.trim(),
 );
 ```
 
@@ -194,8 +194,8 @@ z.toLowerCase();
 z.toUpperCase();
 
 // metadata (registers schema in z.globalRegistry)
-z.meta({ title: '...', description: '...' });
-z.describe('...');
+z.meta({ title: "...", description: "..." });
+z.describe("...");
 ```
 
 ### `.register()`
@@ -205,7 +205,7 @@ For registering a schema in a [registry](/metadata#registries).
 ```ts
 const myReg = z.registry<{ title: string }>();
 
-z.string().register(myReg, { title: 'My cool string schema' });
+z.string().register(myReg, { title: "My cool string schema" });
 ```
 
 ### `.brand()`
@@ -213,9 +213,9 @@ z.string().register(myReg, { title: 'My cool string schema' });
 For _branding_ a schema. Refer to the [Branded types](/api#branded-types) docs for more information.
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
-const USD = z.string().brand('USD');
+const USD = z.string().brand("USD");
 ```
 
 ### `.clone(def)`
@@ -235,7 +235,7 @@ While regular Zod automatically loads the English (`en`) locale, Zod Mini does n
 This means, by default the `message` property of all issues will simply read `"Invalid input"`. To load the English locale:
 
 ```ts
-import * as z from 'zod/mini';
+import * as z from "zod/mini";
 
 z.config(z.locales.en());
 ```

@@ -106,15 +106,11 @@ function assertJsonSafe(value: unknown, path = "$"): void {
     return;
   }
 
-  if (t === "bigint")
-    throw new Error(`Audit details contains BigInt at ${path}`);
-  if (t === "undefined")
-    throw new Error(`Audit details contains undefined at ${path}`);
-  if (t === "function" || t === "symbol")
-    throw new Error(`Audit details contains ${t} at ${path}`);
+  if (t === "bigint") throw new Error(`Audit details contains BigInt at ${path}`);
+  if (t === "undefined") throw new Error(`Audit details contains undefined at ${path}`);
+  if (t === "function" || t === "symbol") throw new Error(`Audit details contains ${t} at ${path}`);
 
-  if (value instanceof Date)
-    throw new Error(`Audit details contains Date at ${path}`);
+  if (value instanceof Date) throw new Error(`Audit details contains Date at ${path}`);
   if (value instanceof Map || value instanceof Set)
     throw new Error(`Audit details contains Map/Set at ${path}`);
 

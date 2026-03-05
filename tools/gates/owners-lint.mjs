@@ -34,11 +34,7 @@ const ROOT = resolve(__dirname, "../..");
  * Directories to scan for OWNERS.md files.
  * We scan recursively for any OWNERS.md that contains a Files table.
  */
-const SCAN_ROOTS = [
-  "packages/contracts/src",
-  "packages/core/src",
-  "packages/db/src",
-];
+const SCAN_ROOTS = ["packages/contracts/src", "packages/core/src", "packages/db/src"];
 
 /**
  * Files that are exempt from the "unlisted" check.

@@ -1,13 +1,12 @@
 ---
 name: clawsec-feed
 version: 0.0.4
-description:
-  Security advisory feed with automated NVD CVE polling for OpenClaw-related
+description: Security advisory feed with automated NVD CVE polling for OpenClaw-related
   vulnerabilities. Updated daily.
 homepage: https://clawsec.prompt.security
-metadata: { 'openclaw': { 'emoji': '📡', 'category': 'security' } }
+metadata: { "openclaw": { "emoji": "📡", "category": "security" } }
 clawdis:
-  emoji: '📡'
+  emoji: "📡"
   requires:
     bins: [curl, jq]
 ---

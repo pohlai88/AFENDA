@@ -8,7 +8,7 @@
  * Naming convention:
  *   - `one(...)` for the FK side (child → parent)
  *   - `many(...)` for the inverse (parent → children)
- * 
+ *
  * Updated for ADR-0003 Phase 4: uses organization, iamPrincipal, partyRole, membership
  */
 
@@ -27,19 +27,8 @@ import {
 } from "./iam.js";
 import { supplier } from "./supplier.js";
 import { document, evidence } from "./document.js";
-import {
-  account,
-  invoice,
-  invoiceStatusHistory,
-  journalEntry,
-  journalLine,
-} from "./finance.js";
-import {
-  outboxEvent,
-  idempotency,
-  auditLog,
-  sequence,
-} from "./infra.js";
+import { account, invoice, invoiceStatusHistory, journalEntry, journalLine } from "./finance.js";
+import { outboxEvent, idempotency, auditLog, sequence } from "./infra.js";
 
 // ── Party Model (ADR-0003) ────────────────────────────────────────────────────
 
@@ -153,19 +142,16 @@ export const iamPrincipalRoleRelations = relations(iamPrincipalRole, ({ one }) =
   }),
 }));
 
-export const iamRolePermissionRelations = relations(
-  iamRolePermission,
-  ({ one }) => ({
-    role: one(iamRole, {
-      fields: [iamRolePermission.roleId],
-      references: [iamRole.id],
-    }),
-    permission: one(iamPermission, {
-      fields: [iamRolePermission.permissionId],
-      references: [iamPermission.id],
-    }),
+export const iamRolePermissionRelations = relations(iamRolePermission, ({ one }) => ({
+  role: one(iamRole, {
+    fields: [iamRolePermission.roleId],
+    references: [iamRole.id],
   }),
-);
+  permission: one(iamPermission, {
+    fields: [iamRolePermission.permissionId],
+    references: [iamPermission.id],
+  }),
+}));
 
 // ── Supplier ──────────────────────────────────────────────────────────────────
 
@@ -243,50 +229,44 @@ export const invoiceRelations = relations(invoice, ({ one, many }) => ({
   journals: many(journalEntry),
 }));
 
-export const invoiceStatusHistoryRelations = relations(
-  invoiceStatusHistory,
-  ({ one }) => ({
-    invoice: one(invoice, {
-      fields: [invoiceStatusHistory.invoiceId],
-      references: [invoice.id],
-    }),
-    organization: one(organization, {
-      fields: [invoiceStatusHistory.orgId],
-      references: [organization.id],
-    }),
-    actor: one(iamPrincipal, {
-      fields: [invoiceStatusHistory.actorPrincipalId],
-      references: [iamPrincipal.id],
-    }),
+export const invoiceStatusHistoryRelations = relations(invoiceStatusHistory, ({ one }) => ({
+  invoice: one(invoice, {
+    fields: [invoiceStatusHistory.invoiceId],
+    references: [invoice.id],
   }),
-);
+  organization: one(organization, {
+    fields: [invoiceStatusHistory.orgId],
+    references: [organization.id],
+  }),
+  actor: one(iamPrincipal, {
+    fields: [invoiceStatusHistory.actorPrincipalId],
+    references: [iamPrincipal.id],
+  }),
+}));
 
-export const journalEntryRelations = relations(
-  journalEntry,
-  ({ one, many }) => ({
-    organization: one(organization, {
-      fields: [journalEntry.orgId],
-      references: [organization.id],
-    }),
-    postedBy: one(iamPrincipal, {
-      fields: [journalEntry.postedByPrincipalId],
-      references: [iamPrincipal.id],
-    }),
-    sourceInvoice: one(invoice, {
-      fields: [journalEntry.sourceInvoiceId],
-      references: [invoice.id],
-    }),
-    // Self-referential: the entry this one reverses
-    reversalOf: one(journalEntry, {
-      fields: [journalEntry.reversalOfId],
-      references: [journalEntry.id],
-      relationName: "reversals",
-    }),
-    // Entries that reverse this one
-    reversals: many(journalEntry, { relationName: "reversals" }),
-    lines: many(journalLine),
+export const journalEntryRelations = relations(journalEntry, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [journalEntry.orgId],
+    references: [organization.id],
   }),
-);
+  postedBy: one(iamPrincipal, {
+    fields: [journalEntry.postedByPrincipalId],
+    references: [iamPrincipal.id],
+  }),
+  sourceInvoice: one(invoice, {
+    fields: [journalEntry.sourceInvoiceId],
+    references: [invoice.id],
+  }),
+  // Self-referential: the entry this one reverses
+  reversalOf: one(journalEntry, {
+    fields: [journalEntry.reversalOfId],
+    references: [journalEntry.id],
+    relationName: "reversals",
+  }),
+  // Entries that reverse this one
+  reversals: many(journalEntry, { relationName: "reversals" }),
+  lines: many(journalLine),
+}));
 
 export const journalLineRelations = relations(journalLine, ({ one }) => ({
   entry: one(journalEntry, {

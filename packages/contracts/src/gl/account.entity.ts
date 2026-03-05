@@ -18,13 +18,7 @@ import { UtcDateTimeSchema } from "../shared/datetime.js";
  * Account type values as a const tuple — import in @afenda/db:
  * pgEnum('account_type', AccountTypeValues)
  */
-export const AccountTypeValues = [
-  "asset",
-  "liability",
-  "equity",
-  "revenue",
-  "expense",
-] as const;
+export const AccountTypeValues = ["asset", "liability", "equity", "revenue", "expense"] as const;
 
 export const AccountTypeSchema = z.enum(AccountTypeValues);
 
@@ -45,13 +39,13 @@ export const AccountCodeSchema = z
 export type AccountCode = z.infer<typeof AccountCodeSchema>;
 
 export const AccountSchema = z.object({
-  id:    AccountIdSchema,
+  id: AccountIdSchema,
   orgId: OrgIdSchema,
 
   code: AccountCodeSchema,
   name: z.string().trim().min(1).max(255),
 
-  type:     AccountTypeSchema,
+  type: AccountTypeSchema,
   isActive: z.boolean(),
 
   createdAt: UtcDateTimeSchema,

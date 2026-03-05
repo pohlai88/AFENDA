@@ -9,14 +9,14 @@ Represents a design-time link from a response to another operation. Presence doe
 
 ## Fixed fields
 
-| Field        | Type   | Description |
-|-------------|--------|-------------|
-| operationRef | string | URI reference to an Operation Object. Mutually exclusive with `operationId`. Relative refs MAY locate operation in OAD. |
-| operationId  | string | Name of existing resolvable operation (unique `operationId`). Mutually exclusive with `operationRef`. Prefer `operationRef` in multi-document OADs. |
-| parameters   | Map[string, Any \| expression] | Parameter name (optionally qualified, e.g. `path.id`) → constant or runtime expression. |
-| requestBody  | Any \| expression | Literal or expression for request body when calling target operation. |
-| description  | string | Description; CommonMark allowed. |
-| server       | Server Object | Server for the target operation. |
+| Field        | Type                           | Description                                                                                                                                         |
+| ------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| operationRef | string                         | URI reference to an Operation Object. Mutually exclusive with `operationId`. Relative refs MAY locate operation in OAD.                             |
+| operationId  | string                         | Name of existing resolvable operation (unique `operationId`). Mutually exclusive with `operationRef`. Prefer `operationRef` in multi-document OADs. |
+| parameters   | Map[string, Any \| expression] | Parameter name (optionally qualified, e.g. `path.id`) → constant or runtime expression.                                                             |
+| requestBody  | Any \| expression              | Literal or expression for request body when calling target operation.                                                                               |
+| description  | string                         | Description; CommonMark allowed.                                                                                                                    |
+| server       | Server Object                  | Server for the target operation.                                                                                                                    |
 
 Exactly one of `operationRef` or `operationId` MUST be present. Linked operation MUST be unique; from Path Item referenced multiple times, resolution may be implementation-defined or error.
 
@@ -24,14 +24,14 @@ Exactly one of `operationRef` or `operationId` MUST be present. Linked operation
 
 Syntax: `$url` | `$method` | `$statusCode` | `$request.source` | `$response.source` where source is `header.token` | `query.name` | `path.name` | `body` or `body#/json-pointer`.
 
-| Example                  | Notes |
-|--------------------------|-------|
-| `$method`                | HTTP method. |
-| `$request.header.accept` | Request header (token case-insensitive). |
-| `$request.path.id`      | Path parameter; must be declared on operation. |
-| `$request.body#/user/uuid` | Request body or fragment (JSON Pointer). |
-| `$response.body#/status` | Response body or fragment. |
-| `$response.header.Location` | Single header value. |
+| Example                     | Notes                                          |
+| --------------------------- | ---------------------------------------------- |
+| `$method`                   | HTTP method.                                   |
+| `$request.header.accept`    | Request header (token case-insensitive).       |
+| `$request.path.id`          | Path parameter; must be declared on operation. |
+| `$request.body#/user/uuid`  | Request body or fragment (JSON Pointer).       |
+| `$response.body#/status`    | Response body or fragment.                     |
+| `$response.header.Location` | Single header value.                           |
 
 Expressions preserve type. Embed in strings with `{expression}`.
 
@@ -42,7 +42,7 @@ paths:
   /users/{id}:
     get:
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -58,7 +58,7 @@ paths:
     get:
       operationId: getUserAddress
       responses:
-        '200':
+        "200":
           description: user's address
 ```
 
@@ -67,7 +67,7 @@ paths:
 ```yaml
 links:
   UserRepositories:
-    operationRef: '#/paths/~12.0~1repositories~1%7Busername%7D/get'
+    operationRef: "#/paths/~12.0~1repositories~1%7Busername%7D/get"
     parameters:
       username: $response.body#/username
 ```

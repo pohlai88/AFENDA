@@ -9,10 +9,7 @@
  */
 
 import type { DbClient } from "@afenda/db";
-import {
-  invoice,
-  invoiceStatusHistory,
-} from "@afenda/db";
+import { invoice, invoiceStatusHistory } from "@afenda/db";
 import { eq, and, gt, desc, asc } from "drizzle-orm";
 import type { OrgId, InvoiceId, InvoiceStatus, CursorPage } from "@afenda/contracts";
 import { CURSOR_LIMIT_DEFAULT, CURSOR_LIMIT_MAX } from "@afenda/contracts";
@@ -140,10 +137,7 @@ export async function getInvoiceHistory(
     })
     .from(invoiceStatusHistory)
     .where(
-      and(
-        eq(invoiceStatusHistory.invoiceId, invoiceId),
-        eq(invoiceStatusHistory.orgId, orgId),
-      ),
+      and(eq(invoiceStatusHistory.invoiceId, invoiceId), eq(invoiceStatusHistory.orgId, orgId)),
     )
     .orderBy(desc(invoiceStatusHistory.occurredAt));
 

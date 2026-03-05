@@ -29,12 +29,12 @@ Same meaning as in JSON Schema unless stated:
 
 ## OAS-specific Schema fields
 
-| Field        | Type    | Description |
-|-------------|---------|-------------|
+| Field         | Type                                                  | Description                                         |
+| ------------- | ----------------------------------------------------- | --------------------------------------------------- |
 | discriminator | [Discriminator Object](core-discriminator-and-xml.md) | Hint for which schema in oneOf/anyOf/allOf applies. |
-| xml          | [XML Object](core-discriminator-and-xml.md) | XML representation. |
-| externalDocs | External Documentation Object | Additional docs. |
-| example      | Any     | **Deprecated.** Use JSON Schema `examples` array. |
+| xml           | [XML Object](core-discriminator-and-xml.md)           | XML representation.                                 |
+| externalDocs  | External Documentation Object                         | Additional docs.                                    |
+| example       | Any                                                   | **Deprecated.** Use JSON Schema `examples` array.   |
 
 Schema Object MAY be extended with Specification Extensions (x-); additional properties MAY omit x- prefix in this object.
 

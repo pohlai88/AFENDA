@@ -16,23 +16,12 @@ import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import fastifySwagger from "@fastify/swagger";
 import scalarApiReference from "@scalar/fastify-api-reference";
-import {
-  jsonSchemaTransform,
-  createJsonSchemaTransform,
-} from "fastify-type-provider-zod";
+import { jsonSchemaTransform, createJsonSchemaTransform } from "fastify-type-provider-zod";
 
-export const swaggerPlugin = fp(async function swaggerPlugin(
-  app: FastifyInstance,
-) {
+export const swaggerPlugin = fp(async function swaggerPlugin(app: FastifyInstance) {
   // ── OpenAPI 3.1 spec generation ──────────────────────────────────────────
   const transform = createJsonSchemaTransform({
-    skipList: [
-      "/healthz",
-      "/readyz",
-      "/v1/docs",
-      "/v1/docs/*",
-      "/v1/docs/openapi.json",
-    ],
+    skipList: ["/healthz", "/readyz", "/v1/docs", "/v1/docs/*", "/v1/docs/openapi.json"],
   });
 
   await app.register(fastifySwagger, {
@@ -60,13 +49,11 @@ export const swaggerPlugin = fp(async function swaggerPlugin(
         },
         {
           name: "IAM",
-          description:
-            "Identity & access management — principal info, context switching",
+          description: "Identity & access management — principal info, context switching",
         },
         {
           name: "Evidence",
-          description:
-            "Document registration, presigned uploads, evidence attachment",
+          description: "Document registration, presigned uploads, evidence attachment",
         },
         {
           name: "Invoices",
@@ -74,8 +61,7 @@ export const swaggerPlugin = fp(async function swaggerPlugin(
         },
         {
           name: "GL",
-          description:
-            "General Ledger — journal entries, chart of accounts (Sprint 1)",
+          description: "General Ledger — journal entries, chart of accounts (Sprint 1)",
         },
       ],
       components: {
@@ -91,8 +77,7 @@ export const swaggerPlugin = fp(async function swaggerPlugin(
             type: "apiKey",
             in: "header",
             name: "X-Dev-User-Email",
-            description:
-              "Development-only: principal email address for auth bypass.",
+            description: "Development-only: principal email address for auth bypass.",
           },
         },
       },

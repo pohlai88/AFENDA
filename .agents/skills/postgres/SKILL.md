@@ -21,6 +21,7 @@ Execute safe, read-only queries against configured PostgreSQL databases.
 Create `connections.json` in the skill directory or `~/.config/claude/postgres-connections.json`.
 
 **Security**: Set file permissions to `600` since it contains credentials:
+
 ```bash
 chmod 600 connections.json
 ```
@@ -44,40 +45,45 @@ chmod 600 connections.json
 
 ### Config Fields
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| name | Yes | Identifier for the database (case-insensitive) |
-| description | Yes | What data this database contains (used for auto-selection) |
-| host | Yes | Database hostname |
-| port | No | Port number (default: 5432) |
-| database | Yes | Database name |
-| user | Yes | Username |
-| password | Yes | Password |
-| sslmode | No | SSL mode: disable, allow, prefer (default), require, verify-ca, verify-full |
+| Field       | Required | Description                                                                 |
+| ----------- | -------- | --------------------------------------------------------------------------- |
+| name        | Yes      | Identifier for the database (case-insensitive)                              |
+| description | Yes      | What data this database contains (used for auto-selection)                  |
+| host        | Yes      | Database hostname                                                           |
+| port        | No       | Port number (default: 5432)                                                 |
+| database    | Yes      | Database name                                                               |
+| user        | Yes      | Username                                                                    |
+| password    | Yes      | Password                                                                    |
+| sslmode     | No       | SSL mode: disable, allow, prefer (default), require, verify-ca, verify-full |
 
 ## Usage
 
 ### List configured databases
+
 ```bash
 python3 scripts/query.py --list
 ```
 
 ### Query a database
+
 ```bash
 python3 scripts/query.py --db production --query "SELECT * FROM users LIMIT 10"
 ```
 
 ### List tables
+
 ```bash
 python3 scripts/query.py --db production --tables
 ```
 
 ### Show schema
+
 ```bash
 python3 scripts/query.py --db production --schema
 ```
 
 ### Limit results
+
 ```bash
 python3 scripts/query.py --db production --query "SELECT * FROM orders" --limit 100
 ```
@@ -86,12 +92,12 @@ python3 scripts/query.py --db production --query "SELECT * FROM orders" --limit 
 
 Match user intent to database `description`:
 
-| User asks about | Look for description containing |
-|-----------------|--------------------------------|
-| users, accounts | users, accounts, customers |
-| orders, sales | orders, transactions, sales |
-| analytics, metrics | analytics, metrics, reports |
-| logs, events | logs, events, audit |
+| User asks about    | Look for description containing |
+| ------------------ | ------------------------------- |
+| users, accounts    | users, accounts, customers      |
+| orders, sales      | orders, transactions, sales     |
+| analytics, metrics | analytics, metrics, reports     |
+| logs, events       | logs, events, audit             |
 
 If unclear, run `--list` and ask user which database.
 
@@ -108,13 +114,13 @@ If unclear, run `--list` and ask user which database.
 
 ## Troubleshooting
 
-| Error | Solution |
-|-------|----------|
-| Config not found | Create `connections.json` in skill directory |
-| Authentication failed | Check username/password in config |
-| Connection timeout | Verify host/port, check firewall/VPN |
-| SSL error | Try `"sslmode": "disable"` for local databases |
-| Permission warning | Run `chmod 600 connections.json` |
+| Error                 | Solution                                       |
+| --------------------- | ---------------------------------------------- |
+| Config not found      | Create `connections.json` in skill directory   |
+| Authentication failed | Check username/password in config              |
+| Connection timeout    | Verify host/port, check firewall/VPN           |
+| SSL error             | Try `"sslmode": "disable"` for local databases |
+| Permission warning    | Run `chmod 600 connections.json`               |
 
 ## Exit Codes
 

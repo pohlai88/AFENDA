@@ -21,8 +21,8 @@ export const handleJournalReversed: Task = async (payload, helpers) => {
 
   helpers.logger.info(
     `journal reversed: entryId=${event.payload.journalEntryId} ` +
-    `number=${event.payload.entryNumber} ` +
-    `reversalOf=${event.payload.reversalOf} ` +
-    `correlationId=${event.correlationId}`,
+      `number=${event.payload.entryNumber} ` +
+      `reversalOf=${event.payload.reversalOf} ` +
+      `correlationId=${event.correlationId}`,
   );
 };

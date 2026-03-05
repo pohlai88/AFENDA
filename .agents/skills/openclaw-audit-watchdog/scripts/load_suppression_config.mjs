@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import os from 'node:os';
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
 
-const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), '.openclaw', 'security-audit.json');
-const DEFAULT_FALLBACK_PATH = '.clawsec/allowlist.json';
+const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), ".openclaw", "security-audit.json");
+const DEFAULT_FALLBACK_PATH = ".clawsec/allowlist.json";
 
 function isObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function normalizeString(value, fallback = '') {
+function normalizeString(value, fallback = "") {
   return String(value ?? fallback).trim();
 }
 
@@ -56,7 +56,7 @@ function validateSuppression(entry, index) {
   if (!suppressedAt) {
     // Warn but don't fail - allow suppression to work with malformed date
     process.stderr.write(
-      `Warning: Suppression entry at index ${index} has malformed date '${entry.suppressedAt}'. Expected ISO 8601 format (YYYY-MM-DD).\n`
+      `Warning: Suppression entry at index ${index} has malformed date '${entry.suppressedAt}'. Expected ISO 8601 format (YYYY-MM-DD).\n`,
     );
   }
 
@@ -93,7 +93,7 @@ function normalizeSuppressionConfig(payload, source) {
   // Extract enabledFor sentinel (array of pipeline names this config activates for)
   const enabledFor = Array.isArray(payload.enabledFor)
     ? payload.enabledFor
-        .filter((v) => typeof v === 'string' && v.trim() !== '')
+        .filter((v) => typeof v === "string" && v.trim() !== "")
         .map((v) => v.trim().toLowerCase())
     : [];
 
@@ -106,15 +106,15 @@ function normalizeSuppressionConfig(payload, source) {
 
 async function loadConfigFromPath(configPath) {
   try {
-    const raw = await fs.readFile(configPath, 'utf8');
+    const raw = await fs.readFile(configPath, "utf8");
     const parsed = JSON.parse(raw);
     return normalizeSuppressionConfig(parsed, configPath);
   } catch (err) {
-    if (err.code === 'ENOENT') {
+    if (err.code === "ENOENT") {
       // File doesn't exist - return null to try fallback
       return null;
     }
-    if (err.code === 'EACCES') {
+    if (err.code === "EACCES") {
       throw new Error(`Permission denied reading config file: ${configPath}`, { cause: err });
     }
     if (err instanceof SyntaxError) {
@@ -127,7 +127,7 @@ async function loadConfigFromPath(configPath) {
   }
 }
 
-const EMPTY_RESULT = Object.freeze({ suppressions: [], source: 'none' });
+const EMPTY_RESULT = Object.freeze({ suppressions: [], source: "none" });
 
 /**
  * Resolve config from the 4-tier priority chain.
@@ -181,7 +181,7 @@ async function resolveConfig(customPath) {
  */
 export async function loadSuppressionConfig(
   customPath = null,
-  { enabled = false, pipeline = 'audit' } = {}
+  { enabled = false, pipeline = "audit" } = {},
 ) {
   // Gate 1: suppression must be explicitly opted-in via CLI flag
   if (!enabled) {
@@ -199,7 +199,7 @@ export async function loadSuppressionConfig(
   }
 
   process.stderr.write(
-    `WARNING: Suppression mechanism is enabled for "${pipeline}" pipeline via --enable-suppressions flag.\n`
+    `WARNING: Suppression mechanism is enabled for "${pipeline}" pipeline via --enable-suppressions flag.\n`,
   );
 
   return config;
@@ -208,11 +208,11 @@ export async function loadSuppressionConfig(
 // CLI usage when run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const enableFlag = args.includes('--enable-suppressions');
-  const customPath = args.find((a) => !a.startsWith('--')) || null;
+  const enableFlag = args.includes("--enable-suppressions");
+  const customPath = args.find((a) => !a.startsWith("--")) || null;
 
   if (!enableFlag) {
-    process.stdout.write('Suppression is disabled. Pass --enable-suppressions to activate.\n');
+    process.stdout.write("Suppression is disabled. Pass --enable-suppressions to activate.\n");
     process.exit(0);
   }
 
@@ -221,15 +221,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     if (config.suppressions.length === 0) {
       process.stdout.write(
-        'No active suppressions (config missing, no enabledFor sentinel, or empty)\n'
+        "No active suppressions (config missing, no enabledFor sentinel, or empty)\n",
       );
-      process.stdout.write(JSON.stringify(config, null, 2) + '\n');
+      process.stdout.write(JSON.stringify(config, null, 2) + "\n");
       process.exit(0);
     }
 
     process.stdout.write(`Config loaded successfully from: ${config.source}\n`);
     process.stdout.write(`Found ${config.suppressions.length} suppression(s):\n`);
-    process.stdout.write(JSON.stringify(config, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(config, null, 2) + "\n");
     process.exit(0);
   } catch (err) {
     process.stderr.write(`Error loading suppression config: ${err.message}\n`);

@@ -8,12 +8,7 @@
  *   4. Multiple principals can share the same party_role (e.g., supplier contacts).
  */
 import { z } from "zod";
-import {
-  PartyRoleIdSchema,
-  OrgIdSchema,
-  PartyIdSchema,
-  PrincipalIdSchema,
-} from "../shared/ids.js";
+import { PartyRoleIdSchema, OrgIdSchema, PartyIdSchema, PrincipalIdSchema } from "../shared/ids.js";
 import { UtcDateTimeSchema } from "../shared/datetime.js";
 import { RoleTypeValues } from "./role-type.js";
 import type { RoleType } from "./role-type.js";
@@ -26,10 +21,10 @@ import type { RoleType } from "./role-type.js";
  * Example: Acme Corp (party) is a "supplier" (roleType) in BuyerInc (org).
  */
 export const PartyRoleSchema = z.object({
-  id:        PartyRoleIdSchema,
-  orgId:     OrgIdSchema,
-  partyId:   PartyIdSchema,
-  roleType:  z.enum(RoleTypeValues),
+  id: PartyRoleIdSchema,
+  orgId: OrgIdSchema,
+  partyId: PartyIdSchema,
+  roleType: z.enum(RoleTypeValues),
   createdAt: UtcDateTimeSchema,
 });
 
@@ -48,10 +43,10 @@ export type PartyRole = z.infer<typeof PartyRoleSchema>;
  * No polymorphic FKs — party_role_id is a real foreign key with full integrity.
  */
 export const MembershipSchema = z.object({
-  id:          z.string().uuid().brand<"MembershipId">(),
+  id: z.string().uuid().brand<"MembershipId">(),
   principalId: PrincipalIdSchema,
   partyRoleId: PartyRoleIdSchema,
-  createdAt:   UtcDateTimeSchema,
+  createdAt: UtcDateTimeSchema,
 });
 
 export type Membership = z.infer<typeof MembershipSchema>;
@@ -65,8 +60,8 @@ export type MembershipId = Membership["id"];
  */
 export const ActiveContextSchema = z.object({
   partyRoleId: PartyRoleIdSchema,
-  orgId:       OrgIdSchema,
-  roleType:    z.enum(RoleTypeValues).optional(),
+  orgId: OrgIdSchema,
+  roleType: z.enum(RoleTypeValues).optional(),
 });
 
 export type ActiveContext = z.infer<typeof ActiveContextSchema>;
@@ -79,10 +74,10 @@ export type ActiveContext = z.infer<typeof ActiveContextSchema>;
  */
 export const ContextItemSchema = z.object({
   partyRoleId: PartyRoleIdSchema,
-  orgId:       OrgIdSchema,
-  orgName:     z.string(),
-  roleType:    z.enum(RoleTypeValues),
-  partyName:   z.string(),
+  orgId: OrgIdSchema,
+  orgName: z.string(),
+  roleType: z.enum(RoleTypeValues),
+  partyName: z.string(),
 });
 
 export type ContextItem = z.infer<typeof ContextItemSchema>;

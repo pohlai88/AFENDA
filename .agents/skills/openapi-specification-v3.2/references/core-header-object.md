@@ -16,27 +16,27 @@ Structure follows the Parameter Object (schema or content), with these differenc
 
 ## Common fields (with schema or content)
 
-| Field        | Type   | Description |
-|-------------|--------|-------------|
-| description | string | Brief description; CommonMark allowed. |
-| required    | boolean | Default false. |
-| deprecated  | boolean | Default false. |
+| Field             | Type      | Description                                    |
+| ----------------- | --------- | ---------------------------------------------- |
+| description       | string    | Brief description; CommonMark allowed.         |
+| required          | boolean   | Default false.                                 |
+| deprecated        | boolean   | Default false.                                 |
 | example, examples | Any / Map | Mutually exclusive; see Working with Examples. |
 
 ## With schema
 
-| Field   | Type   | Description |
-|--------|--------|-------------|
-| style   | string | Only legal value: `"simple"`. |
-| explode | boolean | For array/object: comma-separated in single header; default false. |
-| schema  | Schema Object | Type for the header. |
+| Field   | Type          | Description                                                        |
+| ------- | ------------- | ------------------------------------------------------------------ |
+| style   | string        | Only legal value: `"simple"`.                                      |
+| explode | boolean       | For array/object: comma-separated in single header; default false. |
+| schema  | Schema Object | Type for the header.                                               |
 
 When serializing headers with schema, URI percent-encoding MUST NOT be applied; pass values through unchanged (see Appendix D).
 
 ## With content
 
-| Field   | Type   | Description |
-|--------|--------|-------------|
+| Field   | Type                                 | Description                                 |
+| ------- | ------------------------------------ | ------------------------------------------- |
 | content | Map[string, Media Type \| Reference] | **One** entry: media type → representation. |
 
 ## Special cases

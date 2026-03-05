@@ -1,7 +1,6 @@
 ---
 name: nextjs-16-complete-guide
-description:
-  Complete guide to Next.js 16 features, breaking changes, and migration from
+description: Complete guide to Next.js 16 features, breaking changes, and migration from
   v15. Use when building new Next.js projects or upgrading existing ones to
   leverage Turbopack, Cache Components, and latest performance optimizations.
 license: MIT
@@ -200,30 +199,30 @@ proxy.ts       # Node.js runtime, explicit
 
 ```typescript
 // OLD: middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  return NextResponse.redirect(new URL('/home', request.url));
+  return NextResponse.redirect(new URL("/home", request.url));
 }
 
 export const config = {
-  matcher: '/about/:path*',
+  matcher: "/about/:path*",
 };
 ```
 
 ```typescript
 // NEW: proxy.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export default function proxy(request: NextRequest) {
   // Changed function name
-  return NextResponse.redirect(new URL('/home', request.url));
+  return NextResponse.redirect(new URL("/home", request.url));
 }
 
 export const config = {
-  matcher: '/about/:path*',
+  matcher: "/about/:path*",
 };
 ```
 
@@ -359,18 +358,18 @@ export default async function Page({ params, searchParams }) {
 
 ```typescript
 // ❌ OLD
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
 
 export function MyComponent() {
-  const token = cookies().get('token'); // Synchronous
+  const token = cookies().get("token"); // Synchronous
 }
 
 // ✅ NEW
-import { cookies } from 'next/headers';
+import { cookies } from "next/headers";
 
 export async function MyComponent() {
   const cookieStore = await cookies(); // Must await
-  const token = cookieStore.get('token');
+  const token = cookieStore.get("token");
 }
 ```
 
@@ -378,10 +377,10 @@ export async function MyComponent() {
 
 ```typescript
 // ❌ OLD
-revalidateTag('posts');
+revalidateTag("posts");
 
 // ✅ NEW
-revalidateTag('posts', 'max'); // Options: 'max', 'hours', 'days'
+revalidateTag("posts", "max"); // Options: 'max', 'hours', 'days'
 ```
 
 #### 5. middleware.ts → proxy.ts
@@ -430,7 +429,7 @@ npx @next/codemod@canary upgrade latest
 
 ```typescript
 // next.config.ts
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Enable Cache Components
@@ -510,13 +509,13 @@ npx create-next-app@latest my-app
 ```typescript
 // ✅ Good: Cache expensive, infrequent-changing data
 async function MonthlyReport() {
-  'use cache';
+  "use cache";
   return await generateReport();
 }
 
 // ❌ Bad: Don't cache user-specific real-time data
 async function CurrentBalance() {
-  'use cache'; // Wrong! This should be fresh
+  "use cache"; // Wrong! This should be fresh
   return await getUserBalance();
 }
 ```

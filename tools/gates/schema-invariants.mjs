@@ -378,9 +378,7 @@ const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
 // ── Report ──────────────────────────────────────────────────────────────────
 
 // Filter out non-fatal warnings for exit code purposes
-const fatalViolations = violations.filter(
-  (v) => v.ruleCode !== "RELATIONS_SIZE_WARNING",
-);
+const fatalViolations = violations.filter((v) => v.ruleCode !== "RELATIONS_SIZE_WARNING");
 
 if (fatalViolations.length > 0) {
   reportViolations({
@@ -401,7 +399,9 @@ if (fatalViolations.length > 0) {
     elapsed,
   });
   // Don't exit(1) for warnings
-  console.log(`✅ schema-invariants check passed — 0 fatal violations (${violations.length} warning${violations.length > 1 ? "s" : ""})`);
+  console.log(
+    `✅ schema-invariants check passed — 0 fatal violations (${violations.length} warning${violations.length > 1 ? "s" : ""})`,
+  );
 } else {
   reportSuccess({
     gateName: "schema-invariants check",

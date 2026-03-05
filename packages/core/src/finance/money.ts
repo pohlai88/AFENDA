@@ -25,12 +25,33 @@ export type { Money, CurrencyCode };
 
 const MINOR_EXPONENTS: Readonly<Partial<Record<CurrencyCode, number>>> = {
   // 0-decimal currencies
-  BIF: 0, CLP: 0, DJF: 0, GNF: 0, ISK: 0, JPY: 0, KMF: 0, KRW: 0,
-  PYG: 0, RWF: 0, UGX: 0, VND: 0, VUV: 0, XAF: 0, XOF: 0, XPF: 0,
+  BIF: 0,
+  CLP: 0,
+  DJF: 0,
+  GNF: 0,
+  ISK: 0,
+  JPY: 0,
+  KMF: 0,
+  KRW: 0,
+  PYG: 0,
+  RWF: 0,
+  UGX: 0,
+  VND: 0,
+  VUV: 0,
+  XAF: 0,
+  XOF: 0,
+  XPF: 0,
   // 1-decimal currencies (rare)
-  MGA: 1, MRU: 1,
+  MGA: 1,
+  MRU: 1,
   // 3-decimal currencies
-  BHD: 3, IQD: 3, JOD: 3, KWD: 3, LYD: 3, OMR: 3, TND: 3,
+  BHD: 3,
+  IQD: 3,
+  JOD: 3,
+  KWD: 3,
+  LYD: 3,
+  OMR: 3,
+  TND: 3,
 } as Record<string, number>;
 
 /**
@@ -55,10 +76,7 @@ export function minorFactor(currencyCode: CurrencyCode): bigint {
  * Construct Money directly from minor units (preferred in domain code).
  * This is the canonical constructor — zero conversion, zero risk.
  */
-export function fromMinorUnits(
-  amountMinor: bigint,
-  currencyCode: CurrencyCode,
-): Money {
+export function fromMinorUnits(amountMinor: bigint, currencyCode: CurrencyCode): Money {
   return { amountMinor, currencyCode };
 }
 
@@ -66,10 +84,7 @@ export function fromMinorUnits(
  * Construct Money from whole major units only (e.g. 12 USD → 1200 cents).
  * No floats — accepts bigint only. For fractional amounts use fromMajorDecimalString.
  */
-export function fromMajorUnitsInt(
-  major: bigint,
-  currencyCode: CurrencyCode,
-): Money {
+export function fromMajorUnitsInt(major: bigint, currencyCode: CurrencyCode): Money {
   return { amountMinor: major * minorFactor(currencyCode), currencyCode };
 }
 
@@ -79,14 +94,9 @@ export function fromMajorUnitsInt(
  *
  * @throws On invalid format or sub-minor-unit precision.
  */
-export function fromMajorDecimalString(
-  s: string,
-  currencyCode: CurrencyCode,
-): Money {
+export function fromMajorDecimalString(s: string, currencyCode: CurrencyCode): Money {
   if (!/^-?\d+(\.\d+)?$/.test(s)) {
-    throw new Error(
-      `fromMajorDecimalString: invalid decimal string "${s}"`,
-    );
+    throw new Error(`fromMajorDecimalString: invalid decimal string "${s}"`);
   }
 
   const exp = minorExponent(currencyCode);
@@ -173,10 +183,7 @@ export function multiplyByInt(m: Money, qty: bigint): Money {
  * @returns Array of Money values, one per weight, in the same order.
  * @throws If weights are empty or all zero.
  */
-export function allocateProRata(
-  total: Money,
-  weights: readonly bigint[],
-): Money[] {
+export function allocateProRata(total: Money, weights: readonly bigint[]): Money[] {
   if (weights.length === 0) {
     throw new Error("allocateProRata: weights must not be empty");
   }
@@ -191,9 +198,7 @@ export function allocateProRata(
   const absAmount = amount < 0n ? -amount : amount;
 
   // Floor allocations
-  const floors: bigint[] = weights.map(
-    (w) => (absAmount * w) / totalWeight,
-  );
+  const floors: bigint[] = weights.map((w) => (absAmount * w) / totalWeight);
 
   // Remainder to distribute
   const floorSum = floors.reduce((s, f) => s + f, 0n);
@@ -202,9 +207,7 @@ export function allocateProRata(
   // Largest-remainder method: sort indices by fractional part descending,
   // distribute one unit each until remainder is exhausted.
   // Fractional part = (absAmount * w) % totalWeight (higher = bigger fraction)
-  const fractionals = weights.map(
-    (w) => (absAmount * w) % totalWeight,
-  );
+  const fractionals = weights.map((w) => (absAmount * w) % totalWeight);
 
   const indices = Array.from({ length: weights.length }, (_, i) => i);
   indices.sort((a, b) => {
@@ -263,8 +266,6 @@ export function assertNonNegative(m: Money, label?: string): void {
 
 function assertCurrencyMatch(a: Money, b: Money, op: string): void {
   if (a.currencyCode !== b.currencyCode) {
-    throw new Error(
-      `${op}: currency mismatch ${a.currencyCode} vs ${b.currencyCode}`,
-    );
+    throw new Error(`${op}: currency mismatch ${a.currencyCode} vs ${b.currencyCode}`);
   }
 }

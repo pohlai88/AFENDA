@@ -9,31 +9,31 @@ description: Info, Contact, and License objects in OpenAPI 3.2
 
 Provides metadata about the API. Used by clients and documentation tools.
 
-| Field           | Type   | Required | Description |
-|-----------------|--------|----------|-------------|
-| title           | string | **REQUIRED** | Title of the API. |
-| summary         | string | No       | Short summary. |
-| description     | string | No       | Description; CommonMark allowed. |
-| termsOfService  | string | No       | URI for Terms of Service. |
-| contact         | Contact Object | No | Contact for the API. |
-| license         | License Object | No | License for the API. |
-| version         | string | **REQUIRED** | Version of the OpenAPI document (distinct from OAS version or API version). |
+| Field          | Type           | Required     | Description                                                                 |
+| -------------- | -------------- | ------------ | --------------------------------------------------------------------------- |
+| title          | string         | **REQUIRED** | Title of the API.                                                           |
+| summary        | string         | No           | Short summary.                                                              |
+| description    | string         | No           | Description; CommonMark allowed.                                            |
+| termsOfService | string         | No           | URI for Terms of Service.                                                   |
+| contact        | Contact Object | No           | Contact for the API.                                                        |
+| license        | License Object | No           | License for the API.                                                        |
+| version        | string         | **REQUIRED** | Version of the OpenAPI document (distinct from OAS version or API version). |
 
 ## Contact Object
 
-| Field | Type   | Description |
-|-------|--------|-------------|
+| Field | Type   | Description                       |
+| ----- | ------ | --------------------------------- |
 | name  | string | Contact person/organization name. |
-| url   | string | URI for contact (MUST be URI). |
-| email | string | Email (MUST be email format). |
+| url   | string | URI for contact (MUST be URI).    |
+| email | string | Email (MUST be email format).     |
 
 ## License Object
 
-| Field      | Type   | Description |
-|------------|--------|-------------|
-| name       | string | **REQUIRED**. License name. |
+| Field      | Type   | Description                                             |
+| ---------- | ------ | ------------------------------------------------------- |
+| name       | string | **REQUIRED**. License name.                             |
 | identifier | string | SPDX license expression; mutually exclusive with `url`. |
-| url        | string | URI for license; mutually exclusive with `identifier`. |
+| url        | string | URI for license; mutually exclusive with `identifier`.  |
 
 ## Example
 

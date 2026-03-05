@@ -7,11 +7,6 @@
  *   3. Coordinate with OWNERS of the domain that uses the new entity type.
  */
 
-export const SequenceEntityTypeValues = [
-  "invoice",
-  "journalEntry",
-  "payment",
-  "supplier",
-] as const;
+export const SequenceEntityTypeValues = ["invoice", "journalEntry", "payment", "supplier"] as const;
 
 export type SequenceEntityType = (typeof SequenceEntityTypeValues)[number];

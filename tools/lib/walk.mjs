@@ -9,8 +9,14 @@ import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const SKIP_DIRS = new Set([
-  "node_modules", "dist", ".turbo", "drizzle",
-  ".next", ".vercel", "coverage", ".git",
+  "node_modules",
+  "dist",
+  ".turbo",
+  "drizzle",
+  ".next",
+  ".vercel",
+  "coverage",
+  ".git",
 ]);
 
 /**

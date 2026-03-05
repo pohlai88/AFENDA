@@ -8,7 +8,15 @@
  * resolution of the full schema graph during unit tests.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { OrgId, PrincipalId, CorrelationId, EntityId, JsonObject, AuditAction, AuditEntityType } from "@afenda/contracts";
+import type {
+  OrgId,
+  PrincipalId,
+  CorrelationId,
+  EntityId,
+  JsonObject,
+  AuditAction,
+  AuditEntityType,
+} from "@afenda/contracts";
 
 // ── Mock @afenda/db before any code that imports it ──────────────────────────
 
@@ -56,7 +64,9 @@ function createMockDb() {
   insertFn.mockClear();
   valuesFn.mockClear();
   returningFn.mockClear().mockResolvedValue([{ id: FAKE_AUDIT_LOG_ID }]);
-  transactionFn.mockClear().mockImplementation(async (fn: any) => fn({ insert: insertFn, execute: vi.fn() }));
+  transactionFn
+    .mockClear()
+    .mockImplementation(async (fn: any) => fn({ insert: insertFn, execute: vi.fn() }));
 
   return {
     insert: insertFn,
@@ -97,49 +107,37 @@ describe("assertJsonSafe (via writeAuditLog)", () => {
   it("rejects NaN", async () => {
     const db = createMockDb() as any;
     const details = { bad: NaN } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /non-finite number/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/non-finite number/);
   });
 
   it("rejects Infinity", async () => {
     const db = createMockDb() as any;
     const details = { bad: Infinity } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /non-finite number/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/non-finite number/);
   });
 
   it("rejects -Infinity", async () => {
     const db = createMockDb() as any;
     const details = { bad: -Infinity } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /non-finite number/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/non-finite number/);
   });
 
   it("rejects BigInt", async () => {
     const db = createMockDb() as any;
     const details = { bad: BigInt(42) } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /BigInt/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/BigInt/);
   });
 
   it("rejects Date", async () => {
     const db = createMockDb() as any;
     const details = { bad: new Date() } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /Date/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/Date/);
   });
 
   it("rejects Map", async () => {
     const db = createMockDb() as any;
     const details = { bad: new Map() } as unknown as JsonObject;
-    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(
-      /Map\/Set/,
-    );
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/Map\/Set/);
   });
 
   it("rejects nested NaN deep in the tree", async () => {
@@ -223,12 +221,21 @@ describe("deep redaction (via writeAuditLog)", () => {
   it("redacts all key variants: access_token, refresh_token, apiKey, etc.", async () => {
     const db = createMockDb() as any;
     const allSensitive = {
-      password: "1", pass: "2", token: "3",
-      access_token: "4", accesstoken: "5",
-      refresh_token: "6", refreshtoken: "7",
-      secret: "8", api_key: "9", apikey: "10",
-      authorization: "11", creditcard: "12",
-      cardnumber: "13", cvv: "14", ssn: "15",
+      password: "1",
+      pass: "2",
+      token: "3",
+      access_token: "4",
+      accesstoken: "5",
+      refresh_token: "6",
+      refreshtoken: "7",
+      secret: "8",
+      api_key: "9",
+      apikey: "10",
+      authorization: "11",
+      creditcard: "12",
+      cardnumber: "13",
+      cvv: "14",
+      ssn: "15",
     } as unknown as JsonObject;
     await writeAuditLog(db, ctx(), baseEntry(allSensitive));
 
@@ -263,9 +270,7 @@ describe("details size guard", () => {
     // Generate a string just over 64KB
     const bigPayload = "x".repeat(65_000);
     const details = { data: bigPayload } as unknown as JsonObject;
-    await expect(
-      writeAuditLog(db, ctx(), baseEntry(details)),
-    ).rejects.toThrow(/too large/);
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).rejects.toThrow(/too large/);
   });
 
   it("accepts details just under 64KB", async () => {
@@ -273,9 +278,7 @@ describe("details size guard", () => {
     // ~60KB payload — under the 64KB limit
     const payload = "x".repeat(60_000);
     const details = { data: payload } as unknown as JsonObject;
-    await expect(
-      writeAuditLog(db, ctx(), baseEntry(details)),
-    ).resolves.toBeDefined();
+    await expect(writeAuditLog(db, ctx(), baseEntry(details))).resolves.toBeDefined();
   });
 });
 

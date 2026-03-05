@@ -24,7 +24,9 @@ Radar-style pulse for notifications:
 
 ```html
 <span class="relative flex h-3 w-3">
-  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+  <span
+    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"
+  ></span>
   <span class="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
 </span>
 ```
@@ -49,7 +51,13 @@ Attention-grabbing vertical bounce:
 
 ```html
 <svg class="animate-bounce w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+  <path
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="2"
+    d="M19 14l-7 7m0 0l-7-7m7 7V3"
+  />
 </svg>
 ```
 
@@ -57,43 +65,43 @@ Attention-grabbing vertical bounce:
 
 ### Transition Properties
 
-| Class | CSS Property |
-|-------|--------------|
-| `transition-none` | None |
-| `transition-all` | All properties |
-| `transition` | Common properties |
-| `transition-colors` | Colors only |
-| `transition-opacity` | Opacity only |
-| `transition-shadow` | Shadow only |
-| `transition-transform` | Transform only |
+| Class                  | CSS Property      |
+| ---------------------- | ----------------- |
+| `transition-none`      | None              |
+| `transition-all`       | All properties    |
+| `transition`           | Common properties |
+| `transition-colors`    | Colors only       |
+| `transition-opacity`   | Opacity only      |
+| `transition-shadow`    | Shadow only       |
+| `transition-transform` | Transform only    |
 
 ### Transition Duration
 
-| Class | Duration |
-|-------|----------|
-| `duration-75` | 75ms |
-| `duration-100` | 100ms |
-| `duration-150` | 150ms |
-| `duration-200` | 200ms |
-| `duration-300` | 300ms |
-| `duration-500` | 500ms |
-| `duration-700` | 700ms |
-| `duration-1000` | 1000ms |
+| Class           | Duration |
+| --------------- | -------- |
+| `duration-75`   | 75ms     |
+| `duration-100`  | 100ms    |
+| `duration-150`  | 150ms    |
+| `duration-200`  | 200ms    |
+| `duration-300`  | 300ms    |
+| `duration-500`  | 500ms    |
+| `duration-700`  | 700ms    |
+| `duration-1000` | 1000ms   |
 
 ### Transition Timing Functions
 
-| Class | Easing |
-|-------|--------|
-| `ease-linear` | Linear |
-| `ease-in` | Accelerate |
-| `ease-out` | Decelerate |
+| Class         | Easing                     |
+| ------------- | -------------------------- |
+| `ease-linear` | Linear                     |
+| `ease-in`     | Accelerate                 |
+| `ease-out`    | Decelerate                 |
 | `ease-in-out` | Accelerate then decelerate |
 
 ### Transition Delay
 
-| Class | Delay |
-|-------|-------|
-| `delay-75` | 75ms |
+| Class       | Delay |
+| ----------- | ----- |
+| `delay-75`  | 75ms  |
 | `delay-100` | 100ms |
 | `delay-150` | 150ms |
 | `delay-200` | 200ms |
@@ -104,27 +112,23 @@ Attention-grabbing vertical bounce:
 
 ```html
 <!-- Color transition -->
-<button class="bg-blue-500 hover:bg-blue-700 transition-colors duration-200">
-  Hover me
-</button>
+<button class="bg-blue-500 hover:bg-blue-700 transition-colors duration-200">Hover me</button>
 
 <!-- Scale on hover -->
-<div class="transform hover:scale-105 transition-transform duration-200">
-  Card
-</div>
+<div class="transform hover:scale-105 transition-transform duration-200">Card</div>
 
 <!-- Opacity transition -->
-<div class="opacity-100 hover:opacity-75 transition-opacity duration-150">
-  Fade
-</div>
+<div class="opacity-100 hover:opacity-75 transition-opacity duration-150">Fade</div>
 
 <!-- Multiple properties -->
-<button class="
+<button
+  class="
   bg-blue-500 hover:bg-blue-700
   transform hover:scale-105
   shadow-md hover:shadow-lg
   transition-all duration-200
-">
+"
+>
   Full transition
 </button>
 ```
@@ -134,13 +138,9 @@ Attention-grabbing vertical bounce:
 ### Scale
 
 ```html
-<div class="transform scale-100 hover:scale-110 transition-transform">
-  Scale up
-</div>
+<div class="transform scale-100 hover:scale-110 transition-transform">Scale up</div>
 
-<div class="transform scale-100 hover:scale-90 transition-transform">
-  Scale down
-</div>
+<div class="transform scale-100 hover:scale-90 transition-transform">Scale down</div>
 
 <!-- Specific axes -->
 <div class="transform hover:scale-x-110">Horizontal</div>
@@ -150,41 +150,27 @@ Attention-grabbing vertical bounce:
 ### Rotate
 
 ```html
-<div class="transform hover:rotate-12 transition-transform">
-  Rotate right
-</div>
+<div class="transform hover:rotate-12 transition-transform">Rotate right</div>
 
-<div class="transform hover:-rotate-12 transition-transform">
-  Rotate left
-</div>
+<div class="transform hover:-rotate-12 transition-transform">Rotate left</div>
 
-<div class="transform hover:rotate-180 transition-transform duration-500">
-  Flip
-</div>
+<div class="transform hover:rotate-180 transition-transform duration-500">Flip</div>
 ```
 
 ### Translate
 
 ```html
-<div class="transform hover:translate-x-2 transition-transform">
-  Move right
-</div>
+<div class="transform hover:translate-x-2 transition-transform">Move right</div>
 
-<div class="transform hover:-translate-y-2 transition-transform">
-  Move up
-</div>
+<div class="transform hover:-translate-y-2 transition-transform">Move up</div>
 ```
 
 ### Skew
 
 ```html
-<div class="transform hover:skew-x-3 transition-transform">
-  Skew horizontal
-</div>
+<div class="transform hover:skew-x-3 transition-transform">Skew horizontal</div>
 
-<div class="transform hover:skew-y-3 transition-transform">
-  Skew vertical
-</div>
+<div class="transform hover:skew-y-3 transition-transform">Skew vertical</div>
 ```
 
 ### Transform Origin
@@ -208,8 +194,12 @@ Attention-grabbing vertical bounce:
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
@@ -224,9 +214,16 @@ Attention-grabbing vertical bounce:
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 ```
 
@@ -249,9 +246,7 @@ Attention-grabbing vertical bounce:
 ```
 
 ```html
-<div class="transition-transform ease-bounce duration-300 hover:scale-110">
-  Bouncy scale
-</div>
+<div class="transition-transform ease-bounce duration-300 hover:scale-110">Bouncy scale</div>
 ```
 
 ## Accessibility: Reduced Motion
@@ -260,16 +255,16 @@ Attention-grabbing vertical bounce:
 
 ```html
 <!-- Only animate if user prefers motion -->
-<div class="motion-safe:animate-bounce motion-reduce:animate-none">
-  Respects preferences
-</div>
+<div class="motion-safe:animate-bounce motion-reduce:animate-none">Respects preferences</div>
 
 <!-- Alternative: reduced animation -->
-<button class="
+<button
+  class="
   motion-safe:transition-all motion-safe:duration-200
   motion-reduce:transition-none
   hover:bg-blue-600
-">
+"
+>
   Accessible button
 </button>
 ```
@@ -294,11 +289,13 @@ Attention-grabbing vertical bounce:
 ### Hover Card Lift
 
 ```html
-<div class="
+<div
+  class="
   transform transition-all duration-200
   hover:-translate-y-1 hover:shadow-lg
   bg-white rounded-lg p-6 shadow
-">
+"
+>
   Card content
 </div>
 ```
@@ -306,11 +303,13 @@ Attention-grabbing vertical bounce:
 ### Button Press Effect
 
 ```html
-<button class="
+<button
+  class="
   transform transition-transform duration-100
   active:scale-95
   bg-blue-500 text-white px-4 py-2 rounded
-">
+"
+>
   Click me
 </button>
 ```
@@ -336,14 +335,14 @@ Attention-grabbing vertical bounce:
 ```javascript
 // Intersection Observer to trigger animation
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
+  entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      entry.target.classList.remove('opacity-0', 'translate-y-4')
+      entry.target.classList.remove("opacity-0", "translate-y-4");
     }
-  })
-})
+  });
+});
 
-document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el))
+document.querySelectorAll("[data-animate]").forEach((el) => observer.observe(el));
 ```
 
 ### Skeleton Loader
@@ -360,9 +359,15 @@ document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el))
 
 ```html
 <button class="group" aria-label="Toggle menu">
-  <span class="block w-6 h-0.5 bg-black transition-all duration-200 group-open:rotate-45 group-open:translate-y-1.5"></span>
-  <span class="block w-6 h-0.5 bg-black mt-1 transition-opacity duration-200 group-open:opacity-0"></span>
-  <span class="block w-6 h-0.5 bg-black mt-1 transition-all duration-200 group-open:-rotate-45 group-open:-translate-y-1.5"></span>
+  <span
+    class="block w-6 h-0.5 bg-black transition-all duration-200 group-open:rotate-45 group-open:translate-y-1.5"
+  ></span>
+  <span
+    class="block w-6 h-0.5 bg-black mt-1 transition-opacity duration-200 group-open:opacity-0"
+  ></span>
+  <span
+    class="block w-6 h-0.5 bg-black mt-1 transition-all duration-200 group-open:-rotate-45 group-open:-translate-y-1.5"
+  ></span>
 </button>
 ```
 
@@ -371,7 +376,7 @@ document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el))
 For complex enter/leave transitions, use a library like Headless UI:
 
 ```jsx
-import { Transition } from '@headlessui/react'
+import { Transition } from "@headlessui/react";
 
 function Modal({ isOpen, children }) {
   return (
@@ -386,7 +391,7 @@ function Modal({ isOpen, children }) {
     >
       {children}
     </Transition>
-  )
+  );
 }
 ```
 
@@ -397,9 +402,9 @@ function Modal({ isOpen, children }) {
 ```html
 <!-- GOOD - GPU accelerated -->
 <div class="transform hover:translate-x-2 transition-transform">
-
-<!-- AVOID - May cause repaints -->
-<div class="hover:left-2 transition-all">
+  <!-- AVOID - May cause repaints -->
+  <div class="hover:left-2 transition-all"></div>
+</div>
 ```
 
 ### 2. Use Specific Transitions
@@ -407,9 +412,9 @@ function Modal({ isOpen, children }) {
 ```html
 <!-- GOOD - Only transitions what changes -->
 <div class="transition-colors duration-200 hover:bg-blue-500">
-
-<!-- AVOID - Transitions everything -->
-<div class="transition-all duration-200 hover:bg-blue-500">
+  <!-- AVOID - Transitions everything -->
+  <div class="transition-all duration-200 hover:bg-blue-500"></div>
+</div>
 ```
 
 ### 3. Keep Animations Short
@@ -417,16 +422,14 @@ function Modal({ isOpen, children }) {
 ```html
 <!-- GOOD - Snappy feedback -->
 <button class="transition-colors duration-150">
-
-<!-- AVOID - Too slow for UI feedback -->
-<button class="transition-colors duration-1000">
+  <!-- AVOID - Too slow for UI feedback -->
+  <button class="transition-colors duration-1000"></button>
+</button>
 ```
 
 ### 4. Use will-change Sparingly
 
 ```html
 <!-- Only for complex, frequently animated elements -->
-<div class="will-change-transform animate-spin">
-  Loading spinner
-</div>
+<div class="will-change-transform animate-spin">Loading spinner</div>
 ```

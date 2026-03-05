@@ -55,10 +55,7 @@ export function makeSuccessSchema<T extends z.ZodTypeAny>(data: T) {
  * Require a resolved org UUID. Sends 400 if not resolved.
  * @returns orgId string, or undefined (reply already sent).
  */
-export function requireOrg(
-  req: FastifyRequest,
-  reply: FastifyReply,
-): string | undefined {
+export function requireOrg(req: FastifyRequest, reply: FastifyReply): string | undefined {
   if (req.orgId) return req.orgId;
   reply.status(400).send({
     error: {

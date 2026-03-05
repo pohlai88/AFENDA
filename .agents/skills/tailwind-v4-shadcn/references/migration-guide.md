@@ -196,19 +196,19 @@ After each component:
 ```tsx
 const severityConfig = {
   critical: {
-    color: 'text-red-500',
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/20',
+    color: "text-red-500",
+    bg: "bg-red-500/10",
+    border: "border-red-500/20",
   },
   warning: {
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-500/10',
-    border: 'border-yellow-500/20',
+    color: "text-yellow-500",
+    bg: "bg-yellow-500/10",
+    border: "border-yellow-500/20",
   },
   info: {
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
-    border: 'border-blue-500/20',
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
   },
 };
 ```
@@ -218,19 +218,19 @@ const severityConfig = {
 ```tsx
 const severityConfig = {
   critical: {
-    color: 'text-destructive',
-    bg: 'bg-destructive/10',
-    border: 'border-destructive/20',
+    color: "text-destructive",
+    bg: "bg-destructive/10",
+    border: "border-destructive/20",
   },
   warning: {
-    color: 'text-warning',
-    bg: 'bg-warning/10',
-    border: 'border-warning/20',
+    color: "text-warning",
+    bg: "bg-warning/10",
+    border: "border-warning/20",
   },
   info: {
-    color: 'text-info',
-    bg: 'bg-info/10',
-    border: 'border-info/20',
+    color: "text-info",
+    bg: "bg-info/10",
+    border: "border-info/20",
   },
 };
 ```

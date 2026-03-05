@@ -25,10 +25,10 @@
   /* ═══════════════════════════════════════════════════════════════════════
      TYPOGRAPHY
      ═══════════════════════════════════════════════════════════════════════ */
-  --font-sans: 'Inter', 'San Francisco', 'Segoe UI', system-ui, sans-serif;
+  --font-sans: "Inter", "San Francisco", "Segoe UI", system-ui, sans-serif;
   --font-mono:
-    'JetBrains Mono', 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', monospace;
+    "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
 
   /* ═══════════════════════════════════════════════════════════════════════
      Z-INDEX TOPOLOGY

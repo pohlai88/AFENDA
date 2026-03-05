@@ -37,7 +37,13 @@ const mockDb = {
 
 // Mock @afenda/db tables
 vi.mock("@afenda/db", () => ({
-  invoice: { id: "id", orgId: "org_id", supplierId: "supplier_id", status: "status", submittedByPrincipalId: "submitted_by_principal_id" },
+  invoice: {
+    id: "id",
+    orgId: "org_id",
+    supplierId: "supplier_id",
+    status: "status",
+    submittedByPrincipalId: "submitted_by_principal_id",
+  },
   invoiceStatusHistory: {},
   outboxEvent: {},
   supplier: { id: "id", orgId: "org_id" },
@@ -56,12 +62,7 @@ vi.mock("../../../infra/numbering.js", () => ({
   nextNumber: vi.fn(async () => "INV-2026-0001"),
 }));
 
-import {
-  submitInvoice,
-  approveInvoice,
-  rejectInvoice,
-  voidInvoice,
-} from "../invoice.service.js";
+import { submitInvoice, approveInvoice, rejectInvoice, voidInvoice } from "../invoice.service.js";
 
 // ── Test constants ───────────────────────────────────────────────────────────
 
@@ -74,11 +75,15 @@ const SUPPLIER_ID = "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee" as SupplierId;
 
 const CTX: OrgScopedContext = { activeContext: { orgId: ORG_ID } };
 
-function makePolicyCtx(overrides: Partial<PolicyContext> & { permissions?: string[] } = {}): PolicyContext {
+function makePolicyCtx(
+  overrides: Partial<PolicyContext> & { permissions?: string[] } = {},
+): PolicyContext {
   const { permissions, ...rest } = overrides as any;
   return {
     principalId: PRINCIPAL_A,
-    permissionsSet: new Set(permissions ?? [Permissions.apInvoiceSubmit, Permissions.apInvoiceApprove]),
+    permissionsSet: new Set(
+      permissions ?? [Permissions.apInvoiceSubmit, Permissions.apInvoiceApprove],
+    ),
     ...rest,
   };
 }
@@ -110,18 +115,12 @@ describe("submitInvoice", () => {
     // Outbox insert
     mockInsertValues.mockReturnValueOnce({ returning: vi.fn() });
 
-    const result = await submitInvoice(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      CORRELATION_ID,
-      {
-        supplierId: SUPPLIER_ID,
-        amountMinor: 10000n,
-        currencyCode: "USD",
-        idempotencyKey: "idem-1",
-      },
-    );
+    const result = await submitInvoice(mockDb, CTX, makePolicyCtx(), CORRELATION_ID, {
+      supplierId: SUPPLIER_ID,
+      amountMinor: 10000n,
+      currencyCode: "USD",
+      idempotencyKey: "idem-1",
+    });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -132,18 +131,12 @@ describe("submitInvoice", () => {
   it("returns error when supplier not found", async () => {
     mockSelectWhere.mockResolvedValueOnce([]);
 
-    const result = await submitInvoice(
-      mockDb,
-      CTX,
-      makePolicyCtx(),
-      CORRELATION_ID,
-      {
-        supplierId: SUPPLIER_ID,
-        amountMinor: 10000n,
-        currencyCode: "USD",
-        idempotencyKey: "idem-2",
-      },
-    );
+    const result = await submitInvoice(mockDb, CTX, makePolicyCtx(), CORRELATION_ID, {
+      supplierId: SUPPLIER_ID,
+      amountMinor: 10000n,
+      currencyCode: "USD",
+      idempotencyKey: "idem-2",
+    });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -157,11 +150,13 @@ describe("submitInvoice", () => {
 describe("approveInvoice", () => {
   it("returns ok when principal has permission and is not the submitter", async () => {
     // Invoice exists in submitted status
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "submitted",
-      submittedByPrincipalId: PRINCIPAL_A,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "submitted",
+        submittedByPrincipalId: PRINCIPAL_A,
+      },
+    ]);
 
     const pCtx = makePolicyCtx({
       principalId: PRINCIPAL_B,
@@ -169,7 +164,12 @@ describe("approveInvoice", () => {
     });
 
     const result = await approveInvoice(
-      mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID, "Looks good",
+      mockDb,
+      CTX,
+      pCtx,
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Looks good",
     );
 
     expect(result.ok).toBe(true);
@@ -181,9 +181,7 @@ describe("approveInvoice", () => {
   it("returns AP_INVOICE_NOT_FOUND when invoice does not exist", async () => {
     mockSelectWhere.mockResolvedValueOnce([]);
 
-    const result = await approveInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID,
-    );
+    const result = await approveInvoice(mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -192,20 +190,20 @@ describe("approveInvoice", () => {
   });
 
   it("returns AP_INVOICE_ALREADY_APPROVED when status is approved", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "approved",
-      submittedByPrincipalId: PRINCIPAL_A,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "approved",
+        submittedByPrincipalId: PRINCIPAL_A,
+      },
+    ]);
 
     const pCtx = makePolicyCtx({
       principalId: PRINCIPAL_B,
       permissions: [Permissions.apInvoiceApprove],
     });
 
-    const result = await approveInvoice(
-      mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID,
-    );
+    const result = await approveInvoice(mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -214,20 +212,20 @@ describe("approveInvoice", () => {
   });
 
   it("returns INVALID_STATUS_TRANSITION when status is voided", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "voided",
-      submittedByPrincipalId: PRINCIPAL_A,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "voided",
+        submittedByPrincipalId: PRINCIPAL_A,
+      },
+    ]);
 
     const pCtx = makePolicyCtx({
       principalId: PRINCIPAL_B,
       permissions: [Permissions.apInvoiceApprove],
     });
 
-    const result = await approveInvoice(
-      mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID,
-    );
+    const result = await approveInvoice(mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -236,20 +234,20 @@ describe("approveInvoice", () => {
   });
 
   it("returns FORBIDDEN when SoD violated (submitter = approver)", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "submitted",
-      submittedByPrincipalId: PRINCIPAL_A,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "submitted",
+        submittedByPrincipalId: PRINCIPAL_A,
+      },
+    ]);
 
     const pCtx = makePolicyCtx({
       principalId: PRINCIPAL_A,
       permissions: [Permissions.apInvoiceApprove],
     });
 
-    const result = await approveInvoice(
-      mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID,
-    );
+    const result = await approveInvoice(mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -258,20 +256,20 @@ describe("approveInvoice", () => {
   });
 
   it("returns INSUFFICIENT_PERMISSIONS when missing ap.invoice.approve", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "submitted",
-      submittedByPrincipalId: PRINCIPAL_A,
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "submitted",
+        submittedByPrincipalId: PRINCIPAL_A,
+      },
+    ]);
 
     const pCtx = makePolicyCtx({
       principalId: PRINCIPAL_B,
       permissions: [],
     });
 
-    const result = await approveInvoice(
-      mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID,
-    );
+    const result = await approveInvoice(mockDb, CTX, pCtx, CORRELATION_ID, INVOICE_ID);
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -284,13 +282,20 @@ describe("approveInvoice", () => {
 
 describe("rejectInvoice", () => {
   it("returns ok when invoice is in submitted status", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "submitted",
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "submitted",
+      },
+    ]);
 
     const result = await rejectInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Duplicate invoice",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Duplicate invoice",
     );
 
     expect(result.ok).toBe(true);
@@ -300,7 +305,12 @@ describe("rejectInvoice", () => {
     mockSelectWhere.mockResolvedValueOnce([]);
 
     const result = await rejectInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Reason",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Reason",
     );
 
     expect(result.ok).toBe(false);
@@ -310,13 +320,20 @@ describe("rejectInvoice", () => {
   });
 
   it("returns INVALID_STATUS_TRANSITION when invoice is in approved status", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "approved",
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "approved",
+      },
+    ]);
 
     const result = await rejectInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Reason",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Reason",
     );
 
     expect(result.ok).toBe(false);
@@ -330,26 +347,40 @@ describe("rejectInvoice", () => {
 
 describe("voidInvoice", () => {
   it("returns ok when invoice is in submitted status", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "submitted",
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "submitted",
+      },
+    ]);
 
     const result = await voidInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Customer cancelled",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Customer cancelled",
     );
 
     expect(result.ok).toBe(true);
   });
 
   it("returns AP_INVOICE_ALREADY_VOIDED when already voided", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "voided",
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "voided",
+      },
+    ]);
 
     const result = await voidInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Reason",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Reason",
     );
 
     expect(result.ok).toBe(false);
@@ -359,13 +390,20 @@ describe("voidInvoice", () => {
   });
 
   it("returns INVALID_STATUS_TRANSITION for paid invoices", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{
-      id: INVOICE_ID,
-      status: "paid",
-    }]);
+    mockSelectWhere.mockResolvedValueOnce([
+      {
+        id: INVOICE_ID,
+        status: "paid",
+      },
+    ]);
 
     const result = await voidInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Reason",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Reason",
     );
 
     expect(result.ok).toBe(false);
@@ -378,7 +416,12 @@ describe("voidInvoice", () => {
     mockSelectWhere.mockResolvedValueOnce([]);
 
     const result = await voidInvoice(
-      mockDb, CTX, makePolicyCtx(), CORRELATION_ID, INVOICE_ID, "Reason",
+      mockDb,
+      CTX,
+      makePolicyCtx(),
+      CORRELATION_ID,
+      INVOICE_ID,
+      "Reason",
     );
 
     expect(result.ok).toBe(false);

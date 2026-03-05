@@ -186,10 +186,8 @@ UI updates automatically
 ### System Theme Detection
 
 ```typescript
-if (theme === 'system') {
-  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
+if (theme === "system") {
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   root.classList.add(systemTheme);
 }
 ```

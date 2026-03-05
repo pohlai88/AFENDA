@@ -9,14 +9,14 @@
  * Use this as a starting point for simple forms.
  */
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 // Schema: Just an email field
 const schema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email'),
+  email: z.string().min(1, "Email is required").email("Invalid email"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -34,9 +34,9 @@ export function NewsletterSignup() {
   });
 
   const onSubmit = async (data: FormData) => {
-    await fetch('/api/newsletter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch("/api/newsletter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
 
@@ -66,12 +66,12 @@ export function NewsletterSignup() {
           type="email"
           placeholder="Enter your email"
           autoComplete="email"
-          {...register('email')}
+          {...register("email")}
           aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'newsletter-email-error' : undefined}
+          aria-describedby={errors.email ? "newsletter-email-error" : undefined}
         />
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+          {isSubmitting ? "Subscribing..." : "Subscribe"}
         </button>
       </div>
 

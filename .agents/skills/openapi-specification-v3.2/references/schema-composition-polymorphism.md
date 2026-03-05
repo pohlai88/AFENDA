@@ -35,9 +35,9 @@ See [core-discriminator-and-xml](core-discriminator-and-xml.md) for Discriminato
 ```yaml
 MyResponseType:
   oneOf:
-    - $ref: '#/components/schemas/Cat'
-    - $ref: '#/components/schemas/Dog'
-    - $ref: '#/components/schemas/Lizard'
+    - $ref: "#/components/schemas/Cat"
+    - $ref: "#/components/schemas/Dog"
+    - $ref: "#/components/schemas/Lizard"
   discriminator:
     propertyName: petType
 ```
@@ -60,13 +60,13 @@ components:
           dog: Dog
     Cat:
       allOf:
-        - $ref: '#/components/schemas/Pet'
+        - $ref: "#/components/schemas/Pet"
         - type: object
           properties:
             name: { type: string }
     Dog:
       allOf:
-        - $ref: '#/components/schemas/Pet'
+        - $ref: "#/components/schemas/Pet"
         - type: object
           properties:
             bark: { type: string }

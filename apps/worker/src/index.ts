@@ -9,7 +9,13 @@ import { bootstrapTelemetry } from "@afenda/core";
 await bootstrapTelemetry("afenda-worker");
 
 import { run, type Logger as GraphileLogger } from "graphile-worker";
-import { validateEnv, WorkerEnvSchema, resolveWorkerDbUrl, redactEnv, createLogger } from "@afenda/core";
+import {
+  validateEnv,
+  WorkerEnvSchema,
+  resolveWorkerDbUrl,
+  redactEnv,
+  createLogger,
+} from "@afenda/core";
 import { processOutboxEvent } from "./jobs/process-outbox-event.js";
 import { handleInvoiceSubmitted } from "./jobs/handle-invoice-submitted.js";
 import { handleInvoiceApproved } from "./jobs/handle-invoice-approved.js";
@@ -106,4 +112,3 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 
 await runner.promise;
 log.info("worker exited cleanly");
-

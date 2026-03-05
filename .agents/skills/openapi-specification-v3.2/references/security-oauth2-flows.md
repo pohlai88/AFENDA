@@ -9,23 +9,23 @@ Security Scheme with `type: oauth2` uses an **OAuth Flows Object** to configure 
 
 ## OAuth Flows Object
 
-| Field               | Type   | Description |
-|---------------------|--------|-------------|
-| implicit            | OAuth Flow Object | Implicit flow (deprecated). |
-| password            | OAuth Flow Object | Resource Owner Password. |
+| Field               | Type              | Description                                    |
+| ------------------- | ----------------- | ---------------------------------------------- |
+| implicit            | OAuth Flow Object | Implicit flow (deprecated).                    |
+| password            | OAuth Flow Object | Resource Owner Password.                       |
 | clientCredentials   | OAuth Flow Object | Client Credentials (was `application` in 2.0). |
-| authorizationCode  | OAuth Flow Object | Authorization Code (was `accessCode` in 2.0). |
-| deviceAuthorization | OAuth Flow Object | Device Authorization flow. |
+| authorizationCode   | OAuth Flow Object | Authorization Code (was `accessCode` in 2.0).  |
+| deviceAuthorization | OAuth Flow Object | Device Authorization flow.                     |
 
 ## OAuth Flow Object
 
-| Field                 | Type   | Applies To | Description |
-|-----------------------|--------|------------|-------------|
-| authorizationUrl      | string | implicit, authorizationCode | **REQUIRED**. MUST be URL; TLS. |
-| deviceAuthorizationUrl | string | deviceAuthorization | **REQUIRED**. MUST be URL; TLS. |
-| tokenUrl              | string | password, clientCredentials, authorizationCode, deviceAuthorization | **REQUIRED**. MUST be URL; TLS. |
-| refreshUrl            | string | oauth2    | URL for refresh tokens. |
-| scopes                | Map[string, string] | oauth2 | **REQUIRED**. Scope name → short description; MAY be empty. |
+| Field                  | Type                | Applies To                                                          | Description                                                 |
+| ---------------------- | ------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
+| authorizationUrl       | string              | implicit, authorizationCode                                         | **REQUIRED**. MUST be URL; TLS.                             |
+| deviceAuthorizationUrl | string              | deviceAuthorization                                                 | **REQUIRED**. MUST be URL; TLS.                             |
+| tokenUrl               | string              | password, clientCredentials, authorizationCode, deviceAuthorization | **REQUIRED**. MUST be URL; TLS.                             |
+| refreshUrl             | string              | oauth2                                                              | URL for refresh tokens.                                     |
+| scopes                 | Map[string, string] | oauth2                                                              | **REQUIRED**. Scope name → short description; MAY be empty. |
 
 Optional: **oauth2MetadataUrl** on Security Scheme — URL to OAuth2 authorization server metadata (RFC8414); TLS required.
 

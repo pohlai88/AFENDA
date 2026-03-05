@@ -1,7 +1,6 @@
 ---
 name: optimized-nextjs-typescript
-description:
-  Optimized Next.js TypeScript best practices with modern UI/UX, focusing on
+description: Optimized Next.js TypeScript best practices with modern UI/UX, focusing on
   performance, security, and clean architecture
 ---
 

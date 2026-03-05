@@ -17,16 +17,16 @@ Map of out-of-band callbacks related to the parent operation. Key = **runtime ex
 ```yaml
 callbacks:
   myCallback:
-    '{$request.query.queryUrl}':
+    "{$request.query.queryUrl}":
       post:
         requestBody:
           description: Callback payload
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SomePayload'
+                $ref: "#/components/schemas/SomePayload"
         responses:
-          '200':
+          "200":
             description: callback successfully processed
 ```
 

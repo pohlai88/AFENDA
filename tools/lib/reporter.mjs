@@ -34,11 +34,11 @@ import { c } from "./ansi.mjs";
 function defaultFormatViolation(v) {
   const location = v.line ? `${v.file ?? v.relPath}:${v.line}` : (v.file ?? v.relPath);
   const lines = [`  ${c.cyan(location)}`];
-  if (v.statement)  lines.push(`    ${c.dim("code:")}  ${v.statement}`);
-  if (v.import)     lines.push(`    ${c.dim("import:")} ${v.import}`);
-  if (v.dep)        lines.push(`    ${c.dim("dep:")}     ${v.dep}`);
-  if (v.field)      lines.push(`    ${c.dim("field:")}   ${v.field}`);
-  if (v.version)    lines.push(`    ${c.dim("current:")} ${v.version}`);
+  if (v.statement) lines.push(`    ${c.dim("code:")}  ${v.statement}`);
+  if (v.import) lines.push(`    ${c.dim("import:")} ${v.import}`);
+  if (v.dep) lines.push(`    ${c.dim("dep:")}     ${v.dep}`);
+  if (v.field) lines.push(`    ${c.dim("field:")}   ${v.field}`);
+  if (v.version) lines.push(`    ${c.dim("current:")} ${v.version}`);
   lines.push(`    ${c.red("error:")}  ${v.message}`);
   lines.push(`    ${c.yellow("fix:")}    ${v.fix}`);
   return lines.join("\n");
@@ -71,7 +71,7 @@ export function reportViolations({
   }
 
   console.error(
-    `\n${c.red(c.bold(`❌ ${gateName} FAILED`))} — ${violations.length} violation${violations.length > 1 ? "s" : ""}\n`
+    `\n${c.red(c.bold(`❌ ${gateName} FAILED`))} — ${violations.length} violation${violations.length > 1 ? "s" : ""}\n`,
   );
 
   for (const [ruleCode, items] of Object.entries(grouped)) {

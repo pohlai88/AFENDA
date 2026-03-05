@@ -12,38 +12,41 @@ Cross-cutting primitives used in **3 or more domains**.
 `shared/` is not a junk drawer. **Default to domain folders.**
 Escalate here only if a primitive meets **one of these two criteria**:
 
-| Criterion | Examples |
-|---|---|
-| Referenced across 3+ domain packages | `InvoiceId` (AP + GL + evidence + audit) |
-| Infrastructure cross-cut (always needed) | headers, envelopes, error codes |
+| Criterion                                | Examples                                 |
+| ---------------------------------------- | ---------------------------------------- |
+| Referenced across 3+ domain packages     | `InvoiceId` (AP + GL + evidence + audit) |
+| Infrastructure cross-cut (always needed) | headers, envelopes, error codes          |
 
 ### Escape hatch (rare)
+
 If a primitive genuinely belongs here but doesn't reach 3 domains yet, add a
 comment at the top of the file pinning the reason:
+
 ```ts
 // shared-exception: used by <invoice, supplier> because <reason>
 ```
+
 Without that comment it will be moved to a domain folder at the next review.
 
 ---
 
 ## Files
 
-| File | Key exports | Notes |
-|---|---|---|
-| `datetime.ts` | `UtcDateTimeSchema`, `UtcDateTime`, `DateSchema`, `DateString`, `DateRangeSchema`, `DateRange` | All timestamps must use `UtcDateTimeSchema` (no local offsets). All business dates must use `DateSchema`. |
-| `ids.ts` | `UuidSchema`, `EntityIdSchema`, `brandedUuid()`, `CorrelationIdSchema`, `CorrelationId`, `OrgIdSchema`, `PrincipalIdSchema` + 6 cross-domain IDs (incl. `AuditLogId`) | Primitive layer — no deps; see ID rules below |
-| `errors.ts` | `ErrorCodeValues`, `ErrorCodeSchema`, `ErrorCode`, `ApiErrorSchema`, `ApiError` | Namespaced codes — see below |
-| `headers.ts` | `CorrelationIdHeader`, `IdempotencyKeyHeader`, `OrgIdHeader`, `HeaderNameValues`, `HeaderName` | **Constants only — no Zod** |
-| `idempotency.ts` | `IdempotencyKeySchema`, `IdempotencyKey` | Infrastructure cross-cut — every command in every domain carries one |
-| `money.ts` | `CurrencyCodeSchema`, `CurrencyCode`, `MoneySchema`, `Money` | `bigint` minor units via `z.coerce.bigint()` |
-| `pagination.ts` | `CURSOR_LIMIT_DEFAULT`, `CURSOR_LIMIT_MAX`, `CursorParamsSchema`, `CursorParams` | Empty-string coercion via `z.preprocess` |
-| `envelope.ts` | `ErrorEnvelopeSchema`, `ErrorEnvelope`, `makeSuccessEnvelopeSchema()`, `SuccessEnvelope<T>`, `makeCursorEnvelopeSchema()`, `CursorEnvelope<T>` | Schema factories (not constants) — depends on `ids` + `errors` |
-| `outbox.ts` | `JsonValueSchema`, `JsonValue`, `JsonObjectSchema`, `JsonObject`, `OutboxEventSchema`, `OutboxEvent` | Depends on `ids`; `.passthrough()` for forward-compat |
-| `audit.ts` | `AuditActionValues`, `AuditAction`, `AuditEntityTypeValues`, `AuditEntityType` | Controlled vocabulary — no Zod, pure TS types. Adding a new action/entity type requires updating this file. |
-| `audit-query.ts` | `AuditLogFilterSchema`, `AuditLogFilter`, `AuditLogRowSchema`, `AuditLogRow` | Read-path Zod schemas for querying the audit log. Depends on `audit.ts`, `ids.ts`, `datetime.ts`. |
-| `sequence.ts` | `SequenceEntityTypeValues`, `SequenceEntityType` | Closed set of entities using gap-free numbering; adding a value requires seeding sequence rows |
-| `index.ts` | Domain barrel — re-exports all of the above | Primitives before composites; exports only, no logic |
+| File             | Key exports                                                                                                                                                           | Notes                                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `datetime.ts`    | `UtcDateTimeSchema`, `UtcDateTime`, `DateSchema`, `DateString`, `DateRangeSchema`, `DateRange`                                                                        | All timestamps must use `UtcDateTimeSchema` (no local offsets). All business dates must use `DateSchema`.   |
+| `ids.ts`         | `UuidSchema`, `EntityIdSchema`, `brandedUuid()`, `CorrelationIdSchema`, `CorrelationId`, `OrgIdSchema`, `PrincipalIdSchema` + 6 cross-domain IDs (incl. `AuditLogId`) | Primitive layer — no deps; see ID rules below                                                               |
+| `errors.ts`      | `ErrorCodeValues`, `ErrorCodeSchema`, `ErrorCode`, `ApiErrorSchema`, `ApiError`                                                                                       | Namespaced codes — see below                                                                                |
+| `headers.ts`     | `CorrelationIdHeader`, `IdempotencyKeyHeader`, `OrgIdHeader`, `HeaderNameValues`, `HeaderName`                                                                        | **Constants only — no Zod**                                                                                 |
+| `idempotency.ts` | `IdempotencyKeySchema`, `IdempotencyKey`                                                                                                                              | Infrastructure cross-cut — every command in every domain carries one                                        |
+| `money.ts`       | `CurrencyCodeSchema`, `CurrencyCode`, `MoneySchema`, `Money`                                                                                                          | `bigint` minor units via `z.coerce.bigint()`                                                                |
+| `pagination.ts`  | `CURSOR_LIMIT_DEFAULT`, `CURSOR_LIMIT_MAX`, `CursorParamsSchema`, `CursorParams`                                                                                      | Empty-string coercion via `z.preprocess`                                                                    |
+| `envelope.ts`    | `ErrorEnvelopeSchema`, `ErrorEnvelope`, `makeSuccessEnvelopeSchema()`, `SuccessEnvelope<T>`, `makeCursorEnvelopeSchema()`, `CursorEnvelope<T>`                        | Schema factories (not constants) — depends on `ids` + `errors`                                              |
+| `outbox.ts`      | `JsonValueSchema`, `JsonValue`, `JsonObjectSchema`, `JsonObject`, `OutboxEventSchema`, `OutboxEvent`                                                                  | Depends on `ids`; `.passthrough()` for forward-compat                                                       |
+| `audit.ts`       | `AuditActionValues`, `AuditAction`, `AuditEntityTypeValues`, `AuditEntityType`                                                                                        | Controlled vocabulary — no Zod, pure TS types. Adding a new action/entity type requires updating this file. |
+| `audit-query.ts` | `AuditLogFilterSchema`, `AuditLogFilter`, `AuditLogRowSchema`, `AuditLogRow`                                                                                          | Read-path Zod schemas for querying the audit log. Depends on `audit.ts`, `ids.ts`, `datetime.ts`.           |
+| `sequence.ts`    | `SequenceEntityTypeValues`, `SequenceEntityType`                                                                                                                      | Closed set of entities using gap-free numbering; adding a value requires seeding sequence rows              |
+| `index.ts`       | Domain barrel — re-exports all of the above                                                                                                                           | Primitives before composites; exports only, no logic                                                        |
 
 ---
 
@@ -61,10 +64,10 @@ coupling.
 export const OrgIdHeader = "x-org-id" as const;
 
 // ❌ never in headers.ts
-export const OrgIdHeaderSchema = z.string();  // → move to envelope or request contract
+export const OrgIdHeaderSchema = z.string(); // → move to envelope or request contract
 ```
 
-If you need to *validate* a header value, put the schema in the relevant
+If you need to _validate_ a header value, put the schema in the relevant
 request-contract file (e.g. `iam/user.entity.ts`) or a dedicated
 `headers.schema.ts` file.
 
@@ -80,8 +83,8 @@ request-contract file (e.g. `iam/user.entity.ts`) or a dedicated
 - Use `brandedUuid('MyEntityId')` in domain folders to keep branding consistent:
   ```ts
   // invoice/invoice.entity.ts
-  import { brandedUuid } from '@afenda/contracts';
-  export const InvoiceIdSchema = brandedUuid('InvoiceId');
+  import { brandedUuid } from "@afenda/contracts";
+  export const InvoiceIdSchema = brandedUuid("InvoiceId");
   ```
 
 ---
@@ -101,14 +104,14 @@ request-contract file (e.g. `iam/user.entity.ts`) or a dedicated
 
 All error codes follow `SCOPE_NOUN_REASON` screaming snake case.
 
-| Prefix | Domain |
-|---|---|
+| Prefix     | Domain                                         |
+| ---------- | ---------------------------------------------- |
 | `SHARED_*` | Infrastructure (auth, validation, idempotency) |
-| `AP_*` | Accounts payable / invoice workflow |
-| `IAM_*` | Identity & access management |
-| `GL_*` | General ledger |
-| `SUP_*` | Supplier management |
-| `DOC_*` | Document / evidence |
+| `AP_*`     | Accounts payable / invoice workflow            |
+| `IAM_*`    | Identity & access management                   |
+| `GL_*`     | General ledger                                 |
+| `SUP_*`    | Supplier management                            |
+| `DOC_*`    | Document / evidence                            |
 
 `ErrorCodeValues` is exported as `as const` so callers (DB check constraints,
 `switch` statements, test fixtures) can import the list without pulling Zod.
@@ -142,4 +145,3 @@ Keep export order stable — reordering is a git-diff noise source.
 - Any import from another `@afenda/*` package
 - Anything used by only one domain (without an approved escape-hatch comment)
 - Zod schemas inside `headers.ts`
-

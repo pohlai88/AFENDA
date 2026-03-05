@@ -1,17 +1,17 @@
 ---
 title: Formatting errors
-description: 'Utilities for formatting and displaying Zod errors'
+description: "Utilities for formatting and displaying Zod errors"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 
 Zod emphasizes _completeness_ and _correctness_ in its error reporting. In many cases, it's helpful to convert the `$ZodError` to a more useful format. Zod provides some utilities for this.
 
 Consider this simple object schema.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.strictObject({
   username: z.string(),
@@ -24,27 +24,27 @@ Attempting to parse this invalid data results in an error containing three issue
 ```ts
 const result = schema.safeParse({
   username: 1234,
-  favoriteNumbers: [1234, '4567'],
+  favoriteNumbers: [1234, "4567"],
   extraKey: 1234,
 });
 
 result.error!.issues;
 [
   {
-    expected: 'string',
-    code: 'invalid_type',
-    path: ['username'],
-    message: 'Invalid input: expected string, received number',
+    expected: "string",
+    code: "invalid_type",
+    path: ["username"],
+    message: "Invalid input: expected string, received number",
   },
   {
-    expected: 'number',
-    code: 'invalid_type',
-    path: ['favoriteNumbers', 1],
-    message: 'Invalid input: expected number, received string',
+    expected: "number",
+    code: "invalid_type",
+    path: ["favoriteNumbers", 1],
+    message: "Invalid input: expected number, received string",
   },
   {
-    code: 'unrecognized_keys',
-    keys: ['extraKey'],
+    code: "unrecognized_keys",
+    keys: ["extraKey"],
     path: [],
     message: 'Unrecognized key: "extraKey"',
   },

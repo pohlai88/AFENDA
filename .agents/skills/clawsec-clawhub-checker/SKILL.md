@@ -1,12 +1,11 @@
 ---
 name: clawsec-clawhub-checker
 version: 0.0.1
-description:
-  ClawHub reputation checker for ClawSec suite. Enhances guarded skill installer
+description: ClawHub reputation checker for ClawSec suite. Enhances guarded skill installer
   with VirusTotal Code Insight reputation scores and additional safety checks.
 homepage: https://clawsec.prompt.security
 clawdis:
-  emoji: '🛡️'
+  emoji: "🛡️"
   requires:
     bins: [clawhub, curl, jq]
   depends_on: [clawsec-suite]

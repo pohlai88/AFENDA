@@ -29,7 +29,11 @@ import {
 import type { BeginIdempotencyParams } from "@afenda/core";
 
 /** Finance-related command prefixes that get a longer TTL. */
-const FINANCE_COMMAND_PREFIXES = ["POST:/v1/invoices", "POST:/v1/journal-entries", "POST:/v1/payments"];
+const FINANCE_COMMAND_PREFIXES = [
+  "POST:/v1/invoices",
+  "POST:/v1/journal-entries",
+  "POST:/v1/payments",
+];
 
 function ttlForCommand(command: string): number {
   return FINANCE_COMMAND_PREFIXES.some((p) => command.startsWith(p))
@@ -49,9 +53,7 @@ export const idempotencyPlugin = fp(async function idempotencyPlugin(app: Fastif
   app.addHook("preHandler", async (req, reply) => {
     const key =
       (req.headers[IdempotencyKeyHeader] as string | undefined) ??
-      (req.body as Record<string, unknown> | null)?.["idempotencyKey"] as
-        | string
-        | undefined;
+      ((req.body as Record<string, unknown> | null)?.["idempotencyKey"] as string | undefined);
 
     if (!key) return; // not an idempotent request
 
@@ -78,8 +80,7 @@ export const idempotencyPlugin = fp(async function idempotencyPlugin(app: Fastif
         return reply.status(409).send({
           error: {
             code: "IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_PAYLOAD",
-            message:
-              "Idempotency key was previously used with different request parameters",
+            message: "Idempotency key was previously used with different request parameters",
           },
           correlationId: req.correlationId,
         });
@@ -91,8 +92,7 @@ export const idempotencyPlugin = fp(async function idempotencyPlugin(app: Fastif
           .send({
             error: {
               code: "IDEMPOTENCY_KEY_IN_PROGRESS",
-              message:
-                "A request with this idempotency key is already being processed",
+              message: "A request with this idempotency key is already being processed",
             },
             correlationId: req.correlationId,
           });
@@ -133,8 +133,7 @@ export const idempotencyPlugin = fp(async function idempotencyPlugin(app: Fastif
         command: meta.command,
         key: meta.key,
         requestHash: meta.requestHash,
-        resultRef:
-          typeof payload === "string" ? payload : JSON.stringify(payload),
+        resultRef: typeof payload === "string" ? payload : JSON.stringify(payload),
         responseStatus: reply.statusCode,
       });
     } catch (err) {

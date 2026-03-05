@@ -11,19 +11,10 @@ await bootstrapTelemetry("afenda-api");
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import {
-  validatorCompiler,
-  serializerCompiler,
-} from "fastify-type-provider-zod";
+import { validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { CorrelationIdHeader, OrgIdHeader } from "@afenda/contracts";
-import {
-  validateEnv,
-  ApiEnvSchema,
-  checkDbHealth,
-  resolveOrgId,
-  redactEnv,
-} from "@afenda/core";
+import { validateEnv, ApiEnvSchema, checkDbHealth, resolveOrgId, redactEnv } from "@afenda/core";
 
 // Plugins
 import { dbPlugin } from "./plugins/db.js";
@@ -108,10 +99,7 @@ export async function buildApp() {
   app.addHook("onRequest", async (req) => {
     const host = req.hostname ?? "";
     const subdomainMatch = host.match(/^([^.]+)\./);
-    const slug =
-      subdomainMatch?.[1] ??
-      (req.headers[OrgIdHeader] as string | undefined) ??
-      "demo";
+    const slug = subdomainMatch?.[1] ?? (req.headers[OrgIdHeader] as string | undefined) ?? "demo";
 
     req.orgSlug = slug;
 
@@ -151,8 +139,7 @@ export async function buildApp() {
 
     app.log.error({ correlationId, err }, "request error");
 
-    const message =
-      statusCode >= 500 ? "Internal server error" : err.message;
+    const message = statusCode >= 500 ? "Internal server error" : err.message;
 
     reply.status(statusCode).send({
       error: {
@@ -164,57 +151,69 @@ export async function buildApp() {
   });
 
   // ── Health ─────────────────────────────────────────────────────────────────
-  app.get("/healthz", {
-    schema: {
-      description: "Liveness probe — returns 200 if the process is alive.",
-      tags: ["Health"],
-      response: { 200: z.object({ ok: z.boolean() }) },
-    },
-  }, async () => ({ ok: true }));
-
-  app.get("/readyz", {
-    schema: {
-      description: "Readiness probe — returns 200 if DB connection and migrations are current.",
-      tags: ["Health"],
-      response: {
-        200: z.object({
-          ok: z.boolean(),
-          db: z.string(),
-          latencyMs: z.number(),
-          migrationHash: z.string().nullable(),
-          migratedAt: z.string().nullable(),
-        }),
+  app.get(
+    "/healthz",
+    {
+      schema: {
+        description: "Liveness probe — returns 200 if the process is alive.",
+        tags: ["Health"],
+        response: { 200: z.object({ ok: z.boolean() }) },
       },
     },
-  }, async () => {
-    const health = await checkDbHealth(app.db);
-    return {
-      ok: health.ok,
-      db: health.ok ? "connected" : "error",
-      latencyMs: health.latencyMs,
-      migrationHash: health.migrationHash ?? null,
-      migratedAt: health.migratedAt ?? null,
-    };
-  });
+    async () => ({ ok: true }),
+  );
+
+  app.get(
+    "/readyz",
+    {
+      schema: {
+        description: "Readiness probe — returns 200 if DB connection and migrations are current.",
+        tags: ["Health"],
+        response: {
+          200: z.object({
+            ok: z.boolean(),
+            db: z.string(),
+            latencyMs: z.number(),
+            migrationHash: z.string().nullable(),
+            migratedAt: z.string().nullable(),
+          }),
+        },
+      },
+    },
+    async () => {
+      const health = await checkDbHealth(app.db);
+      return {
+        ok: health.ok,
+        db: health.ok ? "connected" : "error",
+        latencyMs: health.latencyMs,
+        migrationHash: health.migrationHash ?? null,
+        migratedAt: health.migratedAt ?? null,
+      };
+    },
+  );
 
   // ── API v1 ─────────────────────────────────────────────────────────────────
-  app.get("/v1", {
-    schema: {
-      description: "API version info.",
-      tags: ["Health"],
-      response: {
-        200: z.object({
-          service: z.string(),
-          version: z.string(),
-          timestamp: z.string().datetime(),
-        }),
+  app.get(
+    "/v1",
+    {
+      schema: {
+        description: "API version info.",
+        tags: ["Health"],
+        response: {
+          200: z.object({
+            service: z.string(),
+            version: z.string(),
+            timestamp: z.string().datetime(),
+          }),
+        },
       },
     },
-  }, async () => ({
-    service: "afenda-api",
-    version: "v1",
-    timestamp: new Date().toISOString(),
-  }));
+    async () => ({
+      service: "afenda-api",
+      version: "v1",
+      timestamp: new Date().toISOString(),
+    }),
+  );
 
   // ── Domain routes ──────────────────────────────────────────────────────────
   await app.register(evidenceRoutes, { prefix: "/v1" });
@@ -260,4 +259,4 @@ if (!process.env["VITEST"]) {
   app.log.info(`  GET  /v1/audit-logs/:entityType/:entityId`);
   app.log.info(`  GET  /v1/docs              (API reference)`);
   app.log.info(`  GET  /v1/docs/openapi.json (OpenAPI spec)`);
-};
+}

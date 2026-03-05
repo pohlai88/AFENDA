@@ -23,7 +23,7 @@ Path templating uses **curly braces `{}`** to mark a section of the URL path as 
 
 ## ABNF (spec)
 
-Path template: `/` *( path-segment `/` ) [ path-segment ]; path-segment = 1*( path-literal / template-expression ); template-expression = `{` template-expression-param-name `}`. Each template expression MUST NOT appear more than once in a single path.
+Path template: `/` _( path-segment `/` ) [ path-segment ]; path-segment = 1_( path-literal / template-expression ); template-expression = `{` template-expression-param-name `}`. Each template expression MUST NOT appear more than once in a single path.
 
 ## Example
 
@@ -44,7 +44,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: "#/components/schemas/Pet"
 ```
 
 ## Key points

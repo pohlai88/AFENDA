@@ -94,12 +94,7 @@ export async function resolvePrincipalContext(
     })
     .from(membership)
     .innerJoin(partyRole, eq(membership.partyRoleId, partyRole.id))
-    .where(
-      and(
-        eq(membership.principalId, principal.id),
-        eq(partyRole.orgId, orgId),
-      ),
-    )
+    .where(and(eq(membership.principalId, principal.id), eq(partyRole.orgId, orgId)))
     .orderBy(asc(membership.createdAt));
 
   if (membershipRows.length === 0) return null;
@@ -127,12 +122,7 @@ export async function resolvePrincipalContext(
     .select({ roleId: iamPrincipalRole.roleId, roleKey: iamRole.key })
     .from(iamPrincipalRole)
     .innerJoin(iamRole, eq(iamPrincipalRole.roleId, iamRole.id))
-    .where(
-      and(
-        eq(iamPrincipalRole.orgId, orgId),
-        eq(iamPrincipalRole.principalId, principal.id),
-      ),
-    );
+    .where(and(eq(iamPrincipalRole.orgId, orgId), eq(iamPrincipalRole.principalId, principal.id)));
 
   const roles = principalRoles.map((r) => r.roleKey);
   const roleIds = principalRoles.map((r) => r.roleId);
@@ -147,10 +137,7 @@ export async function resolvePrincipalContext(
     const rolePerms = await db
       .select({ permKey: iamPermission.key })
       .from(iamRolePermission)
-      .innerJoin(
-        iamPermission,
-        eq(iamRolePermission.permissionId, iamPermission.id),
-      )
+      .innerJoin(iamPermission, eq(iamRolePermission.permissionId, iamPermission.id))
       .where(inArray(iamRolePermission.roleId, roleIds));
 
     permissions = [...new Set(rolePerms.map((p) => p.permKey))];
@@ -195,7 +182,9 @@ export async function listPrincipalContexts(
       orgName: organization.name,
       roleType: partyRole.roleType,
       // Party name: COALESCE person.name → organization.name (via party)
-      partyName: sql<string>`coalesce(${person.name}, ${organization.name}, 'Unknown')`.as("party_name"),
+      partyName: sql<string>`coalesce(${person.name}, ${organization.name}, 'Unknown')`.as(
+        "party_name",
+      ),
     })
     .from(membership)
     .innerJoin(partyRole, eq(membership.partyRoleId, partyRole.id))

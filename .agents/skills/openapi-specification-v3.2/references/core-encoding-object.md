@@ -14,32 +14,32 @@ A single encoding definition applied to a single value. Mapping of Encoding Obje
 
 ## Common fixed fields
 
-| Field         | Type   | Description |
-|--------------|--------|-------------|
-| contentType  | string | Comma-separated; specific or wildcard (e.g. `image/*`). Defaults by type: no type / string+contentEncoding → `application/octet-stream`; string no contentEncoding → `text/plain`; number/integer/boolean → `text/plain`; object/array → `application/json`. |
-| headers      | Map[string, Header \| Reference] | For multipart only; Content-Type ignored here. |
-| encoding, prefixEncoding, itemEncoding | Map / [Encoding] / Encoding | Nested encoding (e.g. nested multipart). |
+| Field                                  | Type                             | Description                                                                                                                                                                                                                                                  |
+| -------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| contentType                            | string                           | Comma-separated; specific or wildcard (e.g. `image/*`). Defaults by type: no type / string+contentEncoding → `application/octet-stream`; string no contentEncoding → `text/plain`; number/integer/boolean → `text/plain`; object/array → `application/json`. |
+| headers                                | Map[string, Header \| Reference] | For multipart only; Content-Type ignored here.                                                                                                                                                                                                               |
+| encoding, prefixEncoding, itemEncoding | Map / [Encoding] / Encoding      | Nested encoding (e.g. nested multipart).                                                                                                                                                                                                                     |
 
 ## RFC6570-style serialization (form / multipart/form-data only)
 
-| Field         | Type   | Description |
-|--------------|--------|-------------|
-| style        | string | Same as Parameter; default `"form"` when contentType not used due to explode/allowReserved. |
-| explode     | boolean | For array/object: separate params per value/pair. form default true; others false. |
-| allowReserved | boolean | Reserved expansion (RFC6570); default false. |
+| Field         | Type    | Description                                                                                 |
+| ------------- | ------- | ------------------------------------------------------------------------------------------- |
+| style         | string  | Same as Parameter; default `"form"` when contentType not used due to explode/allowReserved. |
+| explode       | boolean | For array/object: separate params per value/pair. form default true; others false.          |
+| allowReserved | boolean | Reserved expansion (RFC6570); default false.                                                |
 
 When using RFC6570-style for `multipart/form-data`, URI percent-encoding MUST NOT be applied; `allowReserved` has no effect.
 
 ## Default contentType (by type)
 
-| type / context   | contentEncoding | Default contentType    |
-|------------------|-----------------|------------------------|
-| (absent)         | n/a             | application/octet-stream |
-| string           | present         | application/octet-stream |
-| string           | absent          | text/plain             |
-| number/integer/boolean | n/a       | text/plain             |
-| object           | n/a             | application/json       |
-| array            | n/a             | application/json      |
+| type / context         | contentEncoding | Default contentType      |
+| ---------------------- | --------------- | ------------------------ |
+| (absent)               | n/a             | application/octet-stream |
+| string                 | present         | application/octet-stream |
+| string                 | absent          | text/plain               |
+| number/integer/boolean | n/a             | text/plain               |
+| object                 | n/a             | application/json         |
+| array                  | n/a             | application/json         |
 
 ## Examples
 

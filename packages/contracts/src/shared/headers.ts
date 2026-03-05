@@ -9,15 +9,11 @@
  *      consumers (API, worker, web, gateway). Deprecate before removal.
  */
 
-export const CorrelationIdHeader  = "x-correlation-id" as const;
-export const IdempotencyKeyHeader = "idempotency-key"  as const;
-export const OrgIdHeader          = "x-org-id"         as const;
+export const CorrelationIdHeader = "x-correlation-id" as const;
+export const IdempotencyKeyHeader = "idempotency-key" as const;
+export const OrgIdHeader = "x-org-id" as const;
 
 /** Typed allowlist — use to enumerate or validate header names. */
-export const HeaderNameValues = [
-  CorrelationIdHeader,
-  IdempotencyKeyHeader,
-  OrgIdHeader,
-] as const;
+export const HeaderNameValues = [CorrelationIdHeader, IdempotencyKeyHeader, OrgIdHeader] as const;
 
 export type HeaderName = (typeof HeaderNameValues)[number];

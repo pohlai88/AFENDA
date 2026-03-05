@@ -64,7 +64,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/GeneralError'
+            $ref: "#/components/schemas/GeneralError"
   schemas:
     GeneralError:
       type: object
@@ -76,8 +76,8 @@ paths:
   /pets:
     get:
       parameters:
-        - $ref: '#/components/parameters/skipParam'
-        - $ref: '#/components/parameters/limitParam'
+        - $ref: "#/components/parameters/skipParam"
+        - $ref: "#/components/parameters/limitParam"
       responses:
         "200":
           description: A list of pets.
@@ -86,11 +86,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Pet'
+                  $ref: "#/components/schemas/Pet"
         "404":
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         default:
-          $ref: '#/components/responses/GeneralError'
+          $ref: "#/components/responses/GeneralError"
 ```
 
 ## Key points

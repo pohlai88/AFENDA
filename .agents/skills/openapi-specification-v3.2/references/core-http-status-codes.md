@@ -23,21 +23,21 @@ responses:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/Pet'
+          $ref: "#/components/schemas/Pet"
   "400":
     description: Bad request
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/Error'
+          $ref: "#/components/schemas/Error"
   "404":
-    $ref: '#/components/responses/NotFound'
+    $ref: "#/components/responses/NotFound"
   default:
     description: Unexpected error
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/Error'
+          $ref: "#/components/schemas/Error"
 ```
 
 ## Key points

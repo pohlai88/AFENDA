@@ -20,7 +20,7 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
   };
 
   helpers.logger.info(
-    `processing outbox event: type=${event.type} correlationId=${event.correlationId} orgId=${event.orgId}`
+    `processing outbox event: type=${event.type} correlationId=${event.correlationId} orgId=${event.orgId}`,
   );
 
   switch (event.type) {
@@ -47,11 +47,11 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
       break;
     default:
       helpers.logger.warn(
-        `unhandled outbox event type: ${event.type} correlationId=${event.correlationId}`
+        `unhandled outbox event type: ${event.type} correlationId=${event.correlationId}`,
       );
   }
 
   helpers.logger.info(
-    `outbox event dispatched: type=${event.type} correlationId=${event.correlationId}`
+    `outbox event dispatched: type=${event.type} correlationId=${event.correlationId}`,
   );
 };

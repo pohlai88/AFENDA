@@ -99,22 +99,22 @@
      Brightened for legibility, maintaining hue distinction from light mode. */
   --chart-1: oklch(0.68 0.18 250); /* vivid blue — primary metric */
   --chart-2: oklch(0.65 0.14 175); /* teal — secondary metric */
-  --chart-3: oklch(0.72 0.16 40);  /* warm orange — outflows/expenses */
-  --chart-4: oklch(0.78 0.14 80);  /* gold — variance / budget */
+  --chart-3: oklch(0.72 0.16 40); /* warm orange — outflows/expenses */
+  --chart-4: oklch(0.78 0.14 80); /* gold — variance / budget */
   --chart-5: oklch(0.68 0.18 145); /* green — inflows/revenue/positive */
   --chart-6: oklch(0.65 0.14 285); /* purple — provisions/accruals */
-  --chart-7: oklch(0.7 0.12 195);  /* cyan — cash/treasury */
+  --chart-7: oklch(0.7 0.12 195); /* cyan — cash/treasury */
   --chart-8: oklch(0.62 0.14 320); /* magenta — taxes */
 
   /* ── Semantic visualization tokens (dark mode) ── */
-  --viz-positive: var(--chart-5);      /* Green - inflows, favorable variance */
-  --viz-negative: var(--chart-3);      /* Orange - outflows, unfavorable variance */
-  --viz-neutral: var(--chart-1);       /* Blue - totals, baselines */
-  --viz-accent-1: var(--chart-2);      /* Teal - secondary series */
-  --viz-accent-2: var(--chart-4);      /* Gold - budget/plan */
-  --viz-accent-3: var(--chart-6);      /* Purple - provisions */
-  --viz-threshold: var(--chart-8);     /* Magenta - targets/thresholds */
-  --viz-target: var(--chart-7);        /* Cyan - goals */
+  --viz-positive: var(--chart-5); /* Green - inflows, favorable variance */
+  --viz-negative: var(--chart-3); /* Orange - outflows, unfavorable variance */
+  --viz-neutral: var(--chart-1); /* Blue - totals, baselines */
+  --viz-accent-1: var(--chart-2); /* Teal - secondary series */
+  --viz-accent-2: var(--chart-4); /* Gold - budget/plan */
+  --viz-accent-3: var(--chart-6); /* Purple - provisions */
+  --viz-threshold: var(--chart-8); /* Magenta - targets/thresholds */
+  --viz-target: var(--chart-7); /* Cyan - goals */
 
   /* Gauge zones (dark mode) */
   --gauge-danger: var(--viz-negative);

@@ -11,12 +11,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
 import {
   SUBMITTER_EMAIL,
   APPROVER_EMAIL,
@@ -89,11 +84,10 @@ describe("mark-paid command", () => {
     await app.db.execute(
       /* sql */ `UPDATE invoice SET status = 'posted', updated_at = now() WHERE id = '${invoiceId}'`,
     );
-    await app.db.execute(
-      /* sql */ `INSERT INTO invoice_status_history (invoice_id, org_id, from_status, to_status, actor_principal_id, correlation_id)
+    await app.db
+      .execute(/* sql */ `INSERT INTO invoice_status_history (invoice_id, org_id, from_status, to_status, actor_principal_id, correlation_id)
        SELECT i.id, i.org_id, 'approved', 'posted', NULL, gen_random_uuid()::text
-       FROM invoice i WHERE i.id = '${invoiceId}'`,
-    );
+       FROM invoice i WHERE i.id = '${invoiceId}'`);
 
     return invoiceId;
   }
@@ -193,9 +187,7 @@ describe("mark-paid command", () => {
     const history = historyRes.json().data;
 
     // Find the posted→paid transition
-    const paidTransition = history.find(
-      (h: { toStatus: string }) => h.toStatus === "paid",
-    );
+    const paidTransition = history.find((h: { toStatus: string }) => h.toStatus === "paid");
     expect(paidTransition).toBeDefined();
     expect(paidTransition.fromStatus).toBe("posted");
   });

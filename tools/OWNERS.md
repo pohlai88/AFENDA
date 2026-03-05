@@ -1,9 +1,11 @@
 # tools/ — OWNERS
 
 ## Scope
+
 CI gate scripts, shared tooling libraries, and the gate runner.
 
 ## Layout
+
 ```
 tools/
 ├── lib/              # Shared utilities (ANSI, file walkers, reporters)
@@ -26,6 +28,7 @@ tools/
 ```
 
 ## Adding a new gate
+
 1. Create `tools/gates/<name>.mjs`
 2. Import shared helpers from `../lib/*.mjs`
 3. Register the script in `tools/run-gates.mjs` → `GATES` array
@@ -33,4 +36,5 @@ tools/
 5. Document the rule in `PROJECT.md §18`
 
 ## Owner
+
 @ArtisanLabs / DX team

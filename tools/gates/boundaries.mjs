@@ -50,12 +50,12 @@ const MAX_BARREL_LINES = 60;
  */
 const ALLOWED_INTERNAL = {
   "packages/contracts": [],
-  "packages/db":        ["@afenda/contracts"],
-  "packages/core":      ["@afenda/contracts", "@afenda/db"],
-  "packages/ui":        ["@afenda/contracts"],
-  "apps/api":           ["@afenda/contracts", "@afenda/core"],
-  "apps/web":           ["@afenda/contracts", "@afenda/ui"],
-  "apps/worker":        ["@afenda/contracts", "@afenda/core", "@afenda/db"],
+  "packages/db": ["@afenda/contracts"],
+  "packages/core": ["@afenda/contracts", "@afenda/db"],
+  "packages/ui": ["@afenda/contracts"],
+  "apps/api": ["@afenda/contracts", "@afenda/core"],
+  "apps/web": ["@afenda/contracts", "@afenda/ui"],
+  "apps/worker": ["@afenda/contracts", "@afenda/core", "@afenda/db"],
 };
 
 /**
@@ -65,12 +65,26 @@ const ALLOWED_INTERNAL = {
 const FORBIDDEN_EXTERNALS = {
   "packages/contracts": [
     // No DB runtime libs
-    "drizzle-orm", "drizzle-kit", "pg",
+    "drizzle-orm",
+    "drizzle-kit",
+    "pg",
     // No server-side HTTP / framework libs
-    "fastify", "express", "koa",
+    "fastify",
+    "express",
+    "koa",
     // No Node.js built-ins (bare form — node: prefix is caught below)
-    "fs", "path", "crypto", "stream", "http", "https", "os",
-    "child_process", "worker_threads", "net", "dns", "cluster",
+    "fs",
+    "path",
+    "crypto",
+    "stream",
+    "http",
+    "https",
+    "os",
+    "child_process",
+    "worker_threads",
+    "net",
+    "dns",
+    "cluster",
   ],
   "packages/db": ["zod"],
 };
@@ -327,7 +341,10 @@ if (existsSync(SCHEMA_DIR)) {
     { re: /\bprocess\.env\b/, label: "process.env usage" },
     { re: /\bnew\s+Date\s*\(/, label: "new Date() — use SQL now() via .defaultNow()" },
     { re: /\bNODE_ENV\b/, label: "NODE_ENV reference (conditional DDL)" },
-    { re: /\brequire\s*\(\s*["'](?:fs|path|http|https|net|child_process)["']/, label: "runtime I/O import" },
+    {
+      re: /\brequire\s*\(\s*["'](?:fs|path|http|https|net|child_process)["']/,
+      label: "runtime I/O import",
+    },
     { re: /\bfetch\s*\(/, label: "fetch() call" },
   ];
 
@@ -399,17 +416,17 @@ if (existsSync(SCHEMA_BARREL)) {
 const ENUM_SYNC_PAIRS = [
   {
     contractsFile: "packages/contracts/src/invoice/invoice.entity.ts",
-    dbFile:        "packages/db/src/schema/finance.ts",
+    dbFile: "packages/db/src/schema/finance.ts",
     exports: ["InvoiceStatusValues"],
   },
   {
     contractsFile: "packages/contracts/src/gl/account.entity.ts",
-    dbFile:        "packages/db/src/schema/finance.ts",
+    dbFile: "packages/db/src/schema/finance.ts",
     exports: ["AccountTypeValues"],
   },
   {
     contractsFile: "packages/contracts/src/supplier/supplier.entity.ts",
-    dbFile:        "packages/db/src/schema/supplier.ts",
+    dbFile: "packages/db/src/schema/supplier.ts",
     exports: ["SupplierStatusValues"],
   },
 ];
@@ -421,9 +438,7 @@ const ENUM_SYNC_PAIRS = [
  */
 function extractConstArray(source, name) {
   // Non-greedy match from `export const NAME = [` to `] as const`
-  const re = new RegExp(
-    `export\\s+const\\s+${name}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as\\s+const`,
-  );
+  const re = new RegExp(`export\\s+const\\s+${name}\\s*=\\s*\\[([\\s\\S]*?)\\]\\s*as\\s+const`);
   const m = source.match(re);
   if (!m) return null;
   // Extract quoted strings from the body

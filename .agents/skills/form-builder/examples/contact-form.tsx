@@ -14,10 +14,10 @@
  * ```
  */
 
-import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 // =============================================================================
 // SCHEMA DEFINITION
@@ -33,30 +33,30 @@ import { z } from 'zod';
  * - Checkbox consent with .refine()
  */
 const contactFormSchema = z.object({
-  name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
+  name: z.string().min(1, "Name is required").min(2, "Name must be at least 2 characters"),
 
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
 
   phone: z
     .string()
-    .regex(/^\+?[\d\s\-()]*$/, 'Please enter a valid phone number')
+    .regex(/^\+?[\d\s\-()]*$/, "Please enter a valid phone number")
     .optional()
-    .or(z.literal('')),
+    .or(z.literal("")),
 
-  subject: z.enum(['general', 'support', 'sales', 'partnership'], {
-    errorMap: () => ({ message: 'Please select a subject' }),
+  subject: z.enum(["general", "support", "sales", "partnership"], {
+    errorMap: () => ({ message: "Please select a subject" }),
   }),
 
   message: z
     .string()
-    .min(1, 'Message is required')
-    .min(10, 'Message must be at least 10 characters')
-    .max(1000, 'Message must be less than 1000 characters'),
+    .min(1, "Message is required")
+    .min(10, "Message must be at least 10 characters")
+    .max(1000, "Message must be less than 1000 characters"),
 
   newsletter: z.boolean().default(false),
 
   consent: z.boolean().refine((val) => val === true, {
-    message: 'You must agree to our privacy policy to continue',
+    message: "You must agree to our privacy policy to continue",
   }),
 });
 
@@ -78,7 +78,7 @@ interface ContactFormProps {
 // COMPONENT
 // =============================================================================
 
-export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: ContactFormProps) {
+export function ContactForm({ onSuccess, apiEndpoint = "/api/contact" }: ContactFormProps) {
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
@@ -101,14 +101,14 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
     setError,
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
-    mode: 'onBlur', // Validate on blur (not on every keystroke)
-    reValidateMode: 'onChange', // Re-validate on change after first error
+    mode: "onBlur", // Validate on blur (not on every keystroke)
+    reValidateMode: "onChange", // Re-validate on change after first error
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
+      name: "",
+      email: "",
+      phone: "",
       subject: undefined,
-      message: '',
+      message: "",
       newsletter: false,
       consent: false,
     },
@@ -124,8 +124,8 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
 
     try {
       const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
@@ -136,7 +136,7 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
         if (error.fieldErrors) {
           Object.entries(error.fieldErrors).forEach(([field, message]) => {
             setError(field as keyof ContactFormData, {
-              type: 'server',
+              type: "server",
               message: message as string,
             });
           });
@@ -144,7 +144,7 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
         }
 
         // Handle general server error
-        throw new Error(error.message || 'Failed to send message');
+        throw new Error(error.message || "Failed to send message");
       }
 
       // Success!
@@ -153,7 +153,7 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
       onSuccess?.(data);
     } catch (error) {
       setServerError(
-        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+        error instanceof Error ? error.message : "Something went wrong. Please try again.",
       );
     }
   };
@@ -208,10 +208,10 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
           id="name"
           type="text"
           autoComplete="name"
-          {...register('name')}
+          {...register("name")}
           aria-required="true"
           aria-invalid={!!errors.name}
-          aria-describedby={errors.name ? 'name-error' : undefined}
+          aria-describedby={errors.name ? "name-error" : undefined}
         />
         {errors.name && (
           <span id="name-error" role="alert" className="field-error">
@@ -229,10 +229,10 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
           id="email"
           type="email"
           autoComplete="email"
-          {...register('email')}
+          {...register("email")}
           aria-required="true"
           aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? 'email-error' : undefined}
+          aria-describedby={errors.email ? "email-error" : undefined}
         />
         {errors.email && (
           <span id="email-error" role="alert" className="field-error">
@@ -248,9 +248,9 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
           id="phone"
           type="tel"
           autoComplete="tel"
-          {...register('phone')}
+          {...register("phone")}
           aria-invalid={!!errors.phone}
-          aria-describedby={errors.phone ? 'phone-error' : undefined}
+          aria-describedby={errors.phone ? "phone-error" : undefined}
         />
         {errors.phone && (
           <span id="phone-error" role="alert" className="field-error">
@@ -266,10 +266,10 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
         </label>
         <select
           id="subject"
-          {...register('subject')}
+          {...register("subject")}
           aria-required="true"
           aria-invalid={!!errors.subject}
-          aria-describedby={errors.subject ? 'subject-error' : undefined}
+          aria-describedby={errors.subject ? "subject-error" : undefined}
         >
           <option value="">Select a subject...</option>
           <option value="general">General Inquiry</option>
@@ -292,10 +292,10 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
         <textarea
           id="message"
           rows={5}
-          {...register('message')}
+          {...register("message")}
           aria-required="true"
           aria-invalid={!!errors.message}
-          aria-describedby={errors.message ? 'message-error' : 'message-hint'}
+          aria-describedby={errors.message ? "message-error" : "message-hint"}
         />
         <span id="message-hint" className="field-hint">
           10-1000 characters
@@ -310,7 +310,7 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
       {/* Newsletter Checkbox (Optional) */}
       <div className="form-field form-field-checkbox">
         <label>
-          <input type="checkbox" {...register('newsletter')} />
+          <input type="checkbox" {...register("newsletter")} />
           <span>Subscribe to our newsletter for updates</span>
         </label>
       </div>
@@ -320,16 +320,16 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
         <label>
           <input
             type="checkbox"
-            {...register('consent')}
+            {...register("consent")}
             aria-required="true"
             aria-invalid={!!errors.consent}
-            aria-describedby={errors.consent ? 'consent-error' : undefined}
+            aria-describedby={errors.consent ? "consent-error" : undefined}
           />
           <span>
-            I agree to the{' '}
+            I agree to the{" "}
             <a href="/privacy" target="_blank" rel="noopener">
               privacy policy
-            </a>{' '}
+            </a>{" "}
             <span aria-hidden="true">*</span>
           </span>
         </label>
@@ -353,7 +353,7 @@ export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: Contact
             Sending...
           </>
         ) : (
-          'Send Message'
+          "Send Message"
         )}
       </button>
     </form>

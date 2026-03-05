@@ -67,11 +67,9 @@ export const ErrorCodeValues = [
  */
 const ERROR_CODE_PATTERN = /^[A-Z]+_[A-Z0-9]+_[A-Z0-9_]+$/;
 
-export const ErrorCodeSchema = z
-  .enum(ErrorCodeValues)
-  .refine((v) => ERROR_CODE_PATTERN.test(v), {
-    message: "Error code must match SCOPE_NOUN_REASON (SCREAMING_SNAKE_CASE)",
-  });
+export const ErrorCodeSchema = z.enum(ErrorCodeValues).refine((v) => ERROR_CODE_PATTERN.test(v), {
+  message: "Error code must match SCOPE_NOUN_REASON (SCREAMING_SNAKE_CASE)",
+});
 
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
 

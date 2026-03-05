@@ -130,11 +130,7 @@ const { data } = await client
   .limit(10);
 
 // Select single row
-const { data, error } = await client
-  .from("items")
-  .select("*")
-  .eq("id", 1)
-  .single();
+const { data, error } = await client.from("items").select("*").eq("id", 1).single();
 
 // Insert (returns inserted row)
 const { data, error } = await client
@@ -164,12 +160,7 @@ const { data } = await client
 await client.from("items").delete().eq("id", 1);
 
 // Delete and return deleted row
-const { data } = await client
-  .from("items")
-  .delete()
-  .eq("id", 1)
-  .select()
-  .single();
+const { data } = await client.from("items").delete().eq("id", 1).select().single();
 
 // Upsert
 await client.from("items").upsert({ id: 1, name: "Updated", status: "active" });
@@ -202,14 +193,10 @@ await client.from("items").upsert({ id: 1, name: "Updated", status: "active" });
 
 ```typescript
 // One-to-many
-const { data } = await client
-  .from("posts")
-  .select("id, title, author:users(name, email)");
+const { data } = await client.from("posts").select("id, title, author:users(name, email)");
 
 // Many-to-many
-const { data } = await client
-  .from("posts")
-  .select("id, title, tags:post_tags(tag:tags(name))");
+const { data } = await client.from("posts").select("id, title, tags:post_tags(tag:tags(name))");
 
 // Nested
 const { data } = await client.from("posts").select(`
@@ -269,20 +256,14 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const { data, error } = await dbClient.from("posts").select();
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { data, error } = await dbClient
-    .from("posts")
-    .insert(body)
-    .select()
-    .single();
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  const { data, error } = await dbClient.from("posts").insert(body).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json(data, { status: 201 });
 }
 ```
@@ -323,11 +304,7 @@ const {
 
 ```typescript
 // Main client
-import {
-  createClient,
-  SupabaseAuthAdapter,
-  BetterAuthVanillaAdapter,
-} from "@neondatabase/neon-js";
+import { createClient, SupabaseAuthAdapter, BetterAuthVanillaAdapter } from "@neondatabase/neon-js";
 
 // Server auth (Next.js) -- unified instance
 import { createNeonAuth } from "@neondatabase/neon-js/auth/next/server";

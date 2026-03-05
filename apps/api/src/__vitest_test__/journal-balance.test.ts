@@ -9,17 +9,8 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
-import {
-  APPROVER_EMAIL,
-  uniqueKey,
-  getAccountIdByCode,
-} from "./helpers/factories.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
+import { APPROVER_EMAIL, uniqueKey, getAccountIdByCode } from "./helpers/factories.js";
 
 describe("journal balance invariant (EC-3)", () => {
   let app: FastifyInstance;

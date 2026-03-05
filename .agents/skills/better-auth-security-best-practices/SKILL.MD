@@ -10,7 +10,7 @@ The auth secret is the foundation of Better Auth's security. It's used for signi
 ### Configuring the Secret
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET, // or via `BETTER_AUTH_SECRET` env
@@ -50,7 +50,7 @@ Each plugin can optionally have it's own configuration to adjust rate-limit rule
 ### Default Configuration
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   rateLimit: {
@@ -127,7 +127,7 @@ Better Auth implements multiple layers of CSRF protection to prevent cross-site 
 ### Configuration
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   advanced: {
@@ -155,11 +155,11 @@ Trusted origins control which domains can make authenticated requests to your Be
 ### Configuring Trusted Origins
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
-  baseURL: 'https://api.example.com',
-  trustedOrigins: ['https://app.example.com', 'https://admin.example.com'],
+  baseURL: "https://api.example.com",
+  trustedOrigins: ["https://app.example.com", "https://admin.example.com"],
 });
 ```
 
@@ -179,9 +179,9 @@ Support for subdomain wildcards:
 
 ```ts
 trustedOrigins: [
-  '*.example.com', // Matches any subdomain
-  'https://*.example.com', // Protocol-specific wildcard
-  'exp://192.168.*.*:*/*', // Custom schemes (e.g., Expo)
+  "*.example.com", // Matches any subdomain
+  "https://*.example.com", // Protocol-specific wildcard
+  "exp://192.168.*.*:*/*", // Custom schemes (e.g., Expo)
 ];
 ```
 
@@ -217,7 +217,7 @@ Sessions control how long users stay authenticated and how session data is secur
 ### Session Expiration
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   session: {
@@ -274,15 +274,15 @@ Better Auth uses secure cookie defaults but allows customization for specific de
 ### Custom Cookie Configuration
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   advanced: {
     useSecureCookies: true, // Force secure cookies
-    cookiePrefix: 'myapp', // Custom prefix (default: "better-auth")
+    cookiePrefix: "myapp", // Custom prefix (default: "better-auth")
     defaultCookieAttributes: {
-      sameSite: 'strict', // Stricter CSRF protection
-      path: '/auth', // Limit cookie scope
+      sameSite: "strict", // Stricter CSRF protection
+      path: "/auth", // Limit cookie scope
     },
   },
 });
@@ -341,11 +341,11 @@ This prevents authorization code interception attacks.
 The state parameter prevents CSRF attacks on OAuth callbacks:
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   account: {
-    storeStateStrategy: 'cookie', // Options: "cookie" (default), "database"
+    storeStateStrategy: "cookie", // Options: "cookie" (default), "database"
   },
 });
 ```
@@ -387,12 +387,12 @@ Better Auth tracks IP addresses for rate limiting and session security.
 ### IP Address Configuration
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   advanced: {
     ipAddress: {
-      ipAddressHeaders: ['x-forwarded-for', 'x-real-ip'], // Headers to check
+      ipAddressHeaders: ["x-forwarded-for", "x-real-ip"], // Headers to check
       disableIpTracking: false, // Keep enabled for rate limiting
     },
   },
@@ -432,23 +432,23 @@ Use database hooks to implement security auditing and monitoring.
 ### Setting Up Audit Logging
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   databaseHooks: {
     session: {
       create: {
         after: async ({ data, ctx }) => {
-          await auditLog('session.created', {
+          await auditLog("session.created", {
             userId: data.userId,
-            ip: ctx?.request?.headers.get('x-forwarded-for'),
-            userAgent: ctx?.request?.headers.get('user-agent'),
+            ip: ctx?.request?.headers.get("x-forwarded-for"),
+            userAgent: ctx?.request?.headers.get("user-agent"),
           });
         },
       },
       delete: {
         before: async ({ data }) => {
-          await auditLog('session.revoked', { sessionId: data.id });
+          await auditLog("session.revoked", { sessionId: data.id });
         },
       },
     },
@@ -456,7 +456,7 @@ export const auth = betterAuth({
       update: {
         after: async ({ data, oldData }) => {
           if (oldData?.email !== data.email) {
-            await auditLog('user.email_changed', {
+            await auditLog("user.email_changed", {
               userId: data.id,
               oldEmail: oldData?.email,
               newEmail: data.email,
@@ -468,7 +468,7 @@ export const auth = betterAuth({
     account: {
       create: {
         after: async ({ data }) => {
-          await auditLog('account.linked', {
+          await auditLog("account.linked", {
             userId: data.userId,
             provider: data.providerId,
           });
@@ -505,7 +505,7 @@ Sensitive operations should complete in constant time to prevent timing attacks.
 ### Configuring Background Tasks
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   advanced: {
@@ -538,7 +538,7 @@ Better Auth implements several measures to prevent attackers from discovering va
 For sign-up and sign-in endpoints, consider:
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   emailAndPassword: {
@@ -553,20 +553,20 @@ Return generic error messages like "Invalid credentials" rather than "User not f
 ## Complete Security Configuration Example
 
 ```ts
-import { betterAuth } from 'better-auth';
+import { betterAuth } from "better-auth";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: 'https://api.example.com',
-  trustedOrigins: ['https://app.example.com', 'https://*.preview.example.com'],
+  baseURL: "https://api.example.com",
+  trustedOrigins: ["https://app.example.com", "https://*.preview.example.com"],
 
   // Rate limiting
   rateLimit: {
     enabled: true,
-    storage: 'secondary-storage',
+    storage: "secondary-storage",
     customRules: {
-      '/api/auth/sign-in/email': { window: 60, max: 5 },
-      '/api/auth/sign-up/email': { window: 60, max: 3 },
+      "/api/auth/sign-in/email": { window: 60, max: 5 },
+      "/api/auth/sign-up/email": { window: 60, max: 3 },
     },
   },
 
@@ -578,25 +578,25 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 300,
-      strategy: 'jwe', // Encrypted session data
+      strategy: "jwe", // Encrypted session data
     },
   },
 
   // OAuth security
   account: {
     encryptOAuthTokens: true,
-    storeStateStrategy: 'cookie',
+    storeStateStrategy: "cookie",
   },
 
   // Advanced settings
   advanced: {
     useSecureCookies: true,
-    cookiePrefix: 'myapp',
+    cookiePrefix: "myapp",
     defaultCookieAttributes: {
-      sameSite: 'lax',
+      sameSite: "lax",
     },
     ipAddress: {
-      ipAddressHeaders: ['x-forwarded-for'],
+      ipAddressHeaders: ["x-forwarded-for"],
       ipv6Subnet: 64,
     },
     backgroundTasks: {

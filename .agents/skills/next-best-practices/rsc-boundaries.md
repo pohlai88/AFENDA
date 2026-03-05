@@ -15,7 +15,7 @@ async.
 
 ```tsx
 // Bad: async client component
-'use client';
+"use client";
 export default async function UserProfile() {
   const user = await getUser(); // Cannot await in client component
   return <div>{user.name}</div>;
@@ -29,7 +29,7 @@ export default async function Page() {
 }
 
 // UserProfile.tsx (client component)
-('use client');
+("use client");
 export function UserProfile({ user }: { user: User }) {
   return <div>{user.name}</div>;
 }
@@ -37,7 +37,7 @@ export function UserProfile({ user }: { user: User }) {
 
 ```tsx
 // Bad: async arrow function client component
-'use client';
+"use client";
 const Dashboard = async () => {
   const data = await fetchDashboard();
   return <div>{data}</div>;
@@ -63,15 +63,15 @@ Props passed from Server → Client must be JSON-serializable.
 // Bad: Function prop
 // page.tsx (server)
 export default function Page() {
-  const handleClick = () => console.log('clicked');
+  const handleClick = () => console.log("clicked");
   return <ClientButton onClick={handleClick} />;
 }
 
 // Good: Define function inside client component
 // ClientButton.tsx
-('use client');
+("use client");
 export function ClientButton() {
-  const handleClick = () => console.log('clicked');
+  const handleClick = () => console.log("clicked");
   return <button onClick={handleClick}>Click</button>;
 }
 ```
@@ -85,7 +85,7 @@ export default async function Page() {
 }
 
 // PostCard.tsx (client) - will crash on .getFullYear()
-('use client');
+("use client");
 export function PostCard({ createdAt }: { createdAt: Date }) {
   return <span>{createdAt.getFullYear()}</span>; // Runtime error!
 }
@@ -98,7 +98,7 @@ export default async function Page() {
 }
 
 // PostCard.tsx (client)
-('use client');
+("use client");
 export function PostCard({ createdAt }: { createdAt: string }) {
   const date = new Date(createdAt);
   return <span>{date.getFullYear()}</span>;
@@ -131,24 +131,20 @@ Functions marked with `'use server'` CAN be passed to client components.
 ```tsx
 // Valid: Server Action can be passed
 // actions.ts
-'use server';
+"use server";
 export async function submitForm(formData: FormData) {
   // server-side logic
 }
 
 // page.tsx (server)
-import { submitForm } from './actions';
+import { submitForm } from "./actions";
 export default function Page() {
   return <ClientForm onSubmit={submitForm} />; // OK!
 }
 
 // ClientForm.tsx (client)
-('use client');
-export function ClientForm({
-  onSubmit,
-}: {
-  onSubmit: (data: FormData) => Promise<void>;
-}) {
+("use client");
+export function ClientForm({ onSubmit }: { onSubmit: (data: FormData) => Promise<void> }) {
   return <form action={onSubmit}>...</form>;
 }
 ```

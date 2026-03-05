@@ -15,12 +15,7 @@
  */
 
 import type { DbClient } from "@afenda/db";
-import {
-  journalEntry,
-  journalLine,
-  account,
-  outboxEvent,
-} from "@afenda/db";
+import { journalEntry, journalLine, account, outboxEvent } from "@afenda/db";
 import { eq, and, inArray } from "drizzle-orm";
 import type {
   OrgId,
@@ -43,9 +38,7 @@ export type GLServiceError = {
   meta?: Record<string, string>;
 };
 
-export type GLServiceResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: GLServiceError };
+export type GLServiceResult<T> = { ok: true; data: T } | { ok: false; error: GLServiceError };
 
 /** Thrown inside transactions to surface domain errors without returning. */
 class GLDomainError extends Error {
@@ -122,85 +115,91 @@ export async function postToGL(
 
   try {
     const result = await withAudit(
-    db,
-    ctx,
-    {
-      actorPrincipalId: policyCtx.principalId,
-      action: "gl.journal.posted",
-      entityType: "journal_entry",
-      correlationId: params.correlationId,
-      details: {
-        sourceInvoiceId: (params.sourceInvoiceId as string | undefined) ?? null,
-        lineCount: params.lines.length,
-        memo: params.memo ?? null,
-      },
-    },
-    async (tx) => {
-      // Account checks inside the transaction to prevent TOCTOU races
-      const accounts = await tx
-        .select({ id: account.id, isActive: account.isActive })
-        .from(account)
-        .where(and(eq(account.orgId, orgId), inArray(account.id, accountIds)));
-
-      const foundIds = new Set(accounts.map((a) => a.id));
-      for (const aid of accountIds) {
-        if (!foundIds.has(aid)) {
-          throw new GLDomainError("GL_ACCOUNT_NOT_FOUND", `Account not found: ${aid}`, { accountId: aid });
-        }
-      }
-
-      const inactiveAccount = accounts.find((a) => !a.isActive);
-      if (inactiveAccount) {
-        throw new GLDomainError("GL_ACCOUNT_INACTIVE", `Account is inactive: ${inactiveAccount.id}`, { accountId: inactiveAccount.id });
-      }
-
-      const entryNumber = await nextNumber(tx, orgId, "journalEntry");
-
-      const [entry] = await tx
-        .insert(journalEntry)
-        .values({
-          orgId,
-          entryNumber,
-          memo: params.memo ?? null,
-          postedByPrincipalId: policyCtx.principalId ?? null,
-          correlationId: params.correlationId,
-          idempotencyKey: params.idempotencyKey,
-          sourceInvoiceId: (params.sourceInvoiceId as string | undefined) ?? null,
-        })
-        .returning({ id: journalEntry.id });
-
-      if (!entry) throw new Error("Failed to insert journal entry");
-
-      // Insert all lines
-      await tx.insert(journalLine).values(
-        params.lines.map((l) => ({
-          journalEntryId: entry.id,
-          accountId: l.accountId,
-          debitMinor: l.debitMinor,
-          creditMinor: l.creditMinor,
-          currencyCode: l.currencyCode,
-          memo: l.memo ?? null,
-          dimensions: l.dimensions ?? null,
-        })),
-      );
-
-      // Outbox event
-      await tx.insert(outboxEvent).values({
-        orgId,
-        type: "GL.JOURNAL_POSTED",
-        version: "1",
+      db,
+      ctx,
+      {
+        actorPrincipalId: policyCtx.principalId,
+        action: "gl.journal.posted",
+        entityType: "journal_entry",
         correlationId: params.correlationId,
-        payload: {
-          journalEntryId: entry.id,
-          entryNumber,
+        details: {
           sourceInvoiceId: (params.sourceInvoiceId as string | undefined) ?? null,
           lineCount: params.lines.length,
+          memo: params.memo ?? null,
         },
-      });
+      },
+      async (tx) => {
+        // Account checks inside the transaction to prevent TOCTOU races
+        const accounts = await tx
+          .select({ id: account.id, isActive: account.isActive })
+          .from(account)
+          .where(and(eq(account.orgId, orgId), inArray(account.id, accountIds)));
 
-      return { id: entry.id as JournalEntryId, entryNumber };
-    },
-  );
+        const foundIds = new Set(accounts.map((a) => a.id));
+        for (const aid of accountIds) {
+          if (!foundIds.has(aid)) {
+            throw new GLDomainError("GL_ACCOUNT_NOT_FOUND", `Account not found: ${aid}`, {
+              accountId: aid,
+            });
+          }
+        }
+
+        const inactiveAccount = accounts.find((a) => !a.isActive);
+        if (inactiveAccount) {
+          throw new GLDomainError(
+            "GL_ACCOUNT_INACTIVE",
+            `Account is inactive: ${inactiveAccount.id}`,
+            { accountId: inactiveAccount.id },
+          );
+        }
+
+        const entryNumber = await nextNumber(tx, orgId, "journalEntry");
+
+        const [entry] = await tx
+          .insert(journalEntry)
+          .values({
+            orgId,
+            entryNumber,
+            memo: params.memo ?? null,
+            postedByPrincipalId: policyCtx.principalId ?? null,
+            correlationId: params.correlationId,
+            idempotencyKey: params.idempotencyKey,
+            sourceInvoiceId: (params.sourceInvoiceId as string | undefined) ?? null,
+          })
+          .returning({ id: journalEntry.id });
+
+        if (!entry) throw new Error("Failed to insert journal entry");
+
+        // Insert all lines
+        await tx.insert(journalLine).values(
+          params.lines.map((l) => ({
+            journalEntryId: entry.id,
+            accountId: l.accountId,
+            debitMinor: l.debitMinor,
+            creditMinor: l.creditMinor,
+            currencyCode: l.currencyCode,
+            memo: l.memo ?? null,
+            dimensions: l.dimensions ?? null,
+          })),
+        );
+
+        // Outbox event
+        await tx.insert(outboxEvent).values({
+          orgId,
+          type: "GL.JOURNAL_POSTED",
+          version: "1",
+          correlationId: params.correlationId,
+          payload: {
+            journalEntryId: entry.id,
+            entryNumber,
+            sourceInvoiceId: (params.sourceInvoiceId as string | undefined) ?? null,
+            lineCount: params.lines.length,
+          },
+        });
+
+        return { id: entry.id as JournalEntryId, entryNumber };
+      },
+    );
 
     return { ok: true, data: result };
   } catch (err) {
@@ -300,8 +299,8 @@ export async function reverseJournalEntry(
         originalLines.map((l) => ({
           journalEntryId: reversal.id,
           accountId: l.accountId,
-          debitMinor: l.creditMinor,   // swap
-          creditMinor: l.debitMinor,   // swap
+          debitMinor: l.creditMinor, // swap
+          creditMinor: l.debitMinor, // swap
           currencyCode: l.currencyCode,
           memo: l.memo ? `Reversal: ${l.memo}` : null,
           dimensions: l.dimensions,

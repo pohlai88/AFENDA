@@ -1,30 +1,30 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const HOOK_NAME = 'clawsec-advisory-guardian';
+const HOOK_NAME = "clawsec-advisory-guardian";
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const SUITE_DIR = path.resolve(SCRIPT_DIR, '..');
-const SOURCE_HOOK_DIR = path.join(SUITE_DIR, 'hooks', HOOK_NAME);
-const HOOKS_ROOT = path.join(os.homedir(), '.openclaw', 'hooks');
+const SUITE_DIR = path.resolve(SCRIPT_DIR, "..");
+const SOURCE_HOOK_DIR = path.join(SUITE_DIR, "hooks", HOOK_NAME);
+const HOOKS_ROOT = path.join(os.homedir(), ".openclaw", "hooks");
 const TARGET_HOOK_DIR = path.join(HOOKS_ROOT, HOOK_NAME);
 
 function sh(cmd, args) {
   const result = spawnSync(cmd, args, {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
   if (result.error) {
     throw result.error;
   }
   if (result.status !== 0) {
-    const details = (result.stderr || result.stdout || '').trim();
-    throw new Error(`${cmd} ${args.join(' ')} failed${details ? `: ${details}` : ''}`);
+    const details = (result.stderr || result.stdout || "").trim();
+    throw new Error(`${cmd} ${args.join(" ")} failed${details ? `: ${details}` : ""}`);
   }
 
   return result.stdout;
@@ -32,23 +32,23 @@ function sh(cmd, args) {
 
 function requireOpenClawCli() {
   try {
-    sh('openclaw', ['--version']);
+    sh("openclaw", ["--version"]);
   } catch (error) {
     throw new Error(
-      'openclaw CLI is required. Install OpenClaw and ensure `openclaw` is available in PATH. ' +
+      "openclaw CLI is required. Install OpenClaw and ensure `openclaw` is available in PATH. " +
         `Original error: ${String(error)}`,
-      { cause: error }
+      { cause: error },
     );
   }
 }
 
 function assertSourceHookExists() {
   const requiredFiles = [
-    'HOOK.md',
-    'handler.ts',
-    'lib/utils.mjs',
-    'lib/version.mjs',
-    'lib/feed.mjs',
+    "HOOK.md",
+    "handler.ts",
+    "lib/utils.mjs",
+    "lib/version.mjs",
+    "lib/feed.mjs",
   ];
   for (const file of requiredFiles) {
     const fullPath = path.join(SOURCE_HOOK_DIR, file);
@@ -65,7 +65,7 @@ function installHookFiles() {
 }
 
 function enableHook() {
-  sh('openclaw', ['hooks', 'enable', HOOK_NAME]);
+  sh("openclaw", ["hooks", "enable", HOOK_NAME]);
 }
 
 function main() {
@@ -76,8 +76,8 @@ function main() {
 
   process.stdout.write(`Installed hook files to: ${TARGET_HOOK_DIR}\n`);
   process.stdout.write(`Enabled hook: ${HOOK_NAME}\n`);
-  process.stdout.write('Restart your OpenClaw gateway process so the hook is loaded.\n');
-  process.stdout.write('After restart, run /new once to trigger an immediate advisory scan.\n');
+  process.stdout.write("Restart your OpenClaw gateway process so the hook is loaded.\n");
+  process.stdout.write("After restart, run /new once to trigger an immediate advisory scan.\n");
 }
 
 try {

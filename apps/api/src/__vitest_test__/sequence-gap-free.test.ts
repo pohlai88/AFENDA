@@ -10,17 +10,8 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
-import {
-  SUBMITTER_EMAIL,
-  submitInvoicePayload,
-  getTestSupplierId,
-} from "./helpers/factories.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
+import { SUBMITTER_EMAIL, submitInvoicePayload, getTestSupplierId } from "./helpers/factories.js";
 
 describe("gap-free sequence numbers (EC-6)", () => {
   let app: FastifyInstance;

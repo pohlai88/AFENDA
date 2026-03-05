@@ -26,14 +26,14 @@ import { z } from "zod";
  * automatically.
  */
 export const Permissions = {
-  apInvoiceSubmit:   "ap.invoice.submit",
-  apInvoiceApprove:  "ap.invoice.approve",
-  glJournalPost:     "gl.journal.post",
+  apInvoiceSubmit: "ap.invoice.submit",
+  apInvoiceApprove: "ap.invoice.approve",
+  glJournalPost: "gl.journal.post",
   apInvoiceMarkPaid: "ap.invoice.markpaid",
-  evidenceAttach:    "evidence.attach",
-  auditLogRead:      "audit.log.read",
+  evidenceAttach: "evidence.attach",
+  auditLogRead: "audit.log.read",
   adminTenantManage: "admin.tenant.manage",
-  supplierOnboard:   "supplier.onboard",
+  supplierOnboard: "supplier.onboard",
 } as const;
 
 export type PermissionKey = (typeof Permissions)[keyof typeof Permissions];
@@ -47,22 +47,13 @@ const _permKeyTuple = Object.values(Permissions) as [PermissionKey, ...Permissio
 /** Derived from `Permissions` — do not maintain separately. */
 export const PermissionKeyValues: readonly PermissionKey[] = _permKeyTuple;
 
-export const PermissionKeySchema = z
-  .enum(_permKeyTuple)
-  .refine((v) => PERM_PATTERN.test(v), {
-    message: "Permission key must be lowercase dot-notation (e.g. ap.invoice.submit)",
-  });
+export const PermissionKeySchema = z.enum(_permKeyTuple).refine((v) => PERM_PATTERN.test(v), {
+  message: "Permission key must be lowercase dot-notation (e.g. ap.invoice.submit)",
+});
 
 // ─── Roles ───────────────────────────────────────────────────────────────────
 
-export const RoleKeyValues = [
-  "admin",
-  "operator",
-  "approver",
-  "supplier",
-  "viewer",
-] as const;
+export const RoleKeyValues = ["admin", "operator", "approver", "supplier", "viewer"] as const;
 
 export const RoleKeySchema = z.enum(RoleKeyValues);
 export type RoleKey = z.infer<typeof RoleKeySchema>;
-

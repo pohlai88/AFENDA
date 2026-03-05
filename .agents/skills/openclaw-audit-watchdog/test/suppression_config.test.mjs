@@ -16,10 +16,10 @@
  * Run: node skills/openclaw-audit-watchdog/test/suppression_config.test.mjs
  */
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import os from 'node:os';
-import { loadSuppressionConfig } from '../scripts/load_suppression_config.mjs';
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import { loadSuppressionConfig } from "../scripts/load_suppression_config.mjs";
 
 let passCount = 0;
 let failCount = 0;
@@ -36,9 +36,9 @@ function fail(name, error) {
 }
 
 async function withTempFile(content) {
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openclaw-test-'));
-  const tmpFile = path.join(tmpDir, 'test-config.json');
-  await fs.writeFile(tmpFile, content, 'utf8');
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-test-"));
+  const tmpFile = path.join(tmpDir, "test-config.json");
+  await fs.writeFile(tmpFile, content, "utf8");
 
   return {
     path: tmpFile,
@@ -82,7 +82,7 @@ async function silenceStderr(fn) {
 }
 
 /** Create a valid config JSON string with enabledFor sentinel. */
-function makeConfig(suppressions, enabledFor = ['audit']) {
+function makeConfig(suppressions, enabledFor = ["audit"]) {
   return JSON.stringify({ enabledFor, suppressions });
 }
 
@@ -90,39 +90,39 @@ function makeConfig(suppressions, enabledFor = ['audit']) {
 // Test: valid config with all required fields
 // -----------------------------------------------------------------------------
 async function testValidConfig() {
-  const testName = 'loadSuppressionConfig: loads valid config with all required fields';
+  const testName = "loadSuppressionConfig: loads valid config with all required fields";
   let fixture = null;
 
   try {
     const validConfig = makeConfig([
       {
-        checkId: 'SCAN-001',
-        skill: 'soul-guardian',
-        reason: 'False positive - reviewed by security team',
-        suppressedAt: '2026-02-15',
+        checkId: "SCAN-001",
+        skill: "soul-guardian",
+        reason: "False positive - reviewed by security team",
+        suppressedAt: "2026-02-15",
       },
       {
-        checkId: 'SCAN-002',
-        skill: 'clawtributor',
-        reason: 'Accepted risk for legacy code',
-        suppressedAt: '2026-02-14',
+        checkId: "SCAN-002",
+        skill: "clawtributor",
+        reason: "Accepted risk for legacy code",
+        suppressedAt: "2026-02-14",
       },
     ]);
 
     fixture = await withTempFile(validConfig);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
     if (
       config.source === fixture.path &&
       config.suppressions.length === 2 &&
-      config.suppressions[0].checkId === 'SCAN-001' &&
-      config.suppressions[0].skill === 'soul-guardian' &&
-      config.suppressions[0].reason === 'False positive - reviewed by security team' &&
-      config.suppressions[0].suppressedAt === '2026-02-15' &&
-      config.suppressions[1].checkId === 'SCAN-002' &&
-      config.suppressions[1].skill === 'clawtributor'
+      config.suppressions[0].checkId === "SCAN-001" &&
+      config.suppressions[0].skill === "soul-guardian" &&
+      config.suppressions[0].reason === "False positive - reviewed by security team" &&
+      config.suppressions[0].suppressedAt === "2026-02-15" &&
+      config.suppressions[1].checkId === "SCAN-002" &&
+      config.suppressions[1].skill === "clawtributor"
     ) {
       pass(testName);
     } else {
@@ -147,17 +147,17 @@ async function testMalformedDateWarning() {
   try {
     const configWithBadDate = makeConfig([
       {
-        checkId: 'SCAN-003',
-        skill: 'soul-guardian',
-        reason: 'Test suppression',
-        suppressedAt: '02/15/2026',
+        checkId: "SCAN-003",
+        skill: "soul-guardian",
+        reason: "Test suppression",
+        suppressedAt: "02/15/2026",
       },
     ]);
 
     fixture = await withTempFile(configWithBadDate);
 
     // Capture stderr to check for warning
-    let stderrOutput = '';
+    let stderrOutput = "";
     const originalStderrWrite = process.stderr.write;
     process.stderr.write = function (chunk) {
       stderrOutput += chunk.toString();
@@ -169,10 +169,10 @@ async function testMalformedDateWarning() {
 
       if (
         config.suppressions.length === 1 &&
-        config.suppressions[0].checkId === 'SCAN-003' &&
-        config.suppressions[0].suppressedAt === '02/15/2026' &&
-        stderrOutput.includes('Warning') &&
-        stderrOutput.includes('malformed date')
+        config.suppressions[0].checkId === "SCAN-003" &&
+        config.suppressions[0].suppressedAt === "02/15/2026" &&
+        stderrOutput.includes("Warning") &&
+        stderrOutput.includes("malformed date")
       ) {
         pass(testName);
       } else {
@@ -194,15 +194,15 @@ async function testMalformedDateWarning() {
 // Test: missing required field fails
 // -----------------------------------------------------------------------------
 async function testMissingRequiredField() {
-  const testName = 'loadSuppressionConfig: missing required field fails';
+  const testName = "loadSuppressionConfig: missing required field fails";
   let fixture = null;
 
   try {
     const configMissingReason = makeConfig([
       {
-        checkId: 'SCAN-004',
-        skill: 'soul-guardian',
-        suppressedAt: '2026-02-15',
+        checkId: "SCAN-004",
+        skill: "soul-guardian",
+        suppressedAt: "2026-02-15",
       },
     ]);
 
@@ -210,9 +210,9 @@ async function testMissingRequiredField() {
 
     try {
       await silenceStderr(() => loadSuppressionConfig(fixture.path, { enabled: true }));
-      fail(testName, 'Expected error for missing required field');
+      fail(testName, "Expected error for missing required field");
     } catch (err) {
-      if (err.message.includes('missing required field: reason')) {
+      if (err.message.includes("missing required field: reason")) {
         pass(testName);
       } else {
         fail(testName, `Wrong error message: ${err.message}`);
@@ -231,19 +231,19 @@ async function testMissingRequiredField() {
 // Test: malformed JSON fails
 // -----------------------------------------------------------------------------
 async function testMalformedJSON() {
-  const testName = 'loadSuppressionConfig: malformed JSON fails';
+  const testName = "loadSuppressionConfig: malformed JSON fails";
   let fixture = null;
 
   try {
-    const invalidJSON = '{ suppressions: [ { not valid json } ] }';
+    const invalidJSON = "{ suppressions: [ { not valid json } ] }";
 
     fixture = await withTempFile(invalidJSON);
 
     try {
       await silenceStderr(() => loadSuppressionConfig(fixture.path, { enabled: true }));
-      fail(testName, 'Expected error for malformed JSON');
+      fail(testName, "Expected error for malformed JSON");
     } catch (err) {
-      if (err.message.includes('Malformed JSON')) {
+      if (err.message.includes("Malformed JSON")) {
         pass(testName);
       } else {
         fail(testName, `Wrong error message: ${err.message}`);
@@ -262,16 +262,16 @@ async function testMalformedJSON() {
 // Test: file not found returns empty suppressions
 // -----------------------------------------------------------------------------
 async function testFileNotFoundGracefulFallback() {
-  const testName = 'loadSuppressionConfig: file not found returns empty suppressions';
+  const testName = "loadSuppressionConfig: file not found returns empty suppressions";
 
   try {
-    await withEnv('OPENCLAW_AUDIT_CONFIG', undefined, async () => {
-      const nonExistentPath1 = path.join(os.homedir(), '.openclaw', 'non-existent-12345.json');
+    await withEnv("OPENCLAW_AUDIT_CONFIG", undefined, async () => {
+      const nonExistentPath1 = path.join(os.homedir(), ".openclaw", "non-existent-12345.json");
 
       // Ensure path does not exist
       try {
         await fs.access(nonExistentPath1);
-        fail(testName, 'Test precondition failed: primary path should not exist');
+        fail(testName, "Test precondition failed: primary path should not exist");
         return;
       } catch {
         // Expected - file should not exist
@@ -280,7 +280,7 @@ async function testFileNotFoundGracefulFallback() {
       const config = await silenceStderr(() => loadSuppressionConfig(null, { enabled: true }));
 
       if (
-        config.source === 'none' &&
+        config.source === "none" &&
         Array.isArray(config.suppressions) &&
         config.suppressions.length === 0
       ) {
@@ -298,28 +298,28 @@ async function testFileNotFoundGracefulFallback() {
 // Test: custom path has highest priority
 // -----------------------------------------------------------------------------
 async function testCustomPathPriority() {
-  const testName = 'loadSuppressionConfig: custom path has highest priority';
+  const testName = "loadSuppressionConfig: custom path has highest priority";
   let fixture = null;
 
   try {
     const customConfig = makeConfig([
       {
-        checkId: 'CUSTOM-001',
-        skill: 'custom-skill',
-        reason: 'Custom path config',
-        suppressedAt: '2026-02-15',
+        checkId: "CUSTOM-001",
+        skill: "custom-skill",
+        reason: "Custom path config",
+        suppressedAt: "2026-02-15",
       },
     ]);
 
     fixture = await withTempFile(customConfig);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
     if (
       config.source === fixture.path &&
       config.suppressions.length === 1 &&
-      config.suppressions[0].checkId === 'CUSTOM-001'
+      config.suppressions[0].checkId === "CUSTOM-001"
     ) {
       pass(testName);
     } else {
@@ -338,28 +338,28 @@ async function testCustomPathPriority() {
 // Test: environment variable override
 // -----------------------------------------------------------------------------
 async function testEnvironmentVariableOverride() {
-  const testName = 'loadSuppressionConfig: environment variable overrides default paths';
+  const testName = "loadSuppressionConfig: environment variable overrides default paths";
   let fixture = null;
 
   try {
     const envConfig = makeConfig([
       {
-        checkId: 'ENV-001',
-        skill: 'env-skill',
-        reason: 'Environment variable config',
-        suppressedAt: '2026-02-15',
+        checkId: "ENV-001",
+        skill: "env-skill",
+        reason: "Environment variable config",
+        suppressedAt: "2026-02-15",
       },
     ]);
 
     fixture = await withTempFile(envConfig);
 
-    await withEnv('OPENCLAW_AUDIT_CONFIG', fixture.path, async () => {
+    await withEnv("OPENCLAW_AUDIT_CONFIG", fixture.path, async () => {
       const config = await silenceStderr(() => loadSuppressionConfig(null, { enabled: true }));
 
       if (
         config.source === fixture.path &&
         config.suppressions.length === 1 &&
-        config.suppressions[0].checkId === 'ENV-001'
+        config.suppressions[0].checkId === "ENV-001"
       ) {
         pass(testName);
       } else {
@@ -379,20 +379,20 @@ async function testEnvironmentVariableOverride() {
 // Test: missing suppressions array fails
 // -----------------------------------------------------------------------------
 async function testMissingSuppressions() {
-  const testName = 'loadSuppressionConfig: missing suppressions array fails';
+  const testName = "loadSuppressionConfig: missing suppressions array fails";
   let fixture = null;
 
   try {
     const configWithoutSuppressions = JSON.stringify({
-      enabledFor: ['audit'],
-      note: 'This config is missing the suppressions array',
+      enabledFor: ["audit"],
+      note: "This config is missing the suppressions array",
     });
 
     fixture = await withTempFile(configWithoutSuppressions);
 
     try {
       await silenceStderr(() => loadSuppressionConfig(fixture.path, { enabled: true }));
-      fail(testName, 'Expected error for missing suppressions array');
+      fail(testName, "Expected error for missing suppressions array");
     } catch (err) {
       if (err.message.includes("missing 'suppressions' array")) {
         pass(testName);
@@ -413,15 +413,15 @@ async function testMissingSuppressions() {
 // Test: empty suppressions array is valid
 // -----------------------------------------------------------------------------
 async function testEmptySuppressions() {
-  const testName = 'loadSuppressionConfig: empty suppressions array is valid';
+  const testName = "loadSuppressionConfig: empty suppressions array is valid";
   let fixture = null;
 
   try {
-    const emptyConfig = makeConfig([], ['audit']);
+    const emptyConfig = makeConfig([], ["audit"]);
 
     fixture = await withTempFile(emptyConfig);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
     if (config.source === fixture.path && config.suppressions.length === 0) {
@@ -442,16 +442,16 @@ async function testEmptySuppressions() {
 // Test: custom path not found throws error
 // -----------------------------------------------------------------------------
 async function testCustomPathNotFoundFails() {
-  const testName = 'loadSuppressionConfig: custom path not found throws error';
+  const testName = "loadSuppressionConfig: custom path not found throws error";
 
   try {
-    const nonExistentPath = path.join(os.tmpdir(), 'absolutely-does-not-exist-12345.json');
+    const nonExistentPath = path.join(os.tmpdir(), "absolutely-does-not-exist-12345.json");
 
     try {
       await silenceStderr(() => loadSuppressionConfig(nonExistentPath, { enabled: true }));
-      fail(testName, 'Expected error for custom path not found');
+      fail(testName, "Expected error for custom path not found");
     } catch (err) {
-      if (err.message.includes('Custom config file not found')) {
+      if (err.message.includes("Custom config file not found")) {
         pass(testName);
       } else {
         fail(testName, `Wrong error message: ${err.message}`);
@@ -466,32 +466,32 @@ async function testCustomPathNotFoundFails() {
 // Test: disabled by default (enabled flag not set)
 // -----------------------------------------------------------------------------
 async function testDisabledByDefault() {
-  const testName = 'loadSuppressionConfig: returns empty when enabled flag is not set';
+  const testName = "loadSuppressionConfig: returns empty when enabled flag is not set";
   let fixture = null;
 
   try {
     const validConfig = makeConfig([
       {
-        checkId: 'SCAN-001',
-        skill: 'test-skill',
-        reason: 'Should not be loaded',
-        suppressedAt: '2026-02-15',
+        checkId: "SCAN-001",
+        skill: "test-skill",
+        reason: "Should not be loaded",
+        suppressedAt: "2026-02-15",
       },
     ]);
     fixture = await withTempFile(validConfig);
 
     // Custom path provided but enabled=false (default)
     const config1 = await loadSuppressionConfig(fixture.path);
-    if (config1.source !== 'none' || config1.suppressions.length !== 0) {
-      fail(testName, 'Custom path should be ignored when enabled is not set');
+    if (config1.source !== "none" || config1.suppressions.length !== 0) {
+      fail(testName, "Custom path should be ignored when enabled is not set");
       return;
     }
 
     // Env var set but enabled=false (default)
-    await withEnv('OPENCLAW_AUDIT_CONFIG', fixture.path, async () => {
+    await withEnv("OPENCLAW_AUDIT_CONFIG", fixture.path, async () => {
       const config2 = await loadSuppressionConfig();
-      if (config2.source !== 'none' || config2.suppressions.length !== 0) {
-        fail(testName, 'Env var should be ignored when enabled is not set');
+      if (config2.source !== "none" || config2.suppressions.length !== 0) {
+        fail(testName, "Env var should be ignored when enabled is not set");
         return;
       }
     });
@@ -508,21 +508,21 @@ async function testDisabledByDefault() {
 // Test: enabled explicitly loads config
 // -----------------------------------------------------------------------------
 async function testEnabledExplicitly() {
-  const testName = 'loadSuppressionConfig: loads config when explicitly enabled with sentinel';
+  const testName = "loadSuppressionConfig: loads config when explicitly enabled with sentinel";
   let fixture = null;
 
   try {
     const validConfig = makeConfig([
       {
-        checkId: 'SCAN-001',
-        skill: 'test-skill',
-        reason: 'Should be loaded',
-        suppressedAt: '2026-02-15',
+        checkId: "SCAN-001",
+        skill: "test-skill",
+        reason: "Should be loaded",
+        suppressedAt: "2026-02-15",
       },
     ]);
     fixture = await withTempFile(validConfig);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
     if (config.source === fixture.path && config.suppressions.length === 1) {
@@ -542,24 +542,24 @@ async function testEnabledExplicitly() {
 // -----------------------------------------------------------------------------
 async function testEnvVarAloneDoesNotActivate() {
   const testName =
-    'loadSuppressionConfig: OPENCLAW_AUDIT_CONFIG alone does not activate suppression';
+    "loadSuppressionConfig: OPENCLAW_AUDIT_CONFIG alone does not activate suppression";
   let fixture = null;
 
   try {
     const validConfig = makeConfig([
       {
-        checkId: 'ENV-ATTACK',
-        skill: 'target-skill',
-        reason: 'Attacker suppression',
-        suppressedAt: '2026-02-15',
+        checkId: "ENV-ATTACK",
+        skill: "target-skill",
+        reason: "Attacker suppression",
+        suppressedAt: "2026-02-15",
       },
     ]);
     fixture = await withTempFile(validConfig);
 
-    await withEnv('OPENCLAW_AUDIT_CONFIG', fixture.path, async () => {
+    await withEnv("OPENCLAW_AUDIT_CONFIG", fixture.path, async () => {
       // Without enabled: true, env var should be ignored
       const config = await loadSuppressionConfig(null, { enabled: false });
-      if (config.source === 'none' && config.suppressions.length === 0) {
+      if (config.source === "none" && config.suppressions.length === 0) {
         pass(testName);
       } else {
         fail(testName, `Env var should not activate suppression: ${JSON.stringify(config)}`);
@@ -576,7 +576,7 @@ async function testEnvVarAloneDoesNotActivate() {
 // Test: missing enabledFor sentinel returns empty
 // -----------------------------------------------------------------------------
 async function testMissingSentinel() {
-  const testName = 'loadSuppressionConfig: missing enabledFor sentinel returns empty';
+  const testName = "loadSuppressionConfig: missing enabledFor sentinel returns empty";
   let fixture = null;
 
   try {
@@ -584,19 +584,19 @@ async function testMissingSentinel() {
     const configNoSentinel = JSON.stringify({
       suppressions: [
         {
-          checkId: 'SCAN-001',
-          skill: 'test-skill',
-          reason: 'Should not activate',
-          suppressedAt: '2026-02-15',
+          checkId: "SCAN-001",
+          skill: "test-skill",
+          reason: "Should not activate",
+          suppressedAt: "2026-02-15",
         },
       ],
     });
     fixture = await withTempFile(configNoSentinel);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
-    if (config.source === 'none' && config.suppressions.length === 0) {
+    if (config.source === "none" && config.suppressions.length === 0) {
       pass(testName);
     } else {
       fail(testName, `Missing sentinel should return empty: ${JSON.stringify(config)}`);
@@ -612,7 +612,7 @@ async function testMissingSentinel() {
 // Test: wrong enabledFor sentinel returns empty
 // -----------------------------------------------------------------------------
 async function testWrongSentinel() {
-  const testName = 'loadSuppressionConfig: wrong enabledFor sentinel returns empty for audit';
+  const testName = "loadSuppressionConfig: wrong enabledFor sentinel returns empty for audit";
   let fixture = null;
 
   try {
@@ -620,20 +620,20 @@ async function testWrongSentinel() {
     const configWrongSentinel = makeConfig(
       [
         {
-          checkId: 'SCAN-001',
-          skill: 'test-skill',
-          reason: 'Should not activate for audit',
-          suppressedAt: '2026-02-15',
+          checkId: "SCAN-001",
+          skill: "test-skill",
+          reason: "Should not activate for audit",
+          suppressedAt: "2026-02-15",
         },
       ],
-      ['advisory']
+      ["advisory"],
     );
     fixture = await withTempFile(configWrongSentinel);
     const config = await silenceStderr(() =>
-      loadSuppressionConfig(fixture.path, { enabled: true })
+      loadSuppressionConfig(fixture.path, { enabled: true }),
     );
 
-    if (config.source === 'none' && config.suppressions.length === 0) {
+    if (config.source === "none" && config.suppressions.length === 0) {
       pass(testName);
     } else {
       fail(testName, `Wrong sentinel should return empty: ${JSON.stringify(config)}`);
@@ -649,7 +649,7 @@ async function testWrongSentinel() {
 // Main test runner
 // -----------------------------------------------------------------------------
 async function runTests() {
-  console.log('=== OpenClaw Audit Watchdog - Suppression Config Tests ===\n');
+  console.log("=== OpenClaw Audit Watchdog - Suppression Config Tests ===\n");
 
   await testValidConfig();
   await testMalformedDateWarning();
@@ -675,6 +675,6 @@ async function runTests() {
 }
 
 runTests().catch((error) => {
-  console.error('Test runner failed:', error);
+  console.error("Test runner failed:", error);
   process.exit(1);
 });

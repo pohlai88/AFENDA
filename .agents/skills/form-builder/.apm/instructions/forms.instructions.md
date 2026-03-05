@@ -1,5 +1,5 @@
 ---
-applyTo: '**/*.tsx,**/*.ts'
+applyTo: "**/*.tsx,**/*.ts"
 description: Form standards using React Hook Form + Zod
 ---
 

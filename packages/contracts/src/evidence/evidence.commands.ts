@@ -10,9 +10,7 @@
  *      source of truth). Commands must never redefine it.
  */
 import { z } from "zod";
-import {
-  DocumentIdSchema,
-} from "../shared/ids.js";
+import { DocumentIdSchema } from "../shared/ids.js";
 import { IdempotencyKeySchema } from "../shared/idempotency.js";
 import { MimeTypeSchema, Sha256Schema, EvidenceTargetSchema } from "./evidence.entity.js";
 
@@ -21,9 +19,9 @@ export type { EvidenceTarget } from "./evidence.entity.js";
 // ─── Attach existing document to a domain entity ────────────────────────────
 export const AttachEvidenceCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  documentId:     DocumentIdSchema,
-  target:         EvidenceTargetSchema,
-  label:          z.string().trim().min(1).max(64).optional(),
+  documentId: DocumentIdSchema,
+  target: EvidenceTargetSchema,
+  label: z.string().trim().min(1).max(64).optional(),
 });
 
 export type AttachEvidenceCommand = z.infer<typeof AttachEvidenceCommandSchema>;
@@ -34,8 +32,8 @@ export const RegisterDocumentCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
 
   objectKey: z.string().trim().min(1).max(1024),
-  sha256:    Sha256Schema,
-  mime:      MimeTypeSchema,
+  sha256: Sha256Schema,
+  mime: MimeTypeSchema,
 
   // JS safe integer covers all real-world file sizes (up to ~8 PB).
   // Must be positive AND within JS safe range — matches DocumentSchema.sizeBytes.

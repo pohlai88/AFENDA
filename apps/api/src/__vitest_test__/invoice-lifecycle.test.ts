@@ -11,12 +11,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import {
-  createTestApp,
-  injectAs,
-  resetDb,
-  closeApp,
-} from "./helpers/app-factory.js";
+import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
 import {
   SUBMITTER_EMAIL,
   APPROVER_EMAIL,

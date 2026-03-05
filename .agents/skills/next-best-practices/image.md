@@ -9,7 +9,7 @@ Use `next/image` for automatic image optimization.
 <img src="/hero.png" alt="Hero" />;
 
 // Good: Use next/image
-import Image from 'next/image';
+import Image from "next/image";
 <Image src="/hero.png" alt="Hero" width={800} height={400} />;
 ```
 
@@ -41,13 +41,13 @@ module.exports = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'example.com',
-        pathname: '/images/**',
+        protocol: "https",
+        hostname: "example.com",
+        pathname: "/images/**",
       },
       {
-        protocol: 'https',
-        hostname: '*.cdn.com', // Wildcard subdomain
+        protocol: "https",
+        hostname: "*.cdn.com", // Wildcard subdomain
       },
     ],
   },
@@ -160,7 +160,7 @@ When using `output: 'export'`, use `unoptimized` or custom loader:
 // Option 2: Global config
 // next.config.js
 module.exports = {
-  output: 'export',
+  output: "export",
   images: { unoptimized: true },
 };
 
@@ -169,11 +169,5 @@ const cloudinaryLoader = ({ src, width, quality }) => {
   return `https://res.cloudinary.com/demo/image/upload/w_${width},q_${quality || 75}/${src}`;
 };
 
-<Image
-  loader={cloudinaryLoader}
-  src="sample.jpg"
-  alt="Sample"
-  width={800}
-  height={400}
-/>;
+<Image loader={cloudinaryLoader} src="sample.jpg" alt="Sample" width={800} height={400} />;
 ```

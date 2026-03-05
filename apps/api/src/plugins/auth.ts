@@ -34,13 +34,9 @@ const DEV_HEADER = "x-dev-user-email";
 
 async function deriveNextAuthKey(secret: string): Promise<CryptoKey> {
   const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret),
-    "HKDF",
-    false,
-    ["deriveKey"],
-  );
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(secret), "HKDF", false, [
+    "deriveKey",
+  ]);
   return crypto.subtle.deriveKey(
     {
       name: "HKDF",
@@ -86,7 +82,7 @@ export const authPlugin = fp(async function authPlugin(app: FastifyInstance) {
     // ── Dev-mode shortcut ──────────────────────────────────────────────────
     if (isDev && req.headers[DEV_HEADER]) {
       const email = req.headers[DEV_HEADER] as string;
-      
+
       const ctx = await resolvePrincipalContext(app.db, email, slug, req.correlationId);
       if (ctx) {
         req.ctx = ctx;

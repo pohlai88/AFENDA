@@ -9,20 +9,20 @@ becomes client-side rendered.
 
 ```tsx
 // Bad: Entire page becomes CSR
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from "next/navigation";
 
 export default function SearchBar() {
   const searchParams = useSearchParams();
-  return <div>Query: {searchParams.get('q')}</div>;
+  return <div>Query: {searchParams.get("q")}</div>;
 }
 ```
 
 ```tsx
 // Good: Wrap in Suspense
-import { Suspense } from 'react';
-import SearchBar from './search-bar';
+import { Suspense } from "react";
+import SearchBar from "./search-bar";
 
 export default function Page() {
   return (
@@ -40,8 +40,8 @@ Requires Suspense boundary when route has dynamic parameters.
 ```tsx
 // In dynamic route [slug]
 // Bad: No Suspense
-'use client';
-import { usePathname } from 'next/navigation';
+"use client";
+import { usePathname } from "next/navigation";
 
 export function Breadcrumb() {
   const pathname = usePathname();

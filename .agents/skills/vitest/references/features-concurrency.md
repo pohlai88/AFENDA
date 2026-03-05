@@ -20,7 +20,7 @@ defineConfig({
     minWorkers: 1,
 
     // Pool type: 'threads', 'forks', 'vmThreads'
-    pool: 'threads',
+    pool: "threads",
   },
 });
 ```
@@ -31,18 +31,18 @@ Run tests within a file in parallel:
 
 ```ts
 // Individual concurrent tests
-test.concurrent('test 1', async ({ expect }) => {
-  expect(await fetch1()).toBe('result');
+test.concurrent("test 1", async ({ expect }) => {
+  expect(await fetch1()).toBe("result");
 });
 
-test.concurrent('test 2', async ({ expect }) => {
-  expect(await fetch2()).toBe('result');
+test.concurrent("test 2", async ({ expect }) => {
+  expect(await fetch2()).toBe("result");
 });
 
 // All tests in suite concurrent
-describe.concurrent('parallel suite', () => {
-  test('test 1', async ({ expect }) => {});
-  test('test 2', async ({ expect }) => {});
+describe.concurrent("parallel suite", () => {
+  test("test 1", async ({ expect }) => {});
+  test("test 2", async ({ expect }) => {});
 });
 ```
 
@@ -53,18 +53,18 @@ describe.concurrent('parallel suite', () => {
 Force sequential execution:
 
 ```ts
-describe.concurrent('mostly parallel', () => {
-  test('parallel 1', async () => {});
-  test('parallel 2', async () => {});
+describe.concurrent("mostly parallel", () => {
+  test("parallel 1", async () => {});
+  test("parallel 2", async () => {});
 
-  test.sequential('must run alone 1', async () => {});
-  test.sequential('must run alone 2', async () => {});
+  test.sequential("must run alone 1", async () => {});
+  test.sequential("must run alone 2", async () => {});
 });
 
 // Or entire suite
-describe.sequential('sequential suite', () => {
-  test('first', () => {});
-  test('second', () => {});
+describe.sequential("sequential suite", () => {
+  test("first", () => {});
+  test("second", () => {});
 });
 ```
 
@@ -151,7 +151,7 @@ defineConfig({
       seed: 12345,
 
       // Hook execution order
-      hooks: 'stack', // 'stack', 'list', 'parallel'
+      hooks: "stack", // 'stack', 'list', 'parallel'
 
       // All tests concurrent by default
       concurrent: true,
@@ -183,7 +183,7 @@ describe.shuffle('random order', () => {
 ```ts
 defineConfig({
   test: {
-    pool: 'threads',
+    pool: "threads",
     poolOptions: {
       threads: {
         maxThreads: 8,
@@ -202,7 +202,7 @@ Better isolation, slower:
 ```ts
 defineConfig({
   test: {
-    pool: 'forks',
+    pool: "forks",
     poolOptions: {
       forks: {
         maxForks: 4,
@@ -220,7 +220,7 @@ Full VM isolation per file:
 ```ts
 defineConfig({
   test: {
-    pool: 'vmThreads',
+    pool: "vmThreads",
   },
 });
 ```

@@ -1,7 +1,6 @@
 ---
 name: pino-logging-setup
-description:
-  Configure structured logging with Pino. Outputs human-readable colorized logs
+description: Configure structured logging with Pino. Outputs human-readable colorized logs
   in development and structured JSON in production for log aggregation services.
 ---
 

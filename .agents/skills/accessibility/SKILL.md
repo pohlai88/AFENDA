@@ -1,12 +1,11 @@
 ---
 name: accessibility
-description:
-  Quality assurance for web accessibility and usability, particularly for users
+description: Quality assurance for web accessibility and usability, particularly for users
   with disabilities. Use when involved in any web project.
 license: MIT
 metadata:
   author: conesible.de
-  version: '0.3'
+  version: "0.3"
 ---
 
 # Ensuring Accessibility and Quality Code in Web Projects

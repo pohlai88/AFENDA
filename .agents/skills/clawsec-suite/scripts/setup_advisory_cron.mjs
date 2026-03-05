@@ -1,26 +1,26 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
+import { spawnSync } from "node:child_process";
 
-const JOB_NAME = process.env.CLAWSEC_ADVISORY_CRON_NAME?.trim() || 'ClawSec Advisory Scan';
-const JOB_EVERY = process.env.CLAWSEC_ADVISORY_CRON_EVERY?.trim() || '6h';
+const JOB_NAME = process.env.CLAWSEC_ADVISORY_CRON_NAME?.trim() || "ClawSec Advisory Scan";
+const JOB_EVERY = process.env.CLAWSEC_ADVISORY_CRON_EVERY?.trim() || "6h";
 const JOB_DESCRIPTION =
-  'Trigger a periodic ClawSec advisory scan in the main session and ask for approval before removing flagged skills.';
+  "Trigger a periodic ClawSec advisory scan in the main session and ask for approval before removing flagged skills.";
 const SYSTEM_EVENT =
-  'Run ClawSec advisory scan. If installed skills are flagged as malicious or removal is recommended, notify the user and request explicit approval before any removal.';
+  "Run ClawSec advisory scan. If installed skills are flagged as malicious or removal is recommended, notify the user and request explicit approval before any removal.";
 
 function sh(cmd, args) {
   const result = spawnSync(cmd, args, {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
   if (result.error) {
     throw result.error;
   }
   if (result.status !== 0) {
-    const details = (result.stderr || result.stdout || '').trim();
-    throw new Error(`${cmd} ${args.join(' ')} failed${details ? `: ${details}` : ''}`);
+    const details = (result.stderr || result.stdout || "").trim();
+    throw new Error(`${cmd} ${args.join(" ")} failed${details ? `: ${details}` : ""}`);
   }
 
   return result.stdout;
@@ -28,12 +28,12 @@ function sh(cmd, args) {
 
 function requireOpenClawCli() {
   try {
-    sh('openclaw', ['--version']);
+    sh("openclaw", ["--version"]);
   } catch (error) {
     throw new Error(
-      'openclaw CLI is required. Install OpenClaw and ensure `openclaw` is available in PATH. ' +
+      "openclaw CLI is required. Install OpenClaw and ensure `openclaw` is available in PATH. " +
         `Original error: ${String(error)}`,
-      { cause: error }
+      { cause: error },
     );
   }
 }
@@ -45,22 +45,22 @@ function findExistingJobId(jobsPayload) {
 }
 
 function addJob() {
-  const out = sh('openclaw', [
-    'cron',
-    'add',
-    '--name',
+  const out = sh("openclaw", [
+    "cron",
+    "add",
+    "--name",
     JOB_NAME,
-    '--description',
+    "--description",
     JOB_DESCRIPTION,
-    '--every',
+    "--every",
     JOB_EVERY,
-    '--session',
-    'main',
-    '--system-event',
+    "--session",
+    "main",
+    "--system-event",
     SYSTEM_EVENT,
-    '--wake',
-    'now',
-    '--json',
+    "--wake",
+    "now",
+    "--json",
   ]);
 
   try {
@@ -72,30 +72,30 @@ function addJob() {
 }
 
 function editJob(jobId) {
-  sh('openclaw', [
-    'cron',
-    'edit',
+  sh("openclaw", [
+    "cron",
+    "edit",
     jobId,
-    '--name',
+    "--name",
     JOB_NAME,
-    '--description',
+    "--description",
     JOB_DESCRIPTION,
-    '--enable',
-    '--every',
+    "--enable",
+    "--every",
     JOB_EVERY,
-    '--session',
-    'main',
-    '--system-event',
+    "--session",
+    "main",
+    "--system-event",
     SYSTEM_EVENT,
-    '--wake',
-    'now',
+    "--wake",
+    "now",
   ]);
 }
 
 function main() {
   requireOpenClawCli();
 
-  const jobsOut = sh('openclaw', ['cron', 'list', '--json']);
+  const jobsOut = sh("openclaw", ["cron", "list", "--json"]);
   const jobsPayload = JSON.parse(jobsOut);
   const existingJobId = findExistingJobId(jobsPayload);
 
@@ -112,7 +112,7 @@ function main() {
   }
 
   process.stdout.write(`Schedule: every ${JOB_EVERY}\n`);
-  process.stdout.write('Session target: main (system event + wake now)\n');
+  process.stdout.write("Session target: main (system event + wake now)\n");
 }
 
 try {

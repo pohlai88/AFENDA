@@ -15,23 +15,18 @@
  *   - `activeContext` carries the current "hat" (partyRoleId + orgId)
  */
 import { z } from "zod";
-import {
-  CorrelationIdSchema,
-  OrgIdSchema,
-  PrincipalIdSchema,
-} from "../shared/ids.js";
+import { CorrelationIdSchema, OrgIdSchema, PrincipalIdSchema } from "../shared/ids.js";
 import { RoleKeySchema, PermissionKeySchema } from "./role.entity.js";
 import { UtcDateTimeSchema } from "../shared/datetime.js";
 import { ActiveContextSchema } from "./membership.entity.js";
 
-
 // ─── User entity ──────────────────────────────────────────────────────────────
 
 export const UserSchema = z.object({
-  id:        PrincipalIdSchema,
-  email:     z.string().email(),
+  id: PrincipalIdSchema,
+  email: z.string().email(),
   /** Display name — trimmed; `null` when the user has not set one yet. */
-  name:      z.string().trim().min(1).nullable(),
+  name: z.string().trim().min(1).nullable(),
   createdAt: UtcDateTimeSchema,
 });
 
@@ -50,22 +45,23 @@ export type User = z.infer<typeof UserSchema>;
  * Duplicate role/permission entries are removed at parse time.
  * `permissionsSet` is auto-computed for O(1) permission checks.
  */
-export const RequestContextSchema = z.object({
-  // ─── Identity (ADR-0003) ───────────────────────────────────────────────────
-  principalId:   PrincipalIdSchema,
-  activeContext: ActiveContextSchema.optional(),
+export const RequestContextSchema = z
+  .object({
+    // ─── Identity (ADR-0003) ───────────────────────────────────────────────────
+    principalId: PrincipalIdSchema,
+    activeContext: ActiveContextSchema.optional(),
 
-  // ─── RBAC ──────────────────────────────────────────────────────────────────
-  roles:         z.array(RoleKeySchema).transform((arr) => [...new Set(arr)]),
-  permissions:   z.array(PermissionKeySchema).transform((arr) => [...new Set(arr)]),
+    // ─── RBAC ──────────────────────────────────────────────────────────────────
+    roles: z.array(RoleKeySchema).transform((arr) => [...new Set(arr)]),
+    permissions: z.array(PermissionKeySchema).transform((arr) => [...new Set(arr)]),
 
-  // ─── Tracing ───────────────────────────────────────────────────────────────
-  correlationId: CorrelationIdSchema,
-}).transform((data) => ({
-  ...data,
-  /** O(1) permission check — auto-computed from `permissions` array */
-  permissionsSet: new Set(data.permissions) as ReadonlySet<string>,
-}));
+    // ─── Tracing ───────────────────────────────────────────────────────────────
+    correlationId: CorrelationIdSchema,
+  })
+  .transform((data) => ({
+    ...data,
+    /** O(1) permission check — auto-computed from `permissions` array */
+    permissionsSet: new Set(data.permissions) as ReadonlySet<string>,
+  }));
 
 export type RequestContext = z.infer<typeof RequestContextSchema>;
-

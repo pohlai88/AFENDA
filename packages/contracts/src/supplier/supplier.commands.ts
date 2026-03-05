@@ -13,11 +13,7 @@
  *      admin-initiated creation (no documents, no flow).
  */
 import { z } from "zod";
-import {
-  SupplierIdSchema,
-  OrgIdSchema,
-  DocumentIdSchema,
-} from "../shared/ids.js";
+import { SupplierIdSchema, OrgIdSchema, DocumentIdSchema } from "../shared/ids.js";
 import { IdempotencyKeySchema } from "../shared/idempotency.js";
 
 // ─── Onboard ──────────────────────────────────────────────────────────────────
@@ -34,8 +30,8 @@ export const OnboardSupplierCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
 
   supplierOrgId: OrgIdSchema.optional(),
-  name:          z.string().trim().min(1).max(255),
-  taxId:         z.string().trim().min(1).max(64).optional(),
+  name: z.string().trim().min(1).max(255),
+  taxId: z.string().trim().min(1).max(64).optional(),
 
   // Required for full onboarding — distinguishes from lightweight admin creation.
   contactEmail: z.string().email(),
@@ -55,8 +51,8 @@ export type OnboardSupplierCommand = z.infer<typeof OnboardSupplierCommandSchema
  */
 export const SuspendSupplierCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  supplierId:     SupplierIdSchema,
-  reason:         z.string().trim().min(1).max(500),
+  supplierId: SupplierIdSchema,
+  reason: z.string().trim().min(1).max(500),
 });
 
 export type SuspendSupplierCommand = z.infer<typeof SuspendSupplierCommandSchema>;
@@ -69,8 +65,8 @@ export type SuspendSupplierCommand = z.infer<typeof SuspendSupplierCommandSchema
  */
 export const ReactivateSupplierCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  supplierId:     SupplierIdSchema,
-  reason:         z.string().trim().min(1).max(500).optional(),
+  supplierId: SupplierIdSchema,
+  reason: z.string().trim().min(1).max(500).optional(),
 });
 
 export type ReactivateSupplierCommand = z.infer<typeof ReactivateSupplierCommandSchema>;

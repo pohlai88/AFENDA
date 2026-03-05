@@ -4,10 +4,10 @@
 
 ```yaml
 packages:
-  - 'packages/*'
-  - 'apps/*'
-  - 'tools/*/packages/*'
-  - '!**/test/**' # Exclude
+  - "packages/*"
+  - "apps/*"
+  - "tools/*/packages/*"
+  - "!**/test/**" # Exclude
 
 # Catalogs for shared versions
 catalog:
@@ -26,7 +26,7 @@ catalogs:
 # Overrides
 overrides:
   lodash: ^4.17.21
-  'foo@^1.0.0>bar': ^2.0.0
+  "foo@^1.0.0>bar": ^2.0.0
 
 # Settings (alternative to .npmrc)
 settings:

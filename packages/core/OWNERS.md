@@ -1,22 +1,23 @@
 # @afenda/core — OWNERS
 
 ## Purpose
+
 Domain business logic — the **only package** that may join `@afenda/contracts`
-and `@afenda/db`.  All business rules, policy checks, and domain calculations
+and `@afenda/db`. All business rules, policy checks, and domain calculations
 live here.
 
 ---
 
 ## Import Rules
 
-| May import              | Must NOT import         |
-|-------------------------|-------------------------|
-| `@afenda/contracts`     | `@afenda/ui`            |
-| `@afenda/db`            | `fastify`               |
-| `drizzle-orm` (types + operators only) | `react`, `next` |
-| `node:crypto` (hashing) | Any `zod` import **except in `infra/env.ts`** |
+| May import                             | Must NOT import                               |
+| -------------------------------------- | --------------------------------------------- |
+| `@afenda/contracts`                    | `@afenda/ui`                                  |
+| `@afenda/db`                           | `fastify`                                     |
+| `drizzle-orm` (types + operators only) | `react`, `next`                               |
+| `node:crypto` (hashing)                | Any `zod` import **except in `infra/env.ts`** |
 
-### Drizzle-ORM Usage  (Point 2)
+### Drizzle-ORM Usage (Point 2)
 
 Core may import `drizzle-orm` for **operator helpers** (`eq`, `and`, `sql`,
 type-level helpers) and schema table references from `@afenda/db`.
@@ -25,10 +26,10 @@ Core **must not** define raw SQL strings or schema DDL.
 All complex query construction belongs in `@afenda/db` repository functions.
 Core calls those repos; it does not replicate them.
 
-### No Zod in Core  (Point 8)
+### No Zod in Core (Point 8)
 
 `zod` is forbidden in every core file **except** `infra/env.ts`.
-Validation schemas live in `@afenda/contracts`.  If core needs runtime parsing,
+Validation schemas live in `@afenda/contracts`. If core needs runtime parsing,
 import the schema from contracts — do not recreate it.
 
 ---
@@ -67,18 +68,18 @@ src/
 Each directory has its own OWNERS.md that inherits the rules above and documents
 its specific files, exports, and domain-specific constraints.
 
-| Directory     | Contents                                        | OWNERS |
-|---------------|-------------------------------------------------|--------|
-| `iam/`        | Identity resolution, org context, RBAC       | [→ iam/OWNERS.md](src/iam/OWNERS.md) |
-| `finance/`    | Money math, posting invariants, SoD policy       | [→ finance/OWNERS.md](src/finance/OWNERS.md) |
-| `document/`   | Evidence registration, entity linking, retention | [→ document/OWNERS.md](src/document/OWNERS.md) |
-| `infra/`      | Audit, idempotency, numbering, env config        | [→ infra/OWNERS.md](src/infra/OWNERS.md) |
+| Directory   | Contents                                         | OWNERS                                         |
+| ----------- | ------------------------------------------------ | ---------------------------------------------- |
+| `iam/`      | Identity resolution, org context, RBAC           | [→ iam/OWNERS.md](src/iam/OWNERS.md)           |
+| `finance/`  | Money math, posting invariants, SoD policy       | [→ finance/OWNERS.md](src/finance/OWNERS.md)   |
+| `document/` | Evidence registration, entity linking, retention | [→ document/OWNERS.md](src/document/OWNERS.md) |
+| `infra/`    | Audit, idempotency, numbering, env config        | [→ infra/OWNERS.md](src/infra/OWNERS.md)       |
 
 ### Nesting Rules
 
 1. **Each domain directory has its own `index.ts` barrel** — exports only, no logic.
 2. **Second-level nesting** (e.g. `finance/ap/`, `finance/gl/`) is expected once a
-   subdomain has 3+ files.  Do not wait — nest as soon as the second file lands.
+   subdomain has 3+ files. Do not wait — nest as soon as the second file lands.
 3. **Cross-domain imports within core** use the sibling barrel:
    `import { resolveOrgId } from "../iam/index.js"` — never deep-path.
 4. **Tests live in `__vitest_test__/` subfolders** (`finance/__vitest_test__/posting.test.ts`
@@ -87,35 +88,37 @@ its specific files, exports, and domain-specific constraints.
 
 ---
 
-## Domain vs Infrastructure Separation  (Point 4)
+## Domain vs Infrastructure Separation (Point 4)
 
-| Layer       | Directories           | Contains                            |
-|-------------|-----------------------|-------------------------------------|
-| **Domain**  | `iam/`, `finance/`, `document/`, `supplier/` | Business rules, invariants, policy checks |
-| **Infra**   | `infra/`              | Audit logging, idempotency, numbering, env config |
+| Layer      | Directories                                  | Contains                                          |
+| ---------- | -------------------------------------------- | ------------------------------------------------- |
+| **Domain** | `iam/`, `finance/`, `document/`, `supplier/` | Business rules, invariants, policy checks         |
+| **Infra**  | `infra/`                                     | Audit logging, idempotency, numbering, env config |
 
 Hard rules:
+
 - **Domain → Infra**: allowed (e.g. `finance/` imports `infra/audit.ts`).
-- **Infra → Domain**: **forbidden**.  Infrastructure must know nothing about
-  invoices, postings, or evidence.  If infra needs domain context, lift the type
+- **Infra → Domain**: **forbidden**. Infrastructure must know nothing about
+  invoices, postings, or evidence. If infra needs domain context, lift the type
   into `@afenda/contracts`.
 - If a function is "useful to every domain" it is infra, not domain.
 
 ---
 
-## Standard Service Function Shape  (Point 5)
+## Standard Service Function Shape (Point 5)
 
 Every exportable service function follows this signature pattern:
 
 ```ts
 export async function doSomething(
-  db: DbClient,                  // always first — enables transaction nesting
+  db: DbClient, // always first — enables transaction nesting
   ctx: RequestContext | OrgId, // or narrower branded type
-  input: SomeParams,             // structured params object
-): Promise<Result>               // typed return — throw on unrecoverable error
+  input: SomeParams, // structured params object
+): Promise<Result>; // typed return — throw on unrecoverable error
 ```
 
 Rules:
+
 - `db` is always the first parameter so callers can wrap in `withOrgContext(db, …)`.
 - Use a **named params interface** (not positional args beyond `db` + context).
 - Return a typed result; throw `Error` only for truly exceptional / unrecoverable
@@ -123,29 +126,30 @@ Rules:
 
 ---
 
-## Numbering / Gap-Free IDs  (Point 6)
+## Numbering / Gap-Free IDs (Point 6)
 
 `infra/numbering.ts` provides `nextNumber()` and `ensureSequence()`.
 
-⚠️  **Gap-free guarantee** requires calling `nextNumber()` inside the **same DB
-transaction** as the domain mutation that uses the number.  If the transaction
-rolls back, the consumed number returns to the pool.  Serializable isolation is
+⚠️ **Gap-free guarantee** requires calling `nextNumber()` inside the **same DB
+transaction** as the domain mutation that uses the number. If the transaction
+rolls back, the consumed number returns to the pool. Serializable isolation is
 NOT required for gap-freedom (the `UPDATE … RETURNING` takes a row lock under
-Read Committed), but it may be used globally for other invariants.  Document
+Read Committed), but it may be used globally for other invariants. Document
 this constraint at every call site.
 
 ---
 
-## Enum Sync  (Point 3)
+## Enum Sync (Point 3)
 
 `@afenda/contracts` defines `*Values` arrays (`InvoiceStatusValues`,
-`AccountTypeValues`, `SupplierStatusValues`) as `as const`.  `@afenda/db`
-imports them to build `pgEnum()`.  The boundary gate (`tools/gates/boundaries.mjs`)
+`AccountTypeValues`, `SupplierStatusValues`) as `as const`. `@afenda/db`
+imports them to build `pgEnum()`. The boundary gate (`tools/gates/boundaries.mjs`)
 enforces parity: if the sets ever drift, CI fails.
 
 ---
 
 ## Belongs Here
+
 - Money arithmetic + ISO 4217 minor-unit factor derivation (`finance/money.ts`)
 - Separation of Duties policy checks (`finance/sod.ts`)
 - Journal balance + XOR + non-negative invariant validation (`finance/posting.ts`)
@@ -154,6 +158,7 @@ enforces parity: if the sets ever drift, CI fails.
 - Future: invoice state machine, GL posting service, approval workflows
 
 ## Does NOT Belong Here
+
 - Zod schema definitions (→ `@afenda/contracts`)
 - Table DDL / migrations (→ `@afenda/db`)
 - Complex query builders (→ `@afenda/db` repositories)

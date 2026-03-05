@@ -20,19 +20,19 @@ defineConfig({
   test: {
     coverage: {
       // Provider: 'v8' (default, faster) or 'istanbul' (more compatible)
-      provider: 'v8',
+      provider: "v8",
 
       // Enable coverage
       enabled: true,
 
       // Reporters
-      reporter: ['text', 'json', 'html'],
+      reporter: ["text", "json", "html"],
 
       // Files to include
-      include: ['src/**/*.{ts,tsx}'],
+      include: ["src/**/*.{ts,tsx}"],
 
       // Files to exclude
-      exclude: ['node_modules/', 'tests/', '**/*.d.ts', '**/*.test.ts'],
+      exclude: ["node_modules/", "tests/", "**/*.d.ts", "**/*.test.ts"],
 
       // Report uncovered files
       all: true,
@@ -116,7 +116,7 @@ coverage: {
 ```ts
 /* v8 ignore next -- @preserve */
 function ignored() {
-  return 'not covered';
+  return "not covered";
 }
 
 /* v8 ignore start -- @preserve */

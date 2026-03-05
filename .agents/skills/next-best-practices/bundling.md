@@ -22,16 +22,16 @@ If the package is only needed on client:
 
 ```tsx
 // Bad: Fails - package uses window
-import SomeChart from 'some-chart-library';
+import SomeChart from "some-chart-library";
 
 export default function Page() {
   return <SomeChart />;
 }
 
 // Good: Use dynamic import with ssr: false
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const SomeChart = dynamic(() => import('some-chart-library'), {
+const SomeChart = dynamic(() => import("some-chart-library"), {
   ssr: false,
 });
 
@@ -47,7 +47,7 @@ For packages that should run on server but have bundling issues:
 ```js
 // next.config.js
 module.exports = {
-  serverExternalPackages: ['problematic-package'],
+  serverExternalPackages: ["problematic-package"],
 };
 ```
 
@@ -63,16 +63,16 @@ Wrap the entire usage in a client component:
 
 ```tsx
 // components/ChartWrapper.tsx
-'use client';
+"use client";
 
-import { Chart } from 'chart-library';
+import { Chart } from "chart-library";
 
 export function ChartWrapper(props) {
   return <Chart {...props} />;
 }
 
 // app/page.tsx (server component)
-import { ChartWrapper } from '@/components/ChartWrapper';
+import { ChartWrapper } from "@/components/ChartWrapper";
 
 export default function Page() {
   return <ChartWrapper data={data} />;
@@ -89,10 +89,10 @@ optimization.
 <link rel="stylesheet" href="/styles.css" />;
 
 // Good: Import CSS
-import './styles.css';
+import "./styles.css";
 
 // Good: CSS Modules
-import styles from './Button.module.css';
+import styles from "./Button.module.css";
 ```
 
 ## Polyfills
@@ -125,7 +125,7 @@ Module not found: ESM packages need to be imported
 ```js
 // next.config.js
 module.exports = {
-  transpilePackages: ['some-esm-package', 'another-package'],
+  transpilePackages: ["some-esm-package", "another-package"],
 };
 ```
 
@@ -174,8 +174,8 @@ config, migrate to Turbopack-compatible alternatives:
 // next.config.js
 module.exports = {
   // Good: Works with Turbopack
-  serverExternalPackages: ['package'],
-  transpilePackages: ['package'],
+  serverExternalPackages: ["package"],
+  transpilePackages: ["package"],
 
   // Bad: Webpack-only - migrate away from this
   webpack: (config) => {

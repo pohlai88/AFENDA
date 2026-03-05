@@ -1,31 +1,31 @@
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
-import { uniqueStrings } from './lib/utils.mjs';
-import { defaultChecksumsUrl, loadLocalFeed, loadRemoteFeed } from './lib/feed.mjs';
-import type { HookEvent, FeedPayload, AdvisoryMatch } from './lib/types.ts';
-import { loadState, persistState } from './lib/state.ts';
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { uniqueStrings } from "./lib/utils.mjs";
+import { defaultChecksumsUrl, loadLocalFeed, loadRemoteFeed } from "./lib/feed.mjs";
+import type { HookEvent, FeedPayload, AdvisoryMatch } from "./lib/types.ts";
+import { loadState, persistState } from "./lib/state.ts";
 import {
   discoverInstalledSkills,
   findMatches,
   matchKey,
   buildAlertMessage,
-} from './lib/matching.ts';
-import { loadAdvisorySuppression, isAdvisorySuppressed } from './lib/suppression.mjs';
+} from "./lib/matching.ts";
+import { loadAdvisorySuppression, isAdvisorySuppressed } from "./lib/suppression.mjs";
 
-const DEFAULT_FEED_URL = 'https://clawsec.prompt.security/advisories/feed.json';
+const DEFAULT_FEED_URL = "https://clawsec.prompt.security/advisories/feed.json";
 const DEFAULT_SCAN_INTERVAL_SECONDS = 300;
 let unsignedModeWarningShown = false;
 
 function expandHome(inputPath: string): string {
   if (!inputPath) return inputPath;
-  if (inputPath === '~') return os.homedir();
-  if (inputPath.startsWith('~/')) return path.join(os.homedir(), inputPath.slice(2));
+  if (inputPath === "~") return os.homedir();
+  if (inputPath.startsWith("~/")) return path.join(os.homedir(), inputPath.slice(2));
   return inputPath;
 }
 
 function parsePositiveInteger(value: string | undefined, fallback: number): number {
-  const parsed = Number.parseInt(String(value ?? ''), 10);
+  const parsed = Number.parseInt(String(value ?? ""), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return fallback;
   }
@@ -33,15 +33,15 @@ function parsePositiveInteger(value: string | undefined, fallback: number): numb
 }
 
 function toEventName(event: HookEvent): string {
-  const eventType = String(event.type ?? '').trim();
-  const action = String(event.action ?? '').trim();
-  if (!eventType || !action) return '';
+  const eventType = String(event.type ?? "").trim();
+  const action = String(event.action ?? "").trim();
+  if (!eventType || !action) return "";
   return `${eventType}:${action}`;
 }
 
 function shouldHandleEvent(event: HookEvent): boolean {
   const eventName = toEventName(event);
-  return eventName === 'agent:bootstrap' || eventName === 'command:new';
+  return eventName === "agent:bootstrap" || eventName === "command:new";
 }
 
 function epochMs(isoTimestamp: string | null): number {
@@ -69,8 +69,8 @@ async function loadFeed(options: {
   verifyChecksumManifest: boolean;
 }): Promise<FeedPayload> {
   const publicKeyPem = options.allowUnsigned
-    ? ''
-    : await fs.readFile(options.feedPublicKeyPath, 'utf8');
+    ? ""
+    : await fs.readFile(options.feedPublicKeyPath, "utf8");
 
   const remoteFeed = await loadRemoteFeed(options.feedUrl, {
     signatureUrl: options.feedSignatureUrl,
@@ -101,53 +101,53 @@ const handler = async (event: HookEvent): Promise<void> => {
   const installRoot = expandHome(
     process.env.CLAWSEC_INSTALL_ROOT ||
       process.env.INSTALL_ROOT ||
-      path.join(os.homedir(), '.openclaw', 'skills')
+      path.join(os.homedir(), ".openclaw", "skills"),
   );
   const suiteDir = expandHome(
-    process.env.CLAWSEC_SUITE_DIR || path.join(installRoot, 'clawsec-suite')
+    process.env.CLAWSEC_SUITE_DIR || path.join(installRoot, "clawsec-suite"),
   );
   const localFeedPath = expandHome(
-    process.env.CLAWSEC_LOCAL_FEED || path.join(suiteDir, 'advisories', 'feed.json')
+    process.env.CLAWSEC_LOCAL_FEED || path.join(suiteDir, "advisories", "feed.json"),
   );
   const localFeedSignaturePath = expandHome(
-    process.env.CLAWSEC_LOCAL_FEED_SIG || `${localFeedPath}.sig`
+    process.env.CLAWSEC_LOCAL_FEED_SIG || `${localFeedPath}.sig`,
   );
   const localFeedChecksumsPath = expandHome(
     process.env.CLAWSEC_LOCAL_FEED_CHECKSUMS ||
-      path.join(path.dirname(localFeedPath), 'checksums.json')
+      path.join(path.dirname(localFeedPath), "checksums.json"),
   );
   const localFeedChecksumsSignaturePath = expandHome(
-    process.env.CLAWSEC_LOCAL_FEED_CHECKSUMS_SIG || `${localFeedChecksumsPath}.sig`
+    process.env.CLAWSEC_LOCAL_FEED_CHECKSUMS_SIG || `${localFeedChecksumsPath}.sig`,
   );
   const feedPublicKeyPath = expandHome(
     process.env.CLAWSEC_FEED_PUBLIC_KEY ||
-      path.join(suiteDir, 'advisories', 'feed-signing-public.pem')
+      path.join(suiteDir, "advisories", "feed-signing-public.pem"),
   );
   const stateFile = expandHome(
     process.env.CLAWSEC_SUITE_STATE_FILE ||
-      path.join(os.homedir(), '.openclaw', 'clawsec-suite-feed-state.json')
+      path.join(os.homedir(), ".openclaw", "clawsec-suite-feed-state.json"),
   );
   const feedUrl = process.env.CLAWSEC_FEED_URL || DEFAULT_FEED_URL;
   const feedSignatureUrl = process.env.CLAWSEC_FEED_SIG_URL || `${feedUrl}.sig`;
   const feedChecksumsUrl = process.env.CLAWSEC_FEED_CHECKSUMS_URL || defaultChecksumsUrl(feedUrl);
   const feedChecksumsSignatureUrl =
     process.env.CLAWSEC_FEED_CHECKSUMS_SIG_URL || `${feedChecksumsUrl}.sig`;
-  const allowUnsigned = process.env.CLAWSEC_ALLOW_UNSIGNED_FEED === '1';
-  const verifyChecksumManifest = process.env.CLAWSEC_VERIFY_CHECKSUM_MANIFEST !== '0';
+  const allowUnsigned = process.env.CLAWSEC_ALLOW_UNSIGNED_FEED === "1";
+  const verifyChecksumManifest = process.env.CLAWSEC_VERIFY_CHECKSUM_MANIFEST !== "0";
   const scanIntervalSeconds = parsePositiveInteger(
     process.env.CLAWSEC_HOOK_INTERVAL_SECONDS,
-    DEFAULT_SCAN_INTERVAL_SECONDS
+    DEFAULT_SCAN_INTERVAL_SECONDS,
   );
 
   if (allowUnsigned && !unsignedModeWarningShown) {
     unsignedModeWarningShown = true;
     console.warn(
-      '[clawsec-advisory-guardian] CLAWSEC_ALLOW_UNSIGNED_FEED=1 is enabled. ' +
-        'This bypass is temporary migration compatibility and should be removed as soon as signed feed artifacts are available.'
+      "[clawsec-advisory-guardian] CLAWSEC_ALLOW_UNSIGNED_FEED=1 is enabled. " +
+        "This bypass is temporary migration compatibility and should be removed as soon as signed feed artifacts are available.",
     );
   }
 
-  const forceScan = toEventName(event) === 'command:new';
+  const forceScan = toEventName(event) === "command:new";
   const state = await loadState(stateFile);
   if (!forceScan && scannedRecently(state.last_hook_scan, scanIntervalSeconds)) {
     return;
@@ -177,13 +177,13 @@ const handler = async (event: HookEvent): Promise<void> => {
   state.last_hook_scan = nowIso;
   state.last_feed_check = nowIso;
 
-  if (typeof feed.updated === 'string' && feed.updated.trim()) {
+  if (typeof feed.updated === "string" && feed.updated.trim()) {
     state.last_feed_updated = feed.updated;
   }
 
   const advisoryIds = feed.advisories
     .map((advisory) => advisory.id)
-    .filter((id): id is string => typeof id === 'string' && id.trim() !== '');
+    .filter((id): id is string => typeof id === "string" && id.trim() !== "");
   state.known_advisories = uniqueStrings([...state.known_advisories, ...advisoryIds]);
 
   const installedSkills = await discoverInstalledSkills(installRoot);
@@ -200,7 +200,7 @@ const handler = async (event: HookEvent): Promise<void> => {
     suppressionConfig = await loadAdvisorySuppression();
   } catch (err) {
     console.warn(`[clawsec-advisory-guardian] failed to load suppression config: ${String(err)}`);
-    suppressionConfig = { suppressions: [], enabledFor: [], source: 'none' };
+    suppressionConfig = { suppressions: [], enabledFor: [], source: "none" };
   }
 
   // Partition matches into active and suppressed
@@ -230,7 +230,7 @@ const handler = async (event: HookEvent): Promise<void> => {
 
   if (suppressedMatches.length > 0 && Array.isArray(event.messages)) {
     event.messages.push(
-      `[clawsec-advisory-guardian] ${suppressedMatches.length} advisory match(es) suppressed by allowlist config.`
+      `[clawsec-advisory-guardian] ${suppressedMatches.length} advisory match(es) suppressed by allowlist config.`,
     );
   }
 

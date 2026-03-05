@@ -9,12 +9,12 @@ Represents a server. Used for connectivity information.
 
 ## Server Object — Fixed Fields
 
-| Field        | Type   | Description |
-|-------------|--------|-------------|
-| url         | string | **REQUIRED**. Target host URL; supports Server Variables in `{braces}`. Query and fragment MUST NOT be used. May be relative. |
-| description | string | Optional description of the host; CommonMark allowed. |
-| name       | string | Optional unique string for the host. |
-| variables   | Map[string, Server Variable Object] | Variable name → value for substitution in url. |
+| Field       | Type                                | Description                                                                                                                   |
+| ----------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| url         | string                              | **REQUIRED**. Target host URL; supports Server Variables in `{braces}`. Query and fragment MUST NOT be used. May be relative. |
+| description | string                              | Optional description of the host; CommonMark allowed.                                                                         |
+| name        | string                              | Optional unique string for the host.                                                                                          |
+| variables   | Map[string, Server Variable Object] | Variable name → value for substitution in url.                                                                                |
 
 ## API URLs vs document URIs
 
@@ -23,11 +23,11 @@ Represents a server. Used for connectivity information.
 
 ## Server Variable Object
 
-| Field        | Type   | Description |
-|-------------|--------|-------------|
-| enum        | [string] | If present, substitution values from this set; array MUST NOT be empty. |
-| default     | string | **REQUIRED**. Default for substitution; MUST be in enum if enum is defined. |
-| description | string | Optional; CommonMark allowed. |
+| Field       | Type     | Description                                                                 |
+| ----------- | -------- | --------------------------------------------------------------------------- |
+| enum        | [string] | If present, substitution values from this set; array MUST NOT be empty.     |
+| default     | string   | **REQUIRED**. Default for substitution; MUST be in enum if enum is defined. |
+| description | string   | Optional; CommonMark allowed.                                               |
 
 Each variable MUST NOT appear more than once in the server URL template.
 
@@ -43,8 +43,8 @@ servers:
         default: demo
         description: User-specific subdomain.
       port:
-        enum: ['8443', '443']
-        default: '8443'
+        enum: ["8443", "443"]
+        default: "8443"
       basePath:
         default: v2
 ```

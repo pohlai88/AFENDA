@@ -1,13 +1,13 @@
 ---
-title: 'JSON Schema'
-description: 'How to convert Zod schemas to JSON Schema'
+title: "JSON Schema"
+description: "How to convert Zod schemas to JSON Schema"
 ---
 
-import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 
-<Callout icon={'💎'}>
+<Callout icon={"💎"}>
   **New** — Zod 4 introduces a new feature: native [JSON Schema](https://json-schema.org/)
   conversion. JSON Schema is a standard for describing the structure of JSON (with JSON). It's
   widely used in [OpenAPI](https://www.openapis.org/) definitions and defining [structured
@@ -24,15 +24,15 @@ import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 Zod provides `z.fromJSONSchema()` to convert a JSON Schema into a Zod schema.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const jsonSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    name: { type: 'string' },
-    age: { type: 'number' },
+    name: { type: "string" },
+    age: { type: "number" },
   },
-  required: ['name', 'age'],
+  required: ["name", "age"],
 };
 
 const zodSchema = z.fromJSONSchema(jsonSchema);
@@ -43,7 +43,7 @@ const zodSchema = z.fromJSONSchema(jsonSchema);
 To convert a Zod schema to JSON Schema, use the `z.toJSONSchema()` function.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.object({
   name: z.string(),
@@ -93,12 +93,12 @@ interface ToJSONSchemaParams {
    * - `"draft-04"` — JSON Schema Draft 4
    * - `"openapi-3.0"` — OpenAPI 3.0 Schema Object */
   target?:
-    | 'draft-04'
-    | 'draft-4'
-    | 'draft-07'
-    | 'draft-7'
-    | 'draft-2020-12'
-    | 'openapi-3.0'
+    | "draft-04"
+    | "draft-4"
+    | "draft-07"
+    | "draft-7"
+    | "draft-2020-12"
+    | "openapi-3.0"
     | ({} & string)
     | undefined;
 
@@ -109,17 +109,17 @@ interface ToJSONSchemaParams {
   /** How to handle unrepresentable types.
    * - `"throw"` — Default. Unrepresentable types throw an error
    * - `"any"` — Unrepresentable types become `{}` */
-  unrepresentable?: 'throw' | 'any';
+  unrepresentable?: "throw" | "any";
 
   /** How to handle cycles.
    * - `"ref"` — Default. Cycles will be broken using $defs
    * - `"throw"` — Cycles will throw an error if encountered */
-  cycles?: 'ref' | 'throw';
+  cycles?: "ref" | "throw";
 
   /* How to handle reused schemas.
    * - `"inline"` — Default. Reused schemas will be inlined
    * - `"ref"` — Reused schemas will be extracted as $defs */
-  reused?: 'ref' | 'inline';
+  reused?: "ref" | "inline";
 
   /** A function used to convert `id` values to URIs to be used in *external* $refs.
    *
@@ -143,7 +143,7 @@ const mySchema = z
 const jsonSchema = z.toJSONSchema(mySchema);
 // => { type: "number" }
 
-const jsonSchema = z.toJSONSchema(mySchema, { io: 'input' });
+const jsonSchema = z.toJSONSchema(mySchema, { io: "input" });
 // => { type: "string" }
 ```
 
@@ -152,10 +152,10 @@ const jsonSchema = z.toJSONSchema(mySchema, { io: 'input' });
 To set the target JSON Schema version, use the `target` parameter. By default, Zod will target Draft 2020-12.
 
 ```ts
-z.toJSONSchema(schema, { target: 'draft-07' });
-z.toJSONSchema(schema, { target: 'draft-2020-12' });
-z.toJSONSchema(schema, { target: 'draft-04' });
-z.toJSONSchema(schema, { target: 'openapi-3.0' });
+z.toJSONSchema(schema, { target: "draft-07" });
+z.toJSONSchema(schema, { target: "draft-2020-12" });
+z.toJSONSchema(schema, { target: "draft-04" });
+z.toJSONSchema(schema, { target: "openapi-3.0" });
 ```
 
 ### `metadata`
@@ -236,7 +236,7 @@ z.toJSONSchema(z.bigint());
 You can change this behavior by setting the `unrepresentable` option to `"any"`. This will convert any unrepresentable types to `{}` (the equivalent of `unknown` in JSON Schema).
 
 ```ts
-z.toJSONSchema(z.bigint(), { unrepresentable: 'any' });
+z.toJSONSchema(z.bigint(), { unrepresentable: "any" });
 // => {}
 ```
 
@@ -264,7 +264,7 @@ z.toJSONSchema(User);
 If instead you want to throw an error, set the `cycles` option to `"throw"`.
 
 ```ts
-z.toJSONSchema(User, { cycles: 'throw' });
+z.toJSONSchema(User, { cycles: "throw" });
 // => throws Error
 ```
 
@@ -294,7 +294,7 @@ z.toJSONSchema(User);
 Instead you can set the `reused` option to `"ref"` to extract these schemas into `$defs`.
 
 ```ts
-z.toJSONSchema(User, { reused: 'ref' });
+z.toJSONSchema(User, { reused: "ref" });
 // => {
 //   type: 'object',
 //   properties: {
@@ -320,7 +320,7 @@ const mySchema =
       ctx.jsonSchema; // the default JSON Schema
 
       // directly modify
-      ctx.jsonSchema.whatever = 'sup';
+      ctx.jsonSchema.whatever = "sup";
     },
   });
 ```
@@ -330,12 +330,12 @@ Note that unrepresentable types will throw an `Error` before this function is ca
 ```ts
 // support z.date() as ISO datetime strings
 const result = z.toJSONSchema(z.date(), {
-  unrepresentable: 'any',
+  unrepresentable: "any",
   override: (ctx) => {
     const def = ctx.zodSchema._zod.def;
-    if (def.type === 'date') {
-      ctx.jsonSchema.type = 'string';
-      ctx.jsonSchema.format = 'date-time';
+    if (def.type === "date") {
+      ctx.jsonSchema.type = "string";
+      ctx.jsonSchema.format = "date-time";
     }
   },
 });
@@ -403,7 +403,7 @@ z.int32(); // => { type: "integer", exclusiveMinimum: ..., exclusiveMaximum: ...
 By default, `z.object()` schemas contain `additionalProperties: "false"`. This is an accurate representation of Zod's default behavior, as plain `z.object()` schema strip additional properties.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.object({
   name: z.string(),
@@ -422,14 +422,14 @@ z.toJSONSchema(schema);
 When converting to JSON Schema in `"input"` mode, `additionalProperties` is not set. See the [`io` docs](#io) for more information.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const schema = z.object({
   name: z.string(),
   age: z.number(),
 });
 
-z.toJSONSchema(schema, { io: 'input' });
+z.toJSONSchema(schema, { io: "input" });
 // => {
 //   type: 'object',
 //   properties: { name: { type: 'string' }, age: { type: 'number' } },
@@ -457,7 +457,7 @@ Size and MIME checks are also represented:
 z.file()
   .min(1)
   .max(1024 * 1024)
-  .mime('image/png');
+  .mime("image/png");
 // => {
 //   type: "string",
 //   format: "binary",
@@ -504,7 +504,7 @@ Passing a schema into `z.toJSONSchema()` will return a _self-contained_ JSON Sch
 In other cases, you may have a set of Zod schemas you'd like to represent using multiple interlinked JSON Schemas, perhaps to write to `.json` files and serve from a web server.
 
 ```ts
-import * as z from 'zod';
+import * as z from "zod";
 
 const User = z.object({
   name: z.string(),
@@ -521,8 +521,8 @@ const Post = z.object({
   },
 });
 
-z.globalRegistry.add(User, { id: 'User' });
-z.globalRegistry.add(Post, { id: 'Post' });
+z.globalRegistry.add(User, { id: "User" });
+z.globalRegistry.add(Post, { id: "Post" });
 ```
 
 To achieve this, you can pass a [registry](/metadata#registries) into `z.toJSONSchema()`.

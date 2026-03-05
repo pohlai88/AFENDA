@@ -11,38 +11,38 @@ Defines a security scheme usable by operations. Supported: HTTP auth, API key (h
 
 **Note:** OAuth2 implicit flow is deprecated; prefer Authorization Code with PKCE.
 
-| Field             | Type   | Applies To | Description |
-|------------------|--------|------------|-------------|
-| type              | string | **REQUIRED** | `"apiKey"`, `"http"`, `"mutualTLS"`, `"oauth2"`, `"openIdConnect"`. |
-| description       | string | Any       | CommonMark allowed. |
-| name              | string | apiKey    | **REQUIRED**. Header, query, or cookie parameter name. |
-| in                | string | apiKey    | **REQUIRED**. `"query"`, `"header"`, or `"cookie"`. |
-| scheme            | string | http      | **REQUIRED**. HTTP Auth scheme name (e.g. Authorization header); case-insensitive. |
-| bearerFormat      | string | http (bearer) | Hint for bearer token format (e.g. JWT). |
-| flows             | OAuth Flows Object | oauth2 | **REQUIRED**. Flow configuration. |
-| openIdConnectUrl  | string | openIdConnect | **REQUIRED**. Well-known URL for OpenID Connect Discovery. |
-| oauth2MetadataUrl | string | oauth2   | OAuth2 authorization server metadata URL [RFC8414]; TLS required. |
-| deprecated        | boolean | Any      | Default false. |
+| Field             | Type               | Applies To    | Description                                                                        |
+| ----------------- | ------------------ | ------------- | ---------------------------------------------------------------------------------- |
+| type              | string             | **REQUIRED**  | `"apiKey"`, `"http"`, `"mutualTLS"`, `"oauth2"`, `"openIdConnect"`.                |
+| description       | string             | Any           | CommonMark allowed.                                                                |
+| name              | string             | apiKey        | **REQUIRED**. Header, query, or cookie parameter name.                             |
+| in                | string             | apiKey        | **REQUIRED**. `"query"`, `"header"`, or `"cookie"`.                                |
+| scheme            | string             | http          | **REQUIRED**. HTTP Auth scheme name (e.g. Authorization header); case-insensitive. |
+| bearerFormat      | string             | http (bearer) | Hint for bearer token format (e.g. JWT).                                           |
+| flows             | OAuth Flows Object | oauth2        | **REQUIRED**. Flow configuration.                                                  |
+| openIdConnectUrl  | string             | openIdConnect | **REQUIRED**. Well-known URL for OpenID Connect Discovery.                         |
+| oauth2MetadataUrl | string             | oauth2        | OAuth2 authorization server metadata URL [RFC8414]; TLS required.                  |
+| deprecated        | boolean            | Any           | Default false.                                                                     |
 
 ## OAuth Flows Object
 
-| Field               | Type   | Description |
-|---------------------|--------|-------------|
-| implicit            | OAuth Flow Object | Implicit flow. |
-| password            | OAuth Flow Object | Resource Owner Password. |
+| Field               | Type              | Description                                    |
+| ------------------- | ----------------- | ---------------------------------------------- |
+| implicit            | OAuth Flow Object | Implicit flow.                                 |
+| password            | OAuth Flow Object | Resource Owner Password.                       |
 | clientCredentials   | OAuth Flow Object | Client Credentials (was `application` in 2.0). |
-| authorizationCode  | OAuth Flow Object | Authorization Code (was `accessCode` in 2.0). |
-| deviceAuthorization | OAuth Flow Object | Device Authorization flow. |
+| authorizationCode   | OAuth Flow Object | Authorization Code (was `accessCode` in 2.0).  |
+| deviceAuthorization | OAuth Flow Object | Device Authorization flow.                     |
 
 ## OAuth Flow Object
 
-| Field                 | Type   | Applies To | Description |
-|-----------------------|--------|------------|-------------|
-| authorizationUrl      | string | implicit, authorizationCode | **REQUIRED**. MUST be URL; TLS. |
-| deviceAuthorizationUrl | string | deviceAuthorization | **REQUIRED**. MUST be URL; TLS. |
-| tokenUrl              | string | password, clientCredentials, authorizationCode, deviceAuthorization | **REQUIRED**. MUST be URL; TLS. |
-| refreshUrl            | string | oauth2    | URL for refresh tokens. |
-| scopes                | Map[string, string] | oauth2 | **REQUIRED**. Scope name → short description; MAY be empty. |
+| Field                  | Type                | Applies To                                                          | Description                                                 |
+| ---------------------- | ------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
+| authorizationUrl       | string              | implicit, authorizationCode                                         | **REQUIRED**. MUST be URL; TLS.                             |
+| deviceAuthorizationUrl | string              | deviceAuthorization                                                 | **REQUIRED**. MUST be URL; TLS.                             |
+| tokenUrl               | string              | password, clientCredentials, authorizationCode, deviceAuthorization | **REQUIRED**. MUST be URL; TLS.                             |
+| refreshUrl             | string              | oauth2                                                              | URL for refresh tokens.                                     |
+| scopes                 | Map[string, string] | oauth2                                                              | **REQUIRED**. Scope name → short description; MAY be empty. |
 
 ## Security Requirement Object
 

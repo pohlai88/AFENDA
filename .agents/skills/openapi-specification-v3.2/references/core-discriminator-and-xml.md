@@ -11,11 +11,11 @@ Legal only with composite keywords: `oneOf`, `anyOf`, `allOf`. With `oneOf`/`any
 
 ## Fixed fields
 
-| Field         | Type   | Description |
-|--------------|--------|-------------|
-| propertyName | string | **REQUIRED**. Name of property in payload holding the discriminating value. |
-| mapping      | Map[string, string] | Payload value → schema name or URI. |
-| defaultMapping | string | Schema name or URI when property is absent or value has no explicit/implicit mapping. **REQUIRED** if discriminating property is optional. |
+| Field          | Type                | Description                                                                                                                                |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| propertyName   | string              | **REQUIRED**. Name of property in payload holding the discriminating value.                                                                |
+| mapping        | Map[string, string] | Payload value → schema name or URI.                                                                                                        |
+| defaultMapping | string              | Schema name or URI when property is absent or value has no explicit/implicit mapping. **REQUIRED** if discriminating property is optional. |
 
 Value of `propertyName` maps to schema name in Components unless `mapping` overrides. Mapping keys are strings; tooling MAY convert response values to string for comparison (implementation-defined). For ambiguous value like `"foo"` as URI, prefix with `"."` (e.g. `"./foo"`).
 
@@ -24,9 +24,9 @@ Value of `propertyName` maps to schema name in Components unless `mapping` overr
 ```yaml
 MyResponseType:
   oneOf:
-    - $ref: '#/components/schemas/Cat'
-    - $ref: '#/components/schemas/Dog'
-    - $ref: '#/components/schemas/Lizard'
+    - $ref: "#/components/schemas/Cat"
+    - $ref: "#/components/schemas/Dog"
+    - $ref: "#/components/schemas/Lizard"
   discriminator:
     propertyName: petType
 ```
@@ -39,7 +39,7 @@ Payload `{"id": 1, "petType": "Cat"}` hints Cat schema.
 discriminator:
   propertyName: petType
   mapping:
-    dog: '#/components/schemas/Dog'
+    dog: "#/components/schemas/Dog"
     monster: https://example.com/schemas/Monster.json
   defaultMapping: OtherPet
 ```
@@ -50,14 +50,14 @@ Metadata for XML representation of a Schema. Used inside Schema Object.
 
 ## Fixed fields
 
-| Field     | Type   | Description |
-|----------|--------|-------------|
-| nodeType | string | `element`, `attribute`, `text`, `cdata`, or `none`. Default: `none` if `$ref`/`$dynamicRef`/`type: "array"` in same schema; else `element`. |
-| name     | string | Element/attribute name; overrides inferred name. Ignored if nodeType is text, cdata, or none. |
-| namespace | string | IRI for namespace (non-relative). |
-| prefix   | string | Prefix for name. |
-| attribute | boolean | (Deprecated.) Use `nodeType: "attribute"`. |
-| wrapped  | boolean | (Deprecated.) For array: wrapped vs unwrapped. Use `nodeType: "element"`. |
+| Field     | Type    | Description                                                                                                                                 |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| nodeType  | string  | `element`, `attribute`, `text`, `cdata`, or `none`. Default: `none` if `$ref`/`$dynamicRef`/`type: "array"` in same schema; else `element`. |
+| name      | string  | Element/attribute name; overrides inferred name. Ignored if nodeType is text, cdata, or none.                                               |
+| namespace | string  | IRI for namespace (non-relative).                                                                                                           |
+| prefix    | string  | Prefix for name.                                                                                                                            |
+| attribute | boolean | (Deprecated.) Use `nodeType: "attribute"`.                                                                                                  |
+| wrapped   | boolean | (Deprecated.) For array: wrapped vs unwrapped. Use `nodeType: "element"`.                                                                   |
 
 Inferred names: component name for root schemas; property name for properties/array items; otherwise no inference — `name` MUST be set. For arrays, default nodeType `none` (unwrapped); set `nodeType: "element"` for wrapped list.
 

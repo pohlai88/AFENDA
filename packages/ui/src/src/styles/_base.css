@@ -44,8 +44,8 @@
        "liga" 0: standard ligatures off (fi, fl, etc.)
        "calt" 0: contextual alternates off (prevents glyph reflow in grid columns) */
     font-feature-settings:
-      'liga' 0,
-      'calt' 0;
+      "liga" 0,
+      "calt" 0;
   }
 
   /* ── Focus physics ── INSIDE outline (-2px offset) prevents grid cells from
@@ -121,7 +121,7 @@
   /* ── Skip-to-content anchor ──
      Bloomberg-grade keyboard navigation: invisible until focused,
      appears as a prominent link for keyboard-only users (WCAG 2.4.1). */
-  a[href='#main-content'] {
+  a[href="#main-content"] {
     position: absolute;
     left: -9999px;
     top: auto;
@@ -133,7 +133,7 @@
     font-weight: 600;
     text-decoration: none;
   }
-  a[href='#main-content']:focus {
+  a[href="#main-content"]:focus {
     left: 1rem;
     top: 1rem;
   }

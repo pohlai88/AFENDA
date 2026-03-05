@@ -1,57 +1,57 @@
 #!/usr/bin/env node
 
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
+import { spawnSync } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import {
   normalizeSkillName,
   uniqueStrings,
-} from '../hooks/clawsec-advisory-guardian/lib/utils.mjs';
-import { versionMatches } from '../hooks/clawsec-advisory-guardian/lib/version.mjs';
+} from "../hooks/clawsec-advisory-guardian/lib/utils.mjs";
+import { versionMatches } from "../hooks/clawsec-advisory-guardian/lib/version.mjs";
 import {
   defaultChecksumsUrl,
   parseAffectedSpecifier,
   loadLocalFeed,
   loadRemoteFeed,
-} from '../hooks/clawsec-advisory-guardian/lib/feed.mjs';
+} from "../hooks/clawsec-advisory-guardian/lib/feed.mjs";
 
-const DEFAULT_FEED_URL = 'https://clawsec.prompt.security/advisories/feed.json';
-const DEFAULT_SUITE_DIR = path.join(os.homedir(), '.openclaw', 'skills', 'clawsec-suite');
-const DEFAULT_LOCAL_FEED = path.join(DEFAULT_SUITE_DIR, 'advisories', 'feed.json');
+const DEFAULT_FEED_URL = "https://clawsec.prompt.security/advisories/feed.json";
+const DEFAULT_SUITE_DIR = path.join(os.homedir(), ".openclaw", "skills", "clawsec-suite");
+const DEFAULT_LOCAL_FEED = path.join(DEFAULT_SUITE_DIR, "advisories", "feed.json");
 const DEFAULT_LOCAL_FEED_SIG = `${DEFAULT_LOCAL_FEED}.sig`;
-const DEFAULT_LOCAL_FEED_CHECKSUMS = path.join(DEFAULT_SUITE_DIR, 'advisories', 'checksums.json');
+const DEFAULT_LOCAL_FEED_CHECKSUMS = path.join(DEFAULT_SUITE_DIR, "advisories", "checksums.json");
 const DEFAULT_LOCAL_FEED_CHECKSUMS_SIG = `${DEFAULT_LOCAL_FEED_CHECKSUMS}.sig`;
 const DEFAULT_FEED_PUBLIC_KEY = path.join(
   DEFAULT_SUITE_DIR,
-  'advisories',
-  'feed-signing-public.pem'
+  "advisories",
+  "feed-signing-public.pem",
 );
 const EXIT_CONFIRM_REQUIRED = 42;
 
 function printUsage() {
   process.stderr.write(
     [
-      'Usage:',
-      '  node scripts/guarded_skill_install.mjs --skill <skill-name> [--version <version>] [--confirm-advisory] [--dry-run]',
-      '',
-      'Examples:',
-      '  node scripts/guarded_skill_install.mjs --skill helper-plus --version 1.0.1',
-      '  node scripts/guarded_skill_install.mjs --skill helper-plus --version 1.0.1 --confirm-advisory',
-      '',
-      'Exit codes:',
-      '  0  success / no advisory block',
-      '  42 advisory matched and second confirmation is required',
-      '  1  error',
-      '',
-    ].join('\n')
+      "Usage:",
+      "  node scripts/guarded_skill_install.mjs --skill <skill-name> [--version <version>] [--confirm-advisory] [--dry-run]",
+      "",
+      "Examples:",
+      "  node scripts/guarded_skill_install.mjs --skill helper-plus --version 1.0.1",
+      "  node scripts/guarded_skill_install.mjs --skill helper-plus --version 1.0.1 --confirm-advisory",
+      "",
+      "Exit codes:",
+      "  0  success / no advisory block",
+      "  42 advisory matched and second confirmation is required",
+      "  1  error",
+      "",
+    ].join("\n"),
   );
 }
 
 function parseArgs(argv) {
   const parsed = {
-    skill: '',
-    version: '',
+    skill: "",
+    version: "",
     confirmAdvisory: false,
     dryRun: false,
   };
@@ -59,25 +59,25 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
 
-    if (token === '--skill') {
-      parsed.skill = String(argv[i + 1] ?? '').trim();
+    if (token === "--skill") {
+      parsed.skill = String(argv[i + 1] ?? "").trim();
       i += 1;
       continue;
     }
-    if (token === '--version') {
-      parsed.version = String(argv[i + 1] ?? '').trim();
+    if (token === "--version") {
+      parsed.version = String(argv[i + 1] ?? "").trim();
       i += 1;
       continue;
     }
-    if (token === '--confirm-advisory') {
+    if (token === "--confirm-advisory") {
       parsed.confirmAdvisory = true;
       continue;
     }
-    if (token === '--dry-run') {
+    if (token === "--dry-run") {
       parsed.dryRun = true;
       continue;
     }
-    if (token === '--help' || token === '-h') {
+    if (token === "--help" || token === "-h") {
       printUsage();
       process.exit(0);
     }
@@ -86,10 +86,10 @@ function parseArgs(argv) {
   }
 
   if (!parsed.skill) {
-    throw new Error('Missing required argument: --skill');
+    throw new Error("Missing required argument: --skill");
   }
   if (!/^[a-z0-9-]+$/.test(parsed.skill)) {
-    throw new Error('Invalid --skill value. Use lowercase letters, digits, and hyphens only.');
+    throw new Error("Invalid --skill value. Use lowercase letters, digits, and hyphens only.");
   }
 
   return parsed;
@@ -109,19 +109,19 @@ function affectedSpecifierMatchesWithoutVersion(specifier, skillName) {
 }
 
 function advisoryLooksHighRisk(advisory) {
-  const type = String(advisory.type ?? '').toLowerCase();
-  const severity = String(advisory.severity ?? '').toLowerCase();
+  const type = String(advisory.type ?? "").toLowerCase();
+  const severity = String(advisory.severity ?? "").toLowerCase();
   const combined =
-    `${advisory.title ?? ''} ${advisory.description ?? ''} ${advisory.action ?? ''}`.toLowerCase();
-  if (type === 'malicious_skill' || type === 'malicious_plugin') return true;
+    `${advisory.title ?? ""} ${advisory.description ?? ""} ${advisory.action ?? ""}`.toLowerCase();
+  if (type === "malicious_skill" || type === "malicious_plugin") return true;
   if (
     /\b(malicious|exfiltrate|exfiltration|backdoor|trojan|stealer|credential theft)\b/.test(
-      combined
+      combined,
     )
   )
     return true;
   if (/\b(remove|uninstall|disable|do not use|quarantine)\b/.test(combined)) return true;
-  if (severity === 'critical') return true;
+  if (severity === "critical") return true;
   return false;
 }
 
@@ -138,16 +138,16 @@ async function loadFeed() {
   const localFeedChecksumsSigPath =
     process.env.CLAWSEC_LOCAL_FEED_CHECKSUMS_SIG || DEFAULT_LOCAL_FEED_CHECKSUMS_SIG;
   const feedPublicKeyPath = process.env.CLAWSEC_FEED_PUBLIC_KEY || DEFAULT_FEED_PUBLIC_KEY;
-  const allowUnsigned = process.env.CLAWSEC_ALLOW_UNSIGNED_FEED === '1';
-  const verifyChecksumManifest = process.env.CLAWSEC_VERIFY_CHECKSUM_MANIFEST !== '0';
+  const allowUnsigned = process.env.CLAWSEC_ALLOW_UNSIGNED_FEED === "1";
+  const verifyChecksumManifest = process.env.CLAWSEC_VERIFY_CHECKSUM_MANIFEST !== "0";
 
   if (allowUnsigned) {
     process.stderr.write(
-      'WARNING: CLAWSEC_ALLOW_UNSIGNED_FEED=1 is enabled. This temporary migration compatibility bypass should be removed once signed feed artifacts are available.\n'
+      "WARNING: CLAWSEC_ALLOW_UNSIGNED_FEED=1 is enabled. This temporary migration compatibility bypass should be removed once signed feed artifacts are available.\n",
     );
   }
 
-  const publicKeyPem = allowUnsigned ? '' : await fs.readFile(feedPublicKeyPath, 'utf8');
+  const publicKeyPem = allowUnsigned ? "" : await fs.readFile(feedPublicKeyPath, "utf8");
 
   const remoteFeed = await loadRemoteFeed(feedUrl, {
     signatureUrl: feedSignatureUrl,
@@ -185,8 +185,8 @@ function findMatches(feed, skillName, version) {
       affected.filter((specifier) =>
         version
           ? affectedSpecifierMatches(specifier, skillName, version)
-          : affectedSpecifierMatchesWithoutVersion(specifier, skillName)
-      )
+          : affectedSpecifierMatchesWithoutVersion(specifier, skillName),
+      ),
     );
 
     if (matchedAffected.length > 0) {
@@ -198,16 +198,16 @@ function findMatches(feed, skillName, version) {
 }
 
 function printMatches(matches, skillName, version) {
-  process.stdout.write('Advisory matches detected for requested install target.\n');
-  process.stdout.write(`Target: ${skillName}${version ? `@${version}` : ''}\n`);
+  process.stdout.write("Advisory matches detected for requested install target.\n");
+  process.stdout.write(`Target: ${skillName}${version ? `@${version}` : ""}\n`);
 
   for (const entry of matches) {
     const advisory = entry.advisory;
-    const severity = String(advisory.severity ?? 'unknown').toUpperCase();
-    const advisoryId = advisory.id ?? 'unknown-id';
-    const title = advisory.title ?? 'Untitled advisory';
+    const severity = String(advisory.severity ?? "unknown").toUpperCase();
+    const advisoryId = advisory.id ?? "unknown-id";
+    const title = advisory.title ?? "Untitled advisory";
     process.stdout.write(`- [${severity}] ${advisoryId}: ${title}\n`);
-    process.stdout.write(`  matched: ${entry.matchedAffected.join(', ')}\n`);
+    process.stdout.write(`  matched: ${entry.matchedAffected.join(", ")}\n`);
     if (advisory.action) {
       process.stdout.write(`  action: ${advisory.action}\n`);
     }
@@ -218,8 +218,8 @@ function runInstall(skillName, version) {
   const target = version ? `${skillName}@${version}` : skillName;
   process.stdout.write(`Install target: ${target}\n`);
 
-  const result = spawnSync('npx', ['clawhub@latest', 'install', target], {
-    stdio: 'inherit',
+  const result = spawnSync("npx", ["clawhub@latest", "install", target], {
+    stdio: "inherit",
   });
 
   if (result.error) {
@@ -240,34 +240,34 @@ async function main() {
 
   if (!args.version) {
     process.stdout.write(
-      'No --version provided. Conservatively matching any advisory for the requested skill name.\n'
+      "No --version provided. Conservatively matching any advisory for the requested skill name.\n",
     );
   }
 
   if (matches.length > 0) {
     printMatches(matches, args.skill, args.version);
 
-    process.stdout.write('\n');
-    process.stdout.write('Install request recognized as first confirmation.\n');
-    process.stdout.write('Additional explicit confirmation is required with advisory context.\n');
+    process.stdout.write("\n");
+    process.stdout.write("Install request recognized as first confirmation.\n");
+    process.stdout.write("Additional explicit confirmation is required with advisory context.\n");
 
     if (!args.confirmAdvisory) {
       process.stdout.write(
-        'Re-run with --confirm-advisory to proceed after the user explicitly confirms.\n'
+        "Re-run with --confirm-advisory to proceed after the user explicitly confirms.\n",
       );
       process.exit(EXIT_CONFIRM_REQUIRED);
     }
-    process.stdout.write('Second confirmation provided via --confirm-advisory.\n');
+    process.stdout.write("Second confirmation provided via --confirm-advisory.\n");
   }
 
   if (args.dryRun) {
-    process.stdout.write('Dry run only; install command was not executed.\n');
+    process.stdout.write("Dry run only; install command was not executed.\n");
     return;
   }
 
   if (highRisk) {
     process.stdout.write(
-      'High-risk advisory context acknowledged. Proceeding only because --confirm-advisory was provided.\n'
+      "High-risk advisory context acknowledged. Proceeding only because --confirm-advisory was provided.\n",
     );
   }
 

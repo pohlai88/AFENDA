@@ -17,34 +17,34 @@ Maps relative path strings to Path Item objects. Path is **appended** to the res
 
 Describes operations on a single path. MAY be empty (ACL). Path-level `$ref` allowed; referenced structure MUST be a Path Item Object.
 
-| Field                | Type   | Description |
-|----------------------|--------|-------------|
-| $ref                 | string | URI to Path Item Object; conflicts with local fields. |
-| summary, description | string | Apply to all operations on this path. |
-| get, put, post, delete, options, head, patch, trace | Operation Object | One per HTTP method. |
-| query                 | Operation Object | QUERY method (IETF safe-method-w-body). |
-| additionalOperations  | Map[string, Operation Object] | Additional methods; key = HTTP method. |
-| servers               | [Server Object] | Overrides OpenAPI-level servers for this path. |
-| parameters            | [Parameter \| Reference] | Apply to all operations; overridable at operation, not removable; no duplicate name+in. |
+| Field                                               | Type                          | Description                                                                             |
+| --------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------- |
+| $ref                                                | string                        | URI to Path Item Object; conflicts with local fields.                                   |
+| summary, description                                | string                        | Apply to all operations on this path.                                                   |
+| get, put, post, delete, options, head, patch, trace | Operation Object              | One per HTTP method.                                                                    |
+| query                                               | Operation Object              | QUERY method (IETF safe-method-w-body).                                                 |
+| additionalOperations                                | Map[string, Operation Object] | Additional methods; key = HTTP method.                                                  |
+| servers                                             | [Server Object]               | Overrides OpenAPI-level servers for this path.                                          |
+| parameters                                          | [Parameter \| Reference]      | Apply to all operations; overridable at operation, not removable; no duplicate name+in. |
 
 ## Operation Object
 
 Describes one API operation.
 
-| Field         | Type   | Description |
-|---------------|--------|-------------|
-| tags          | [string] | Tags for grouping. |
-| summary       | string | Short summary. |
-| description   | string | Verbose behavior; CommonMark allowed. |
-| externalDocs  | External Documentation Object | Extra docs. |
-| operationId   | string | Unique ID; case-sensitive; RECOMMENDED for codegen. |
-| parameters    | [Parameter \| Reference] | Overrides path params; no duplicate name+in. |
-| requestBody   | Request Body \| Reference | Request body; semantics well-defined where HTTP defines them (e.g. POST); avoid for GET/DELETE. |
-| responses     | Responses Object | **REQUIRED**. Possible responses. |
-| callbacks     | Map[string, Callback \| Reference] | Out-of-band callbacks. |
-| deprecated    | boolean | Default false. |
-| security      | [Security Requirement Object] | Overrides root; [] removes. |
-| servers       | [Server Object] | Overrides path/root servers. |
+| Field        | Type                               | Description                                                                                     |
+| ------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| tags         | [string]                           | Tags for grouping.                                                                              |
+| summary      | string                             | Short summary.                                                                                  |
+| description  | string                             | Verbose behavior; CommonMark allowed.                                                           |
+| externalDocs | External Documentation Object      | Extra docs.                                                                                     |
+| operationId  | string                             | Unique ID; case-sensitive; RECOMMENDED for codegen.                                             |
+| parameters   | [Parameter \| Reference]           | Overrides path params; no duplicate name+in.                                                    |
+| requestBody  | Request Body \| Reference          | Request body; semantics well-defined where HTTP defines them (e.g. POST); avoid for GET/DELETE. |
+| responses    | Responses Object                   | **REQUIRED**. Possible responses.                                                               |
+| callbacks    | Map[string, Callback \| Reference] | Out-of-band callbacks.                                                                          |
+| deprecated   | boolean                            | Default false.                                                                                  |
+| security     | [Security Requirement Object]      | Overrides root; [] removes.                                                                     |
+| servers      | [Server Object]                    | Overrides path/root servers.                                                                    |
 
 ## Example
 
@@ -62,7 +62,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Pet'
+                  $ref: "#/components/schemas/Pet"
     parameters:
       - name: id
         in: path

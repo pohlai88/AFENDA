@@ -23,11 +23,7 @@ export { OrganizationSchema, type Organization } from "./party.entity.js";
  * @deprecated Use PartyKindValues from party.entity.ts instead.
  * Tenant type values kept for backward compatibility.
  */
-export const TenantTypeValues = [
-  "organization",
-  "personal",
-  "external",
-] as const;
+export const TenantTypeValues = ["organization", "personal", "external"] as const;
 
 /** @deprecated Use PartyKindSchema from party.entity.ts */
 export const TenantTypeSchema = z.enum(TenantTypeValues);
@@ -49,7 +45,6 @@ export const TenantSlugSchema = z
 /** @deprecated */
 export type TenantSlug = z.infer<typeof TenantSlugSchema>;
 
-
 // ─── Deprecated entity schema (alias for Organization) ────────────────────────
 
 /**
@@ -57,13 +52,13 @@ export type TenantSlug = z.infer<typeof TenantSlugSchema>;
  * Kept for backward compatibility during ADR-0003 migration.
  */
 export const TenantSchema = z.object({
-  id:                     OrgIdSchema,
-  slug:                   TenantSlugSchema,
-  name:                   z.string().trim().min(1).max(255),
-  type:                   TenantTypeSchema,
+  id: OrgIdSchema,
+  slug: TenantSlugSchema,
+  name: z.string().trim().min(1).max(255),
+  type: TenantTypeSchema,
   functionalCurrencyCode: CurrencyCodeSchema,
-  createdAt:              UtcDateTimeSchema,
-  updatedAt:              UtcDateTimeSchema.optional(), // Now optional since Organization doesn't have updatedAt
+  createdAt: UtcDateTimeSchema,
+  updatedAt: UtcDateTimeSchema.optional(), // Now optional since Organization doesn't have updatedAt
 });
 
 /** @deprecated Use Organization from party.entity.ts */
@@ -75,12 +70,11 @@ export type Tenant = z.infer<typeof TenantSchema>;
  * @deprecated Use Organization creation through the new party model.
  */
 export const CreateTenantSchema = z.object({
-  slug:                   TenantSlugSchema,
-  name:                   z.string().trim().min(1).max(255),
-  type:                   TenantTypeSchema,
+  slug: TenantSlugSchema,
+  name: z.string().trim().min(1).max(255),
+  type: TenantTypeSchema,
   functionalCurrencyCode: CurrencyCodeSchema,
 });
 
 /** @deprecated */
 export type CreateTenant = z.infer<typeof CreateTenantSchema>;
-

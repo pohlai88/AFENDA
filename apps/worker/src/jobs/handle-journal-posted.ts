@@ -25,10 +25,10 @@ export const handleJournalPosted: Task = async (payload, helpers) => {
 
   helpers.logger.info(
     `journal posted: entryId=${event.payload.journalEntryId} ` +
-    `number=${event.payload.entryNumber} ` +
-    `lines=${event.payload.lineCount} ` +
-    `sourceInvoice=${event.payload.sourceInvoiceId ?? "none"} ` +
-    `correlationId=${event.correlationId}`,
+      `number=${event.payload.entryNumber} ` +
+      `lines=${event.payload.lineCount} ` +
+      `sourceInvoice=${event.payload.sourceInvoiceId ?? "none"} ` +
+      `correlationId=${event.correlationId}`,
   );
 
   // ── Transition source invoice approved → posted ─────────────────────────
@@ -56,12 +56,12 @@ export const handleJournalPosted: Task = async (payload, helpers) => {
 
         helpers.logger.info(
           `invoice ${event.payload.sourceInvoiceId} transitioned approved → posted ` +
-          `(journal ${event.payload.entryNumber})`,
+            `(journal ${event.payload.entryNumber})`,
         );
       } else {
         helpers.logger.warn(
           `invoice ${event.payload.sourceInvoiceId} not transitioned — ` +
-          `current status is not 'approved' (may have already been processed)`,
+            `current status is not 'approved' (may have already been processed)`,
         );
       }
     });

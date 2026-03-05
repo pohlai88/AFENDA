@@ -3,36 +3,36 @@
 ## Purpose
 
 Drizzle ORM schema definitions (PostgreSQL table/column DDL) and database
-utilities.  This package owns **all table definitions** and the migration
+utilities. This package owns **all table definitions** and the migration
 pipeline.
 
-This package is **DDL-only**.  It defines tables, enums, and
-migration/seed plumbing.  Query logic, repositories, and domain rules live
+This package is **DDL-only**. It defines tables, enums, and
+migration/seed plumbing. Query logic, repositories, and domain rules live
 elsewhere (`@afenda/core` or domain-specific packages).
 
 ### What counts as "database utilities"
 
-| ✅ Allowed | ❌ Not here |
-|---|---|
-| `DbClient` type + connection factory + pool config | Domain repositories / query composition helpers |
-| Migration runner (`migrate.ts`) | Business-rule queries (SoD, balance checks) |
-| Seed helpers (`seed.ts`) | Rich query builders (→ `@afenda/core` or a future `@afenda/dbx`) |
-| `withTx(db, fn)` style transaction wrapper (infra only) | HTTP/route-aware utilities |
+| ✅ Allowed                                              | ❌ Not here                                                      |
+| ------------------------------------------------------- | ---------------------------------------------------------------- |
+| `DbClient` type + connection factory + pool config      | Domain repositories / query composition helpers                  |
+| Migration runner (`migrate.ts`)                         | Business-rule queries (SoD, balance checks)                      |
+| Seed helpers (`seed.ts`)                                | Rich query builders (→ `@afenda/core` or a future `@afenda/dbx`) |
+| `withTx(db, fn)` style transaction wrapper (infra only) | HTTP/route-aware utilities                                       |
 
 ---
 
 ## Import Rules
 
-| May import          | Must NOT import        |
-|---------------------|------------------------|
-| `drizzle-orm`       | `zod`                  |
-| `drizzle-kit`       | `@afenda/core`         |
-| `pg`                | `@afenda/ui`           |
-| `dotenv`            |                        |
-| `@afenda/contracts` (`*Values` const tuples only) | |
-| Node.js builtins    |                        |
+| May import                                        | Must NOT import |
+| ------------------------------------------------- | --------------- |
+| `drizzle-orm`                                     | `zod`           |
+| `drizzle-kit`                                     | `@afenda/core`  |
+| `pg`                                              | `@afenda/ui`    |
+| `dotenv`                                          |                 |
+| `@afenda/contracts` (`*Values` const tuples only) |                 |
+| Node.js builtins                                  |                 |
 
-> **Constrained import:** `@afenda/contracts` is allowed *only* for `*Values`
+> **Constrained import:** `@afenda/contracts` is allowed _only_ for `*Values`
 > const tuples (e.g. `InvoiceStatusValues`) to feed `pgEnum()`. These are
 > plain `as const` string arrays with zero Zod runtime. Never import Zod
 > schemas, entity types, or command types from contracts into this package.
@@ -78,44 +78,44 @@ elsewhere (`@afenda/core` or domain-specific packages).
 
 Schema files must be **deterministic and side-effect free**.
 
-| ✅ Allowed | ❌ Forbidden |
-|---|---|
-| `pgTable(…)`, `pgEnum(…)`, column helpers | `process.env` / `process.argv` usage |
-| `sql\`now()\`` for timestamp defaults | `new Date()` for column defaults |
-| `const tsz = (name: string) => timestamp(…)` helper | `if (NODE_ENV === …)` conditional DDL |
-| Importing `*Values` from contracts | Any runtime I/O (`fs`, `fetch`, `http`) |
-| Importing from other local `schema/*.ts` files | Importing from `@afenda/core` or `@afenda/ui` |
+| ✅ Allowed                                          | ❌ Forbidden                                  |
+| --------------------------------------------------- | --------------------------------------------- |
+| `pgTable(…)`, `pgEnum(…)`, column helpers           | `process.env` / `process.argv` usage          |
+| `sql\`now()\`` for timestamp defaults               | `new Date()` for column defaults              |
+| `const tsz = (name: string) => timestamp(…)` helper | `if (NODE_ENV === …)` conditional DDL         |
+| Importing `*Values` from contracts                  | Any runtime I/O (`fs`, `fetch`, `http`)       |
+| Importing from other local `schema/*.ts` files      | Importing from `@afenda/core` or `@afenda/ui` |
 
-Rationale: Drizzle-kit reads schema files at generation time.  Side effects
+Rationale: Drizzle-kit reads schema files at generation time. Side effects
 or environment-dependent DDL produce non-reproducible migrations.
 
 ---
 
 ## Subdirectory Layout
 
-| File / Dir    | Contents                                          |
-|--------------|---------------------------------------------------|
-| `schema/iam.ts`      | organization, iamPrincipal, iamRole, iamPermission, iamPrincipalRole, iamRolePermission, iamPartyRole |
-| `schema/supplier.ts` | supplier                                          |
-| `schema/document.ts` | document, evidence, evidenceOperation             |
-| `schema/finance.ts`  | account, invoice, invoiceStatusHistory, journalEntry, journalLine |
-| `schema/infra.ts`    | outboxEvent, idempotency, auditLog, sequence, deadLetterJob |
-| `schema/relations.ts`| Drizzle `relations()` for `db.query.*` relational API |
-| `schema/index.ts`    | Barrel re-exports only — `export *` lines, no logic |
-| `seed.ts`            | Dev seeding (demo organization, admin, CoA, sequences) |
-| `drizzle.config.ts`  | drizzle-kit config pointing to schema barrel      |
+| File / Dir            | Contents                                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `schema/iam.ts`       | organization, iamPrincipal, iamRole, iamPermission, iamPrincipalRole, iamRolePermission, iamPartyRole |
+| `schema/supplier.ts`  | supplier                                                                                              |
+| `schema/document.ts`  | document, evidence, evidenceOperation                                                                 |
+| `schema/finance.ts`   | account, invoice, invoiceStatusHistory, journalEntry, journalLine                                     |
+| `schema/infra.ts`     | outboxEvent, idempotency, auditLog, sequence, deadLetterJob                                           |
+| `schema/relations.ts` | Drizzle `relations()` for `db.query.*` relational API                                                 |
+| `schema/index.ts`     | Barrel re-exports only — `export *` lines, no logic                                                   |
+| `seed.ts`             | Dev seeding (demo organization, admin, CoA, sequences)                                                |
+| `drizzle.config.ts`   | drizzle-kit config pointing to schema barrel                                                          |
 
 ### `schema/infra.ts` scope
 
 Only cross-cutting infrastructure tables belong here:
 
-| ✅ Belongs | ❌ Never here |
-|---|---|
-| outboxEvent | settings / preferences |
-| idempotency | feature flags |
-| auditLog    | user profiles (→ `iam.ts`) |
-| sequence    | notification templates |
-| deadLetterJob | domain entities |
+| ✅ Belongs    | ❌ Never here              |
+| ------------- | -------------------------- |
+| outboxEvent   | settings / preferences     |
+| idempotency   | feature flags              |
+| auditLog      | user profiles (→ `iam.ts`) |
+| sequence      | notification templates     |
+| deadLetterJob | domain entities            |
 
 ---
 
@@ -153,7 +153,7 @@ Reviewers **must** check the following before approving changes to
   - Mutable tables should have `updatedAt`
   - Append-only tables (audit_log, outbox_event) may omit `updatedAt`
 - [ ] Soft-delete policy: if applicable, document whether `deletedAt` or
-  status-based soft delete is used.  Default: hard delete unless documented.
+      status-based soft delete is used. Default: hard delete unless documented.
 
 ### Infra tables (in `schema/infra.ts`)
 
@@ -164,7 +164,7 @@ Reviewers **must** check the following before approving changes to
   - `sequence` — permanent (no cleanup)
   - `deadLetterJob` — manual review + periodic archive
 - [ ] Unique constraints for idempotency (`org_id, command, key`), sequence
-  (`org_id, entity_type, period_key`), outbox (natural key if applicable)
+      (`org_id, entity_type, period_key`), outbox (natural key if applicable)
 
 ### Migration files
 

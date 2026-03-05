@@ -216,9 +216,7 @@ function extractTableFields(content, sqlName) {
  * @returns {string[] | null}  — field names, or null if schema not found
  */
 function extractZodFields(content, schemaName) {
-  const schemaRe = new RegExp(
-    `export\\s+const\\s+${schemaName}\\s*=\\s*z\\.object\\(\\s*\\{`,
-  );
+  const schemaRe = new RegExp(`export\\s+const\\s+${schemaName}\\s*=\\s*z\\.object\\(\\s*\\{`);
   const m = content.match(schemaRe);
   if (!m) return null;
 
@@ -267,13 +265,17 @@ for (const pair of SYNC_PAIRS) {
 
   const dbFields = extractTableFields(dbContent, pair.dbTable);
   if (!dbFields) {
-    console.error(`WARNING: Could not find pgTable("${pair.dbTable}") in ${pair.dbFile} — skipping`);
+    console.error(
+      `WARNING: Could not find pgTable("${pair.dbTable}") in ${pair.dbFile} — skipping`,
+    );
     continue;
   }
 
   const contractFields = extractZodFields(contractContent, pair.contractSchema);
   if (!contractFields) {
-    console.error(`WARNING: Could not find ${pair.contractSchema} = z.object() in ${pair.contractFile} — skipping`);
+    console.error(
+      `WARNING: Could not find ${pair.contractSchema} = z.object() in ${pair.contractFile} — skipping`,
+    );
     continue;
   }
 

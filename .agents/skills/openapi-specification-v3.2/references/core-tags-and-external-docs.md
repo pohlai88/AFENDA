@@ -7,14 +7,14 @@ description: Tag Object and External Documentation Object in OpenAPI 3.2
 
 Adds metadata to a tag used by Operation Object. Not mandatory to have a Tag Object for every tag used in operations.
 
-| Field       | Type   | Description |
-|------------|--------|-------------|
-| name       | string | **REQUIRED**. Tag name; use in Operation's `tags` array. |
-| summary    | string | Short summary for display. |
-| description | string | Description; CommonMark allowed. |
-| externalDocs | External Documentation Object | Additional external documentation. |
-| parent     | string | `name` of a tag this tag is nested under; named tag MUST exist; no circular parent/child. |
-| kind       | string | Machine-readable category (e.g. `nav`, `badge`, `audience`); registry at spec.openapis.org. |
+| Field        | Type                          | Description                                                                                 |
+| ------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
+| name         | string                        | **REQUIRED**. Tag name; use in Operation's `tags` array.                                    |
+| summary      | string                        | Short summary for display.                                                                  |
+| description  | string                        | Description; CommonMark allowed.                                                            |
+| externalDocs | External Documentation Object | Additional external documentation.                                                          |
+| parent       | string                        | `name` of a tag this tag is nested under; named tag MUST exist; no circular parent/child.   |
+| kind         | string                        | Machine-readable category (e.g. `nav`, `badge`, `audience`); registry at spec.openapis.org. |
 
 ## Example
 
@@ -39,10 +39,10 @@ tags:
 
 References an external resource for extended documentation.
 
-| Field       | Type   | Description |
-|------------|--------|-------------|
-| description | string | Description of target; CommonMark allowed. |
-| url        | string | **REQUIRED**. URI for the target (MUST be URI). |
+| Field       | Type   | Description                                     |
+| ----------- | ------ | ----------------------------------------------- |
+| description | string | Description of target; CommonMark allowed.      |
+| url         | string | **REQUIRED**. URI for the target (MUST be URI). |
 
 ## Example
 

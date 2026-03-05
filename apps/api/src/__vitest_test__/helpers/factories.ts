@@ -7,7 +7,7 @@
 
 // ── Test user emails (match global-setup seed) ────────────────────────────────
 export const SUBMITTER_EMAIL = "admin@test.afenda";
-export const APPROVER_EMAIL  = "approver@test.afenda";
+export const APPROVER_EMAIL = "approver@test.afenda";
 
 // ── Org ──────────────────────────────────────────────────────────────────────
 export const TEST_ORG_SLUG = "test-org";

@@ -1,7 +1,6 @@
 ---
 name: email-and-password-best-practices
-description:
-  This skill provides guidance and enforcement rules for implementing secure
+description: This skill provides guidance and enforcement rules for implementing secure
   email and password authentication using Better Auth.
 ---
 
@@ -13,15 +12,15 @@ helps prevent fake sign-ups and ensures users have access to the email they
 registered with.
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { sendEmail } from './email'; // your email sending function
+import { betterAuth } from "better-auth";
+import { sendEmail } from "./email"; // your email sending function
 
 export const auth = betterAuth({
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }, request) => {
       await sendEmail({
         to: user.email,
-        subject: 'Verify your email address',
+        subject: "Verify your email address",
         text: `Click the link to verify your email: ${url}`,
       });
     },
@@ -67,7 +66,7 @@ which can cause issues when your backend and frontend are on different domains.
 
 ```ts
 const { data, error } = await authClient.signUp.email({
-  callbackURL: 'https://example.com/callback', // absolute URL with origin
+  callbackURL: "https://example.com/callback", // absolute URL with origin
 });
 ```
 
@@ -80,8 +79,8 @@ To allow users to reset a password first you need to provide `sendResetPassword`
 function to the email and password authenticator.
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { sendEmail } from './email'; // your email sending function
+import { betterAuth } from "better-auth";
+import { sendEmail } from "./email"; // your email sending function
 
 export const auth = betterAuth({
   emailAndPassword: {
@@ -90,7 +89,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url, token }, request) => {
       void sendEmail({
         to: user.email,
-        subject: 'Reset your password',
+        subject: "Reset your password",
         text: `Click the link to reset your password: ${url}`,
       });
     },
@@ -203,8 +202,8 @@ auth config.
 ```ts
 const data = await auth.api.requestPasswordReset({
   body: {
-    email: 'john.doe@example.com', // required
-    redirectTo: 'https://example.com/reset-password',
+    email: "john.doe@example.com", // required
+    redirectTo: "https://example.com/reset-password",
   },
 });
 ```
@@ -213,8 +212,8 @@ Or authClient:
 
 ```ts
 const { data, error } = await authClient.requestPasswordReset({
-  email: 'john.doe@example.com', // required
-  redirectTo: 'https://example.com/reset-password',
+  email: "john.doe@example.com", // required
+  redirectTo: "https://example.com/reset-password",
 });
 ```
 
@@ -237,8 +236,8 @@ To use a different algorithm (e.g., Argon2id), provide custom `hash` and
 `verify` functions in the `emailAndPassword.password` configuration:
 
 ```ts
-import { betterAuth } from 'better-auth';
-import { hash, verify, type Options } from '@node-rs/argon2';
+import { betterAuth } from "better-auth";
+import { hash, verify, type Options } from "@node-rs/argon2";
 
 const argon2Options: Options = {
   memoryCost: 65536, // 64 MiB
@@ -253,8 +252,7 @@ export const auth = betterAuth({
     enabled: true,
     password: {
       hash: (password) => hash(password, argon2Options),
-      verify: ({ password, hash: storedHash }) =>
-        verify(storedHash, password, argon2Options),
+      verify: ({ password, hash: storedHash }) => verify(storedHash, password, argon2Options),
     },
   },
 });

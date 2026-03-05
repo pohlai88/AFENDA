@@ -157,7 +157,9 @@ export async function registerDocument(
 
     // 1) Optional dedup-by-content
     if (dedupBySha256) {
-      const existing = await findBySha256(tx as unknown as DbClient, params, { strict: strictDedup });
+      const existing = await findBySha256(tx as unknown as DbClient, params, {
+        strict: strictDedup,
+      });
       if (existing) {
         await recordOperation(tx, auth.operationId, params.orgId, existing.id);
         return { id: existing.id, created: false, deduped: true, idempotentHit: false };
@@ -209,24 +211,18 @@ export async function registerDocument(
   const workspaceId = params.orgId as unknown as WorkspaceId;
   const evidenceId = result.id as unknown as EvidenceId;
 
-  const auditEvent = buildEvidenceRegisterAuditEvent(
-    decision,
-    auth.policyCtx,
-    auth.nowUtc,
-    proof,
-    {
-      evidenceId,
-      workspaceId,
-      objectKey: params.objectKey,
-      sha256: params.sha256,
-      mime: params.mime,
-      sizeBytes: params.sizeBytes,
-      created: result.created,
-      deduped: result.deduped,
-      idempotentHit: result.idempotentHit,
-      uploadedByPrincipalId: (params.uploadedByPrincipalId ?? null) as unknown as string | null,
-    },
-  );
+  const auditEvent = buildEvidenceRegisterAuditEvent(decision, auth.policyCtx, auth.nowUtc, proof, {
+    evidenceId,
+    workspaceId,
+    objectKey: params.objectKey,
+    sha256: params.sha256,
+    mime: params.mime,
+    sizeBytes: params.sizeBytes,
+    created: result.created,
+    deduped: result.deduped,
+    idempotentHit: result.idempotentHit,
+    uploadedByPrincipalId: (params.uploadedByPrincipalId ?? null) as unknown as string | null,
+  });
 
   return { result, auditEvent };
 }
@@ -241,7 +237,10 @@ export async function getDocumentIdBySha256(
   sha256: string,
 ): Promise<string | null> {
   if (!SHA256_LOWER_HEX_64.test(sha256)) {
-    throw new RegisterDocumentError("INVALID_INPUT", "sha256 must be lowercase hex SHA-256 (64 chars)");
+    throw new RegisterDocumentError(
+      "INVALID_INPUT",
+      "sha256 must be lowercase hex SHA-256 (64 chars)",
+    );
   }
 
   const rows = await db
@@ -328,32 +327,48 @@ function assertRegisterDocumentParams(p: RegisterDocumentParams): void {
     throw new RegisterDocumentError("INVALID_INPUT", "objectKey must be a non-empty string");
   }
   if (p.objectKey.startsWith("/") || p.objectKey.includes("..")) {
-    throw new RegisterDocumentError("INVALID_INPUT", "objectKey is invalid (path traversal / absolute path)");
+    throw new RegisterDocumentError(
+      "INVALID_INPUT",
+      "objectKey is invalid (path traversal / absolute path)",
+    );
   }
 
   if (!SHA256_LOWER_HEX_64.test(p.sha256)) {
-    throw new RegisterDocumentError("INVALID_INPUT", "sha256 must be lowercase hex SHA-256 (64 chars)", {
-      sha256: p.sha256,
-    });
+    throw new RegisterDocumentError(
+      "INVALID_INPUT",
+      "sha256 must be lowercase hex SHA-256 (64 chars)",
+      {
+        sha256: p.sha256,
+      },
+    );
   }
 
   if (typeof p.mime !== "string" || p.mime.trim().length === 0) {
     throw new RegisterDocumentError("INVALID_INPUT", "mime must be a non-empty string");
   }
   if (!MIME_BASIC.test(p.mime)) {
-    throw new RegisterDocumentError("INVALID_INPUT", "mime is not a valid MIME type", { mime: p.mime });
+    throw new RegisterDocumentError("INVALID_INPUT", "mime is not a valid MIME type", {
+      mime: p.mime,
+    });
   }
 
   if (!Number.isSafeInteger(p.sizeBytes) || p.sizeBytes < 0) {
-    throw new RegisterDocumentError("INVALID_INPUT", "sizeBytes must be a non-negative safe integer", {
-      sizeBytes: p.sizeBytes,
-    });
+    throw new RegisterDocumentError(
+      "INVALID_INPUT",
+      "sizeBytes must be a non-negative safe integer",
+      {
+        sizeBytes: p.sizeBytes,
+      },
+    );
   }
 }
 
 function assertUtcZ(utcIso: string): void {
   if (typeof utcIso !== "string" || !utcIso.endsWith("Z")) {
-    throw new RegisterDocumentError("INVALID_INPUT", `nowUtc must be UTC ISO ending in 'Z': ${utcIso}`);
+    throw new RegisterDocumentError(
+      "INVALID_INPUT",
+      `nowUtc must be UTC ISO ending in 'Z': ${utcIso}`,
+    );
   }
   const ms = Date.parse(utcIso);
   if (!Number.isFinite(ms)) {

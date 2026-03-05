@@ -57,7 +57,7 @@ Use `next/link` for internal navigation instead of `<a>` tags.
 <a href="/about">About</a>;
 
 // Good: Next.js Link
-import Link from 'next/link';
+import Link from "next/link";
 
 <Link href="/about">About</Link>;
 ```
@@ -65,16 +65,16 @@ import Link from 'next/link';
 Active link styling:
 
 ```tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function NavLink({ href, children }) {
   const pathname = usePathname();
 
   return (
-    <Link href={href} className={pathname === href ? 'active' : ''}>
+    <Link href={href} className={pathname === href ? "active" : ""}>
       {children}
     </Link>
   );
@@ -94,7 +94,7 @@ export async function generateStaticParams() {
 ### After Response
 
 ```tsx
-import { after } from 'next/server';
+import { after } from "next/server";
 
 export async function POST(request: Request) {
   const data = await processRequest(request);

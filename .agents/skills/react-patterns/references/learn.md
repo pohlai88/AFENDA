@@ -42,7 +42,7 @@ export default MyComponent;
 
 ```jsx
 // App.js
-import MyComponent from './MyComponent';
+import MyComponent from "./MyComponent";
 
 function App() {
   return (
@@ -57,6 +57,7 @@ function App() {
 #### JSX Rules
 
 1. **Single Parent Element**: Components must return one parent element
+
    ```jsx
    // Use fragments to avoid extra divs
    return (
@@ -68,6 +69,7 @@ function App() {
    ```
 
 2. **Close All Tags**: All tags must be closed
+
    ```jsx
    <img src="image.jpg" alt="description" />
    <br />
@@ -96,13 +98,13 @@ function Greeting({ name, age }) {
 }
 
 // Usage
-<Greeting name="Alice" age={30} />
+<Greeting name="Alice" age={30} />;
 ```
 
 ### State - Managing Component Data
 
 ```jsx
-import { useState } from 'react';
+import { useState } from "react";
 
 function Counter() {
   const [count, setCount] = useState(0);
@@ -110,9 +112,7 @@ function Counter() {
   return (
     <div>
       <p>Count: {count}</p>
-      <button onClick={() => setCount(count + 1)}>
-        Increment
-      </button>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
     </div>
   );
 }
@@ -123,18 +123,15 @@ function Counter() {
 ```jsx
 function Button() {
   const handleClick = () => {
-    alert('Button clicked!');
+    alert("Button clicked!");
   };
 
   const handleMouseOver = () => {
-    console.log('Mouse is over button');
+    console.log("Mouse is over button");
   };
 
   return (
-    <button
-      onClick={handleClick}
-      onMouseOver={handleMouseOver}
-    >
+    <button onClick={handleClick} onMouseOver={handleMouseOver}>
       Click me
     </button>
   );
@@ -155,9 +152,9 @@ function Welcome({ isLoggedIn }) {
 function Status({ status }) {
   return (
     <div>
-      {status === 'loading' ? (
+      {status === "loading" ? (
         <p>Loading...</p>
-      ) : status === 'success' ? (
+      ) : status === "success" ? (
         <p>Success!</p>
       ) : (
         <p>Error occurred</p>
@@ -168,11 +165,7 @@ function Status({ status }) {
 
 // Using logical AND
 function Notification({ message }) {
-  return (
-    <div>
-      {message && <p className="notification">{message}</p>}
-    </div>
-  );
+  return <div>{message && <p className="notification">{message}</p>}</div>;
 }
 ```
 
@@ -193,9 +186,9 @@ function ShoppingList({ items }) {
 
 // Data
 const items = [
-  { id: 1, name: 'Bread', price: 2.50 },
-  { id: 2, name: 'Milk', price: 3.00 },
-  { id: 3, name: 'Eggs', price: 4.50 }
+  { id: 1, name: "Bread", price: 2.5 },
+  { id: 2, name: "Milk", price: 3.0 },
+  { id: 3, name: "Eggs", price: 4.5 },
 ];
 ```
 
@@ -204,15 +197,15 @@ const items = [
 ### Controlled Components
 
 ```jsx
-import { useState } from 'react';
+import { useState } from "react";
 
 function Form() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Submitted:', { name, email });
+    console.log("Submitted:", { name, email });
   };
 
   return (
@@ -220,21 +213,13 @@ function Form() {
       <div>
         <label>
           Name:
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
         </label>
       </div>
       <div>
         <label>
           Email:
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
       </div>
       <button type="submit">Submit</button>
@@ -247,11 +232,11 @@ function Form() {
 
 ```jsx
 // server/actions.js
-'use server';
+"use server";
 
 export async function createContact(formData) {
-  const name = formData.get('name');
-  const email = formData.get('email');
+  const name = formData.get("name");
+  const email = formData.get("email");
 
   // Save to database
   await db.contacts.create({ name, email });
@@ -260,10 +245,10 @@ export async function createContact(formData) {
 }
 
 // components/ContactForm.js
-'use client';
+("use client");
 
-import { useFormState } from 'react';
-import { createContact } from '../server/actions';
+import { useFormState } from "react";
+import { createContact } from "../server/actions";
 
 function ContactForm() {
   const [state, formAction] = useFormState(createContact, null);
@@ -284,14 +269,14 @@ function ContactForm() {
 ### Basic Usage
 
 ```jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 function Timer() {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSeconds(s => s + 1);
+      setSeconds((s) => s + 1);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -319,7 +304,7 @@ function UserProfile({ userId }) {
           setUser(userData);
         }
       } catch (error) {
-        console.error('Failed to fetch user:', error);
+        console.error("Failed to fetch user:", error);
       } finally {
         if (!ignore) {
           setLoading(false);
@@ -347,7 +332,7 @@ function UserProfile({ userId }) {
 
 ```jsx
 // hooks/useLocalStorage.js
-import { useState } from 'react';
+import { useState } from "react";
 
 export function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
@@ -372,17 +357,13 @@ export function useLocalStorage(key, initialValue) {
 }
 
 // Usage
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function App() {
-  const [name, setName] = useLocalStorage('name', '');
+  const [name, setName] = useLocalStorage("name", "");
 
   return (
-    <input
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-      placeholder="Enter your name"
-    />
+    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" />
   );
 }
 ```
@@ -391,24 +372,20 @@ function App() {
 
 ```jsx
 // contexts/ThemeContext.js
-import { createContext, useContext } from 'react';
+import { createContext, useContext } from "react";
 
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState("light");
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
+    throw new Error("useTheme must be used within ThemeProvider");
   }
   return context;
 }
@@ -428,9 +405,7 @@ function Header() {
 
   return (
     <header className={theme}>
-      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-        Toggle Theme
-      </button>
+      <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>Toggle Theme</button>
     </header>
   );
 }
@@ -441,7 +416,7 @@ function Header() {
 ### use() Hook for Resources
 
 ```jsx
-import { Suspense, use } from 'react';
+import { Suspense, use } from "react";
 
 // Data fetching function
 async function fetchUser(id) {
@@ -468,16 +443,16 @@ function App() {
 ### useOptimistic for Optimistic UI
 
 ```jsx
-import { useOptimistic } from 'react';
+import { useOptimistic } from "react";
 
 function TodoList({ todos, addTodo }) {
-  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
-    todos,
-    (state, newTodo) => [...state, { ...newTodo, pending: true }]
-  );
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(todos, (state, newTodo) => [
+    ...state,
+    { ...newTodo, pending: true },
+  ]);
 
   const handleSubmit = async (formData) => {
-    const text = formData.get('text');
+    const text = formData.get("text");
     const newTodo = { id: Date.now(), text };
 
     // Add optimistically
@@ -495,7 +470,7 @@ function TodoList({ todos, addTodo }) {
       </form>
 
       <ul>
-        {optimisticTodos.map(todo => (
+        {optimisticTodos.map((todo) => (
           <li key={todo.id} style={{ opacity: todo.pending ? 0.5 : 1 }}>
             {todo.text}
           </li>
@@ -509,16 +484,16 @@ function TodoList({ todos, addTodo }) {
 ### useFormStatus for Form States
 
 ```jsx
-'use client';
+"use client";
 
-import { useFormStatus } from 'react';
+import { useFormStatus } from "react";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
     <button type="submit" disabled={pending}>
-      {pending ? 'Submitting...' : 'Submit'}
+      {pending ? "Submitting..." : "Submit"}
     </button>
   );
 }
@@ -556,11 +531,11 @@ async function BlogPost({ id }) {
 }
 
 // Client Component
-'use client';
-import { useState } from 'react';
+("use client");
+import { useState } from "react";
 
 function CommentForm({ postId }) {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
 
   // Client-side interactivity
   return (
@@ -581,10 +556,10 @@ function CommentForm({ postId }) {
 ### Code Splitting
 
 ```jsx
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from "react";
 
 // Lazy load component
-const LazyComponent = lazy(() => import('./LazyComponent'));
+const LazyComponent = lazy(() => import("./LazyComponent"));
 
 function App() {
   return (
@@ -600,7 +575,7 @@ function App() {
 ### React.memo for Component Memoization
 
 ```jsx
-import { memo } from 'react';
+import { memo } from "react";
 
 const ExpensiveComponent = memo(function ExpensiveComponent({ data }) {
   return <div>{/* Expensive rendering */}</div>;
@@ -616,16 +591,19 @@ const ListComponent = memo(List, (prevProps, nextProps) => {
 ### useMemo and useCallback
 
 ```jsx
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from "react";
 
 function Parent({ items, onItemClick }) {
   const expensiveValue = useMemo(() => {
     return items.reduce((sum, item) => sum + item.value, 0);
   }, [items]);
 
-  const handleClick = useCallback((id) => {
-    onItemClick(id);
-  }, [onItemClick]);
+  const handleClick = useCallback(
+    (id) => {
+      onItemClick(id);
+    },
+    [onItemClick],
+  );
 
   return (
     <div>
@@ -641,28 +619,28 @@ function Parent({ items, onItemClick }) {
 ### Basic Testing
 
 ```jsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import Counter from './Counter';
+import { render, screen, fireEvent } from "@testing-library/react";
+import Counter from "./Counter";
 
-test('increments counter', () => {
+test("increments counter", () => {
   render(<Counter />);
 
-  const button = screen.getByText('Increment');
-  const count = screen.getByText('Count: 0');
+  const button = screen.getByText("Increment");
+  const count = screen.getByText("Count: 0");
 
   fireEvent.click(button);
 
-  expect(screen.getByText('Count: 1')).toBeInTheDocument();
+  expect(screen.getByText("Count: 1")).toBeInTheDocument();
 });
 ```
 
 ### Testing Custom Hooks
 
 ```jsx
-import { renderHook, act } from '@testing-library/react';
-import useCounter from './useCounter';
+import { renderHook, act } from "@testing-library/react";
+import useCounter from "./useCounter";
 
-test('should increment counter', () => {
+test("should increment counter", () => {
   const { result } = renderHook(() => useCounter());
 
   expect(result.current.count).toBe(0);
@@ -712,11 +690,7 @@ function Menu({ children }) {
 function MenuButton({ children }) {
   const { isOpen, setIsOpen } = useContext(MenuContext);
 
-  return (
-    <button onClick={() => setIsOpen(!isOpen)}>
-      {children}
-    </button>
-  );
+  return <button onClick={() => setIsOpen(!isOpen)}>{children}</button>;
 }
 
 function MenuItems({ children }) {
@@ -732,7 +706,7 @@ function MenuItems({ children }) {
     <li>Item 1</li>
     <li>Item 2</li>
   </MenuItems>
-</Menu>
+</Menu>;
 ```
 
 ### Render Props
@@ -745,29 +719,29 @@ function MouseTracker({ render }) {
     setPosition({ x: e.clientX, y: e.clientY });
   };
 
-  return (
-    <div onMouseMove={handleMouseMove}>
-      {render(position)}
-    </div>
-  );
+  return <div onMouseMove={handleMouseMove}>{render(position)}</div>;
 }
 
 // Usage
 <MouseTracker
   render={({ x, y }) => (
-    <h1>Mouse position: {x}, {y}</h1>
+    <h1>
+      Mouse position: {x}, {y}
+    </h1>
   )}
-/>
+/>;
 ```
 
 ## Learning Resources
 
 ### Documentation
+
 - [Official React Documentation](https://react.dev)
 - [React 19 Blog Post](https://react.dev/blog/2024/04/25/react-19)
 - [TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
 
 ### Practice Projects
+
 1. **Todo App** - Basic state management
 2. **Weather App** - API integration
 3. **E-commerce Site** - Complex state and routing
@@ -775,6 +749,7 @@ function MouseTracker({ render }) {
 5. **Blog Platform** - Server Components
 
 ### Common Interview Questions
+
 1. What is the virtual DOM?
 2. How does React reconcile changes?
 3. What are hooks and why were they introduced?

@@ -3,7 +3,7 @@
  * @returns {value is Record<string, unknown>}
  */
 export function isObject(value) {
-  return typeof value === 'object' && value !== null;
+  return typeof value === "object" && value !== null;
 }
 
 /**
@@ -11,7 +11,7 @@ export function isObject(value) {
  * @returns {string}
  */
 export function normalizeSkillName(value) {
-  return String(value ?? '')
+  return String(value ?? "")
     .trim()
     .toLowerCase();
 }

@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const DEFAULT_INDEX_URL = 'https://clawsec.prompt.security/skills/index.json';
+const DEFAULT_INDEX_URL = "https://clawsec.prompt.security/skills/index.json";
 const DEFAULT_TIMEOUT_MS = 5000;
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
-const SUITE_DIR = path.resolve(SCRIPT_DIR, '..');
-const SUITE_SKILL_JSON = path.join(SUITE_DIR, 'skill.json');
+const SUITE_DIR = path.resolve(SCRIPT_DIR, "..");
+const SUITE_SKILL_JSON = path.join(SUITE_DIR, "skill.json");
 
 function isObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function normalizeSkillId(value) {
-  return String(value ?? '')
+  return String(value ?? "")
     .trim()
     .toLowerCase();
 }
@@ -26,7 +26,7 @@ function normalizeBoolean(value) {
 }
 
 function parseTimeoutMs() {
-  const raw = String(process.env.CLAWSEC_SKILLS_INDEX_TIMEOUT_MS ?? '').trim();
+  const raw = String(process.env.CLAWSEC_SKILLS_INDEX_TIMEOUT_MS ?? "").trim();
   if (!raw) return DEFAULT_TIMEOUT_MS;
 
   const parsed = Number.parseInt(raw, 10);
@@ -42,11 +42,11 @@ function parseArgs(argv) {
   };
 
   for (const token of argv) {
-    if (token === '--json') {
+    if (token === "--json") {
       args.json = true;
       continue;
     }
-    if (token === '--help' || token === '-h') {
+    if (token === "--help" || token === "-h") {
       printUsage();
       process.exit(0);
     }
@@ -60,29 +60,29 @@ function parseArgs(argv) {
 function printUsage() {
   process.stdout.write(
     [
-      'Usage:',
-      '  node scripts/discover_skill_catalog.mjs [--json]',
-      '',
-      'Behavior:',
-      '  - Fetches dynamic catalog from CLAWSEC_SKILLS_INDEX_URL (default: https://clawsec.prompt.security/skills/index.json)',
-      '  - Falls back to suite-local catalog metadata in skill.json when remote index is unavailable/invalid',
-      '',
-      'Environment:',
-      '  CLAWSEC_SKILLS_INDEX_URL         Override remote catalog index URL',
-      '  CLAWSEC_SKILLS_INDEX_TIMEOUT_MS  HTTP timeout in milliseconds (default: 5000)',
-      '',
-    ].join('\n')
+      "Usage:",
+      "  node scripts/discover_skill_catalog.mjs [--json]",
+      "",
+      "Behavior:",
+      "  - Fetches dynamic catalog from CLAWSEC_SKILLS_INDEX_URL (default: https://clawsec.prompt.security/skills/index.json)",
+      "  - Falls back to suite-local catalog metadata in skill.json when remote index is unavailable/invalid",
+      "",
+      "Environment:",
+      "  CLAWSEC_SKILLS_INDEX_URL         Override remote catalog index URL",
+      "  CLAWSEC_SKILLS_INDEX_TIMEOUT_MS  HTTP timeout in milliseconds (default: 5000)",
+      "",
+    ].join("\n"),
   );
 }
 
 function normalizeRemoteSkills(payload) {
   if (!isObject(payload)) {
-    throw new Error('Catalog index payload must be a JSON object');
+    throw new Error("Catalog index payload must be a JSON object");
   }
 
   const rawSkills = payload.skills;
   if (!Array.isArray(rawSkills)) {
-    throw new Error('Catalog index missing skills array');
+    throw new Error("Catalog index missing skills array");
   }
 
   const dedup = new Map();
@@ -96,25 +96,25 @@ function normalizeRemoteSkills(payload) {
     dedup.set(id, {
       id,
       name: String(entry.name ?? id),
-      version: String(entry.version ?? '').trim() || null,
-      description: String(entry.description ?? '').trim() || null,
-      emoji: String(entry.emoji ?? '').trim() || null,
-      category: String(entry.category ?? '').trim() || null,
-      tag: String(entry.tag ?? '').trim() || null,
+      version: String(entry.version ?? "").trim() || null,
+      description: String(entry.description ?? "").trim() || null,
+      emoji: String(entry.emoji ?? "").trim() || null,
+      category: String(entry.category ?? "").trim() || null,
+      tag: String(entry.tag ?? "").trim() || null,
       trust: entry.trust ?? null,
-      source: 'remote',
+      source: "remote",
     });
   }
 
   return {
-    version: String(payload.version ?? '').trim() || null,
-    updated: String(payload.updated ?? '').trim() || null,
+    version: String(payload.version ?? "").trim() || null,
+    updated: String(payload.updated ?? "").trim() || null,
     skills: [...dedup.values()].sort((a, b) => a.id.localeCompare(b.id)),
   };
 }
 
 async function loadFallbackCatalog() {
-  const raw = await fs.readFile(SUITE_SKILL_JSON, 'utf8');
+  const raw = await fs.readFile(SUITE_SKILL_JSON, "utf8");
   const parsed = JSON.parse(raw);
 
   const catalogSkills = isObject(parsed?.catalog?.skills) ? parsed.catalog.skills : {};
@@ -130,12 +130,12 @@ async function loadFallbackCatalog() {
       id,
       name: id,
       version: null,
-      description: String(safeMeta.description ?? '').trim() || null,
+      description: String(safeMeta.description ?? "").trim() || null,
       emoji: null,
       category: null,
       tag: null,
       trust: null,
-      source: 'fallback',
+      source: "fallback",
       integrated_in_suite: normalizeBoolean(safeMeta.integrated_in_suite),
       requires_explicit_consent: normalizeBoolean(safeMeta.requires_explicit_consent),
       default_install: normalizeBoolean(safeMeta.default_install),
@@ -174,11 +174,11 @@ function mergeWithFallbackMetadata(remoteSkills, fallbackSkills) {
 }
 
 async function loadRemoteCatalog(indexUrl, timeoutMs) {
-  if (typeof globalThis.fetch !== 'function') {
-    throw new Error('fetch is unavailable in this runtime');
+  if (typeof globalThis.fetch !== "function") {
+    throw new Error("fetch is unavailable in this runtime");
   }
-  if (typeof globalThis.AbortController !== 'function') {
-    throw new Error('AbortController is unavailable in this runtime');
+  if (typeof globalThis.AbortController !== "function") {
+    throw new Error("AbortController is unavailable in this runtime");
   }
 
   const controller = new globalThis.AbortController();
@@ -186,8 +186,8 @@ async function loadRemoteCatalog(indexUrl, timeoutMs) {
 
   try {
     const response = await globalThis.fetch(indexUrl, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
+      method: "GET",
+      headers: { Accept: "application/json" },
       signal: controller.signal,
     });
 
@@ -205,24 +205,24 @@ async function loadRemoteCatalog(indexUrl, timeoutMs) {
 function formatFlags(skill) {
   const flags = [];
 
-  if (skill.id === 'clawsec-suite') {
-    flags.push('this suite');
+  if (skill.id === "clawsec-suite") {
+    flags.push("this suite");
   }
   if (skill.integrated_in_suite) {
-    flags.push('already integrated in suite');
+    flags.push("already integrated in suite");
   }
   if (skill.requires_explicit_consent) {
-    flags.push('explicit opt-in');
+    flags.push("explicit opt-in");
   }
   if (skill.default_install) {
-    flags.push('recommended default');
+    flags.push("recommended default");
   }
 
   return flags;
 }
 
 function printHumanSummary(result) {
-  process.stdout.write('=== ClawSec Skill Catalog Discovery ===\n');
+  process.stdout.write("=== ClawSec Skill Catalog Discovery ===\n");
   process.stdout.write(`Source: ${result.source}\n`);
   process.stdout.write(`Index URL: ${result.index_url}\n`);
   if (result.updated) {
@@ -232,10 +232,10 @@ function printHumanSummary(result) {
     process.stdout.write(`Fallback reason: ${result.warning}\n`);
   }
 
-  process.stdout.write('\nAvailable installable skills:\n');
+  process.stdout.write("\nAvailable installable skills:\n");
 
   if (!Array.isArray(result.skills) || result.skills.length === 0) {
-    process.stdout.write('- none\n');
+    process.stdout.write("- none\n");
     return;
   }
 
@@ -248,7 +248,7 @@ function printHumanSummary(result) {
 
     const flags = formatFlags(skill);
     if (flags.length > 0) {
-      process.stdout.write(`  notes: ${flags.join('; ')}\n`);
+      process.stdout.write(`  notes: ${flags.join("; ")}\n`);
     }
 
     process.stdout.write(`  install: npx clawhub@latest install ${skill.id}\n`);
@@ -264,7 +264,7 @@ async function discoverCatalog() {
     const remote = await loadRemoteCatalog(indexUrl, timeoutMs);
 
     return {
-      source: 'remote',
+      source: "remote",
       index_url: indexUrl,
       version: remote.version,
       updated: remote.updated,
@@ -273,7 +273,7 @@ async function discoverCatalog() {
     };
   } catch (error) {
     return {
-      source: 'fallback',
+      source: "fallback",
       index_url: indexUrl,
       version: fallback.version,
       updated: fallback.updated,

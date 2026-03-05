@@ -413,8 +413,6 @@ describe("assertNonNegative", () => {
   });
 
   it("includes label in error message", () => {
-    expect(() => assertNonNegative(usd(-1n), "invoice total")).toThrow(
-      /invoice total/,
-    );
+    expect(() => assertNonNegative(usd(-1n), "invoice total")).toThrow(/invoice total/);
   });
 });

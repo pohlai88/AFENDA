@@ -32,11 +32,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = resolve(__dirname, "../..");
 
 /** Directories to scan for DB-touching source files. */
-const SCAN_DIRS = [
-  "packages/core/src",
-  "apps/api/src",
-  "apps/worker/src",
-];
+const SCAN_DIRS = ["packages/core/src", "apps/api/src", "apps/worker/src"];
 
 /** Directories whose files are exempt (test harnesses use new Date() freely). */
 const EXEMPT_DIR_NAMES = new Set(["__vitest_test__", "__e2e_test__"]);

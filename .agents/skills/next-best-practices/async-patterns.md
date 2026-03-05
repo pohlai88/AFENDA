@@ -20,10 +20,7 @@ export default async function Page({ params }: Props) {
 ### Route Handlers
 
 ```tsx
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 }
 ```
@@ -47,7 +44,7 @@ export default async function Page({ params, searchParams }: Props) {
 Use `React.use()` for non-async components:
 
 ```tsx
-import { use } from 'react';
+import { use } from "react";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -70,14 +67,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 ## Async Cookies and Headers
 
 ```tsx
-import { cookies, headers } from 'next/headers';
+import { cookies, headers } from "next/headers";
 
 export default async function Page() {
   const cookieStore = await cookies();
   const headersList = await headers();
 
-  const theme = cookieStore.get('theme');
-  const userAgent = headersList.get('user-agent');
+  const theme = cookieStore.get("theme");
+  const userAgent = headersList.get("user-agent");
 }
 ```
 

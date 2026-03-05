@@ -1,13 +1,12 @@
 ---
 name: prompt-agent
 version: 0.0.1
-description:
-  Security audit enforcement for AI agents. Automated security scans and health
+description: Security audit enforcement for AI agents. Automated security scans and health
   verification.
 homepage: https://clawsec.prompt.security
-metadata: { 'openclaw': { 'emoji': '🛡️', 'category': 'security' } }
+metadata: { "openclaw": { "emoji": "🛡️", "category": "security" } }
 clawdis:
-  emoji: '🛡️'
+  emoji: "🛡️"
   requires:
     bins: [curl, git]
 ---

@@ -1,10 +1,10 @@
 ---
 title: Zod Core
-description: 'Zod Core package - minimal core functionality for custom implementations'
+description: "Zod Core package - minimal core functionality for custom implementations"
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Callout } from "fumadocs-ui/components/callout";
+import { Accordion, Accordions } from "fumadocs-ui/components/accordion";
 
 This sub-package exports the core classes and utilities that are consumed by Zod and Zod Mini. It is not intended to be used directly; instead it's designed to be extended by other packages. It implements:
 
@@ -187,11 +187,11 @@ export function walk(_schema: z.$ZodType) {
   const schema = _schema as z.$ZodTypes;
   const def = schema._zod.def;
   switch (def.type) {
-    case 'string': {
+    case "string": {
       // ...
       break;
     }
-    case 'object': {
+    case "object": {
       // ...
       break;
     }
@@ -233,13 +233,13 @@ export type $ZodStringFormatTypes =
 As the Zod Core schema classes have no methods, there are top-level functions for parsing data.
 
 ```ts
-import * as z from 'zod/v4/core';
+import * as z from "zod/v4/core";
 
-const schema = new z.$ZodString({ type: 'string' });
-z.parse(schema, 'hello');
-z.safeParse(schema, 'hello');
-await z.parseAsync(schema, 'hello');
-await z.safeParseAsync(schema, 'hello');
+const schema = new z.$ZodString({ type: "string" });
+z.parse(schema, "hello");
+z.safeParse(schema, "hello");
+await z.parseAsync(schema, "hello");
+await z.safeParseAsync(schema, "hello");
 ```
 
 ## Checks
@@ -298,8 +298,8 @@ const check = {} as z.$ZodChecks;
 const def = check._zod.def;
 
 switch (def.check) {
-  case 'less_than':
-  case 'greater_than':
+  case "less_than":
+  case "greater_than":
     // ...
     break;
 }
@@ -347,17 +347,17 @@ const check = {} as z.$ZodChecks;
 const def = check._zod.def;
 
 switch (def.check) {
-  case 'less_than':
-  case 'greater_than':
+  case "less_than":
+  case "greater_than":
   // ...
-  case 'string_format':
+  case "string_format":
     {
       const formatCheck = check as z.$ZodStringFormatChecks;
       const formatCheckDef = formatCheck._zod.def;
 
       switch (formatCheckDef.format) {
-        case 'email':
-        case 'url':
+        case "email":
+        case "url":
         // do stuff
       }
     }
@@ -369,10 +369,10 @@ You'll notice some of these string format _checks_ overlap with the string forma
 
 ```ts
 // as a type
-z.email().parse('user@example.com');
+z.email().parse("user@example.com");
 
 // as a check
-z.string().check(z.email()).parse('user@example.com');
+z.string().check(z.email()).parse("user@example.com");
 ```
 
 ## Errors

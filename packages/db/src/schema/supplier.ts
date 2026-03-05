@@ -19,14 +19,20 @@ export const supplier = pgTable(
   "supplier",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    orgId: uuid("org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+    orgId: uuid("org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     /** The supplier's own organization identity (counterparty). */
-    supplierOrgId: uuid("supplier_org_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+    supplierOrgId: uuid("supplier_org_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     taxId: text("tax_id"),
     contactEmail: text("contact_email"),
     status: supplierStatusEnum("status").notNull().default("draft"),
-    onboardedByPrincipalId: uuid("onboarded_by_principal_id").references(() => iamPrincipal.id, { onDelete: "set null" }),
+    onboardedByPrincipalId: uuid("onboarded_by_principal_id").references(() => iamPrincipal.id, {
+      onDelete: "set null",
+    }),
     onboardedAt: tsz("onboarded_at"),
     createdAt: tsz("created_at").defaultNow().notNull(),
     updatedAt: tsz("updated_at").defaultNow().notNull(),

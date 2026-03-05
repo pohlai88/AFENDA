@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
@@ -187,7 +187,7 @@ public-hoist-pattern[]=*babel*
 
    ```yaml
    packages:
-     - 'packages/*'
+     - "packages/*"
    ```
 
 2. Update internal deps to workspace protocol:

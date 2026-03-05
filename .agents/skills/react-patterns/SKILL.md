@@ -52,7 +52,7 @@ async function ProductPage({ id }: { id: string }) {
 }
 
 // Client Component
-'use client';
+("use client");
 function AddToCartButton({ productId }: { productId: string }) {
   const [isPending, startTransition] = useTransition();
 
@@ -64,7 +64,7 @@ function AddToCartButton({ productId }: { productId: string }) {
 
   return (
     <button onClick={handleAdd} disabled={isPending}>
-      {isPending ? 'Adding...' : 'Add to Cart'}
+      {isPending ? "Adding..." : "Add to Cart"}
     </button>
   );
 }
@@ -91,7 +91,7 @@ import { useState } from 'react';
 
 function Counter() {
   const [count, setCount] = useState(0);
-  
+
   return (
     <button onClick={() => setCount(count + 1)}>
       Count: {count}
@@ -116,7 +116,7 @@ function UserProfile() {
   const [name, setName] = useState('');
   const [age, setAge] = useState(0);
   const [email, setEmail] = useState('');
-  
+
   return (
     <form>
       <input value={name} onChange={e => setName(e.target.value)} />
@@ -138,13 +138,13 @@ function ChatRoom({ roomId }: { roomId: string }) {
   useEffect(() => {
     const connection = createConnection(roomId);
     connection.connect();
-    
+
     // Cleanup function
     return () => {
       connection.disconnect();
     };
   }, [roomId]); // Dependency array
-  
+
   return <div>Connected to {roomId}</div>;
 }
 ```
@@ -156,10 +156,10 @@ function ChatRoom({ roomId, serverUrl }: { roomId: string; serverUrl: string }) 
   useEffect(() => {
     const connection = createConnection(serverUrl, roomId);
     connection.connect();
-    
+
     return () => connection.disconnect();
   }, [roomId, serverUrl]); // Re-run when either changes
-  
+
   return <h1>Welcome to {roomId}</h1>;
 }
 ```
@@ -169,25 +169,25 @@ Effect for subscriptions:
 ```typescript
 function StatusBar() {
   const [isOnline, setIsOnline] = useState(true);
-  
+
   useEffect(() => {
     function handleOnline() {
       setIsOnline(true);
     }
-    
+
     function handleOffline() {
       setIsOnline(false);
     }
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []); // Empty array = run once on mount
-  
+
   return <h1>{isOnline ? '✅ Online' : '❌ Disconnected'}</h1>;
 }
 ```
@@ -201,19 +201,19 @@ import { useRef } from 'react';
 
 function Timer() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const startTimer = () => {
     intervalRef.current = setInterval(() => {
       console.log('Tick');
     }, 1000);
   };
-  
+
   const stopTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
   };
-  
+
   return (
     <>
       <button onClick={startTimer}>Start</button>
@@ -228,11 +228,11 @@ DOM element references:
 ```typescript
 function TextInput() {
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   const focusInput = () => {
     inputRef.current?.focus();
   };
-  
+
   return (
     <>
       <input ref={inputRef} type="text" />
@@ -252,25 +252,25 @@ import { useState, useEffect } from 'react';
 
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true);
-  
+
   useEffect(() => {
     function handleOnline() {
       setIsOnline(true);
     }
-    
+
     function handleOffline() {
       setIsOnline(false);
     }
-    
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-  
+
   return isOnline;
 }
 
@@ -305,7 +305,7 @@ export function useChatRoom({ serverUrl, roomId }: ChatOptions) {
   useEffect(() => {
     const connection = createConnection(serverUrl, roomId);
     connection.connect();
-    
+
     return () => connection.disconnect();
   }, [serverUrl, roomId]);
 }
@@ -313,9 +313,9 @@ export function useChatRoom({ serverUrl, roomId }: ChatOptions) {
 // Usage
 function ChatRoom({ roomId }: { roomId: string }) {
   const [serverUrl, setServerUrl] = useState('https://localhost:1234');
-  
+
   useChatRoom({ serverUrl, roomId });
-  
+
   return (
     <>
       <input value={serverUrl} onChange={e => setServerUrl(e.target.value)} />
@@ -341,7 +341,7 @@ interface ButtonProps {
 
 function Button({ variant = 'primary', size = 'md', onClick, children }: ButtonProps) {
   return (
-    <button 
+    <button
       className={`btn btn-${variant} btn-${size}`}
       onClick={onClick}
     >
@@ -385,7 +385,7 @@ Shared state between siblings:
 ```typescript
 function Parent() {
   const [activeIndex, setActiveIndex] = useState(0);
-  
+
   return (
     <>
       <Panel
@@ -429,11 +429,11 @@ function Panel({ isActive, onShow, children }: PanelProps) {
 ```typescript
 function TodoList({ todos }: { todos: Todo[] }) {
   const [visibleTodos, setVisibleTodos] = useState<Todo[]>([]);
-  
+
   useEffect(() => {
     setVisibleTodos(todos.filter(t => !t.completed));
   }, [todos]); // Unnecessary effect
-  
+
   return <ul>{/* ... */}</ul>;
 }
 ```
@@ -443,7 +443,7 @@ function TodoList({ todos }: { todos: Todo[] }) {
 ```typescript
 function TodoList({ todos }: { todos: Todo[] }) {
   const visibleTodos = todos.filter(t => !t.completed); // Direct computation
-  
+
   return <ul>{/* ... */}</ul>;
 }
 ```
@@ -457,7 +457,7 @@ function DataTable({ data }: { data: Item[] }) {
   const sortedData = useMemo(() => {
     return [...data].sort((a, b) => a.name.localeCompare(b.name));
   }, [data]); // Only recompute when data changes
-  
+
   return <table>{/* render sortedData */}</table>;
 }
 ```
@@ -469,11 +469,11 @@ import { useCallback } from 'react';
 
 function Parent() {
   const [count, setCount] = useState(0);
-  
+
   const handleClick = useCallback(() => {
     console.log('Clicked', count);
   }, [count]); // Recreate only when count changes
-  
+
   return <ExpensiveChild onClick={handleClick} />;
 }
 ```
@@ -520,7 +520,7 @@ function List<T>({ items, renderItem }: ListProps<T>) {
 }
 
 // Usage
-<List 
+<List
   items={users}
   renderItem={(user) => <span>{user.name}</span>}
 />
@@ -534,11 +534,11 @@ function Form() {
     e.preventDefault();
     // Handle form submission
   };
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(e.target.value);
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <input onChange={handleChange} />
@@ -554,9 +554,9 @@ function Form() {
 ```typescript
 function ControlledInput() {
   const [value, setValue] = useState('');
-  
+
   return (
-    <input 
+    <input
       value={value}
       onChange={e => setValue(e.target.value)}
     />
@@ -626,6 +626,7 @@ function UserList({ users }: { users: User[] }) {
 ### General React Pitfalls
 
 ❌ **Missing Dependencies**:
+
 ```typescript
 useEffect(() => {
   // Uses 'count' but doesn't include it in deps
@@ -634,6 +635,7 @@ useEffect(() => {
 ```
 
 ❌ **Mutating State**:
+
 ```typescript
 const [items, setItems] = useState([]);
 items.push(newItem); // Wrong! Mutates state
@@ -641,6 +643,7 @@ setItems(items); // Won't trigger re-render
 ```
 
 ✅ **Correct Approach**:
+
 ```typescript
 setItems([...items, newItem]); // Create new array
 ```
@@ -648,6 +651,7 @@ setItems([...items, newItem]); // Create new array
 ### React 19 Specific Pitfalls
 
 ❌ **Using use() outside of render**:
+
 ```typescript
 // Wrong!
 function handleClick() {
@@ -656,6 +660,7 @@ function handleClick() {
 ```
 
 ✅ **Correct usage**:
+
 ```tsx
 function Component({ promise }) {
   const data = use(promise); // Correct: called during render
@@ -664,6 +669,7 @@ function Component({ promise }) {
 ```
 
 ❌ **Forgetting 'use server' directive**:
+
 ```typescript
 // Wrong - missing 'use server'
 export async function myAction() {
@@ -672,8 +678,9 @@ export async function myAction() {
 ```
 
 ✅ **Correct Server Action**:
+
 ```typescript
-'use server'; // Must be at the top
+"use server"; // Must be at the top
 
 export async function myAction() {
   // Now runs on the server
@@ -681,6 +688,7 @@ export async function myAction() {
 ```
 
 ❌ **Mixing Server and Client logic incorrectly**:
+
 ```tsx
 // Wrong - trying to use browser APIs in Server Component
 export default async function ServerComponent() {
@@ -690,6 +698,7 @@ export default async function ServerComponent() {
 ```
 
 ✅ **Correct separation**:
+
 ```tsx
 // Server Component for data
 export default async function ServerComponent() {
@@ -698,7 +707,7 @@ export default async function ServerComponent() {
 }
 
 // Client Component for browser APIs
-'use client';
+("use client");
 
 function ClientComponent({ data }) {
   const [width, setWidth] = useState(window.innerWidth);
@@ -831,27 +840,27 @@ Define server-side functions for form handling:
 
 ```typescript
 // app/actions.ts
-'use server';
+"use server";
 
-import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createPost(formData: FormData) {
-  const title = formData.get('title') as string;
-  const content = formData.get('content') as string;
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
 
   // Validate input
   if (!title || !content) {
-    return { error: 'Title and content are required' };
+    return { error: "Title and content are required" };
   }
 
   // Save to database
   const post = await db.post.create({
-    data: { title, content }
+    data: { title, content },
   });
 
   // Update cache and redirect
-  revalidatePath('/posts');
+  revalidatePath("/posts");
   redirect(`/posts/${post.id}`);
 }
 ```
@@ -974,7 +983,7 @@ npm install -D eslint-plugin-react-hooks@latest
 // babel.config.js
 module.exports = {
   plugins: [
-    'babel-plugin-react-compiler', // Must run first!
+    "babel-plugin-react-compiler", // Must run first!
     // ... other plugins
   ],
 };
@@ -982,14 +991,14 @@ module.exports = {
 
 ```javascript
 // vite.config.js for Vite users
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [
     react({
       babel: {
-        plugins: ['babel-plugin-react-compiler'],
+        plugins: ["babel-plugin-react-compiler"],
       },
     }),
   ],
@@ -1003,13 +1012,13 @@ export default defineConfig({
 module.exports = {
   plugins: [
     [
-      'babel-plugin-react-compiler',
+      "babel-plugin-react-compiler",
       {
         // Enable compilation for specific files
-        target: '18', // or '19'
+        target: "18", // or '19'
         // Debug mode for development
-        debug: process.env.NODE_ENV === 'development'
-      }
+        debug: process.env.NODE_ENV === "development",
+      },
     ],
   ],
 };
@@ -1019,10 +1028,10 @@ module.exports = {
   plugins: [],
   overrides: [
     {
-      test: './src/components/**/*.{js,jsx,ts,tsx}',
-      plugins: ['babel-plugin-react-compiler']
-    }
-  ]
+      test: "./src/components/**/*.{js,jsx,ts,tsx}",
+      plugins: ["babel-plugin-react-compiler"],
+    },
+  ],
 };
 ```
 
@@ -1078,44 +1087,43 @@ function ProductDetails({ product }: { product: Product }) {
 ### Server Actions with Validation
 
 ```typescript
-'use server';
+"use server";
 
-import { z } from 'zod';
+import { z } from "zod";
 
 const checkoutSchema = z.object({
-  items: z.array(z.object({
-    productId: z.string(),
-    quantity: z.number().min(1)
-  })),
+  items: z.array(
+    z.object({
+      productId: z.string(),
+      quantity: z.number().min(1),
+    }),
+  ),
   shippingAddress: z.object({
     street: z.string().min(1),
     city: z.string().min(1),
-    zipCode: z.string().regex(/^\d{5}$/)
+    zipCode: z.string().regex(/^\d{5}$/),
   }),
-  paymentMethod: z.enum(['credit', 'paypal', 'apple'])
+  paymentMethod: z.enum(["credit", "paypal", "apple"]),
 });
 
-export async function processCheckout(
-  prevState: any,
-  formData: FormData
-) {
+export async function processCheckout(prevState: any, formData: FormData) {
   // Extract and validate data
   const rawData = {
-    items: JSON.parse(formData.get('items') as string),
+    items: JSON.parse(formData.get("items") as string),
     shippingAddress: {
-      street: formData.get('street'),
-      city: formData.get('city'),
-      zipCode: formData.get('zipCode')
+      street: formData.get("street"),
+      city: formData.get("city"),
+      zipCode: formData.get("zipCode"),
     },
-    paymentMethod: formData.get('paymentMethod')
+    paymentMethod: formData.get("paymentMethod"),
   };
 
   const result = checkoutSchema.safeParse(rawData);
 
   if (!result.success) {
     return {
-      error: 'Validation failed',
-      fieldErrors: result.error.flatten().fieldErrors
+      error: "Validation failed",
+      fieldErrors: result.error.flatten().fieldErrors,
     };
   }
 
@@ -1130,11 +1138,11 @@ export async function processCheckout(
     await sendConfirmationEmail(order);
 
     // Revalidate cache
-    revalidatePath('/orders');
+    revalidatePath("/orders");
 
     return { success: true, orderId: order.id };
   } catch (error) {
-    return { error: 'Payment failed' };
+    return { error: "Payment failed" };
   }
 }
 ```
@@ -1416,16 +1424,19 @@ function AddToCartForm({ productId }: { productId: string }) {
 ### From React 18 to 19
 
 1. **Update Dependencies**:
+
 ```bash
 npm install react@19 react-dom@19
 ```
 
 2. **Adopt Server Components**:
+
    - Identify data-fetching components
    - Remove client-side code from Server Components
    - Add 'use client' directive where needed
 
 3. **Replace Manual Optimistic Updates**:
+
 ```typescript
 // Before
 function TodoList({ todos, addTodo }) {
@@ -1440,13 +1451,13 @@ function TodoList({ todos, addTodo }) {
 
 // After
 function TodoList({ todos, addTodo }) {
-  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
-    todos,
-    (state, newTodo) => [...state, newTodo]
-  );
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(todos, (state, newTodo) => [
+    ...state,
+    newTodo,
+  ]);
 
   const handleAdd = async (formData) => {
-    const newTodo = { id: Date.now(), text: formData.get('text') };
+    const newTodo = { id: Date.now(), text: formData.get("text") };
     addOptimisticTodo(newTodo);
     await addTodo(newTodo);
   };

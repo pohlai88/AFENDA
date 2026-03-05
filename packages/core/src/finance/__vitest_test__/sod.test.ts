@@ -9,7 +9,7 @@ const PRINCIPAL_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" as PrincipalId;
 const PRINCIPAL_B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" as PrincipalId;
 
 function makeCtx(
-  overrides: Partial<PolicyContext> & { permissions?: string[] } = {}
+  overrides: Partial<PolicyContext> & { permissions?: string[] } = {},
 ): PolicyContext {
   const { permissions, ...rest } = overrides as any;
   const permissionsArray = permissions ?? [];

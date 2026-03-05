@@ -62,8 +62,7 @@ export async function injectAs(
  */
 export async function resetDb(app: FastifyInstance) {
   // TRUNCATE in dependency order — children first
-  await app.db.execute(
-    /* sql */ `
+  await app.db.execute(/* sql */ `
     TRUNCATE
       journal_line,
       journal_entry,
@@ -74,15 +73,12 @@ export async function resetDb(app: FastifyInstance) {
       audit_log,
       dead_letter_job
     CASCADE
-  `,
-  );
+  `);
 
   // Reset sequences back to 1 so tests get predictable numbers
-  await app.db.execute(
-    /* sql */ `
+  await app.db.execute(/* sql */ `
     UPDATE sequence SET next_value = 1
-  `,
-  );
+  `);
 }
 
 /**
