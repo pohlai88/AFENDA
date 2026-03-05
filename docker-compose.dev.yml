@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17.9
+    environment:
+      POSTGRES_USER: afenda
+      POSTGRES_PASSWORD: afenda
+      POSTGRES_DB: afenda_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - afenda_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U afenda -d afenda_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:2.9.4
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_USER_MANAGEMENT_JWT_SECRET=${N8N_JWT_SECRET}
+    volumes:
+      - afenda_n8n:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Optional local S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio12345
+    volumes:
+      - afenda_minio:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  afenda_pg:
+  afenda_n8n:
+  afenda_minio:

@@ -1,0 +1,378 @@
+{
+  "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
+  "generatedAt": "2026-03-01T08:51:31.242Z",
+  "skills": [
+    {
+      "name": "accessibility",
+      "category": "ui",
+      "priority": "high",
+      "description": "WCAG compliance & a11y patterns",
+      "path": "skills/accessibility",
+      "source": "KreerC/ACCESSIBILITY.md"
+    },
+    {
+      "name": "claw-release",
+      "category": "security",
+      "priority": "medium",
+      "description": "Release automation for ClawSec suite",
+      "path": "skills/claw-release",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "clawsec-clawhub-checker",
+      "category": "security",
+      "priority": "medium",
+      "description": "ClawHub reputation checker with VirusTotal Code Insight",
+      "path": "skills/clawsec-clawhub-checker",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "clawsec-feed",
+      "category": "security",
+      "priority": "medium",
+      "description": "Security advisory feed with automated NVD CVE polling",
+      "path": "skills/clawsec-feed",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "clawsec-suite",
+      "category": "security",
+      "priority": "high",
+      "description": "ClawSec suite manager with advisory-feed monitoring and signature verification",
+      "path": "skills/clawsec-suite",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "clawtributor",
+      "category": "security",
+      "priority": "medium",
+      "description": "Community incident reporting for AI agents",
+      "path": "skills/clawtributor",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "create-rule",
+      "category": "tools",
+      "priority": "medium",
+      "description": "Create Cursor rules for persistent AI guidance and project conventions",
+      "path": "skills/create-rule",
+      "source": "local"
+    },
+    {
+      "name": "drizzle",
+      "category": "database",
+      "priority": "high",
+      "description": "Complete Drizzle ORM documentation — schema, queries, migrations, integrations",
+      "path": "skills/drizzle",
+      "source": "leonaaardob/lb-drizzle-skill"
+    },
+    {
+      "name": "find-skills",
+      "category": "tools",
+      "priority": "medium",
+      "description": "Discover and install agent skills from the open ecosystem",
+      "path": "skills/find-skills",
+      "source": "local"
+    },
+    {
+      "name": "form-builder",
+      "category": "validation",
+      "priority": "medium",
+      "description": "Build accessible forms with React Hook Form + Zod",
+      "path": "skills/form-builder",
+      "source": "danielmeppiel/form-builder"
+    },
+    {
+      "name": "monorepo-management",
+      "category": "monorepo",
+      "priority": "high",
+      "description": "Turborepo, Nx, and pnpm workspaces for scalable multi-package repos",
+      "path": "skills/monorepo-management",
+      "source": "wshobson/agents@monorepo-management"
+    },
+    {
+      "name": "neon-postgres",
+      "category": "database",
+      "priority": "high",
+      "description": "Neon Serverless Postgres — connection methods, RLS, branching, CLI",
+      "path": "skills/neon-postgres",
+      "source": "local"
+    },
+    {
+      "name": "next-best-practices",
+      "category": "nextjs",
+      "priority": "high",
+      "description": "Vercel Next.js patterns — RSC, data fetching, metadata, error handling",
+      "path": "skills/next-best-practices",
+      "source": "vercel-labs/next-skills@next-best-practices"
+    },
+    {
+      "name": "nextjs-16-complete-guide",
+      "category": "nextjs",
+      "priority": "high",
+      "description": "Next.js 16 features, migration from v15, Turbopack, Cache Components",
+      "path": "skills/nextjs-16-complete-guide",
+      "source": "fernandofuc/nextjs-claude-setup@nextjs-16-complete-guide"
+    },
+    {
+      "name": "openclaw-audit-watchdog",
+      "category": "security",
+      "priority": "medium",
+      "description": "Automated daily security audits with email reporting",
+      "path": "skills/openclaw-audit-watchdog",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "optimized-nextjs-typescript",
+      "category": "nextjs",
+      "priority": "high",
+      "description": "TypeScript + Next.js — performance, security, clean architecture",
+      "path": "skills/optimized-nextjs-typescript",
+      "source": "mindrally/skills@optimized-nextjs-typescript"
+    },
+    {
+      "name": "pino-logging-setup",
+      "category": "infrastructure",
+      "priority": "high",
+      "description": "Structured logging with Pino — pretty dev output, JSON production, redaction, transports",
+      "path": "skills/pino-logging-setup",
+      "source": "andrelandgraf/fullstackrecipes@pino-logging-setup"
+    },
+    {
+      "name": "pnpm",
+      "category": "monorepo",
+      "priority": "high",
+      "description": "pnpm workspace setup, catalog, CLI commands, CI configuration",
+      "path": "skills/pnpm",
+      "source": "onmax/nuxt-skills@pnpm"
+    },
+    {
+      "name": "prompt-agent",
+      "category": "security",
+      "priority": "medium",
+      "description": "Security audit enforcement and prompt security analysis",
+      "path": "skills/prompt-agent",
+      "source": "prompt-security/clawsec"
+    },
+    {
+      "name": "shadcn-ui",
+      "category": "ui",
+      "priority": "high",
+      "description": "shadcn/ui components — Radix UI + Tailwind CSS, theming, forms, charts (developer-kit)",
+      "path": "skills/shadcn-ui",
+      "source": "giuseppe-trisciuoglio/developer-kit@shadcn-ui",
+      "installed": true
+    },
+    {
+      "name": "shadcn-ui-stitch",
+      "category": "ui",
+      "priority": "high",
+      "description": "Google Labs shadcn/ui — MCP tools, component discovery, blocks, customization",
+      "path": "skills/shadcn-ui-stitch",
+      "source": "google-labs-code/stitch-skills@shadcn-ui",
+      "installed": true
+    },
+    {
+      "name": "soul-guardian",
+      "category": "security",
+      "priority": "medium",
+      "description": "Drift detection + baseline integrity guard for agent workspace files",
+      "path": "skills/soul-guardian",
+      "source": "prompt-security/clawsec",
+      "installed": true
+    },
+    {
+      "name": "typescript-advanced-types",
+      "category": "tools",
+      "priority": "high",
+      "description": "Advanced TypeScript type system — generics, conditional, mapped, template literals",
+      "path": "skills/typescript-advanced-types",
+      "source": "local",
+      "installed": true
+    },
+    {
+      "name": "zod",
+      "category": "validation",
+      "priority": "high",
+      "description": "Zod validation — schema definition, type inference, transforms, error handling",
+      "path": "skills/zod",
+      "source": "leonaaardob/lb-zod-skill",
+      "installed": true
+    },
+    {
+      "name": "nextjs-app-router-patterns",
+      "category": "nextjs",
+      "priority": "high",
+      "description": "Next.js App Router — Server Components, streaming, parallel routes, Server Actions, data fetching",
+      "path": "skills/nextjs-app-router-patterns",
+      "source": "wshobson/agents@nextjs-app-router-patterns",
+      "installed": true
+    },
+    {
+      "name": "tailwind-v4-shadcn",
+      "category": "ui",
+      "priority": "high",
+      "description": "Tailwind CSS v4 + shadcn/ui — @theme inline, CSS variables, dark mode, component composition",
+      "path": "skills/tailwind-v4-shadcn",
+      "source": "secondsky/claude-skills@tailwind-v4-shadcn",
+      "installed": true
+    },
+    {
+      "name": "react-testing-patterns",
+      "category": "testing",
+      "priority": "high",
+      "description": "React component/hook testing — Testing Library, MSW, jest-axe, async patterns, Vitest",
+      "path": "skills/react-testing-patterns",
+      "source": "hieutrtr/ai1-skills@react-testing-patterns",
+      "installed": true
+    },
+    {
+      "name": "vitest",
+      "category": "testing",
+      "priority": "high",
+      "description": "Vitest testing framework — config, CLI, mocking, coverage, snapshots, concurrency, type testing",
+      "path": "skills/vitest",
+      "source": "antfu/skills@vitest"
+    },
+    {
+      "name": "better-auth-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth core best practices — setup, configuration, Drizzle adapter, framework integration",
+      "path": "skills/better-auth-best-practices",
+      "source": "better-auth/skills@better-auth-best-practices"
+    },
+    {
+      "name": "organization-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth organization plugin — multi-tenancy, teams, roles, invitations",
+      "path": "skills/organization-best-practices",
+      "source": "better-auth/skills@organization-best-practices"
+    },
+    {
+      "name": "email-and-password-best-practices",
+      "category": "auth",
+      "priority": "medium",
+      "description": "Better Auth email/password — sign-up, sign-in, password reset, email verification",
+      "path": "skills/email-and-password-best-practices",
+      "source": "better-auth/skills@email-and-password-best-practices"
+    },
+    {
+      "name": "better-auth-security-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth security — rate limiting, CSRF, session management, trusted origins",
+      "path": "skills/better-auth-security-best-practices",
+      "source": "better-auth/skills@better-auth-security-best-practices"
+    },
+    {
+      "name": "two-factor-authentication-best-practices",
+      "category": "auth",
+      "priority": "medium",
+      "description": "Better Auth 2FA — TOTP, backup codes, enforcement, recovery flows",
+      "path": "skills/two-factor-authentication-best-practices",
+      "source": "better-auth/skills@two-factor-authentication-best-practices"
+    },
+    {
+      "name": "framer-motion-animator",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Framer Motion animations — page transitions, gestures, scroll-based animations, micro-interactions",
+      "path": "skills/framer-motion-animator",
+      "source": "local"
+    },
+    {
+      "name": "frontend-builder",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Modern React/Next.js frontend builder — stack selection, component patterns, UI/UX implementation",
+      "path": "skills/frontend-builder",
+      "source": "local"
+    },
+    {
+      "name": "react-patterns",
+      "category": "ui",
+      "priority": "high",
+      "description": "React 19 patterns — Server Components, Actions, use() hook, Suspense, React Compiler, concurrent features",
+      "path": "skills/react-patterns",
+      "source": "local"
+    },
+    {
+      "name": "tailwind-css-patterns",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Tailwind CSS utility-first styling — responsive design, flexbox, grid, typography, colors",
+      "path": "skills/tailwind-css-patterns",
+      "source": "local"
+    },
+    {
+      "name": "tailwindcss-advanced-layouts",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Tailwind CSS advanced layout techniques — CSS Grid and Flexbox patterns",
+      "path": "skills/tailwindcss-advanced-layouts",
+      "source": "local"
+    },
+    {
+      "name": "tailwindcss-animations",
+      "category": "ui",
+      "priority": "medium",
+      "description": "Tailwind CSS animations and transitions — built-in utilities, custom animation patterns",
+      "path": "skills/tailwindcss-animations",
+      "source": "local"
+    },
+    {
+      "name": "tanstack-query-best-practices",
+      "category": "ui",
+      "priority": "high",
+      "description": "TanStack Query (React Query) — data fetching, caching, mutations, server state management",
+      "path": "skills/tanstack-query-best-practices",
+      "source": "local"
+    },
+    {
+      "name": "ui-design-system",
+      "category": "ui",
+      "priority": "medium",
+      "description": "UI design system toolkit — design tokens, component docs, responsive calculations, developer handoff",
+      "path": "skills/ui-design-system",
+      "source": "local"
+    },
+    {
+      "name": "turborepo",
+      "category": "monorepo",
+      "priority": "high",
+      "description": "Turborepo monorepo build system — turbo.json, task pipelines, caching, remote cache, CI optimization",
+      "path": "skills/turborepo",
+      "source": "local"
+    },
+    {
+      "name": "vercel-composition-patterns",
+      "category": "ui",
+      "priority": "medium",
+      "description": "React composition patterns that scale — compound components, render props, context providers, component architecture",
+      "path": "skills/vercel-composition-patterns",
+      "source": "local"
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "category": "ui",
+      "priority": "high",
+      "description": "React & Next.js performance optimization guidelines from Vercel Engineering — data fetching, bundle optimization",
+      "path": "skills/vercel-react-best-practices",
+      "source": "local"
+    }
+  ],
+  "categories": {
+    "nextjs": "Next.js",
+    "monorepo": "Monorepo & pnpm",
+    "database": "Database & ORM",
+    "infrastructure": "Infrastructure & Logging",
+    "validation": "Validation & Forms",
+    "ui": "UI",
+    "testing": "Testing",
+    "tools": "Tools & Meta",
+    "security": "Security (ClawSec)",
+    "auth": "Authentication (Better Auth)"
+  }
+}

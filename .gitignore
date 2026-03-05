@@ -1,0 +1,19 @@
+node_modules
+dist
+.next
+.env
+.env.local
+.DS_Store
+
+# turbo cache
+.turbo
+
+# drizzle artifacts
+packages/db/drizzle
+
+# test output
+coverage
+
+# large reference docs (local skill files)
+.agents/skills/postgresql-18-A4.html
+.agents/skills/postgresql-18.txt

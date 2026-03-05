@@ -1,0 +1,15 @@
+{
+  "extends": "@afenda/tsconfig/base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": ".next",
+    "plugins": [{ "name": "next" }],
+    "incremental": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "next.config.ts"],
+  "exclude": ["node_modules"]
+}

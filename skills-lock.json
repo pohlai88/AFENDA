@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "pg-sqill": {
+      "source": "aluxf/pg-sqill",
+      "sourceType": "github",
+      "computedHash": "1fb0acd88b2e6d714618a86eecef64217147ca4aab931f2c237209b0c96b4750"
+    },
+    "postgres": {
+      "source": "sanjay3290/ai-skills",
+      "sourceType": "github",
+      "computedHash": "02b414cf7521ba8a204a57e8309d67632a970ba7b39093cc484ac4cc4a60c016"
+    }
+  }
+}

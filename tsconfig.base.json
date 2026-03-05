@@ -1,0 +1,12 @@
+{
+  "extends": "@afenda/tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@afenda/contracts": ["packages/contracts/src/index.ts"],
+      "@afenda/db": ["packages/db/src/index.ts"],
+      "@afenda/core": ["packages/core/src/index.ts"],
+      "@afenda/ui": ["packages/ui/src/index.ts"]
+    }
+  }
+}

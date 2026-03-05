@@ -1,0 +1,46 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+
+# ─── Version Catalog ───────────────────────────────────────────────────────
+# Single source of truth for dependency versions across the monorepo.
+# Every package.json references "catalog:" instead of a version string.
+# CI gate (tools/gates/catalog.mjs) enforces: ≥2 packages → must use catalog.
+catalog:
+  # ── Runtime ────────────────────────────────────────────────────────────────
+  react: "19.2.4"
+  react-dom: "19.2.4"
+  zod: "4.3.6"
+  drizzle-orm: "0.45.1"
+  pg: "8.19.0"
+  dotenv: "17.3.1"
+  fastify: "5.7.4"
+  "@fastify/cors": "11.2.0"
+  "@fastify/rate-limit": "10.3.0"
+  pino: "10.3.1"
+  next: "16.1.6"
+  next-auth: "4.24.13"
+  graphile-worker: "0.16.6"
+  "@aws-sdk/client-s3": "3.750.0"
+  "@aws-sdk/s3-request-presigner": "3.750.0"
+  fastify-plugin: "5.0.1"
+  jose: "5.10.0"
+  # ── Dev ────────────────────────────────────────────────────────────────────
+  typescript: "5.9.3"
+  "@types/node": "25.3.3"
+  "@types/react": "19.2.4"
+  "@types/react-dom": "19.2.3"
+  "@types/pg": "8.18.0"
+  tsx: "4.21.0"
+  tsup: "8.5.1"
+  vitest: "4.0.18"
+  drizzle-kit: "0.31.9"
+  turbo: "2.8.12"
+  tailwindcss: "4.2.1"
+  "@tailwindcss/postcss": "4.2.1"
+  postcss: "8.5.6"
+  yaml: "2.8.2"
