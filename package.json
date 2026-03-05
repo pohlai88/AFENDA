@@ -1,25 +1,41 @@
 {
   "name": "afenda-nexus",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "test:coverage": "turbo run test -- --coverage",
     "lint": "turbo run lint",
     "check:boundaries": "node tools/gates/boundaries.mjs",
     "check:catalog": "node tools/gates/catalog.mjs",
+    "check:contract-db-sync": "node tools/gates/contract-db-sync.mjs",
+    "check:server-clock": "node tools/gates/server-clock.mjs",
+    "check:owners-lint": "node tools/gates/owners-lint.mjs",
     "check:all": "node tools/run-gates.mjs",
     "db:migrate": "pnpm -C packages/db db:migrate",
     "db:generate": "pnpm -C packages/db db:generate",
     "db:seed": "pnpm -C packages/db db:seed",
-    "db:studio": "pnpm -C packages/db db:studio"
+    "db:studio": "pnpm -C packages/db db:studio",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "e2e": "pnpm -C apps/web e2e"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@playwright/test": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "prettier": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",
+    "vitest": "catalog:",
+    "typescript-eslint": "catalog:",
     "yaml": "catalog:"
   }
 }

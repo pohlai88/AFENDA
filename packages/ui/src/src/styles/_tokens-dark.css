@@ -1,0 +1,270 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 3 · DESIGN TOKENS — DARK MODE (Obsidian Terminal)
+   ─────────────────────────────────────────────────────────────────────────
+   Optimized for OLED/AMOLED displays and low-light trading floors.
+
+   Key design decisions:
+     - Foreground at L=0.90 (not 1.0) — prevents "snow blindness" at night
+     - Background at L=0.11 (not 0.0) — pure black causes OLED smearing
+     - Surface tiers provide subtle depth without contrast fatigue
+     - Selection uses color-mix for translucency (overlays, not opaque swap)
+     - Market colors are brightened ~0.06L for dark-bg legibility
+
+   Per Tailwind v4: .dark overrides :root variables directly.
+   NEVER use .dark { @theme { } } — v4 does not support nested @theme.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.dark {
+  /* ── Surfaces ── */
+  --background: oklch(0.11 0.02 260);
+  --foreground: oklch(0.9 0.02 260);
+
+  --surface-100: oklch(0.13 0.02 260);
+  --surface-200: oklch(0.16 0.03 260);
+  --surface-300: oklch(0.2 0.04 260);
+  --surface-400: oklch(0.26 0.05 260);
+
+  --card: oklch(0.14 0.02 260);
+  --card-foreground: oklch(0.9 0.02 260);
+  --popover: oklch(0.14 0.02 260);
+  --popover-foreground: oklch(0.9 0.02 260);
+
+  /* ── Borders ── */
+  --border-subtle: oklch(0.18 0.02 260);
+  --border: oklch(0.25 0.03 260);
+  --border-strong: oklch(0.4 0.05 260);
+  --input: oklch(0.25 0.03 260);
+
+  /* ── Interaction ──
+     selection uses color-mix for translucency: overlays existing content
+     rather than painting an opaque block (preserves context behind selection) */
+  --ring: oklch(0.6 0.15 200);
+  --selection: oklch(0.7 0.08 210 / 0.22);
+  --selection-foreground: oklch(0.9 0.02 260);
+
+  /* ── Primary system ── */
+  --primary: oklch(0.85 0.05 200);
+  --primary-foreground: oklch(0.12 0.02 260);
+
+  /* ── Secondary system ── */
+  --secondary: oklch(0.2 0.03 260);
+  --secondary-foreground: oklch(0.9 0.02 260);
+
+  /* ── Muted system ── */
+  --muted: oklch(0.2 0.03 260);
+  --muted-foreground: oklch(0.62 0.02 260);
+
+  /* ── Accent system ── */
+  --accent: oklch(0.2 0.03 260);
+  --accent-foreground: oklch(0.9 0.02 260);
+
+  /* ── Status palette (brightened ~0.06L for dark backgrounds) ── */
+  --success: oklch(0.68 0.18 150);
+  --success-foreground: oklch(0.12 0.02 260);
+  --warning: oklch(0.76 0.14 85);
+  --warning-foreground: oklch(0.12 0.02 260);
+  --info: oklch(0.7 0.14 245);
+  --info-foreground: oklch(0.12 0.02 260);
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.9 0.02 260);
+
+  /* ── Market semantics (brightened for dark legibility) ── */
+  --trade-up: oklch(0.68 0.18 150);
+  --trade-down: oklch(0.65 0.22 25);
+  --trade-flat: oklch(0.7 0.02 260);
+  --bid: oklch(0.7 0.15 230);
+  --ask: oklch(0.72 0.16 55);
+
+  /* ── Operational market states ── */
+  --halted: oklch(0.65 0.2 310);
+  --stale: oklch(0.76 0.14 85);
+  --afterhours: oklch(0.72 0.12 255);
+
+  /* ── Data grid surface ── */
+  --grid: oklch(0.16 0.03 260);
+  --grid-foreground: oklch(0.9 0.02 260);
+  --grid-border: oklch(0.18 0.02 260);
+
+  /* ── Sidebar ── */
+  --sidebar: oklch(0.12 0.02 260);
+  --sidebar-foreground: oklch(0.88 0.02 260);
+  --sidebar-primary: oklch(0.65 0.15 210);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.18 0.03 260);
+  --sidebar-accent-foreground: oklch(0.88 0.02 260);
+  --sidebar-border: oklch(0.2 0.03 260);
+  --sidebar-ring: oklch(0.6 0.15 200);
+
+  /* ── Chart palette (adjusted for dark backgrounds) ──
+     Brightened for legibility, maintaining hue distinction from light mode. */
+  --chart-1: oklch(0.68 0.18 250); /* vivid blue — primary metric */
+  --chart-2: oklch(0.65 0.14 175); /* teal — secondary metric */
+  --chart-3: oklch(0.72 0.16 40);  /* warm orange — outflows/expenses */
+  --chart-4: oklch(0.78 0.14 80);  /* gold — variance / budget */
+  --chart-5: oklch(0.68 0.18 145); /* green — inflows/revenue/positive */
+  --chart-6: oklch(0.65 0.14 285); /* purple — provisions/accruals */
+  --chart-7: oklch(0.7 0.12 195);  /* cyan — cash/treasury */
+  --chart-8: oklch(0.62 0.14 320); /* magenta — taxes */
+
+  /* ── Semantic visualization tokens (dark mode) ── */
+  --viz-positive: var(--chart-5);      /* Green - inflows, favorable variance */
+  --viz-negative: var(--chart-3);      /* Orange - outflows, unfavorable variance */
+  --viz-neutral: var(--chart-1);       /* Blue - totals, baselines */
+  --viz-accent-1: var(--chart-2);      /* Teal - secondary series */
+  --viz-accent-2: var(--chart-4);      /* Gold - budget/plan */
+  --viz-accent-3: var(--chart-6);      /* Purple - provisions */
+  --viz-threshold: var(--chart-8);     /* Magenta - targets/thresholds */
+  --viz-target: var(--chart-7);        /* Cyan - goals */
+
+  /* Gauge zones (dark mode) */
+  --gauge-danger: var(--viz-negative);
+  --gauge-warning: var(--chart-4);
+  --gauge-success: var(--viz-positive);
+
+  /* Waterfall (dark mode) */
+  --waterfall-positive: var(--viz-positive);
+  --waterfall-negative: var(--viz-negative);
+  --waterfall-total: var(--viz-neutral);
+
+  /* ── Finance document status palette (dark mode) ── */
+  --status-draft: oklch(0.7 0.06 260);
+  --status-draft-bg: oklch(0.2 0.02 260);
+  --status-pending: oklch(0.72 0.14 85);
+  --status-pending-bg: oklch(0.22 0.04 85);
+  --status-approved: oklch(0.65 0.12 220);
+  --status-approved-bg: oklch(0.2 0.04 220);
+  --status-posted: oklch(0.65 0.16 150);
+  --status-posted-bg: oklch(0.2 0.04 145);
+  --status-voided: oklch(0.65 0.18 25);
+  --status-voided-bg: oklch(0.2 0.04 25);
+  --status-overdue: oklch(0.6 0.2 25);
+  --status-overdue-bg: oklch(0.18 0.05 25);
+  --status-paid: oklch(0.6 0.14 145);
+  --status-paid-bg: oklch(0.18 0.04 145);
+
+  /* ── Extended AP/AR Lifecycle (dark mode) ── */
+  --status-partially-paid: oklch(0.66 0.12 175);
+  --status-partially-paid-bg: oklch(0.2 0.04 175);
+  --status-written-off: oklch(0.62 0.04 260);
+  --status-written-off-bg: oklch(0.2 0.01 260);
+  --status-cancelled: oklch(0.62 0.06 0);
+  --status-cancelled-bg: oklch(0.2 0.02 0);
+  --status-on-hold: oklch(0.68 0.14 280);
+  --status-on-hold-bg: oklch(0.2 0.04 280);
+  --status-in-review: oklch(0.66 0.12 200);
+  --status-in-review-bg: oklch(0.2 0.04 200);
+  --status-rejected: oklch(0.62 0.2 15);
+  --status-rejected-bg: oklch(0.18 0.06 15);
+  --status-matched: oklch(0.62 0.14 160);
+  --status-matched-bg: oklch(0.2 0.04 160);
+  --status-unmatched: oklch(0.68 0.14 55);
+  --status-unmatched-bg: oklch(0.2 0.05 55);
+  --status-reversed: oklch(0.65 0.12 310);
+  --status-reversed-bg: oklch(0.2 0.04 310);
+  --status-submitted: oklch(0.65 0.1 230);
+  --status-submitted-bg: oklch(0.2 0.04 230);
+  --status-closed: oklch(0.58 0.04 260);
+  --status-closed-bg: oklch(0.18 0.01 260);
+  --status-locked: oklch(0.55 0.06 260);
+  --status-locked-bg: oklch(0.17 0.01 260);
+
+  /* ── Supplier portal compliance (dark mode) ── */
+  --compliance-valid: oklch(0.62 0.14 150);
+  --compliance-valid-bg: oklch(0.18 0.04 145);
+  --compliance-expiring: oklch(0.7 0.15 85);
+  --compliance-expiring-bg: oklch(0.2 0.04 85);
+  --compliance-expired: oklch(0.62 0.2 25);
+  --compliance-expired-bg: oklch(0.18 0.06 25);
+
+  /* ── Fixed asset lifecycle (dark mode) ── */
+  --asset-cwip: oklch(0.68 0.12 200);
+  --asset-cwip-bg: oklch(0.2 0.04 200);
+  --asset-active: oklch(0.62 0.14 150);
+  --asset-active-bg: oklch(0.18 0.04 145);
+  --asset-impaired: oklch(0.65 0.18 35);
+  --asset-impaired-bg: oklch(0.18 0.06 35);
+  --asset-disposed: oklch(0.62 0.04 260);
+  --asset-disposed-bg: oklch(0.18 0.01 260);
+
+  /* ── Tax lifecycle (dark mode) ── */
+  --tax-open: oklch(0.68 0.1 220);
+  --tax-open-bg: oklch(0.2 0.03 220);
+  --tax-filed: oklch(0.65 0.12 175);
+  --tax-filed-bg: oklch(0.2 0.04 175);
+  --tax-assessed: oklch(0.6 0.14 150);
+  --tax-assessed-bg: oklch(0.18 0.04 145);
+  --tax-adjusted: oklch(0.66 0.14 280);
+  --tax-adjusted-bg: oklch(0.2 0.04 280);
+
+  /* ── IFRS classification (dark mode) ── */
+  --classification-ac: oklch(0.65 0.1 220);
+  --classification-ac-bg: oklch(0.2 0.03 220);
+  --classification-fvtpl: oklch(0.68 0.16 40);
+  --classification-fvtpl-bg: oklch(0.2 0.05 40);
+  --classification-fvoci: oklch(0.65 0.12 280);
+  --classification-fvoci-bg: oklch(0.2 0.04 280);
+
+  /* ── Hedge accounting (dark mode) ── */
+  --hedge-designated: oklch(0.65 0.1 220);
+  --hedge-designated-bg: oklch(0.2 0.03 220);
+  --hedge-effective: oklch(0.62 0.14 150);
+  --hedge-effective-bg: oklch(0.18 0.04 145);
+  --hedge-ineffective: oklch(0.66 0.18 35);
+  --hedge-ineffective-bg: oklch(0.18 0.06 35);
+  --hedge-discontinued: oklch(0.62 0.04 260);
+  --hedge-discontinued-bg: oklch(0.18 0.01 260);
+
+  /* ── Provisions IAS 37 (dark mode) ── */
+  --provision-recognized: oklch(0.65 0.12 200);
+  --provision-recognized-bg: oklch(0.2 0.04 200);
+  --provision-utilized: oklch(0.65 0.14 150);
+  --provision-utilized-bg: oklch(0.18 0.04 145);
+  --provision-unwound: oklch(0.66 0.1 280);
+  --provision-unwound-bg: oklch(0.2 0.03 280);
+
+  /* ── Budget & scenario (dark mode) ── */
+  --scenario-base: oklch(0.65 0.1 220);
+  --scenario-base-bg: oklch(0.2 0.03 220);
+  --scenario-upside: oklch(0.65 0.14 150);
+  --scenario-upside-bg: oklch(0.18 0.04 145);
+  --scenario-downside: oklch(0.65 0.18 25);
+  --scenario-downside-bg: oklch(0.18 0.05 25);
+
+  /* ── Credit management (dark mode) ── */
+  --credit-hold: oklch(0.65 0.2 25);
+  --credit-hold-bg: oklch(0.18 0.06 25);
+  --credit-warning: oklch(0.7 0.15 85);
+  --credit-warning-bg: oklch(0.2 0.04 85);
+  --credit-released: oklch(0.62 0.14 150);
+  --credit-released-bg: oklch(0.18 0.04 145);
+
+  /* ── Bank reconciliation (dark mode) ── */
+  --recon-matched: oklch(0.62 0.14 160);
+  --recon-matched-bg: oklch(0.2 0.04 160);
+  --recon-unmatched: oklch(0.68 0.14 55);
+  --recon-unmatched-bg: oklch(0.2 0.05 55);
+  --recon-suggested: oklch(0.66 0.12 200);
+  --recon-suggested-bg: oklch(0.2 0.04 200);
+
+  /* ── SLA / urgency indicators (dark mode) ── */
+  --sla-ok: oklch(0.65 0.14 150);
+  --sla-ok-bg: oklch(0.18 0.04 145);
+  --sla-warning: oklch(0.72 0.15 85);
+  --sla-warning-bg: oklch(0.2 0.04 85);
+  --sla-breach: oklch(0.65 0.2 25);
+  --sla-breach-bg: oklch(0.18 0.05 25);
+
+  /* ── Financial data formatting (dark mode) ── */
+  --debit: oklch(0.65 0.14 150);
+  --credit: oklch(0.65 0.16 25);
+  --variance-positive: oklch(0.65 0.14 150);
+  --variance-negative: oklch(0.65 0.16 25);
+
+  /* ── Shadows (dark mode — deeper for depth on dark surfaces) ── */
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.28);
+  --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.32);
+  --shadow-card-hover: 0 8px 30px oklch(0 0 0 / 0.35);
+  --shadow-popover: 0 8px 30px oklch(0 0 0 / 0.4), 0 0 1px oklch(0 0 0 / 0.15);
+  --shadow-modal: 0 24px 48px oklch(0 0 0 / 0.5), 0 0 1px oklch(0 0 0 / 0.2);
+}

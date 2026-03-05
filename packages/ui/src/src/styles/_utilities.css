@@ -1,0 +1,867 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 7 · UTILITY LAYER (Terminal Mechanics)
+   ─────────────────────────────────────────────────────────────────────────
+   Domain-specific utilities for EMS grids, data cells, and market tickers.
+   All utilities consume density variables — they auto-adapt when ancestor
+   class changes (e.g. .compact → .ultra).
+
+   Organized into sub-sections:
+     7a  Numeric rigor (tabular-nums, monospace data)
+     7b  Density-driven sizing (row-h, col-pad, data-text)
+     7c  Cursor semantics (cell, grab)
+     7d  Performance containment (perf-grid)
+     7e  Market semantic color helpers
+     7f  Ticker flash animations
+     7g  Layout utility classes (semantic sizing)
+     7h  Financial data formatting utilities
+   ───────────────────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  /* ═══════════════════════════════════════════════════════════════════════
+     7a · NUMERIC RIGOR
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* tabular-nums: fixed-width digits for column alignment.
+     letter-spacing: -0.01em tightens mono-width number columns. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    font-feature-settings:
+      'tnum' 1,
+      'liga' 0,
+      'calt' 0;
+  }
+
+  /* Proportional nums for body text / prose contexts */
+  .pnum {
+    font-variant-numeric: proportional-nums;
+    font-feature-settings:
+      'pnum' 1,
+      'liga' 1;
+  }
+
+  /* Ordinal indicators (1st, 2nd, 3rd) */
+  .ordinal {
+    font-variant-numeric: ordinal;
+  }
+
+  /* Slashed zero — critical for distinguishing 0 from O in codes/refs */
+  .slashed-zero {
+    font-feature-settings: 'zero' 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7b · DENSITY-DRIVEN DATA SIZING
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Data text size — adapts to density profile */
+  .data-text {
+    font-size: var(--text-size-data);
+    line-height: 1.15;
+  }
+
+  /* Row / column primitives for DataTable, order book, journal editors */
+  .row-h {
+    height: var(--spacing-row-h);
+  }
+  .col-pad {
+    padding-left: var(--spacing-col-pad);
+    padding-right: var(--spacing-col-pad);
+  }
+
+  /* Section spacing */
+  .section-gap {
+    gap: var(--spacing-section-gap);
+  }
+  .card-pad {
+    padding: var(--spacing-card-pad);
+  }
+  .form-gap {
+    gap: var(--spacing-form-gap);
+  }
+  .inline-gap {
+    gap: var(--spacing-inline-gap);
+  }
+  .page-pad-x {
+    padding-left: var(--spacing-page-x);
+    padding-right: var(--spacing-page-x);
+  }
+  .page-pad-y {
+    padding-top: var(--spacing-page-y);
+    padding-bottom: var(--spacing-page-y);
+  }
+  .page-pad {
+    padding: var(--spacing-page-y) var(--spacing-page-x);
+  }
+  .table-cell-pad {
+    padding: var(--spacing-table-cell-y) var(--spacing-table-cell-x);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7c · CURSOR SEMANTICS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* cursor: cell signals "this is a data cell you can select/edit" */
+  .cursor-cell {
+    cursor: cell;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7d · PERFORMANCE CONTAINMENT
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Critical for 10k+ row grids (trial balances, transaction logs).
+     Apply to scroll-container or row-group wrapper, NOT individual rows. */
+  .perf-grid {
+    contain: content;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
+
+  /* Lighter containment for medium-size lists (100-1000 items) */
+  .perf-list {
+    contain: layout paint;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 200px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7e · MARKET SEMANTIC COLOR HELPERS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  .trade-up {
+    color: var(--trade-up);
+  }
+  .trade-down {
+    color: var(--trade-down);
+  }
+  .trade-flat {
+    color: var(--trade-flat);
+  }
+  .bid {
+    color: var(--bid);
+  }
+  .ask {
+    color: var(--ask);
+  }
+  .halted {
+    color: var(--halted);
+  }
+  .stale {
+    color: var(--stale);
+  }
+  .afterhours {
+    color: var(--afterhours);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7f · TICKER FLASH ANIMATIONS
+     ═══════════════════════════════════════════════════════════════════════
+     Two strategies, switched by density:
+
+     Default/Compact: BACKGROUND flash (0.6s ease-out)
+       - Visible, high-signal for price change pulse
+       - Acceptable repaint cost at ≤500 visible cells
+
+     Ultra: OUTLINE flash (0.6s ease-out)
+       - Lower repaint cost (no background composite)
+       - For ticker walls with 1000+ visible cells */
+
+  @keyframes flash-up-bg {
+    0% {
+      background-color: color-mix(in oklab, var(--trade-up), transparent 85%);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  @keyframes flash-down-bg {
+    0% {
+      background-color: color-mix(in oklab, var(--trade-down), transparent 85%);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  @keyframes flash-up-outline {
+    0% {
+      outline: 1px solid color-mix(in oklab, var(--trade-up), transparent 35%);
+      outline-offset: -1px;
+    }
+    100% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+    }
+  }
+  @keyframes flash-down-outline {
+    0% {
+      outline: 1px solid color-mix(in oklab, var(--trade-down), transparent 35%);
+      outline-offset: -1px;
+    }
+    100% {
+      outline: 1px solid transparent;
+      outline-offset: -1px;
+    }
+  }
+
+  .flash-up {
+    animation: flash-up-bg 0.6s ease-out;
+    will-change: background-color;
+  }
+  .flash-down {
+    animation: flash-down-bg 0.6s ease-out;
+    will-change: background-color;
+  }
+
+  /* Ultra density: switch to outline flash (cheaper composite layer) */
+  .ultra .flash-up {
+    animation: flash-up-outline 0.6s ease-out;
+    will-change: outline-color;
+  }
+  .ultra .flash-down {
+    animation: flash-down-outline 0.6s ease-out;
+    will-change: outline-color;
+  }
+
+  /* will-change reset — apply after animation completes to free GPU layer */
+  .will-change-off {
+    will-change: auto;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7g · LAYOUT UTILITIES (semantic sizing — no hardcoded values)
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  .page-min-h {
+    min-height: var(--layout-page-min-h);
+  }
+  .auth-min-h {
+    min-height: var(--layout-auth-min-h);
+  }
+  .auth-max-w {
+    max-width: var(--layout-auth-max-w);
+  }
+  .truncate-layout-sm {
+    max-width: var(--layout-truncate-sm);
+  }
+  .truncate-layout-md {
+    max-width: var(--layout-truncate-md);
+  }
+  .col-account {
+    width: var(--layout-col-account);
+  }
+  .col-amount {
+    width: var(--layout-col-amount);
+  }
+  .col-actions {
+    width: var(--layout-col-actions);
+  }
+  .col-key {
+    width: var(--layout-col-key);
+  }
+  .col-date {
+    width: var(--layout-col-date);
+  }
+  .select-width-sm {
+    width: var(--layout-select-sm);
+  }
+  .select-width-md {
+    width: var(--layout-select-md);
+  }
+  .select-width-lg {
+    width: var(--layout-select-lg);
+  }
+  .scroll-area-h {
+    height: var(--layout-scroll-area);
+  }
+  .skeleton-row {
+    height: var(--layout-skeleton-row);
+  }
+  .skeleton-table {
+    height: var(--layout-skeleton-table);
+  }
+  .skeleton-chart {
+    height: var(--layout-skeleton-chart);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h · FINANCIAL DATA FORMATTING UTILITIES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Debit/Credit text coloring */
+  .text-debit {
+    color: var(--debit);
+  }
+  .text-credit {
+    color: var(--credit);
+  }
+  .text-variance-pos {
+    color: var(--variance-positive);
+  }
+  .text-variance-neg {
+    color: var(--variance-negative);
+  }
+
+  /* Document status badges */
+  .badge-base,
+  [class*='badge-'] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.25;
+    border-radius: var(--radius-sm, 4px);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .badge-draft {
+    color: var(--status-draft);
+    background-color: var(--status-draft-bg);
+  }
+  .badge-pending {
+    color: var(--status-pending);
+    background-color: var(--status-pending-bg);
+  }
+  .badge-approved {
+    color: var(--status-approved);
+    background-color: var(--status-approved-bg);
+  }
+  .badge-posted {
+    color: var(--status-posted);
+    background-color: var(--status-posted-bg);
+  }
+  .badge-voided {
+    color: var(--status-voided);
+    background-color: var(--status-voided-bg);
+  }
+  .badge-overdue {
+    color: var(--status-overdue);
+    background-color: var(--status-overdue-bg);
+  }
+  .badge-paid {
+    color: var(--status-paid);
+    background-color: var(--status-paid-bg);
+  }
+
+  /* SLA indicator badges */
+  .sla-ok {
+    color: var(--sla-ok);
+    background-color: var(--sla-ok-bg);
+  }
+  .sla-warning {
+    color: var(--sla-warning);
+    background-color: var(--sla-warning-bg);
+  }
+  .sla-breach {
+    color: var(--sla-breach);
+    background-color: var(--sla-breach-bg);
+  }
+
+  /* ── Extended AP/AR lifecycle badges ── */
+  .badge-partially-paid {
+    color: var(--status-partially-paid);
+    background-color: var(--status-partially-paid-bg);
+  }
+  .badge-written-off {
+    color: var(--status-written-off);
+    background-color: var(--status-written-off-bg);
+  }
+  .badge-cancelled {
+    color: var(--status-cancelled);
+    background-color: var(--status-cancelled-bg);
+  }
+  .badge-on-hold {
+    color: var(--status-on-hold);
+    background-color: var(--status-on-hold-bg);
+  }
+  .badge-in-review {
+    color: var(--status-in-review);
+    background-color: var(--status-in-review-bg);
+  }
+  .badge-rejected {
+    color: var(--status-rejected);
+    background-color: var(--status-rejected-bg);
+  }
+  .badge-matched {
+    color: var(--status-matched);
+    background-color: var(--status-matched-bg);
+  }
+  .badge-unmatched {
+    color: var(--status-unmatched);
+    background-color: var(--status-unmatched-bg);
+  }
+  .badge-reversed {
+    color: var(--status-reversed);
+    background-color: var(--status-reversed-bg);
+  }
+  .badge-submitted {
+    color: var(--status-submitted);
+    background-color: var(--status-submitted-bg);
+  }
+  .badge-closed {
+    color: var(--status-closed);
+    background-color: var(--status-closed-bg);
+  }
+  .badge-locked {
+    color: var(--status-locked);
+    background-color: var(--status-locked-bg);
+  }
+
+  /* ── Supplier compliance badges ── */
+  .badge-compliance-valid {
+    color: var(--compliance-valid);
+    background-color: var(--compliance-valid-bg);
+  }
+  .badge-compliance-expiring {
+    color: var(--compliance-expiring);
+    background-color: var(--compliance-expiring-bg);
+  }
+  .badge-compliance-expired {
+    color: var(--compliance-expired);
+    background-color: var(--compliance-expired-bg);
+  }
+
+  /* ── Fixed asset lifecycle badges ── */
+  .badge-asset-cwip {
+    color: var(--asset-cwip);
+    background-color: var(--asset-cwip-bg);
+  }
+  .badge-asset-active {
+    color: var(--asset-active);
+    background-color: var(--asset-active-bg);
+  }
+  .badge-asset-impaired {
+    color: var(--asset-impaired);
+    background-color: var(--asset-impaired-bg);
+  }
+  .badge-asset-disposed {
+    color: var(--asset-disposed);
+    background-color: var(--asset-disposed-bg);
+  }
+
+  /* ── Tax lifecycle badges ── */
+  .badge-tax-open {
+    color: var(--tax-open);
+    background-color: var(--tax-open-bg);
+  }
+  .badge-tax-filed {
+    color: var(--tax-filed);
+    background-color: var(--tax-filed-bg);
+  }
+  .badge-tax-assessed {
+    color: var(--tax-assessed);
+    background-color: var(--tax-assessed-bg);
+  }
+  .badge-tax-adjusted {
+    color: var(--tax-adjusted);
+    background-color: var(--tax-adjusted-bg);
+  }
+
+  /* ── IFRS classification badges ── */
+  .badge-classification-ac {
+    color: var(--classification-ac);
+    background-color: var(--classification-ac-bg);
+  }
+  .badge-classification-fvtpl {
+    color: var(--classification-fvtpl);
+    background-color: var(--classification-fvtpl-bg);
+  }
+  .badge-classification-fvoci {
+    color: var(--classification-fvoci);
+    background-color: var(--classification-fvoci-bg);
+  }
+
+  /* ── Hedge accounting badges ── */
+  .badge-hedge-designated {
+    color: var(--hedge-designated);
+    background-color: var(--hedge-designated-bg);
+  }
+  .badge-hedge-effective {
+    color: var(--hedge-effective);
+    background-color: var(--hedge-effective-bg);
+  }
+  .badge-hedge-ineffective {
+    color: var(--hedge-ineffective);
+    background-color: var(--hedge-ineffective-bg);
+  }
+  .badge-hedge-discontinued {
+    color: var(--hedge-discontinued);
+    background-color: var(--hedge-discontinued-bg);
+  }
+
+  /* ── Provision badges (IAS 37) ── */
+  .badge-provision-recognized {
+    color: var(--provision-recognized);
+    background-color: var(--provision-recognized-bg);
+  }
+  .badge-provision-utilized {
+    color: var(--provision-utilized);
+    background-color: var(--provision-utilized-bg);
+  }
+  .badge-provision-unwound {
+    color: var(--provision-unwound);
+    background-color: var(--provision-unwound-bg);
+  }
+
+  /* ── Budget scenario badges ── */
+  .badge-scenario-base {
+    color: var(--scenario-base);
+    background-color: var(--scenario-base-bg);
+  }
+  .badge-scenario-upside {
+    color: var(--scenario-upside);
+    background-color: var(--scenario-upside-bg);
+  }
+  .badge-scenario-downside {
+    color: var(--scenario-downside);
+    background-color: var(--scenario-downside-bg);
+  }
+
+  /* ── Credit management badges ── */
+  .badge-credit-hold {
+    color: var(--credit-hold);
+    background-color: var(--credit-hold-bg);
+  }
+  .badge-credit-warning {
+    color: var(--credit-warning);
+    background-color: var(--credit-warning-bg);
+  }
+  .badge-credit-released {
+    color: var(--credit-released);
+    background-color: var(--credit-released-bg);
+  }
+
+  /* ── Bank reconciliation badges ── */
+  .badge-recon-matched {
+    color: var(--recon-matched);
+    background-color: var(--recon-matched-bg);
+  }
+  .badge-recon-unmatched {
+    color: var(--recon-unmatched);
+    background-color: var(--recon-unmatched-bg);
+  }
+  .badge-recon-suggested {
+    color: var(--recon-suggested);
+    background-color: var(--recon-suggested-bg);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-ii · MULTI-CURRENCY DISPLAY UTILITIES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Currency pair display (e.g., USD/EUR) — Bloomberg-style inline pair */
+  .currency-pair {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.125rem;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* Right-aligned amounts — standard for financial columns */
+  .amount-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+
+  /* Mono data text — for codes, references, IDs in grids */
+  .text-mono-data {
+    font-family: var(--font-mono);
+    font-size: var(--text-size-data);
+    letter-spacing: -0.02em;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-iii · EXTENDED COLUMN WIDTH UTILITIES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  .col-currency {
+    width: var(--layout-col-currency);
+  }
+  .col-rate {
+    width: var(--layout-col-rate);
+  }
+  .col-reference {
+    width: var(--layout-col-reference);
+  }
+  .col-description {
+    width: var(--layout-col-description);
+  }
+  .col-status {
+    width: var(--layout-col-status);
+  }
+  .aging-bucket {
+    width: var(--layout-aging-bucket);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-iv · DOCUMENT LAYOUT UTILITIES
+     ═══════════════════════════════════════════════════════════════════════
+     Structured document layouts: invoice headers, line items, totals */
+
+  /* Document header: company info + document meta side-by-side */
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: var(--spacing-section-gap);
+    border-bottom: 2px solid var(--border-strong);
+  }
+
+  /* Line items table area */
+  .doc-lines {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .doc-lines th,
+  .doc-lines td {
+    padding: var(--spacing-table-cell-y) var(--spacing-table-cell-x);
+    text-align: left;
+  }
+  .doc-lines th {
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+  .doc-lines td {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .doc-lines td:last-child,
+  .doc-lines th:last-child {
+    text-align: right;
+  }
+
+  /* Totals block — right-aligned summary (subtotal, tax, total) */
+  .doc-totals {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    padding-top: var(--spacing-form-gap);
+    border-top: 2px solid var(--border-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .doc-totals-row {
+    display: flex;
+    justify-content: space-between;
+    min-width: 240px;
+  }
+  .doc-totals-row:last-child {
+    font-weight: 700;
+    font-size: 1.125em;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-v · WORKSPACE SPLIT-SCREEN LAYOUT
+     ═══════════════════════════════════════════════════════════════════════
+     Bloomberg-style split workspace: two panels side-by-side with
+     a resizable gap. Common for: GL entry + preview,
+     PO + invoice match, bank statement + reconciliation. */
+
+  .workspace-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-split-gap);
+    height: 100%;
+  }
+  @media (max-width: 1024px) {
+    .workspace-split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-vi · WIZARD / STEPPER UTILITIES
+     ═══════════════════════════════════════════════════════════════════════
+     Multi-step flows: purchase orders, period close, journal posting */
+
+  .wizard-steps {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-wizard-step);
+    width: 100%;
+  }
+  .wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--text-size-data);
+    white-space: nowrap;
+  }
+  .wizard-step-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  /* Density-scaled wizard indicator */
+  .compact .wizard-step-indicator {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+  }
+  .ultra .wizard-step-indicator {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.6875rem;
+  }
+  .touch-mode .wizard-step-indicator {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.875rem;
+  }
+  .wizard-step[data-active] .wizard-step-indicator {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .wizard-step[data-completed] .wizard-step-indicator {
+    background-color: var(--success);
+    color: var(--success-foreground);
+  }
+  .wizard-connector {
+    flex: 1;
+    height: 2px;
+    background-color: var(--border);
+  }
+  .wizard-step[data-completed] + .wizard-connector {
+    background-color: var(--success);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-vii · AGING BUCKET DISPLAY
+     ═══════════════════════════════════════════════════════════════════════
+     AR/AP aging summary (Current, 30, 60, 90, 120+ days) */
+
+  .aging-buckets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--layout-aging-bucket), 1fr));
+    gap: var(--spacing-form-gap);
+  }
+  .aging-bucket-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-card-pad);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .aging-bucket-label {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .aging-bucket-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-viii · TREE INDENT (COA hierarchies, GL drill-down)
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  .tree-indent-1 { padding-left: var(--spacing-tree-indent); }
+  .tree-indent-2 { padding-left: calc(var(--spacing-tree-indent) * 2); }
+  .tree-indent-3 { padding-left: calc(var(--spacing-tree-indent) * 3); }
+  .tree-indent-4 { padding-left: calc(var(--spacing-tree-indent) * 4); }
+  .tree-indent-5 { padding-left: calc(var(--spacing-tree-indent) * 5); }
+  .tree-indent-6 { padding-left: calc(var(--spacing-tree-indent) * 6); }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7h-ix · ACCESSIBILITY INDICATOR UTILITIES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Live indicator — pulsing dot for real-time data streams */
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .live-indicator::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--success);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Gauge fill — horizontal progress bar for budget utilization, credit limit */
+  .gauge-fill {
+    height: 0.375rem;
+    border-radius: 9999px;
+    background-color: var(--primary);
+    transition: width 0.3s ease-out;
+  }
+  .gauge-track {
+    width: 100%;
+    height: 0.375rem;
+    border-radius: 9999px;
+    background-color: var(--surface-200);
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7i · ERP GRID LAYOUT PATTERNS
+     ═══════════════════════════════════════════════════════════════════════
+     Common ERP dashboard and data grid layout compositions */
+
+  /* Holy Grail ERP layout: sidebar + main + optional right panel */
+  .erp-layout {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100dvh;
+  }
+
+  /* Dashboard grid: auto-fit cards with minimum 280px width */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-section-gap);
+  }
+
+  /* KPI row: horizontal strip of metric cards */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-form-gap);
+  }
+
+  /* Form layout: 2-column responsive grid for settings/forms */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-form-gap);
+  }
+  @media (min-width: 768px) {
+    .form-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* Sticky header for data tables */
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    background-color: var(--surface-100);
+  }
+}

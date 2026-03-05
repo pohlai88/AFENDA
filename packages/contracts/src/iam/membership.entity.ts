@@ -15,7 +15,8 @@ import {
   PrincipalIdSchema,
 } from "../shared/ids.js";
 import { UtcDateTimeSchema } from "../shared/datetime.js";
-import { RoleTypeValues, type RoleType } from "./role-type.js";
+import { RoleTypeValues } from "./role-type.js";
+import type { RoleType } from "./role-type.js";
 
 // ─── PartyRole ───────────────────────────────────────────────────────────────
 
@@ -25,10 +26,11 @@ import { RoleTypeValues, type RoleType } from "./role-type.js";
  * Example: Acme Corp (party) is a "supplier" (roleType) in BuyerInc (org).
  */
 export const PartyRoleSchema = z.object({
-  id:       PartyRoleIdSchema,
-  orgId:    OrgIdSchema,
-  partyId:  PartyIdSchema,
-  roleType: z.enum(RoleTypeValues),
+  id:        PartyRoleIdSchema,
+  orgId:     OrgIdSchema,
+  partyId:   PartyIdSchema,
+  roleType:  z.enum(RoleTypeValues),
+  createdAt: UtcDateTimeSchema,
 });
 
 export type PartyRole = z.infer<typeof PartyRoleSchema>;

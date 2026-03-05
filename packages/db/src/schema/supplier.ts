@@ -1,20 +1,9 @@
-import { pgTable, text, uuid, timestamp, index, pgPolicy, pgEnum } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { pgTable, text, uuid, unique, index, pgEnum } from "drizzle-orm/pg-core";
 import { organization, iamPrincipal } from "./iam.js";
 import { SupplierStatusValues } from "@afenda/contracts";
+import { tsz, rlsOrg } from "./_helpers.js";
 
 export const supplierStatusEnum = pgEnum("supplier_status", SupplierStatusValues);
-
-const tsz = (name: string) => timestamp(name, { withTimezone: true });
-
-// ─── RLS policy helper: org isolation via app.org_id GUC ──────────────────────
-const rlsOrg = pgPolicy("org_isolation", {
-  as: "permissive",
-  for: "all",
-  to: "public",
-  using: sql`org_id = current_setting('app.org_id', true)::uuid`,
-  withCheck: sql`org_id = current_setting('app.org_id', true)::uuid`,
-});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SUPPLIER — position table (Party Model).
@@ -43,8 +32,9 @@ export const supplier = pgTable(
     updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
   (t) => [
+    unique("supplier_org_counterparty_uidx").on(t.orgId, t.supplierOrgId),
     index("supplier_org_idx").on(t.orgId),
     index("supplier_counterparty_idx").on(t.supplierOrgId),
     rlsOrg,
-  ]
+  ],
 );

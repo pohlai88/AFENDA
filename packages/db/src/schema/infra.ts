@@ -1,19 +1,9 @@
 import {
-  pgTable, text, uuid, timestamp, bigint, integer, boolean, jsonb, index, primaryKey, pgPolicy,
+  pgTable, text, uuid, bigint, integer, boolean, jsonb, index, primaryKey, check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { organization, iamPrincipal } from "./iam.js";
-
-const tsz = (name: string) => timestamp(name, { withTimezone: true });
-
-// ─── RLS policy helper: org isolation via app.org_id GUC ──────────────────────
-const rlsOrg = pgPolicy("org_isolation", {
-  as: "permissive",
-  for: "all",
-  to: "public",
-  using: sql`org_id = current_setting('app.org_id', true)::uuid`,
-  withCheck: sql`org_id = current_setting('app.org_id', true)::uuid`,
-});
+import { tsz, rlsOrg } from "./_helpers.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OUTBOX (append-only — no updates, no deletes)
@@ -32,9 +22,10 @@ export const outboxEvent = pgTable(
     deliveredAt: tsz("delivered_at"),
   },
   (t) => [
-    rlsOrg,
     index("outbox_undelivered_idx").on(t.delivered, t.occurredAt),
-  ]
+    index("outbox_org_idx").on(t.orgId),
+    rlsOrg,
+  ],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,7 +46,12 @@ export const idempotency = pgTable(
     updatedAt: tsz("updated_at").defaultNow().notNull(),
     expiresAt: tsz("expires_at").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.orgId, t.command, t.key] }), rlsOrg]
+  (t) => [
+    primaryKey({ columns: [t.orgId, t.command, t.key] }),
+    check("idempotency_status_check", sql`${t.status} IN ('pending','done')`),
+    index("idempotency_expires_at_idx").on(t.expiresAt),
+    rlsOrg,
+  ],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -75,10 +71,12 @@ export const auditLog = pgTable(
     details: jsonb("details"),
   },
   (t) => [
-    rlsOrg,
     index("audit_log_org_entity_idx").on(t.orgId, t.entityType, t.entityId),
     index("audit_log_correlation_idx").on(t.correlationId),
-  ]
+    index("audit_log_org_time_idx").on(t.orgId, t.occurredAt),
+    index("audit_log_actor_idx").on(t.actorPrincipalId),
+    rlsOrg,
+  ],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -95,18 +93,27 @@ export const sequence = pgTable(
     padWidth: integer("pad_width").notNull().default(4),
     updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
-  (t) => [primaryKey({ columns: [t.orgId, t.entityType, t.periodKey] }), rlsOrg]
+  (t) => [
+    primaryKey({ columns: [t.orgId, t.entityType, t.periodKey] }),
+    rlsOrg,
+  ],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEAD LETTER (failed worker jobs after N retries)
 // ─────────────────────────────────────────────────────────────────────────────
-export const deadLetterJob = pgTable("dead_letter_job", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  orgId: uuid("org_id").references(() => organization.id, { onDelete: "cascade" }), // nullable: some jobs are global
-  taskName: text("task_name").notNull(),
-  payload: jsonb("payload").notNull(),
-  lastError: text("last_error"),
-  attempts: bigint("attempts", { mode: "number" }).notNull(),
-  failedAt: tsz("failed_at").defaultNow().notNull(),
-});
+export const deadLetterJob = pgTable(
+  "dead_letter_job",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    orgId: uuid("org_id").references(() => organization.id, { onDelete: "cascade" }), // nullable: some jobs are global
+    taskName: text("task_name").notNull(),
+    payload: jsonb("payload").notNull(),
+    lastError: text("last_error"),
+    attempts: bigint("attempts", { mode: "number" }).notNull(),
+    failedAt: tsz("failed_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("dead_letter_org_idx").on(t.orgId),
+  ],
+);

@@ -29,7 +29,9 @@ export const Permissions = {
   apInvoiceSubmit:   "ap.invoice.submit",
   apInvoiceApprove:  "ap.invoice.approve",
   glJournalPost:     "gl.journal.post",
+  apInvoiceMarkPaid: "ap.invoice.markpaid",
   evidenceAttach:    "evidence.attach",
+  auditLogRead:      "audit.log.read",
   adminTenantManage: "admin.tenant.manage",
   supplierOnboard:   "supplier.onboard",
 } as const;

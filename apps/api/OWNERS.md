@@ -15,8 +15,13 @@ Fastify HTTP API server. Routes, middleware, and request/response handling.
 - Request validation (using contracts schemas)
 - Middleware (auth, rate-limit, correlation ID)
 - Health/readiness endpoints
+- Shared response helpers and route guards (`helpers/`)
 
 ## Does NOT Belong Here
 - Direct DB queries (→ use `@afenda/core` services instead)
-- Zod schema definitions (→ `@afenda/contracts`)
+- Zod schema definitions for domain entities/commands (→ `@afenda/contracts`)
 - Background job processing (→ `apps/worker`)
+
+> **Note:** API-layer response schemas (presign data, health responses) and
+> inline Zod schemas for route `body`/`response` options ARE allowed here.
+> Only *domain* schemas (entities, commands) must live in `@afenda/contracts`.

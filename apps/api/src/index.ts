@@ -4,9 +4,18 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
 
+// OTel must bootstrap before any other imports that load http/pg
+import { bootstrapTelemetry } from "@afenda/core";
+await bootstrapTelemetry("afenda-api");
+
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
+import {
+  validatorCompiler,
+  serializerCompiler,
+} from "fastify-type-provider-zod";
+import { z } from "zod";
 import { CorrelationIdHeader, OrgIdHeader } from "@afenda/contracts";
 import {
   validateEnv,
@@ -20,10 +29,17 @@ import {
 import { dbPlugin } from "./plugins/db.js";
 import { authPlugin } from "./plugins/auth.js";
 import { idempotencyPlugin } from "./plugins/idempotency.js";
+import { swaggerPlugin } from "./plugins/swagger.js";
+
+// Helpers
+import { ERR } from "./helpers/responses.js";
 
 // Routes
 import { evidenceRoutes } from "./routes/evidence.js";
 import { iamRoutes } from "./routes/iam.js";
+import { invoiceRoutes } from "./routes/invoices.js";
+import { glRoutes } from "./routes/gl.js";
+import { auditRoutes } from "./routes/audit.js";
 
 // Type augmentations (side-effect import — registers Fastify generics)
 import "./types.js";
@@ -31,9 +47,31 @@ import "./types.js";
 // ── Validate environment before anything else ────────────────────────────────
 const env = validateEnv(ApiEnvSchema);
 
+const isDev = process.env.NODE_ENV !== "production";
+
 // ─── Build app (exported for testing) ────────────────────────────────────────
 export async function buildApp() {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: {
+      level: process.env.LOG_LEVEL ?? (isDev ? "debug" : "info"),
+      ...(isDev
+        ? {
+            transport: {
+              target: "pino-pretty",
+              options: {
+                colorize: true,
+                translateTime: "HH:MM:ss.l",
+                ignore: "pid,hostname",
+              },
+            },
+          }
+        : {}),
+    },
+  });
+
+  // ── Zod type provider — auto-validates request body/querystring/params ────
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   // ── Plugins — registration order determines onRequest hook firing order ─────
   //
@@ -46,6 +84,9 @@ export async function buildApp() {
   //   7. idempotencyPlugin → preHandler: dedup writes
 
   await app.register(dbPlugin);
+
+  // ── OpenAPI spec + Scalar docs UI ──────────────────────────────────────────
+  await app.register(swaggerPlugin);
 
   // ── CORS ───────────────────────────────────────────────────────────────────
   await app.register(cors, {
@@ -115,7 +156,7 @@ export async function buildApp() {
 
     reply.status(statusCode).send({
       error: {
-        code: statusCode >= 500 ? "internalError" : "requestError",
+        code: statusCode >= 500 ? ERR.INTERNAL : ERR.VALIDATION,
         message,
       },
       correlationId,
@@ -123,20 +164,53 @@ export async function buildApp() {
   });
 
   // ── Health ─────────────────────────────────────────────────────────────────
-  app.get("/healthz", async () => ({ ok: true }));
+  app.get("/healthz", {
+    schema: {
+      description: "Liveness probe — returns 200 if the process is alive.",
+      tags: ["Health"],
+      response: { 200: z.object({ ok: z.boolean() }) },
+    },
+  }, async () => ({ ok: true }));
 
-  app.get("/readyz", async () => {
+  app.get("/readyz", {
+    schema: {
+      description: "Readiness probe — returns 200 if DB connection and migrations are current.",
+      tags: ["Health"],
+      response: {
+        200: z.object({
+          ok: z.boolean(),
+          db: z.string(),
+          latencyMs: z.number(),
+          migrationHash: z.string().nullable(),
+          migratedAt: z.string().nullable(),
+        }),
+      },
+    },
+  }, async () => {
     const health = await checkDbHealth(app.db);
     return {
       ok: health.ok,
       db: health.ok ? "connected" : "error",
       latencyMs: health.latencyMs,
-      migration: health.migration ?? null,
+      migrationHash: health.migrationHash ?? null,
+      migratedAt: health.migratedAt ?? null,
     };
   });
 
   // ── API v1 ─────────────────────────────────────────────────────────────────
-  app.get("/v1", async () => ({
+  app.get("/v1", {
+    schema: {
+      description: "API version info.",
+      tags: ["Health"],
+      response: {
+        200: z.object({
+          service: z.string(),
+          version: z.string(),
+          timestamp: z.string().datetime(),
+        }),
+      },
+    },
+  }, async () => ({
     service: "afenda-api",
     version: "v1",
     timestamp: new Date().toISOString(),
@@ -145,22 +219,45 @@ export async function buildApp() {
   // ── Domain routes ──────────────────────────────────────────────────────────
   await app.register(evidenceRoutes, { prefix: "/v1" });
   await app.register(iamRoutes, { prefix: "/v1" });
+  await app.register(invoiceRoutes, { prefix: "/v1" });
+  await app.register(glRoutes, { prefix: "/v1" });
+  await app.register(auditRoutes, { prefix: "/v1" });
 
   return app;
 }
 
-// ─── Bootstrap ────────────────────────────────────────────────────────────────
-const port = env.API_PORT;
+// ─── Bootstrap (skip when imported as a module by tests) ──────────────────────
+if (!process.env["VITEST"]) {
+  const port = env.API_PORT;
 
-const app = await buildApp();
-await app.listen({ port, host: "0.0.0.0" });
-app.log.info({ config: redactEnv(env) }, "API config (redacted)");
-app.log.info(`API listening on :${port}`);
-app.log.info(`  GET  /healthz`);
-app.log.info(`  GET  /readyz`);
-app.log.info(`  GET  /v1`);
-app.log.info(`  GET  /v1/me`);
-app.log.info(`  GET  /v1/me/contexts`);
-app.log.info(`  POST /v1/evidence/presign`);
-app.log.info(`  POST /v1/documents`);
-app.log.info(`  POST /v1/commands/attach-evidence`);
+  const app = await buildApp();
+  await app.listen({ port, host: "0.0.0.0" });
+  app.log.info({ config: redactEnv(env) }, "API config (redacted)");
+  app.log.info(`API listening on :${port}`);
+  app.log.info(`  GET  /healthz`);
+  app.log.info(`  GET  /readyz`);
+  app.log.info(`  GET  /v1`);
+  app.log.info(`  GET  /v1/me`);
+  app.log.info(`  GET  /v1/me/contexts`);
+  app.log.info(`  POST /v1/evidence/presign`);
+  app.log.info(`  POST /v1/documents`);
+  app.log.info(`  POST /v1/commands/attach-evidence`);
+  app.log.info(`  POST /v1/commands/submit-invoice`);
+  app.log.info(`  POST /v1/commands/approve-invoice`);
+  app.log.info(`  POST /v1/commands/reject-invoice`);
+  app.log.info(`  POST /v1/commands/void-invoice`);
+  app.log.info(`  POST /v1/commands/mark-paid`);
+  app.log.info(`  GET  /v1/invoices`);
+  app.log.info(`  GET  /v1/invoices/:invoiceId`);
+  app.log.info(`  GET  /v1/invoices/:invoiceId/history`);
+  app.log.info(`  POST /v1/commands/post-to-gl`);
+  app.log.info(`  POST /v1/commands/reverse-entry`);
+  app.log.info(`  GET  /v1/gl/journal-entries`);
+  app.log.info(`  GET  /v1/gl/journal-entries/:entryId`);
+  app.log.info(`  GET  /v1/gl/accounts`);
+  app.log.info(`  GET  /v1/gl/trial-balance`);
+  app.log.info(`  GET  /v1/audit-logs`);
+  app.log.info(`  GET  /v1/audit-logs/:entityType/:entityId`);
+  app.log.info(`  GET  /v1/docs              (API reference)`);
+  app.log.info(`  GET  /v1/docs/openapi.json (OpenAPI spec)`);
+};

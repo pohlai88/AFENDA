@@ -18,6 +18,7 @@ import {
   InvoiceIdSchema,
   SupplierIdSchema,
   OrgIdSchema,
+  PrincipalIdSchema,
 } from "../shared/ids.js";
 import { CurrencyCodeSchema } from "../shared/money.js";
 import { UtcDateTimeSchema, DateSchema } from "../shared/datetime.js";
@@ -68,10 +69,19 @@ export const InvoiceSchema = z.object({
 
   dueDate: DateSchema.nullable(),
 
-  poReference: z.string().trim().min(1).max(64).nullable(),
-
+  submittedByPrincipalId: PrincipalIdSchema.nullable(),
   // Null until the invoice leaves draft state.
   submittedAt: UtcDateTimeSchema.nullable(),
+
+  poReference: z.string().trim().min(1).max(64).nullable(),
+
+  // Sprint 2: payment fields — populated when status = "paid"
+  paidAt: UtcDateTimeSchema.nullable(),
+  paidByPrincipalId: PrincipalIdSchema.nullable(),
+  paymentReference: z.string().trim().min(1).max(128).nullable(),
+
+  createdAt: UtcDateTimeSchema,
+  updatedAt: UtcDateTimeSchema,
 });
 
 export type Invoice = z.infer<typeof InvoiceSchema>;

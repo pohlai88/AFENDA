@@ -7,16 +7,21 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck"],
+      "outputs": []
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "outputs": []
     },
     "test": {
-      "dependsOn": ["^test"]
+      "outputs": ["coverage/**"]
+    },
+    "e2e": {
+      "cache": false,
+      "dependsOn": ["build"]
     }
   }
 }

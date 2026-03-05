@@ -140,3 +140,12 @@ export function canPostToGL(ctx: PolicyContext): PolicyResult {
   if (permDenied) return permDenied;
   return { allowed: true };
 }
+
+/**
+ * Only principals with ap.invoice.markpaid may mark invoices as paid.
+ */
+export function canMarkPaid(ctx: PolicyContext): PolicyResult {
+  const permDenied = requirePermission(ctx, Permissions.apInvoiceMarkPaid);
+  if (permDenied) return permDenied;
+  return { allowed: true };
+}

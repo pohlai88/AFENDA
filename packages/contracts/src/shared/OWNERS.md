@@ -41,6 +41,8 @@ Without that comment it will be moved to a domain folder at the next review.
 | `envelope.ts` | `ErrorEnvelopeSchema`, `ErrorEnvelope`, `makeSuccessEnvelopeSchema()`, `SuccessEnvelope<T>`, `makeCursorEnvelopeSchema()`, `CursorEnvelope<T>` | Schema factories (not constants) — depends on `ids` + `errors` |
 | `outbox.ts` | `JsonValueSchema`, `JsonValue`, `JsonObjectSchema`, `JsonObject`, `OutboxEventSchema`, `OutboxEvent` | Depends on `ids`; `.passthrough()` for forward-compat |
 | `audit.ts` | `AuditActionValues`, `AuditAction`, `AuditEntityTypeValues`, `AuditEntityType` | Controlled vocabulary — no Zod, pure TS types. Adding a new action/entity type requires updating this file. |
+| `audit-query.ts` | `AuditLogFilterSchema`, `AuditLogFilter`, `AuditLogRowSchema`, `AuditLogRow` | Read-path Zod schemas for querying the audit log. Depends on `audit.ts`, `ids.ts`, `datetime.ts`. |
+| `sequence.ts` | `SequenceEntityTypeValues`, `SequenceEntityType` | Closed set of entities using gap-free numbering; adding a value requires seeding sequence rows |
 | `index.ts` | Domain barrel — re-exports all of the above | Primitives before composites; exports only, no logic |
 
 ---

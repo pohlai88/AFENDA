@@ -1,0 +1,267 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 8 · ACCESSIBILITY
+   ─────────────────────────────────────────────────────────────────────────
+   §8 Motion Safety + §9 Forced Colors (Enterprise Lockdown)
+
+   Two independent motion-reduction mechanisms (both must work):
+
+   1. OS preference: @media (prefers-reduced-motion: reduce)
+      Respects system accessibility setting. Automatic.
+
+   2. App override: .reduce-motion class on any container
+      User toggle in app preferences. Allows motion-sensitive traders
+      to disable animations while keeping OS setting unrestricted.
+
+   Both disable ALL animations AND transitions globally.
+   !important is intentional — must override inline styles from JS
+   animation libraries (Framer Motion, react-spring, etc.).
+
+   animation-duration: 0.01ms (not 0ms) — some browsers treat 0ms
+   as "no value" and fall back to default duration.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §8a · PREFERS-REDUCED-MOTION (OS level)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §8b · APP-LEVEL MOTION OVERRIDE (.reduce-motion class)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §9 · FORCED COLORS (Enterprise Lockdown Safety)
+   ═══════════════════════════════════════════════════════════════════════
+   Windows High Contrast Mode forcibly remaps all colors to system palette.
+   Enterprise trading desks often have this enabled by IT policy.
+
+   We preserve:
+     - Focus visibility (Highlight system color)
+     - Selection visibility (Highlight + HighlightText)
+
+   For market semantics: directional glyph indicators (▲/▼/■) so meaning
+   survives even when the OS remaps all colors to system text. This is the
+   safest institutional approach — data meaning is never lost.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+  ::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  /* Directional glyph indicators — preserve meaning when colors are nuked */
+  .trade-up::before {
+    content: '▲ ';
+  }
+  .trade-down::before {
+    content: '▼ ';
+  }
+  .trade-flat::before {
+    content: '■ ';
+  }
+  .halted::before {
+    content: '⏸ ';
+  }
+  .stale::before {
+    content: '◌ ';
+  }
+  .afterhours::before {
+    content: '☾ ';
+  }
+
+  /* Ensure links remain distinguishable */
+  a {
+    forced-color-adjust: none;
+    color: LinkText;
+  }
+  a:visited {
+    color: VisitedText;
+  }
+
+  /* Ensure form elements remain visible */
+  button,
+  input,
+  select,
+  textarea {
+    border: 1px solid ButtonText;
+  }
+
+  /* Status badges use system colors — all lifecycle statuses */
+  .badge-draft,
+  .badge-pending,
+  .badge-approved,
+  .badge-posted,
+  .badge-voided,
+  .badge-overdue,
+  .badge-paid,
+  .badge-partially-paid,
+  .badge-written-off,
+  .badge-cancelled,
+  .badge-on-hold,
+  .badge-in-review,
+  .badge-rejected,
+  .badge-matched,
+  .badge-unmatched,
+  .badge-reversed,
+  .badge-submitted,
+  .badge-closed,
+  .badge-locked {
+    forced-color-adjust: none;
+    border: 1px solid currentColor;
+  }
+
+  /* Compliance, asset, tax, IFRS, hedge, provision badges */
+  .badge-compliance-valid,
+  .badge-compliance-expiring,
+  .badge-compliance-expired,
+  .badge-asset-cwip,
+  .badge-asset-active,
+  .badge-asset-impaired,
+  .badge-asset-disposed,
+  .badge-tax-open,
+  .badge-tax-filed,
+  .badge-tax-assessed,
+  .badge-tax-adjusted,
+  .badge-classification-ac,
+  .badge-classification-fvtpl,
+  .badge-classification-fvoci,
+  .badge-hedge-designated,
+  .badge-hedge-effective,
+  .badge-hedge-ineffective,
+  .badge-hedge-discontinued,
+  .badge-provision-recognized,
+  .badge-provision-utilized,
+  .badge-provision-unwound,
+  .badge-scenario-base,
+  .badge-scenario-upside,
+  .badge-scenario-downside,
+  .badge-credit-hold,
+  .badge-credit-warning,
+  .badge-credit-released,
+  .badge-recon-matched,
+  .badge-recon-unmatched,
+  .badge-recon-suggested {
+    forced-color-adjust: none;
+    border: 1px solid currentColor;
+  }
+
+  /* Extended glyph indicators for document statuses */
+  .badge-approved::before { content: '✓ '; }
+  .badge-rejected::before { content: '✗ '; }
+  .badge-on-hold::before { content: '⏳ '; }
+  .badge-locked::before { content: '▣ '; }
+  .badge-overdue::before { content: '⚠ '; }
+  .badge-voided::before { content: '○ '; }
+
+  /* Domain badge glyph indicators — Supplier Compliance */
+  .badge-compliance-valid::before { content: '✓ '; }
+  .badge-compliance-expiring::before { content: '⏳ '; }
+  .badge-compliance-expired::before { content: '✗ '; }
+
+  /* Domain badge glyph indicators — Fixed Asset Lifecycle */
+  .badge-asset-cwip::before { content: '⚙ '; }
+  .badge-asset-active::before { content: '● '; }
+  .badge-asset-impaired::before { content: '▼ '; }
+  .badge-asset-disposed::before { content: '○ '; }
+
+  /* Domain badge glyph indicators — Tax Lifecycle */
+  .badge-tax-open::before { content: '○ '; }
+  .badge-tax-filed::before { content: '↗ '; }
+  .badge-tax-assessed::before { content: '● '; }
+  .badge-tax-adjusted::before { content: '↻ '; }
+
+  /* Domain badge glyph indicators — IFRS Classification */
+  .badge-classification-ac::before { content: '▬ '; }
+  .badge-classification-fvtpl::before { content: '◆ '; }
+  .badge-classification-fvoci::before { content: '◇ '; }
+
+  /* Domain badge glyph indicators — Hedge Accounting */
+  .badge-hedge-designated::before { content: '⊕ '; }
+  .badge-hedge-effective::before { content: '✓ '; }
+  .badge-hedge-ineffective::before { content: '✗ '; }
+  .badge-hedge-discontinued::before { content: '⊘ '; }
+
+  /* Domain badge glyph indicators — Provisions (IAS 37) */
+  .badge-provision-recognized::before { content: '▶ '; }
+  .badge-provision-utilized::before { content: '◀ '; }
+  .badge-provision-unwound::before { content: '↻ '; }
+
+  /* Domain badge glyph indicators — Budget & Scenario */
+  .badge-scenario-base::before { content: '▬ '; }
+  .badge-scenario-upside::before { content: '▲ '; }
+  .badge-scenario-downside::before { content: '▼ '; }
+
+  /* Domain badge glyph indicators — Credit Management */
+  .badge-credit-hold::before { content: '⛔ '; }
+  .badge-credit-warning::before { content: '⚠ '; }
+  .badge-credit-released::before { content: '✓ '; }
+
+  /* Domain badge glyph indicators — Bank Reconciliation */
+  .badge-recon-matched::before { content: '⇄ '; }
+  .badge-recon-unmatched::before { content: '≠ '; }
+  .badge-recon-suggested::before { content: '? '; }
+
+  /* SLA badges need forced-color border */
+  .sla-ok,
+  .sla-warning,
+  .sla-breach {
+    forced-color-adjust: none;
+    border: 1px solid currentColor;
+  }
+
+  /* Gauge/progress tracks need visible border */
+  .gauge-track {
+    border: 1px solid ButtonText;
+  }
+
+  /* Wizard step indicators */
+  .wizard-step-indicator {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PREFERS-CONTRAST (Enhanced Contrast)
+   ═══════════════════════════════════════════════════════════════════════
+   Supplements .high-contrast class for OS-level contrast preference. */
+
+@media (prefers-contrast: more) {
+  :root {
+    --border-subtle: oklch(0.82 0 0);
+    --border: oklch(0.7 0 0);
+    --muted-foreground: oklch(0.35 0.02 260);
+  }
+
+  /* Boost all badge border contrast */
+  [class*='badge-'] {
+    border: 1px solid currentColor;
+  }
+
+  /* Ensure focus ring is extra visible */
+  :focus-visible {
+    outline-width: 3px;
+  }
+}

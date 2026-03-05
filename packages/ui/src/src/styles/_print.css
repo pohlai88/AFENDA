@@ -1,0 +1,213 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 9 · PRINT SAFETY
+   ─────────────────────────────────────────────────────────────────────────
+   EMS blotters, trial balances, and journal reports must print cleanly.
+   Strip dark backgrounds, force black text, disable all animations,
+   and hide scrollbars from printed output.
+
+   Additional enterprise print optimizations:
+     - Page break controls for multi-page reports
+     - Table header repetition across pages
+     - URL exposure for audit trail
+     - Sidebar/nav hiding
+   ───────────────────────────────────────────────────────────────────────── */
+
+@media print {
+  /* ── Base reset ── */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  /* ── Disable animations ── */
+  .flash-up,
+  .flash-down {
+    animation: none !important;
+  }
+
+  /* ── Hide scrollbars/chrome ── */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ── Hide navigation elements ── */
+  [data-sidebar],
+  [role='navigation'],
+  .no-print {
+    display: none !important;
+  }
+
+  /* ── Table optimization for multi-page reports ── */
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* ── Page break helpers ── */
+  .page-break-before {
+    page-break-before: always;
+  }
+  .page-break-after {
+    page-break-after: always;
+  }
+  .no-page-break {
+    page-break-inside: avoid;
+  }
+
+  /* ── Expose URLs for audit trail ── */
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 8pt;
+    color: #666;
+  }
+
+  /* ── Financial data: ensure tabular alignment prints correctly ── */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ── Status badges: border-only for monochrome printers ── */
+  [class*='badge-'] {
+    background: transparent !important;
+    border: 1px solid currentColor;
+    color: black !important;
+  }
+
+  /* SLA badges */
+  .sla-ok,
+  .sla-warning,
+  .sla-breach {
+    background: transparent !important;
+    border: 1px solid currentColor;
+    color: black !important;
+  }
+
+  /* ── Document print layout ── */
+
+  /* @page rules — standard ERP report margins (ISO 216 A4 safe area) */
+  @page {
+    margin: 15mm 12mm;
+    size: A4 portrait;
+  }
+  @page :first {
+    margin-top: 20mm;
+  }
+
+  /* Invoice / remittance print layout */
+  .doc-header {
+    border-bottom: 2px solid black !important;
+  }
+  .doc-totals {
+    border-top: 2px solid black !important;
+  }
+  .doc-lines th {
+    border-bottom: 1px solid black !important;
+    font-weight: bold;
+  }
+  .doc-lines td {
+    border-bottom: 0.5pt solid #999 !important;
+  }
+
+  /* ── Aging report print — ensure bucket cards print as table ── */
+  .aging-buckets {
+    display: table !important;
+    width: 100%;
+  }
+  .aging-bucket-card {
+    display: table-cell !important;
+    border: 0.5pt solid #999;
+    padding: 4pt;
+    text-align: center;
+    vertical-align: top;
+  }
+
+  /* ── Multi-currency columns retain mono alignment ── */
+  .amount-right,
+  .text-mono-data,
+  .currency-pair {
+    font-family: 'Courier New', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Wizard/stepper: print as numbered list ── */
+  .wizard-steps {
+    display: block !important;
+  }
+  .wizard-connector {
+    display: none !important;
+  }
+  .wizard-step {
+    display: list-item;
+    list-style-type: decimal;
+    margin-left: 1.5em;
+  }
+
+  /* ── Tree indent: preserve hierarchy in print ── */
+  [class*='tree-indent-'] {
+    border-left: 1pt solid #999;
+  }
+
+  /* ── Workspace split: stack vertically for print ── */
+  .workspace-split {
+    display: block !important;
+  }
+  .workspace-split > * + * {
+    margin-top: 12pt;
+    padding-top: 12pt;
+    border-top: 0.5pt solid #999;
+  }
+
+  /* ── Gauge/progress: show value text only ── */
+  .gauge-track {
+    display: none !important;
+  }
+  .gauge-fill {
+    display: none !important;
+  }
+
+  /* ── Live indicator: hide animation dot ── */
+  .live-indicator::before {
+    display: none !important;
+  }
+
+  /* ── KPI row: force page-friendly grid ── */
+  .kpi-row {
+    display: table !important;
+    width: 100%;
+  }
+  .kpi-row > * {
+    display: table-cell !important;
+    border: 0.5pt solid #999;
+    padding: 4pt;
+    text-align: center;
+  }
+
+  /* ── Dashboard grid: stack cards single-column for print ── */
+  .dashboard-grid {
+    display: block !important;
+  }
+  .dashboard-grid > * {
+    page-break-inside: avoid;
+    margin-bottom: 12pt;
+    border: 0.5pt solid #999;
+  }
+
+  /* ── ERP layout: collapse to single-column block ── */
+  .erp-layout {
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  /* ── Form grid: single-column for print ── */
+  .form-grid {
+    display: block !important;
+  }
+  .form-grid > * + * {
+    margin-top: 6pt;
+  }
+}

@@ -15,6 +15,7 @@ import { z } from "zod";
 import {
   SupplierIdSchema,
   OrgIdSchema,
+  PrincipalIdSchema,
 } from "../shared/ids.js";
 import { UtcDateTimeSchema } from "../shared/datetime.js";
 
@@ -55,7 +56,11 @@ export const SupplierSchema = z.object({
   // Optional: draft suppliers may be created before contact info is known.
   contactEmail: z.string().email().nullable(),
 
-  status:    SupplierStatusSchema,
+  status: SupplierStatusSchema,
+
+  onboardedByPrincipalId: PrincipalIdSchema.nullable(),
+  onboardedAt: UtcDateTimeSchema.nullable(),
+
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });

@@ -11,16 +11,21 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "lint": "node -e \"console.log('core: lint noop')\""
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@afenda/contracts": "workspace:*",
     "@afenda/db": "workspace:*",
     "drizzle-orm": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.70.1",
+    "@opentelemetry/sdk-node": "^0.212.0",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

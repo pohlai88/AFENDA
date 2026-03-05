@@ -21,6 +21,7 @@ Supplier is a **buyer-side relationship record** (not the global party master). 
 | File | Key exports |
 |---|---|
 | `supplier.entity.ts` | `SupplierStatusValues`, `SupplierStatusSchema`, `SupplierStatus`, `SupplierSchema`, `CreateSupplierSchema` |
+| `supplier.commands.ts` | `OnboardSupplierCommandSchema`, `SuspendSupplierCommandSchema`, `ReactivateSupplierCommandSchema` |
 | `index.ts` | Domain barrel — re-exports all of the above |
 
 ## DB Alignment

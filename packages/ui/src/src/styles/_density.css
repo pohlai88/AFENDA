@@ -1,0 +1,87 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 4 · DENSITY PROFILES
+   ─────────────────────────────────────────────────────────────────────────
+   Density modes cascade into all components via CSS custom properties.
+   Toggle by adding class to a container: <main class="compact">.
+
+   Default (48px):  Macro/overview screens, settings, dashboards
+   Compact (32px):  Blotters, order books, multi-panel layouts
+   Ultra (24px):    Ticker walls, batch monitoring, maximum data density
+   Touch (52px):    Tablet/touch — WCAG 2.5.8 target size ≥24×24px
+
+   --radius changes per density:
+     default: 8px (rounded panels)
+     compact: 4px (tighter corners)
+     ultra: 0px (flush edges — maximum data area)
+     touch: 8px (finger-friendly rounded surfaces)
+   ───────────────────────────────────────────────────────────────────────── */
+
+.compact {
+  --spacing-row-h: 2rem;           /* 32px */
+  --spacing-col-pad: 0.5rem;       /* 8px */
+  --text-size-data: 0.8125rem;     /* 13px */
+  --radius: 0.25rem;
+  --spacing-card-pad: 1rem;        /* Tighter card padding */
+  --spacing-form-gap: 0.75rem;     /* Tighter form spacing */
+  --spacing-inline-gap: 0.375rem;  /* Tighter inline spacing */
+  --spacing-page-x: 1rem;          /* Reduced page gutters */
+  --spacing-page-y: 1rem;
+  --spacing-table-cell-x: 0.5rem;  /* Tighter table cells */
+  --spacing-table-cell-y: 0.25rem;
+  --spacing-wizard-step: 2rem;     /* Condensed wizard steps */
+  --spacing-split-gap: 0.25rem;    /* Tighter split panel gap */
+  --spacing-tree-indent: 1rem;     /* Tighter tree indent */
+  --shell-header-h: 3rem;          /* 48px — compact header */
+  --shell-action-gap: 0.25rem;     /* 4px */
+}
+
+.ultra {
+  --spacing-row-h: 1.5rem;         /* 24px */
+  --spacing-col-pad: 0.25rem;      /* 4px */
+  --text-size-data: 0.75rem;       /* 12px */
+  --radius: 0px;
+  --spacing-card-pad: 0.5rem;      /* Minimal card padding */
+  --spacing-form-gap: 0.5rem;      /* Minimal form spacing */
+  --spacing-inline-gap: 0.25rem;   /* Minimal inline spacing */
+  --spacing-page-x: 0.5rem;        /* Minimal page gutters */
+  --spacing-page-y: 0.5rem;
+  --spacing-table-cell-x: 0.25rem; /* Minimal table cells */
+  --spacing-table-cell-y: 0.125rem;
+  --spacing-wizard-step: 1.5rem;   /* Minimal wizard steps */
+  --spacing-split-gap: 2px;        /* Minimal split panel gap */
+  --spacing-tree-indent: 0.75rem;  /* Minimal tree indent */
+  --shell-header-h: 2.5rem;        /* 40px — ultra-dense header */
+  --shell-action-gap: 0.125rem;    /* 2px */
+}
+
+/* Touch safety: enlarge all density variables to prevent misclicks.
+   52px rows exceed Apple HIG minimum (44px) and Google Material (48px).
+   Overrides any density ancestor — touch always wins. */
+.touch-mode {
+  --spacing-row-h: 3.25rem;        /* 52px */
+  --spacing-col-pad: 1.25rem;      /* 20px */
+  --text-size-data: 0.9375rem;     /* 15px */
+  --radius: 0.5rem;
+  --spacing-card-pad: 1.5rem;      /* Generous card padding */
+  --spacing-form-gap: 1.25rem;     /* Extra form spacing */
+  --spacing-inline-gap: 0.75rem;   /* Touch-friendly inline spacing */
+  --spacing-page-x: 2rem;          /* Generous page gutters */
+  --spacing-page-y: 2rem;
+  --spacing-table-cell-x: 1rem;    /* Generous table cells */
+  --spacing-table-cell-y: 0.75rem;
+  --spacing-wizard-step: 3rem;     /* Large wizard steps for touch */
+  --spacing-split-gap: 0.75rem;    /* Touch-friendly split gap */
+  --spacing-tree-indent: 1.5rem;   /* Generous tree indent */
+  --shell-header-h: 4rem;          /* 64px — touch-friendly header */
+  --shell-action-gap: 0.5rem;      /* 8px */
+}
+
+/* High contrast: boost readability by mixing foreground into borders/muted.
+   Uses color-mix(in oklab) for perceptual accuracy.
+   Preserves OKLCH palette structure — no harsh #000/#FFF overrides. */
+.high-contrast {
+  --muted-foreground: color-mix(in oklab, var(--foreground), transparent 18%);
+  --border-subtle: color-mix(in oklab, var(--border-subtle), var(--foreground) 20%);
+  --border: color-mix(in oklab, var(--border), var(--foreground) 24%);
+  --border-strong: color-mix(in oklab, var(--border-strong), var(--foreground) 30%);
+}

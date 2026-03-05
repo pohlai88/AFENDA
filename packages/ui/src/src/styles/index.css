@@ -1,0 +1,49 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   @afenda/design-system — Entry Point
+   ═══════════════════════════════════════════════════════════════════════════
+   Afenda EMS — 7-Pillar Institutional Terminal Design System
+
+   Import order is CRITICAL — do not reorder.
+   Tailwind v4 processes @import sequentially via Lightning CSS.
+
+   Architecture: ITCSS-inspired / Figma Design System Pillars
+     Pillar 1 → Variants     — Custom Tailwind v4 runtime selectors
+     Pillar 2 → Tokens Light — :root OKLCH design tokens
+     Pillar 3 → Tokens Dark  — .dark overrides
+     Pillar 4 → Density      — compact / ultra / touch / high-contrast
+     Pillar 5 → Theme Engine — @theme inline (Figma ↔ Tailwind bridge)
+     Pillar 6 → Base         — OS physics (focus, selection, scrollbars)
+     Pillar 7 → Utilities    — Terminal mechanics (tnum, flash, perf-grid)
+     Pillar 8 → Accessibility — Motion safety + forced colors (WCAG)
+     Pillar 9 → Print        — Paper-safe reset for blotters/reports
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Engine ── */
+@import 'tailwindcss';
+
+/* ── Pillar 1: Variants ── */
+@import './_variants.css';
+
+/* ── Pillar 2: Design Tokens — Light Mode ── */
+@import './_tokens-light.css';
+
+/* ── Pillar 3: Design Tokens — Dark Mode ── */
+@import './_tokens-dark.css';
+
+/* ── Pillar 4: Density Profiles ── */
+@import './_density.css';
+
+/* ── Pillar 5: Theme Engine ── */
+@import './_theme.css';
+
+/* ── Pillar 6: Base Layer ── */
+@import './_base.css';
+
+/* ── Pillar 7: Utility Layer ── */
+@import './_utilities.css';
+
+/* ── Pillar 8: Accessibility ── */
+@import './_accessibility.css';
+
+/* ── Pillar 9: Print Safety ── */
+@import './_print.css';

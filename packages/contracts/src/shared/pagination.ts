@@ -35,3 +35,13 @@ export const CursorParamsSchema = z.object({
 });
 
 export type CursorParams = z.infer<typeof CursorParamsSchema>;
+
+/**
+ * Generic cursor-based page response.
+ * Used by all list queries (AP, GL, etc.) for a consistent shape.
+ */
+export interface CursorPage<T> {
+  data: T[];
+  cursor: string | null;
+  hasMore: boolean;
+}

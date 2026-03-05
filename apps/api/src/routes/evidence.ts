@@ -6,9 +6,16 @@
  *   2. (client uploads directly to S3)
  *   3. POST /v1/documents                 → register document row in DB
  *   4. POST /v1/commands/attach-evidence  → link document to entity
+ *
+ * All routes use Zod type provider for automatic request validation and
+ * OpenAPI schema generation. Manual `safeParse` is replaced by Fastify's
+ * validator compiler — validation errors return a structured 400 response.
  */
 
 import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { ApiErrorResponseSchema, makeSuccessSchema, requireOrg, ERR } from "../helpers/responses.js";
 import {
   AttachEvidenceCommandSchema,
   RegisterDocumentCommandSchema,
@@ -22,43 +29,67 @@ import { registerDocument, RegisterDocumentError, EvidencePolicyError, attachEvi
 import type { EvidencePolicyContext, UserId, WorkspaceId, EvidenceOperationId } from "@afenda/core";
 import { generatePresignedUploadUrl } from "../services/s3.js";
 
+// ── Presign schemas ──────────────────────────────────────────────────────────
+
+const PresignBodySchema = z.object({
+  filename: z.string().trim().min(1).max(255).describe("Name of the file to upload"),
+  contentType: z.string().trim().min(1).max(100).describe("MIME type of the file"),
+});
+
+const PresignResponseSchema = makeSuccessSchema(z.object({
+  url: z.string().url().describe("Presigned S3 PUT URL — upload directly to this URL"),
+  objectKey: z.string().describe("S3 object key (use when registering the document)"),
+  bucket: z.string().describe("S3 bucket name"),
+  expiresAt: z.string().datetime().describe("ISO 8601 expiry timestamp for the presigned URL"),
+}));
+
+// ── Register document schemas ────────────────────────────────────────────────
+
+const RegisterDocumentResponseSchema = makeSuccessSchema(z.object({
+  id: z.string().uuid().describe("Document ID"),
+  created: z.boolean().describe("Whether a new document row was created"),
+  deduped: z.boolean().describe("Whether the document was deduplicated by SHA-256"),
+  idempotentHit: z.boolean().describe("Whether this was an idempotent replay"),
+}));
+
+// ── Attach evidence schemas ──────────────────────────────────────────────────
+
+const AttachEvidenceResponseSchema = makeSuccessSchema(z.object({
+  id: z.string().uuid().describe("Evidence link ID"),
+}));
+
 export async function evidenceRoutes(app: FastifyInstance) {
+  const typed = app.withTypeProvider<ZodTypeProvider>();
+
   // ── Presigned upload URL (rate-limited to 10/min) ──────────────────────────
-  app.post(
+  typed.post(
     "/evidence/presign",
-    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
+    {
+      config: { rateLimit: { max: 10, timeWindow: "1 minute" } },
+      schema: {
+        description: "Generate a presigned S3 upload URL for direct browser uploads.",
+        tags: ["Evidence"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: PresignBodySchema,
+        response: {
+          200: PresignResponseSchema,
+          400: ApiErrorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
-      const body = req.body as {
-        filename?: string;
-        contentType?: string;
-      } | null;
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
 
-      if (!body?.filename || !body?.contentType) {
-        return reply.status(400).send({
-          error: {
-            code: "validationError",
-            message: "filename and contentType are required",
-          },
-          correlationId: req.correlationId,
-        });
-      }
-
-      const orgId = req.orgId;
-      if (!orgId) {
-        return reply.status(400).send({
-          error: { code: "missingOrg", message: "Organization not resolved" },
-          correlationId: req.correlationId,
-        });
-      }
-
-      const objectKey = `${orgId}/${crypto.randomUUID()}/${body.filename}`;
+      const { filename, contentType } = req.body;
+      const objectKey = `${orgId}/${crypto.randomUUID()}/${filename}`;
       const bucket = process.env["S3_BUCKET"] ?? "afenda-dev";
       const expiresIn = 300; // 5 minutes
 
       const url = await generatePresignedUploadUrl({
         bucket,
         objectKey,
-        contentType: body.contentType,
+        contentType,
         expiresIn,
       });
 
@@ -75,29 +106,27 @@ export async function evidenceRoutes(app: FastifyInstance) {
   );
 
   // ── Register document (after S3 upload, rate-limited to 30/min) ────────────
-  app.post(
+  typed.post(
     "/documents",
-    { config: { rateLimit: { max: 30, timeWindow: "1 minute" } } },
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description:
+          "Register a document after uploading to S3. Deduplicates by SHA-256 hash. Idempotent on `idempotencyKey`.",
+        tags: ["Evidence"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: RegisterDocumentCommandSchema,
+        response: {
+          200: RegisterDocumentResponseSchema,
+          201: RegisterDocumentResponseSchema,
+          400: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
-      const parsed = RegisterDocumentCommandSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return reply.status(400).send({
-          error: {
-            code: "validationError",
-            message: "Invalid document registration",
-            details: parsed.error.issues,
-          },
-          correlationId: req.correlationId,
-        });
-      }
-
-      const orgId = req.orgId;
-      if (!orgId) {
-        return reply.status(400).send({
-          error: { code: "missingOrg", message: "Organization not resolved" },
-          correlationId: req.correlationId,
-        });
-      }
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
 
       let result;
       let auditEvent;
@@ -112,15 +141,15 @@ export async function evidenceRoutes(app: FastifyInstance) {
           app.db,
           {
             orgId: orgId as OrgId,
-            objectKey: parsed.data.objectKey,
-            sha256: parsed.data.sha256,
-            mime: parsed.data.mime,
-            sizeBytes: parsed.data.sizeBytes,
+            objectKey: req.body.objectKey,
+            sha256: req.body.sha256,
+            mime: req.body.mime,
+            sizeBytes: req.body.sizeBytes,
             uploadedByPrincipalId: req.ctx?.principalId,
           },
           { dedupBySha256: true },
           {
-            operationId: parsed.data.idempotencyKey as unknown as EvidenceOperationId,
+            operationId: req.body.idempotencyKey as unknown as EvidenceOperationId,
             policyCtx,
             nowUtc: new Date().toISOString(),
           },
@@ -130,7 +159,7 @@ export async function evidenceRoutes(app: FastifyInstance) {
       } catch (err) {
         if (err instanceof RegisterDocumentError && err.code === "INVALID_INPUT") {
           return reply.status(400).send({
-            error: { code: "validationError", message: err.message, details: err.details },
+            error: { code: ERR.VALIDATION, message: err.message, details: err.details },
             correlationId: req.correlationId,
           });
         }
@@ -176,38 +205,33 @@ export async function evidenceRoutes(app: FastifyInstance) {
   );
 
   // ── Attach evidence command (rate-limited to 30/min) ───────────────────────
-  app.post(
+  typed.post(
     "/commands/attach-evidence",
-    { config: { rateLimit: { max: 30, timeWindow: "1 minute" } } },
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Link an uploaded document to a domain entity (invoice, journal entry, etc.).",
+        tags: ["Evidence"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: AttachEvidenceCommandSchema,
+        response: {
+          200: AttachEvidenceResponseSchema,
+          400: ApiErrorResponseSchema,
+        },
+      },
+    },
     async (req, reply) => {
-      const parsed = AttachEvidenceCommandSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return reply.status(400).send({
-          error: {
-            code: "validationError",
-            message: "Invalid attach-evidence command",
-            details: parsed.error.issues,
-          },
-          correlationId: req.correlationId,
-        });
-      }
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
 
-      const orgId = req.orgId;
-      if (!orgId) {
-        return reply.status(400).send({
-          error: { code: "missingOrg", message: "Organization not resolved" },
-          correlationId: req.correlationId,
-        });
-      }
-
-      const { entityType, entityId } = parsed.data.target;
+      const { entityType, entityId } = req.body.target;
 
       const evidenceId = await attachEvidence(app.db, {
         orgId: orgId as OrgId,
-        documentId: parsed.data.documentId,
+        documentId: req.body.documentId,
         entityType,
         entityId: entityId as unknown as EntityId,
-        label: parsed.data.label,
+        label: req.body.label,
       });
 
       await writeAuditLog(
@@ -219,7 +243,7 @@ export async function evidenceRoutes(app: FastifyInstance) {
           entityType: "evidence" satisfies AuditEntityType,
           entityId: entityId as unknown as EntityId,
           correlationId: req.correlationId as CorrelationId,
-          details: { evidenceId, documentId: parsed.data.documentId },
+          details: { evidenceId, documentId: req.body.documentId },
         },
       );
 

@@ -25,13 +25,16 @@ Identity & Access Management schemas: organizations, principals, roles, permissi
 | File | Key exports | Notes |
 |---|---|---|
 | `role.entity.ts` | `Permissions`, `PermissionKey`, `PermissionKeyValues`, `PermissionKeySchema`, `RoleKeyValues`, `RoleKeySchema`, `RoleKey` | Single source of truth for all keys; see rules below |
-| `tenant.entity.ts` | `OrgTypeValues`, `OrgTypeSchema`, `OrgType`, `OrgSlugSchema`, `OrgSlug`, `OrgSchema`, `Org`, `CreateOrgSchema`, `CreateOrg` | `CreateOrgSchema` is standalone (not a `.pick()`) |
-| `user.entity.ts` | `PrincipalSchema`, `Principal`, `RequestContextSchema`, `RequestContext` | `RequestContextSchema` must stay lean — see rule below |
+| `role-type.ts` | `RoleTypeValues`, `RoleType`, `isRoleType` | Business relationship types (employee, supplier, customer, …) |
+| `party.entity.ts` | `PartyKindValues`, `PartyKindSchema`, `PartyKind`, `PartySchema`, `Party`, `PersonSchema`, `Person`, `OrganizationSchema`, `Organization` | ADR-0003 party model |
+| `principal.entity.ts` | `PrincipalKindValues`, `PrincipalKindSchema`, `PrincipalKind`, `PrincipalSchema`, `Principal`, `CreatePrincipalSchema`, `CreatePrincipal` | Authenticated actor (user or service account) |
+| `membership.entity.ts` | `PartyRoleSchema`, `PartyRole`, `MembershipSchema`, `Membership`, `MembershipId`, `ActiveContextSchema`, `ActiveContext`, `ContextItemSchema`, `ContextItem` | Hat model + context switching |
+| `tenant.entity.ts` | *(deprecated)* `TenantTypeValues`, `TenantSchema`, `Tenant`, `CreateTenantSchema` | Use `OrganizationSchema` from `party.entity.ts` instead |
+| `user.entity.ts` | `UserSchema`, `User`, `RequestContextSchema`, `RequestContext` | `RequestContextSchema` must stay lean — see rule below |
 | `index.ts` | Domain barrel — re-exports all of the above | Role vocabulary exported first (user.entity depends on it) |
 
 > **Splitting rule:** Create/update schemas live in the same `*.entity.ts` file
 > until it exceeds ~150 lines, then split into a `*.commands.ts` sibling.
-> `CreateOrgSchema` is the current candidate for `tenant.commands.ts`.
 
 ---
 

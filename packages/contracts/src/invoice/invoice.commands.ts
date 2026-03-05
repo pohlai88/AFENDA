@@ -10,7 +10,6 @@
  */
 import { z } from "zod";
 import {
-  DocumentIdSchema,
   InvoiceIdSchema,
   SupplierIdSchema,
 } from "../shared/ids.js";
@@ -26,8 +25,6 @@ export const SubmitInvoiceCommandSchema = z.object({
   // supplierId = buyer-side Supplier relationship record ID (not supplierTenantId).
   supplierId: SupplierIdSchema,
 
-  invoiceNumber: z.string().trim().min(1).max(64),
-
   // Integer minor-unit (cents, fils, etc.) as bigint. Accepts bigint or numeric
   // string from JSON. Negative allowed (credit notes/memos).
   amountMinor:  z.coerce.bigint(),
@@ -35,8 +32,6 @@ export const SubmitInvoiceCommandSchema = z.object({
 
   dueDate:     DateSchema.optional(),
   poReference: z.string().trim().min(1).max(64).optional(),
-
-  documentIds: z.array(DocumentIdSchema).optional(),
 });
 
 // ─── Approve ──────────────────────────────────────────────────────────────────
@@ -68,8 +63,24 @@ export const VoidInvoiceCommandSchema = z.object({
   reason:         z.string().trim().min(1).max(500),
 });
 
+// ─── Mark Paid ────────────────────────────────────────────────────────────────
+
+/**
+ * Mark a posted invoice as paid.
+ * `paymentReference` is mandatory — payment must always be traceable.
+ * Transition guard (only `posted → paid` allowed) belongs in `@afenda/core`.
+ */
+export const MarkPaidCommandSchema = z.object({
+  idempotencyKey:   IdempotencyKeySchema,
+  invoiceId:        InvoiceIdSchema,
+  paymentReference: z.string().trim().min(1).max(128),
+  paidAt:           DateSchema.optional(),
+  reason:           z.string().trim().min(1).max(500).optional(),
+});
+
 export type SubmitInvoiceCommand  = z.infer<typeof SubmitInvoiceCommandSchema>;
 export type ApproveInvoiceCommand = z.infer<typeof ApproveInvoiceCommandSchema>;
 export type RejectInvoiceCommand  = z.infer<typeof RejectInvoiceCommandSchema>;
 export type VoidInvoiceCommand    = z.infer<typeof VoidInvoiceCommandSchema>;
+export type MarkPaidCommand       = z.infer<typeof MarkPaidCommandSchema>;
 

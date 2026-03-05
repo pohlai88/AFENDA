@@ -1,32 +1,8 @@
 import {
-  pgTable, text, uuid, timestamp, primaryKey, pgPolicy, unique, index, check,
+  pgTable, text, uuid, primaryKey, unique, uniqueIndex, index, check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-
-// ─── Helper: all timestamps are UTC (timestamptz). No exceptions. ─────────────
-// Column name is REQUIRED — enforces §15 snake_case in DB.
-const tsz = (name: string) => timestamp(name, { withTimezone: true });
-
-// ─── RLS policy: enforce org isolation via GUC set by withOrgContext() ────────
-// Applied to every table that carries org_id.
-// FORCE ROW LEVEL SECURITY must be applied per-table in production to also
-// cover the table owner role (separate apply-rls.sql migration in Sprint 2).
-const rlsOrg = pgPolicy("org_isolation", {
-  as: "permissive",
-  for: "all",
-  to: "public",
-  using: sql`org_id = current_setting('app.org_id', true)::uuid`,
-  withCheck: sql`org_id = current_setting('app.org_id', true)::uuid`,
-});
-
-// ─── RLS policy: ADR-0003 principal_id based isolation ────────────────────────
-const rlsPrincipal = pgPolicy("principal_isolation", {
-  as: "permissive",
-  for: "all",
-  to: "public",
-  using: sql`principal_id = current_setting('app.principal_id', true)::uuid`,
-  withCheck: sql`principal_id = current_setting('app.principal_id', true)::uuid`,
-});
+import { tsz, rlsOrg, rlsPrincipal } from "./_helpers.js";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ADR-0003: PARTY MODEL — identity tables (Phase 4 complete)
@@ -37,21 +13,38 @@ const rlsPrincipal = pgPolicy("principal_isolation", {
  * PARTY — universal "legal entity" abstraction.
  * Base table for both person and organization (shared primary key pattern).
  */
-export const party = pgTable("party", {
-  id:   uuid("id").defaultRandom().primaryKey(),
-  kind: text("kind").notNull(), // 'person' | 'organization'
-});
+export const party = pgTable(
+  "party",
+  {
+    id:          uuid("id").defaultRandom().primaryKey(),
+    kind:        text("kind").notNull(), // 'person' | 'organization'
+    externalKey: text("external_key"),   // deterministic seed anchor (e.g. "org:demo")
+    updatedAt:   tsz("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    check("party_kind_check", sql`${t.kind} IN ('person','organization')`),
+    uniqueIndex("party_external_key_uidx").on(t.externalKey).where(sql`external_key IS NOT NULL`),
+    index("party_kind_idx").on(t.kind),
+  ],
+);
 
 /**
  * PERSON — human being (may or may not have a login).
  * Shares primary key with party (1:1 relationship).
  */
-export const person = pgTable("person", {
-  id:        uuid("id").primaryKey().references(() => party.id, { onDelete: "cascade" }),
-  email:     text("email"),  // nullable: imported contacts may lack email
-  name:      text("name"),
-  createdAt: tsz("created_at").defaultNow().notNull(),
-});
+export const person = pgTable(
+  "person",
+  {
+    id:        uuid("id").primaryKey().references(() => party.id, { onDelete: "cascade" }),
+    email:     text("email"),  // nullable: imported contacts may lack email
+    name:      text("name"),
+    createdAt: tsz("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    // Partial unique — only enforced when email is present
+    uniqueIndex("person_email_uidx").on(t.email).where(sql`email IS NOT NULL`),
+  ],
+);
 
 /**
  * ORGANIZATION — company, franchise, counterparty.
@@ -79,8 +72,10 @@ export const iamPrincipal = pgTable(
     email:        text("email").unique(), // login email (nullable for service)
     passwordHash: text("password_hash"),  // NULL = SSO-only or service account
     createdAt:    tsz("created_at").defaultNow().notNull(),
+    updatedAt:    tsz("updated_at").defaultNow().notNull(),
   },
   (t) => [
+    check("iam_principal_kind_check", sql`${t.kind} IN ('user','service')`),
     index("principal_person_idx").on(t.personId),
     index("principal_kind_idx").on(t.kind),
   ],
@@ -98,6 +93,7 @@ export const partyRole = pgTable(
     partyId:   uuid("party_id").notNull().references(() => party.id, { onDelete: "cascade" }),
     roleType:  text("role_type").notNull(), // employee | supplier | customer | shareholder | ...
     createdAt: tsz("created_at").defaultNow().notNull(),
+    updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
   (t) => [
     unique("party_role_org_party_type_uidx").on(t.orgId, t.partyId, t.roleType),
@@ -142,6 +138,7 @@ export const iamRole = pgTable(
     key:       text("key").notNull(), // e.g. "admin" | "approver" | "operator"
     name:      text("name").notNull(),
     createdAt: tsz("created_at").defaultNow().notNull(),
+    updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
   (t) => [
     unique("iam_role_org_key_uidx").on(t.orgId, t.key),

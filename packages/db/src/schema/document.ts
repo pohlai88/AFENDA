@@ -1,17 +1,6 @@
-import { pgTable, text, uuid, timestamp, bigint, index, unique, pgPolicy } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+import { pgTable, text, uuid, bigint, index, unique } from "drizzle-orm/pg-core";
 import { organization, iamPrincipal } from "./iam.js";
-
-const tsz = (name: string) => timestamp(name, { withTimezone: true });
-
-// ─── RLS policy helper: org isolation via app.org_id GUC ──────────────────────
-const rlsOrg = pgPolicy("org_isolation", {
-  as: "permissive",
-  for: "all",
-  to: "public",
-  using: sql`org_id = current_setting('app.org_id', true)::uuid`,
-  withCheck: sql`org_id = current_setting('app.org_id', true)::uuid`,
-});
+import { tsz, rlsOrg } from "./_helpers.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DOCUMENT + EVIDENCE STORE
@@ -49,9 +38,10 @@ export const evidence = pgTable(
     attachedAt: tsz("attached_at").defaultNow().notNull(),
   },
   (t) => [
-    rlsOrg,
     index("evidence_entity_idx").on(t.orgId, t.entityType, t.entityId),
-  ]
+    index("evidence_document_idx").on(t.documentId),
+    rlsOrg,
+  ],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,5 +63,9 @@ export const evidenceOperation = pgTable(
     documentId: uuid("document_id").notNull().references(() => document.id),
     createdAt: tsz("created_at").defaultNow().notNull(),
   },
-  () => [rlsOrg],
+  (t) => [
+    index("evidence_op_document_idx").on(t.documentId),
+    index("evidence_op_org_idx").on(t.orgId),
+    rlsOrg,
+  ],
 );

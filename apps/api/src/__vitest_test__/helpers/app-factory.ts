@@ -1,0 +1,93 @@
+/**
+ * Test app-factory — builds a Fastify instance against `afenda_test`.
+ *
+ * Provides:
+ *   - `createTestApp()` — Fastify app backed by the test DB
+ *   - `injectAs()` — shorthand for `app.inject()` with dev-auth header
+ *   - `resetDb()` — truncates transactional tables between test suites
+ *   - `closeApp()` — drains pool + closes server
+ *
+ * Test lifecycle:
+ *   beforeAll  → createTestApp()
+ *   afterEach  → resetDb(app)   (optional — only if test creates data)
+ *   afterAll   → closeApp(app)
+ */
+
+import type { FastifyInstance, InjectOptions } from "fastify";
+
+const TEST_DB_URL = "postgres://afenda:afenda@localhost:5433/afenda_test";
+
+/**
+ * Build the Fastify app with DATABASE_URL pointed at `afenda_test`.
+ * Sets NODE_ENV=development so the dev-auth header path is active.
+ *
+ * Uses dynamic import to ensure env vars are set before module-level
+ * `validateEnv()` runs in index.ts.
+ */
+export async function createTestApp(): Promise<FastifyInstance> {
+  process.env["DATABASE_URL"] = TEST_DB_URL;
+  process.env["NODE_ENV"] = "development";
+  process.env["API_PORT"] = "19876";
+  process.env["ALLOWED_ORIGINS"] = "";
+
+  // Dynamic import — env vars must be set before this line
+  const { buildApp } = await import("../../index.js");
+  const app = await buildApp();
+  await app.ready();
+  return app;
+}
+
+/**
+ * Inject a request as a specific test user (via dev-auth header).
+ * Returns the Fastify inject response.
+ */
+export async function injectAs(
+  app: FastifyInstance,
+  email: string,
+  opts: Omit<InjectOptions, "headers"> & { headers?: Record<string, string> },
+) {
+  return app.inject({
+    ...opts,
+    headers: {
+      "x-dev-user-email": email,
+      "x-org-id": "test-org",
+      ...opts.headers,
+    },
+  });
+}
+
+/**
+ * Truncate all transactional tables (preserving reference data seeded in globalSetup).
+ * Call in `afterEach` or `afterAll` when tests create invoices/journals.
+ */
+export async function resetDb(app: FastifyInstance) {
+  // TRUNCATE in dependency order — children first
+  await app.db.execute(
+    /* sql */ `
+    TRUNCATE
+      journal_line,
+      journal_entry,
+      invoice_status_history,
+      invoice,
+      outbox_event,
+      idempotency,
+      audit_log,
+      dead_letter_job
+    CASCADE
+  `,
+  );
+
+  // Reset sequences back to 1 so tests get predictable numbers
+  await app.db.execute(
+    /* sql */ `
+    UPDATE sequence SET next_value = 1
+  `,
+  );
+}
+
+/**
+ * Close the app — drains DB pool + stops Fastify.
+ */
+export async function closeApp(app: FastifyInstance) {
+  await app.close();
+}

@@ -79,7 +79,9 @@ export interface MarkDoneIdempotencyParams {
 function stableStringify(value: unknown): string {
   if (value === null || value === undefined) return "null";
 
-  if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol") {
+  if (typeof value === "bigint") return value.toString();
+
+  if (typeof value === "function" || typeof value === "symbol") {
     throw new TypeError(`Cannot serialise ${typeof value} for idempotency hashing`);
   }
 
@@ -125,7 +127,7 @@ export async function beginIdempotency(
   params: BeginIdempotencyParams,
 ): Promise<IdempotencyBeginResult> {
   const ttl = params.ttlMs ?? IDEMPOTENCY_TTL_MS;
-  const expiresAt = new Date(Date.now() + ttl);
+  const expiresAt = new Date(Date.now() + ttl); // gate:allow-js-date — TTL offset from app clock is intentional
 
   // Attempt insert with ON CONFLICT DO NOTHING.
   // If inserted → we claimed the key; if not → row already exists.
@@ -204,7 +206,7 @@ export async function markDoneIdempotency(
       resultRef: params.resultRef,
       responseStatus: params.responseStatus,
       responseHeaders: params.responseHeaders ?? null,
-      updatedAt: new Date(),
+      updatedAt: sql`now()`,
     })
     .where(
       and(
@@ -254,7 +256,7 @@ export async function releaseIdempotency(
  */
 export async function cleanupExpiredIdempotency(
   db: DbClient,
-  now: Date = new Date(),
+  now: Date = new Date(), // gate:allow-js-date — comparison threshold, not a stored value
 ): Promise<number> {
   const deleted = await db
     .delete(idempotency)

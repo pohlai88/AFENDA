@@ -116,8 +116,6 @@ export type ApiEnv = z.infer<typeof ApiEnvSchema>;
 export const WorkerEnvSchema = BaseEnvSchema.extend({
   WORKER_DATABASE_URL: pgUrl.optional(),
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).default(5),
-  WORKER_POLL_INTERVAL_MS: z.coerce.number().int().min(100).default(1000),
-  WORKER_MAX_RETRIES: z.coerce.number().int().min(1).default(10),
 });
 
 export type WorkerEnv = z.infer<typeof WorkerEnvSchema>;

@@ -26,6 +26,7 @@ export const AuditActionValues = [
   "invoice.rejected",
   "invoice.posted",
   "invoice.voided",
+  "invoice.paid",
   // GL (S1)
   "gl.journal.posted",
   "gl.journal.reversed",
@@ -55,6 +56,7 @@ export const AuditEntityTypeValues = [
   "role",
   "organization",
   "account",
+  "payment",
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];

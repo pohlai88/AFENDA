@@ -1,238 +1,146 @@
 ---
 
-## Plan: ERP-Grade Schema Governance — Full Sweep
+## Plan: Sprint 2 — Operational Slice
 
-All three tiers of PostgreSQL glossary concepts folded into one plan alongside the original schema-invariants work. The plan is organized into **4 phases** (from highest-ROI structural enforcement to future-looking architectural upgrades), with 14 total steps.
+**TL;DR:** 5 deliverables, no n8n, no UI. Audit log queries (read path for the append-only audit table), MarkPaid command (new invoice transition `posted→paid` with DB migration), worker voided→GL-reversal projection, minimal OTel bootstrap, and integration tests for all new exit criteria. Every deliverable follows the exact Sprint 1 patterns: discriminated union results, `withAudit()` transactions, `CursorPage<T>` pagination, `ZodTypeProvider` routes, raw-SQL worker handlers, boundary-compliant test seeds. Target: Build 7/7, Tests 180+, Gates 8/8.
 
----
+**Steps**
 
-### Phase A — Structural Invariants & Helpers (Steps 1–4)
+### Phase A — Contracts (packages/contracts)
 
-**Goal:** Extract shared helpers, fix existing violations, enforce invariants via CI gates.
+**1.** Add `"invoice.paid"` to `AuditActionValues` in audit.ts. Add `"payment"` to `AuditEntityTypeValues` (for future payment-entity audit trails — keep symmetry with `SequenceEntityTypeValues` which already has `"payment"`).
 
-**Step 1 — Extract `_helpers.ts`**
+**2.** Add `"AP_INVOICE_ALREADY_PAID"` to `ErrorCodeValues` in errors.ts — after the existing `AP_INVOICE_ALREADY_VOIDED` entry.
 
-Create packages/db/src/schema/_helpers.ts containing:
-- `tsz()` (timestamp helper) — currently duplicated across all 5 schema files
-- `rlsOrg` (RLS policy builder) — duplicated across all 5 schema files
-- `rlsPrincipal` — currently only in `iam.ts`
-- New: `orgIdCol()` — standardized `orgId` column definition returning `uuid('org_id').notNull()`
-- New: `updatedAtCol()` — returns `tsz('updated_at').$defaultFn(() => new Date())`
+**3.** Add `apInvoiceMarkPaid: "ap.invoice.markpaid"` and `auditLogRead: "audit.log.read"` to the `Permissions` object in the contracts IAM file (find via `Permissions` export — likely contracts/src/iam/iam.permissions.ts or similar).
 
-Update all 5 schema files (iam.ts, finance.ts, document.ts, supplier.ts, infra.ts) to import from `./_helpers.js` and delete their local duplicates.
+**4.** Create `MarkPaidCommandSchema` in contracts/src/invoice/invoice.commands.ts — following the exact pattern of `ApproveInvoiceCommandSchema`:
+   - Fields: `idempotencyKey: IdempotencyKeySchema`, `invoiceId: InvoiceIdSchema`, `paymentReference: z.string().trim().min(1).max(128)`, `paidAt: DateSchema.optional()` (defaults to server `now()`), `reason: z.string().trim().min(1).max(500).optional()`
+   - Export type `MarkPaidCommand`
 
-**Step 2 — Add Check Constraints to Drizzle Schema**
+**5.** Create audit query contracts in new file `contracts/src/shared/audit-query.ts`:
+   - `AuditLogFilterSchema` — optional fields: `entityType: AuditEntityTypeSchema`, `entityId: UuidSchema`, `action: AuditActionSchema`, `actorPrincipalId: UuidSchema`, `from: z.coerce.date()`, `to: z.coerce.date()`
+   - `AuditLogRowSchema` — mirrors `audit_log` table columns (id, orgId, action, entityType, entityId, actorPrincipalId, correlationId, occurredAt, details)
+   - Re-export from contracts/src/shared/index.ts
 
-The research revealed that `party.kind` and `iam_principal.kind` have `CHECK` constraints in SQL (migration 0003) but **no** `check()` in iam.ts — despite importing `check` (unused). Fix:
-- Add `check('party_kind_check', sql\`kind IN ('person','organization')\`)` to `party` table definition
-- Add `check('principal_kind_check', sql\`kind IN ('user','service')\`)` to `iamPrincipal` table definition
-- This closes the Drizzle ↔ SQL drift gap so `drizzle-kit generate` won't produce a conflicting migration
+### Phase B — DB Migration (packages/db)
 
-**Step 3 — Fix Missing Indexes & `updatedAt` Columns**
+**6.** Add 3 columns to `invoice` table in finance.ts:
+   - `paidAt: tsz("paid_at")` — nullable, set when MarkPaid executes
+   - `paidByPrincipalId: uuid("paid_by_principal_id").references(() => iamPrincipal.id, { onDelete: "set null" })` — who marked it paid
+   - `paymentReference: text("payment_reference")` — bank ref / check number / wire ID
 
-Create migration 0010_schema_invariants.sql:
+**7.** Generate migration via `pnpm drizzle-kit generate` → produces `drizzle/0001_mark_paid.sql`. Run `pnpm db:migrate` to apply. The `migration-lint` gate will validate the SQL automatically.
 
-*Missing FK indexes (6):*
-| Table | Column | Index Name |
-|-------|--------|------------|
-| `invoice_status_history` | `invoice_id` | `inv_status_history_invoice_idx` |
-| `journal_entry` | `source_invoice_id` | `journal_entry_source_invoice_idx` |
-| `journal_entry` | `reversal_of_id` | `journal_entry_reversal_idx` |
-| `evidence` | `document_id` | `evidence_document_idx` |
-| `evidence_operation` | `document_id` | `evidence_op_document_idx` |
-| `audit_log` | `actor_principal_id` | `audit_log_actor_idx` |
+### Phase C — Core Services (packages/core)
 
-*Missing `updatedAt` columns (add to mutable, non-append-only tables):*
-| Table | Action |
-|-------|--------|
-| `party` | ADD `updated_at` + backfill from `now()` |
-| `iam_principal` | ADD `updated_at` + backfill |
-| `party_role` | ADD `updated_at` + backfill |
-| `iam_role` | ADD `updated_at` + backfill |
-| `invoice` | ADD `updated_at` + backfill |
+**8.** Add `markPaid()` to core/src/finance/ap/invoice.service.ts — follow exact pattern of `approveInvoice()`:
+   - Signature: `async function markPaid(db: DbClient, ctx: OrgScopedContext, policyCtx: PolicyContext, correlationId: CorrelationId, params: MarkPaidParams): Promise<InvoiceServiceResult<{ id: InvoiceId }>>`
+   - Permission check: `policyCtx.permissionsSet.has(Permissions.apInvoiceMarkPaid)` — return `IAM_INSUFFICIENT_PERMISSIONS` if denied
+   - Pre-transaction: fetch invoice by ID + org, verify exists, verify `status === "posted"` (TRANSITIONS map already allows `posted→paid`)
+   - `withAudit()` transaction: UPDATE invoice SET `status='paid', paidAt, paidByPrincipalId, paymentReference, updatedAt` WHERE `id = invoiceId AND orgId AND status = 'posted'` (TOCTOU), INSERT `invoice_status_history` row (posted→paid), INSERT outbox event `AP.INVOICE_PAID`
+   - Audit: action `"invoice.paid"`, entityType `"invoice"`
+   - Return `{ ok: true, data: { id } }` on success
 
-*Skip `updatedAt` for append-only/immutable tables:*
-Allowlist: `audit_log`, `outbox_event`, `invoice_status_history`, `journal_entry`, `journal_line`, `evidence_operation`, `document`, `evidence`, `person` (immutable PII record), `organization` (slug-immutable), `iam_permission` (seed data), `iam_role_permission`, `iam_principal_role`, `dead_letter_job`.
+**9.** Create `core/src/infra/audit-queries.ts` — follow exact pattern of core/src/finance/ap/invoice.queries.ts:
+   - `listAuditLogs(db, orgId, params: AuditLogListParams)` → `CursorPage<AuditLogRow>` — cursor-paginated, filtered by optional `entityType`, `entityId`, `action`, `actorPrincipalId`, `from`/`to` date range. Cursor encoding: base64url UUID, limit+1 fetch pattern.
+   - `getAuditTrail(db, orgId, entityType, entityId)` → `AuditLogRow[]` — all audit entries for a specific entity, ordered by `occurredAt DESC`. No pagination (bounded by entity lifecycle).
+   - Import `auditLog` table from `@afenda/db`, import types from `@afenda/contracts`
+   - Map Drizzle rows to plain camelCase objects (same as invoice.queries.ts)
 
-*Also add `ANALYZE` calls* at the end of the migration for all altered tables — this ensures the query planner has fresh statistics after the backfill:
-```sql
-ANALYZE party, iam_principal, party_role, iam_role, invoice;
-```
+**10.** Update core/src/infra/index.ts — add `export * from "./audit-queries.js";`
 
-Update the corresponding Drizzle schema files to declare the new `updatedAt` columns and indexes so Drizzle stays in sync with SQL.
+**11.** Add `canMarkPaid` policy function to core/src/finance/sod.ts — returns `PolicyResult`. Check `permissionsSet.has(Permissions.apInvoiceMarkPaid)`.
 
-**Step 4 — Create `schema-invariants.mjs` Gate**
+### Phase D — API Routes (apps/api)
 
-New file tools/gates/schema-invariants.mjs with 5 rule codes:
+**12.** Add `POST /v1/commands/mark-paid` route to api/src/routes/invoices.ts — follow exact pattern of approve-invoice route:
+   - Rate limit: `{ max: 30, timeWindow: "1 minute" }`
+   - Guards: `requireOrg()` → `requireAuth()`
+   - Schema: body `MarkPaidCommandSchema`, responses 201/400/401/403/404/409
+   - Call `markPaid(app.db, ctx, policyCtx, correlationId, body)` → map result
+   - Add `"AP_INVOICE_ALREADY_PAID"` to `mapErrorStatus()` → 409
 
-| Rule Code | What It Checks |
-|-----------|----------------|
-| `ORG_SCOPED_UNIQUE` | Every `unique(...)` or `uniqueIndex(...)` on a table with `orgId` must include `orgId` as the first column. Handles nullable columns correctly (PG allows multiple nulls in unique constraints — flag if a non-`orgId` column in the unique is nullable without a partial `WHERE` clause). |
-| `FK_MUST_BE_INDEXED` | Every `.references(...)` column must have a corresponding `index(...)` or `uniqueIndex(...)`. Composite FKs count if covered by a composite index. |
-| `MUTABLE_REQUIRES_UPDATED_AT` | Tables not in the append-only/immutable allowlist must have an `updatedAt` column. Allowlist is a `Set` at the top of the file. |
-| `CHECK_CONSTRAINT_DRIFT` | If a table column uses a `*Values` enum from contracts (detected via the import pattern), verify that a `check()` or `pgEnum()` is declared on that column in the Drizzle schema — not just in SQL migrations. Catches the `party.kind` / `iam_principal.kind` class of drift. |
-| `RELATIONS_SIZE_WARNING` | Warn (non-fatal) if relations.ts exceeds 500 lines — signal to split into domain-specific relation files. |
+**13.** Create new route file audit.ts — follow pattern of gl.ts:
+   - `GET /v1/audit-logs` — cursor-paginated, querystring extends `CursorParamsSchema` with optional `entityType`, `entityId`, `action`, `actorPrincipalId`, `from`, `to` filters. Permission guard: `audit.log.read`. Call `listAuditLogs()`.
+   - `GET /v1/audit-logs/:entityType/:entityId` — returns full entity audit trail. Permission guard: `audit.log.read`. Call `getAuditTrail()`.
+   - Register in api/src/index.ts alongside existing route registrations under `/v1`
 
-Pattern: follows `catalog.mjs` structure — `RULE_DOCS` map, `suggestFix` map, uses `reportViolations`/`reportSuccess` from reporter.mjs. Parses schema `.ts` files via regex (same approach as `boundaries.mjs`).
+### Phase E — Worker Handlers (apps/worker)
 
----
+**14.** Add `handle_invoice_paid` task to worker:
+   - New file `apps/worker/src/jobs/handle-invoice-paid.ts` — follows handle-journal-posted.ts pattern. Log-only for now (notification dispatch is Sprint 3 / n8n). Future: trigger bank feed reconciliation.
+   - Register in worker/src/index.ts task list
+   - Add `AP.INVOICE_PAID` case to dispatcher worker/src/jobs/process-outbox-event.ts
 
-### Phase B — Migration Lint & DB-Level Triggers (Steps 5–7)
+**15.** Add GL auto-reversal logic to worker/src/jobs/handle-invoice-voided.ts:
+   - Use `helpers.withPgClient()` (same pattern as handle-journal-posted.ts)
+   - Query: `SELECT id, entry_number FROM journal_entry WHERE source_invoice_id = $1 AND org_id = $2 AND reversal_of IS NULL` — find original (non-reversal) journal entries linked to the voided invoice
+   - For each found entry: enqueue a `handle_reverse_journal` job with `{ journalEntryId, orgId, correlationId, reason: "Auto-reversal: invoice voided" }` — or call raw SQL directly to insert the reversal entry (following the same pattern as `postToGL`'s reversal logic but via raw SQL in the worker)
+   - TOCTOU-safe: only reverse entries that haven't already been reversed (`reversal_of IS NULL` and no entry with `reversal_of = this.id` exists)
 
-**Goal:** Prevent dangerous migrations, add a DB-level `updated_at` trigger so app code can never forget.
+### Phase F — OpenTelemetry (packages/core + apps/api + apps/worker)
 
-**Step 5 — Create `migration-lint.mjs` Gate**
+**16.** Add OTel dependencies to pnpm catalog in pnpm-workspace.yaml: `@opentelemetry/api@1.9.0`, `@opentelemetry/sdk-node@0.212.0`, `@opentelemetry/auto-instrumentations-node@0.70.1`. Add to package.json dependencies.
 
-New file tools/gates/migration-lint.mjs with 4 rule codes:
+**17.** Create `core/src/infra/telemetry.ts`:
+   - `initTelemetry(serviceName: string)` function — creates `NodeSDK` with `getNodeAutoInstrumentations()` (HTTP, pg, Fastify auto-detected). OTLP exporter configured via env `OTEL_EXPORTER_OTLP_ENDPOINT` (defaults to `http://localhost:4318`). Returns SDK instance for graceful shutdown.
+   - Guard: `if (!process.env["OTEL_ENABLED"])` return no-op — don't break dev/test environments
+   - Update core/src/infra/index.ts to re-export
 
-| Rule Code | What It Checks |
-|-----------|----------------|
-| `MIGRATION_DESTRUCTIVE_NO_GUARD` | `DROP TABLE`, `DROP COLUMN`, `ALTER TABLE ... DROP` without a preceding comment `-- DESTRUCTIVE:` explaining why. Prevents accidental data loss. |
-| `MIGRATION_ADD_NOT_NULL_NO_DEFAULT` | `ADD COLUMN ... NOT NULL` without a `DEFAULT` — will fail on non-empty tables. |
-| `MIGRATION_ENUM_CHANGE` | `ALTER TYPE ... ADD VALUE` or `ALTER TYPE ... RENAME VALUE` — flag for review (enum changes can't be rolled back inside a transaction). |
-| `MIGRATION_MISSING_ANALYZE` | Data migrations (files containing `UPDATE ... SET` or `INSERT ... SELECT`) that don't end with `ANALYZE` — catches stale statistics after bulk changes. |
+**18.** Call `initTelemetry("afenda-api")` at top of api/src/index.ts (before Fastify build, behind `OTEL_ENABLED` guard). Call `initTelemetry("afenda-worker")` at top of worker/src/index.ts.
 
-Scans all `.sql` files in drizzle (skipping the `meta/` subdirectory).
+### Phase G — Test Seeds & Integration Tests
 
-**Step 6 — Create `set_updated_at()` Trigger Function + Migration**
+**19.** Update test seed in global-setup.ts:
+   - Add `"ap.invoice.markpaid"` and `"audit.log.read"` to seeded permissions
+   - Grant `ap.invoice.markpaid` to the **operator** role (same principal who submits — no SoD conflict since posted→paid is a finance-ops action, not an approval)
+   - Grant `audit.log.read` to both operator and approver roles
 
-Create migration 0011_updated_at_trigger.sql:
+**20.** Add test helpers in factories.ts:
+   - `markPaidPayload(invoiceId, overrides?)` — returns `{ idempotencyKey, invoiceId, paymentReference: "WIRE-TEST-001" }`
+   - Update `resetDb()` if the new migration adds tables (unlikely — columns only)
 
-```sql
--- Shared trigger function for all mutable tables
-CREATE OR REPLACE FUNCTION set_updated_at()
-RETURNS trigger AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-```
-
-Then attach a `BEFORE UPDATE` trigger to every mutable table that has `updated_at`:
-`party`, `iam_principal`, `party_role`, `iam_role`, `invoice`, `account`, `supplier`, `idempotency`, `sequence`.
-
-This makes `updatedAt` enforcement **impossible to forget** — the DB sets it automatically regardless of whether the app code remembers to. Follows the same pattern as the existing `prevent_audit_log_mutation()` trigger in 0002_audit_log_append_only.sql.
-
-**Step 7 — Register Gates + `FORCE ROW LEVEL SECURITY`**
-
-- Add `schema-invariants.mjs` and `migration-lint.mjs` to the `GATES` array in run-gates.mjs (currently 3 entries → becomes 5)
-- Create migration 0012_force_rls.sql: Apply `ALTER TABLE ... FORCE ROW LEVEL SECURITY` to all 15 tables that have RLS policies. Currently deferred to "Sprint 2" per the comment in iam.ts — this is Sprint 2. Without `FORCE`, the table owner role **bypasses all RLS policies**.
-
----
-
-### Phase C — Operational Hardening (Steps 8–10)
-
-**Goal:** Autovacuum tuning, TOAST awareness, connection pool hardening, `UNLOGGED` evaluation.
-
-**Step 8 — Autovacuum Tuning Migration**
-
-Create migration 0013_autovacuum_tuning.sql:
-
-| Table | Setting | Rationale |
-|-------|---------|-----------|
-| `outbox_event` | `autovacuum_vacuum_scale_factor = 0.01`, `autovacuum_analyze_scale_factor = 0.02` | High churn: constant INSERT + UPDATE `delivered=true` + periodic DELETE. Default 20% threshold is too high for a table that churns 100% of rows. |
-| `idempotency` | `autovacuum_vacuum_scale_factor = 0.02` | 24h TTL cleanup creates constant dead tuples. |
-| `sequence` | `autovacuum_vacuum_scale_factor = 0.0`, `autovacuum_vacuum_threshold = 50` | Tiny table (~10 rows) with constant UPDATEs. Default scale factor (20%) would mean vacuum runs every ~2 rows. Fixed threshold is more appropriate. |
-| `audit_log` | `autovacuum_vacuum_scale_factor = 0.05` | Append-only, no dead tuples from UPDATE/DELETE, but high volume means the initial insert visibility map needs frequent updates. |
-
-Syntax: `ALTER TABLE tablename SET (autovacuum_vacuum_scale_factor = N);`
-
-**Step 9 — TOAST & JSONB Documentation in OWNERS.md**
-
-Update OWNERS.md with a new **TOAST & Large Objects** section documenting:
-
-| Table.Column | Type | Risk | Guidance |
-|---|---|---|---|
-| `outbox_event.payload` | `jsonb NOT NULL` | High — unbounded event payloads | Keep payloads under 2KB when possible; large payloads trigger TOAST compression + out-of-line storage. Consider `STORAGE EXTERNAL` if payloads are already compressed. |
-| `dead_letter_job.payload` | `jsonb NOT NULL` | High — mirrors outbox | Same as above |
-| `audit_log.details` | `jsonb nullable` | Medium | Typically small; no action needed |
-| `journal_line.dimensions` | `jsonb nullable` | Low | Constrained `Record<string,string>` |
-| `idempotency.response_headers` | `jsonb nullable` | Low | Small HTTP header object |
-
-Also add a **Data Security Posture** section documenting:
-- `journal_line` has no `orgId` / no RLS — relies on FK join through `journal_entry` for isolation
-- `dead_letter_job` has nullable `orgId` / no RLS — intentional for global jobs
-- Why these design choices are acceptable and what invariants they depend on
-
-**Step 10 — Evaluate `UNLOGGED` for `idempotency`**
-
-Document the tradeoff in OWNERS.md (do NOT apply yet — requires team decision):
-- **Pro:** `UNLOGGED` skips WAL writes → ~2× faster INSERT/UPDATE; data loss on crash is acceptable because idempotency claims have a 24h TTL and are self-healing (worst case: a duplicate request goes through once after crash)
-- **Con:** Not replicated to read replicas; data lost on crash recovery; can't do point-in-time recovery for this table
-- **Recommendation**: Apply in a future migration after read-replica story is clarified. If the team decides yes, the migration is a single `ALTER TABLE idempotency SET UNLOGGED;`
-
----
-
-### Phase D — Future Architecture & Documentation (Steps 11–14)
-
-**Goal:** PG schemas, grants, domains, extension governance, and cleanup.
-
-**Step 11 — PG Domain Types (Evaluate)**
-
-Document a proposal in OWNERS.md for future domain types:
-
-| Domain | Definition | Tables Affected |
-|--------|-----------|----------------|
-| `org_id` | `CREATE DOMAIN org_id AS uuid NOT NULL` | 15 tables with `orgId` |
-| `money_amount` | `CREATE DOMAIN money_amount AS integer NOT NULL CHECK (VALUE >= 0)` | `journal_line.amount_cents`, `invoice.total_cents` |
-
-**Not for this PR** — Drizzle ORM doesn't natively support `CREATE DOMAIN` in schema definitions. Would require all `orgId` columns to be declared as `customType` in Drizzle, which adds complexity. Document for future evaluation when Drizzle adds domain support or when the team moves fully to hand-written migrations.
-
-**Step 12 — PG Schemas Namespace Proposal**
-
-Document in OWNERS.md the architectural path toward PG schemas:
-
-| PG Schema | Maps To | Tables |
-|-----------|---------|--------|
-| `iam` | iam.ts | 10 IAM tables |
-| `finance` | finance.ts | 5 finance tables |
-| `document` | document.ts | 3 document tables |
-| `supplier` | supplier.ts | 1 table |
-| `infra` | infra.ts | 5 infra tables |
-
-Benefits: per-schema `GRANT` (defense-in-depth), `search_path` controls, clearer naming at 100+ tables. Requires `schemaFilter` in drizzle.config.ts, `schema:` option on each `pgTable`, and a large migration to `ALTER TABLE SET SCHEMA`. **Deferred** — not practical until the table count warrants it (50+).
-
-**Step 13 — PG Grants & Roles Proposal**
-
-Document the defense-in-depth model:
-- `afenda_api` role — `SELECT, INSERT, UPDATE` on business tables; no `DELETE` except on `idempotency`, `outbox_event`
-- `afenda_worker` role — `SELECT, INSERT, UPDATE, DELETE` on `outbox_event`, `dead_letter_job`; read-only on business tables
-- `afenda_migrator` role — superuser equivalent, used only by migration runner
-- Requires `GRANT` statements in a migration + connection string per role. **Deferred** — depends on deployment topology.
-
-**Step 14 — Cleanup & Drift Resolution**
-
-- Delete tenant.entity.ts (all exports `@deprecated`, dead code from pre-ADR-0003)
-- Remove its re-export from index.ts
-- Backport 5 missing SQL-only indexes/constraints into Drizzle schema to close the drift gap:
-  - `person_email_uidx` (partial index) → add to `iam.ts`
-  - `idempotency_expires_at_idx` → add to `infra.ts`
-  - `supplier_org_name_uidx`, `supplier_org_external_uidx` → add to `supplier.ts`
-  - `audit_log_org_time_idx` → add to `infra.ts`
-  - `party_kind_idx` → add to `iam.ts`
-- Add extension gate rule to `migration-lint.mjs`: `MIGRATION_MISSING_EXTENSION` — if a migration uses a function from a known extension (e.g., `gen_random_uuid`, `pgcrypto`, `pg_trgm`), verify there's a `CREATE EXTENSION IF NOT EXISTS` somewhere in the migration set. (Currently no extensions are used — `gen_random_uuid()` is built-in since PG 13 — but this gates future usage.)
-- Consolidate the 4 `set_config()` calls in client.ts into a single `SELECT` call for performance.
-
----
-
-### Verification
-
-| Check | Command / Action |
-|-------|-----------------|
-| Build | `pnpm turbo build` — 7/7 packages green |
-| Tests | `pnpm turbo test` — 131+ tests pass |
-| Gates | `node tools/run-gates.mjs` — all 5 gates pass (boundaries, catalog, test-location, schema-invariants, migration-lint) |
-| Migration | Apply 0010–0013 against dev DB, verify with `\d+ tablename` for indexes, triggers, autovacuum settings |
-| RLS | Verify `FORCE ROW LEVEL SECURITY` with a query as table owner role — should be filtered |
-| Trigger | `UPDATE supplier SET name='test' WHERE id=...` → verify `updated_at` auto-set without app code |
-
-### Decisions
-
-- **Triggers over app code** for `updated_at`: chose DB-level enforcement because it's impossible to bypass, following the `prevent_audit_log_mutation()` precedent in migration 0002
-- **`FORCE RLS` now**: the comment says "Sprint 2" — this is Sprint 2; without it, table owner bypasses all policies
-- **Domains and PG schemas deferred**: Drizzle ORM doesn't support `CREATE DOMAIN` natively; PG schemas require a large migration and `search_path` management. Document the path but don't execute yet.
-- **`UNLOGGED` for idempotency deferred**: requires team decision on read-replica topology
-- **Grants deferred**: requires per-service connection strings and deployment topology decisions
-- **4 migrations (0010–0013)** rather than one monolith: each is independently deployable and reviewable
-- **Extend `migration-lint`** with `MIGRATION_MISSING_ANALYZE` and `MIGRATION_MISSING_EXTENSION` — catches two real gaps found in the existing migration set (0004 has no `ANALYZE` after bulk INSERT, no extensions declared)
+**21.** Write 5 new integration test files:
+   - `mark-paid-lifecycle.test.ts` (EC-S2-1): Submit → approve → post-to-GL → mark-paid. Verify status `"paid"`, `paidAt`/`paymentReference` set, outbox event `AP.INVOICE_PAID` emitted, status history row (posted→paid).
+   - `mark-paid-sod.test.ts` (EC-S2-2): Verify non-authorized principal gets `IAM_INSUFFICIENT_PERMISSIONS` trying to mark paid.
+   - `audit-queries.test.ts` (EC-S2-3): Submit invoice, then query `GET /v1/audit-logs?entityType=invoice&entityId=<id>`. Verify audit row with action `invoice.submitted`, correct correlationId. Test cursor pagination with multiple audit entries.
+   - `audit-trail.test.ts` (EC-S2-4): Full lifecycle (submit → approve → post), then query `GET /v1/audit-logs/invoice/:id`. Verify 3+ audit entries in order, each with distinct action.
+   - `void-gl-reversal.test.ts` (EC-S2-5): Submit → approve → post-to-GL → void invoice. Verify worker handler auto-reverses the GL entries (check `journal_entry` table for reversal row with `reversal_of` pointing to original).
+
+### Phase H — Governance & Docs
+
+**22.** Update OWNERS.md files:
+   - core/src/infra/ — add `audit-queries.ts`, `telemetry.ts`
+   - jobs — add `handle-invoice-paid.ts` (if OWNERS.md exists here)
+   - Verify all new files appear in their parent OWNERS.md
+
+**23.** Update PROJECT.md:
+   - Bump revision to `v0.3-R11`
+   - Add R10→R11 changelog with all Sprint 2 changes
+   - Mark Sprint 2 tasks 2.1, 2.2, 2.4 as ✅
+   - Update Sprint 2 exit criteria with test evidence
+   - Update test count in Gap Analysis
+   - Keep Sprint 2 status as ✅ if all tasks pass
+
+### Phase I — Verification
+
+**24.** Run full verification pipeline:
+   - `pnpm build` → expect 7/7
+   - `pnpm test` → expect 180+ (166 existing + ~14 new)
+   - `node tools/run-gates.mjs` → expect 8/8
+   - Verify no boundary violations (audit route uses `@afenda/core` for queries, NOT `@afenda/db`)
+   - Verify no `new Date()` in new DB-touching code (use `sql\`now()\``)
+
+**Verification**
+- `pnpm build` — 7/7 packages
+- `pnpm test` — all green (unit + integration)
+- `node tools/run-gates.mjs` — 8/8 gates
+- Manual: `POST /v1/commands/mark-paid`, `GET /v1/audit-logs` via Scalar docs at `/v1/docs`
+
+**Decisions**
+- MarkPaid: new permission `ap.invoice.markpaid` (dedicated SoD, not reusing approve/post)
+- n8n: deferred to Sprint 2.5 — Sprint 2 is pure code deliverables
+- OTel: minimal SDK + auto-instrumentations, behind `OTEL_ENABLED` env guard
+- Worker: only `handle-invoice-voided` gets real logic (GL auto-reversal); other stubs stay log-only until notification infrastructure exists
+- DB migration: additive columns only (paid_at, paid_by_principal_id, payment_reference) — no breaking changes, no data migration needed

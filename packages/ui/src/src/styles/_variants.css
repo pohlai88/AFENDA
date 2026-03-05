@@ -1,0 +1,32 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   PILLAR 1 · CUSTOM VARIANTS
+   ─────────────────────────────────────────────────────────────────────────
+   Class-based variants for runtime mode switching.
+   Applied to a container ancestor (e.g. <html>, <main>, <section>).
+
+   Usage in components:
+     density-compact:text-xs     → applies when ancestor has .compact
+     density-ultra:p-0           → applies when ancestor has .ultra
+     reduce-motion:animate-none  → applies when ancestor has .reduce-motion
+     touch:min-h-[52px]          → applies when ancestor has .touch-mode
+     high-contrast:border-2      → applies when ancestor has .high-contrast
+
+   :where() gives ZERO specificity so utilities remain easy to override.
+   Each selector matches the element itself (if it carries the class)
+   AND any descendant of that class — both cases are needed because
+   the density class might be on the same element or an ancestor.
+
+   dark uses :is() (matches Tailwind's own convention).
+   ───────────────────────────────────────────────────────────────────────── */
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant density-compact (&:where(.compact, .compact *));
+@custom-variant density-ultra (&:where(.ultra, .ultra *));
+@custom-variant reduce-motion (&:where(.reduce-motion, .reduce-motion *));
+@custom-variant touch (&:where(.touch-mode, .touch-mode *));
+@custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
+
+/* Print-preview mode: apply print-like styles without actually printing.
+   Usage: print-preview:bg-white  → applies when ancestor has .print-preview
+   Useful for "preview before print" screens in ERP report builders. */
+@custom-variant print-preview (&:where(.print-preview, .print-preview *));

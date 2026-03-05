@@ -10,8 +10,8 @@
     "dev": "node -e \"console.log('db: dev noop')\"",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node -e \"console.log('db: test noop')\"",
-    "lint": "node -e \"console.log('db: lint noop')\"",
+    "test": "vitest run",
+    "lint": "eslint src/",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/migrate.ts",
     "db:seed": "tsx src/seed.ts",
@@ -29,6 +29,7 @@
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

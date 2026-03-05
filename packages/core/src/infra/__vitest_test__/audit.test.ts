@@ -21,7 +21,7 @@ const transactionFn = vi.fn(async (fn: any) => fn({ insert: insertFn, execute: v
 
 vi.mock("@afenda/db", () => ({
   auditLog: { id: "id" },
-  createDbClient: vi.fn(),
+  createDb: vi.fn(),
 }));
 
 // Import after mock registration

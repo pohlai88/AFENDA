@@ -8,21 +8,29 @@
     "build": "tsup src/index.ts --format esm --target es2022 --clean",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node -e \"console.log('worker: test noop')\"",
-    "lint": "node -e \"console.log('worker: lint noop')\""
+    "test": "vitest run",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@afenda/contracts": "workspace:*",
     "@afenda/core": "workspace:*",
     "@afenda/db": "workspace:*",
     "dotenv": "catalog:",
-    "graphile-worker": "catalog:"
+    "graphile-worker": "catalog:",
+    "pino": "catalog:",
+    "pino-pretty": "catalog:"
+  },
+  "optionalDependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/sdk-node": "^0.212.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.70.1"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

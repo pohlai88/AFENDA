@@ -10,8 +10,8 @@
     "dev": "node -e \"console.log('contracts: dev noop')\"",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node -e \"console.log('contracts: test noop')\"",
-    "lint": "node -e \"console.log('contracts: lint noop')\""
+    "test": "vitest run",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "zod": "catalog:"
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

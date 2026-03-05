@@ -20,6 +20,11 @@ const GATES = [
   resolve(__dirname, "gates/boundaries.mjs"),
   resolve(__dirname, "gates/catalog.mjs"),
   resolve(__dirname, "gates/test-location.mjs"),
+  resolve(__dirname, "gates/schema-invariants.mjs"),
+  resolve(__dirname, "gates/migration-lint.mjs"),
+  resolve(__dirname, "gates/contract-db-sync.mjs"),
+  resolve(__dirname, "gates/server-clock.mjs"),
+  resolve(__dirname, "gates/owners-lint.mjs"),
 ];
 
 let failed = 0;

@@ -51,7 +51,7 @@ export async function nextNumber(
   entityType: SequenceEntityType,
   options?: NextNumberOptions,
 ): Promise<string> {
-  const periodKey = options?.periodKey ?? String(new Date().getFullYear());
+  const periodKey = options?.periodKey ?? String(new Date().getFullYear()); // gate:allow-js-date — year string for default period key
 
   // Atomically increment and return the consumed value + formatting config.
   // `consumed` = pre-increment value (the number we're issuing).

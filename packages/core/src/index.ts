@@ -18,8 +18,8 @@
  */
 
 // ── DB client (re-exported from @afenda/db) ──────────────────────────────────
-export { createDbClient, checkDbHealth, withOrgContext } from "@afenda/db";
-export type { DbClient, OrgContext } from "@afenda/db";
+export { createDb, checkDbHealth, withOrgContext } from "@afenda/db";
+export type { DbClient, OrgContext, CreateDbOptions, DbHealthResult } from "@afenda/db";
 
 // ── Domain services ──────────────────────────────────────────────────────────
 export * from "./iam/index.js";

@@ -1,6 +1,21 @@
 {
   "version": 1,
   "skills": {
+    "fastify-best-practices": {
+      "source": "mcollina/skills",
+      "sourceType": "github",
+      "computedHash": "b66ef38b684ef2f10c2419bf379d0f8de6a016ae41540dac5379b344ebb15ff9"
+    },
+    "graphile-worker": {
+      "source": "omer-metin/skills-for-antigravity",
+      "sourceType": "github",
+      "computedHash": "4b4e4392bbcd6f96e3f57ce8ef60db90a34da9e91f8e20d4a7239312b9163020"
+    },
+    "openapi-specification-v3.2": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "computedHash": "fe7383c64d470758e3ee423d14e108e56990927f4d0ecab8f51704e6e0a32621"
+    },
     "pg-sqill": {
       "source": "aluxf/pg-sqill",
       "sourceType": "github",
