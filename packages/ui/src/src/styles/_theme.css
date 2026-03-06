@@ -1,5 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   PILLAR 5 · THEME ENGINE (@theme inline — Figma Token Interface)
+   PILLAR 5 · THEME ENGINE (@theme inline — Figma Token Interface v2)
+   ─────────────────────────────────────────────────────────────────────────
    ─────────────────────────────────────────────────────────────────────────
    This is the ONLY place Tailwind learns about our design tokens.
    Every CSS variable must be mapped here to generate a utility class.
@@ -70,6 +71,8 @@
      ═══════════════════════════════════════════════════════════════════════ */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-surface-50: var(--surface-50);
   --color-surface-100: var(--surface-100);
   --color-surface-200: var(--surface-200);
   --color-surface-300: var(--surface-300);
@@ -91,20 +94,35 @@
      COLOR TOKENS — Interaction
      ═══════════════════════════════════════════════════════════════════════ */
   --color-ring: var(--ring);
+  --color-ring-strong: var(--ring-strong);
+  --color-ring-soft: var(--ring-soft);
   --color-selection: var(--selection);
   --color-selection-foreground: var(--selection-foreground);
+
+  /* Interaction overlays */
+  --color-overlay-hover: var(--overlay-hover);
+  --color-overlay-active: var(--overlay-active);
+  --color-overlay-selected: var(--overlay-selected);
+  --color-overlay-focus: var(--overlay-focus);
 
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR TOKENS — Semantic Systems
      ═══════════════════════════════════════════════════════════════════════ */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  /* Disabled system */
+  --color-disabled-foreground: var(--disabled-foreground);
+  --color-disabled-surface: var(--disabled-surface);
+  --color-disabled-border: var(--disabled-border);
 
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR TOKENS — Status Palette
@@ -136,6 +154,10 @@
   --color-grid: var(--grid);
   --color-grid-foreground: var(--grid-foreground);
   --color-grid-border: var(--grid-border);
+  --color-grid-hover: var(--grid-hover);
+  --color-grid-selected: var(--grid-selected);
+  --color-grid-focus: var(--grid-focus);
+  --color-stripe: var(--stripe);
 
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR TOKENS — Sidebar (shadcn Sidebar component)
@@ -330,6 +352,39 @@
   --shadow-card-hover: var(--shadow-card-hover);
   --shadow-popover: var(--shadow-popover);
   --shadow-modal: var(--shadow-modal);
+  --shadow-elev-1: var(--elev-1-shadow);
+  --shadow-elev-2: var(--elev-2-shadow);
+  --shadow-elev-3: var(--elev-3-shadow);
+  --shadow-inner: var(--shadow-inner);
+
+  /* Skeleton / loading */
+  --color-skeleton: var(--skeleton);
+  --color-skeleton-highlight: var(--skeleton-highlight);
+
+  /* Scrollbar */
+  --color-scrollbar-track: var(--scrollbar-track);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+
+  /* Drag & drop */
+  --color-drag-preview: var(--drag-preview);
+  --color-drop-target: var(--drop-target);
+
+  /* Glass surface */
+  --color-glass-surface: var(--glass-surface);
+  --color-glass-border: var(--glass-border);
+
+  /* Scrim */
+  --color-scrim: var(--scrim);
+
+  /* Semantic visualization */
+  --color-viz-positive: var(--viz-positive);
+  --color-viz-negative: var(--viz-negative);
+  --color-viz-neutral: var(--viz-neutral);
+  --color-viz-accent-1: var(--viz-accent-1);
+  --color-viz-accent-2: var(--viz-accent-2);
+  --color-viz-accent-3: var(--viz-accent-3);
+  --color-viz-threshold: var(--viz-threshold);
+  --color-viz-target: var(--viz-target);
 
   /* ═══════════════════════════════════════════════════════════════════════
      FLUID TYPOGRAPHY — maps to text-fluid-* utilities

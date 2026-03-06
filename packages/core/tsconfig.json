@@ -2,7 +2,12 @@
   "extends": "@afenda/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@afenda/contracts": ["../contracts/src/index.ts"],
+      "@afenda/db": ["../db/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/__vitest_test__/**", "src/**/__e2e_test__/**"]

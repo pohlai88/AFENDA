@@ -16,6 +16,7 @@ export * from "./money.js";
 export * from "./pagination.js";
 export * from "./audit.js";
 export * from "./audit-query.js";
+export * from "./permissions.js";
 export * from "./sequence.js";
 // Composite schemas — depend on ids + errors.
 export * from "./envelope.js";

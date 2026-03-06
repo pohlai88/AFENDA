@@ -4,26 +4,54 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles.css": "./src/src/styles/index.css",
+    "./meta": {
+      "import": "./dist/meta/index.js",
+      "types": "./dist/meta/index.d.ts"
+    },
+    "./field-kit": {
+      "import": "./dist/field-kit/index.js",
+      "types": "./dist/field-kit/index.d.ts"
+    },
+    "./generated": {
+      "import": "./dist/generated/index.js",
+      "types": "./dist/generated/index.d.ts"
+    },
+    "./components/*": "./src/components/*.tsx"
   },
   "scripts": {
     "dev": "node -e \"console.log('ui: dev noop')\"",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "eslint src/"
   },
   "dependencies": {
     "@afenda/contracts": "workspace:*",
-    "react": "catalog:"
+    "@hookform/resolvers": "^5.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "catalog:",
+    "lucide-react": "^0.577.0",
+    "radix-ui": "^1.4.3",
+    "react": "catalog:",
+    "react-hook-form": "^7.71.2",
+    "tailwind-merge": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
-    "react": "^19"
+    "react": "^19",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
+    "react-dom": "catalog:",
+    "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

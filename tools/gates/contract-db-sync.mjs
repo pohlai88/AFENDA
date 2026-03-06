@@ -127,6 +127,26 @@ const SYNC_PAIRS = [
     excludeFromDb: [],
   },
 
+  // ─── IAM (continued) ─────────────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/iam.ts",
+    dbTable: "iam_role",
+    contractFile: "packages/contracts/src/iam/role.entity.ts",
+    contractSchema: "RoleSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+
+  // ─── Finance (continued) ─────────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/finance.ts",
+    dbTable: "journal_entry",
+    contractFile: "packages/contracts/src/gl/journal-entry.entity.ts",
+    contractSchema: "JournalEntrySchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+
   // ─── Document / Evidence ─────────────────────────────────────────────
   {
     dbFile: "packages/db/src/schema/document.ts",
@@ -136,8 +156,18 @@ const SYNC_PAIRS = [
     excludeFromContract: [],
     excludeFromDb: [],
   },
-  // EvidenceLinkSchema uses z.intersection() — too complex for regex
-  // parsing. Covered by manual review and evidence.commands.ts tests.
+  {
+    dbFile: "packages/db/src/schema/document.ts",
+    dbTable: "evidence",
+    contractFile: "packages/contracts/src/evidence/evidence.entity.ts",
+    contractSchema: "EvidenceLinkSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["idempotencyKey"],
+    // Fields from the intersected EvidenceTargetSchema discriminated union.
+    // The parser extracts fields from the inline z.object({...}) block;
+    // these are the additional fields contributed by the second operand.
+    intersectionFields: ["entityType", "entityId"],
+  },
 ];
 
 // ─── Rule Documentation ─────────────────────────────────────────────────────
@@ -195,13 +225,15 @@ function extractTableFields(content, sqlName) {
   const body = content.substring(startIdx, i - 1);
 
   // Extract field names from lines matching: fieldName: type(...
+  // Skip known Drizzle FK/index config keys that appear inside nested objects
+  const DRIZZLE_INTERNAL_KEYS = new Set(["onDelete", "onUpdate"]);
   const fields = [];
   for (const line of body.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     if (trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) continue;
     const fm = trimmed.match(/^(\w+)\s*:/);
-    if (fm) fields.push(fm[1]);
+    if (fm && !DRIZZLE_INTERNAL_KEYS.has(fm[1])) fields.push(fm[1]);
   }
   return fields;
 }
@@ -215,9 +247,19 @@ function extractTableFields(content, sqlName) {
  * @param {string} schemaName  — the exported const name
  * @returns {string[] | null}  — field names, or null if schema not found
  */
-function extractZodFields(content, schemaName) {
-  const schemaRe = new RegExp(`export\\s+const\\s+${schemaName}\\s*=\\s*z\\.object\\(\\s*\\{`);
-  const m = content.match(schemaRe);
+function extractZodFields(content, schemaName, intersectionFields = []) {
+  // Try z.object first
+  const objectRe = new RegExp(`export\\s+const\\s+${schemaName}\\s*=\\s*z\\.object\\(\\s*\\{`);
+  let m = content.match(objectRe);
+
+  // Fall back to z.intersection(z.object({...}), ...)
+  if (!m) {
+    const interRe = new RegExp(
+      `export\\s+const\\s+${schemaName}\\s*=\\s*z\\.intersection\\(\\s*\\n?\\s*z\\.object\\(\\s*\\{`,
+    );
+    m = content.match(interRe);
+  }
+
   if (!m) return null;
 
   const startIdx = m.index + m[0].length;
@@ -237,6 +279,10 @@ function extractZodFields(content, schemaName) {
     const fm = trimmed.match(/^(\w+)\s*:/);
     if (fm) fields.push(fm[1]);
   }
+
+  // Append fields contributed by intersected schemas (declared in sync pair config)
+  fields.push(...intersectionFields);
+
   return fields;
 }
 
@@ -271,10 +317,14 @@ for (const pair of SYNC_PAIRS) {
     continue;
   }
 
-  const contractFields = extractZodFields(contractContent, pair.contractSchema);
+  const contractFields = extractZodFields(
+    contractContent,
+    pair.contractSchema,
+    pair.intersectionFields,
+  );
   if (!contractFields) {
     console.error(
-      `WARNING: Could not find ${pair.contractSchema} = z.object() in ${pair.contractFile} — skipping`,
+      `WARNING: Could not find ${pair.contractSchema} = z.object() or z.intersection() in ${pair.contractFile} — skipping`,
     );
     continue;
   }
@@ -293,6 +343,8 @@ for (const pair of SYNC_PAIRS) {
       ruleCode: "COLUMN_MISSING_FROM_CONTRACT",
       file: pair.contractFile,
       line: null,
+      statement: `DB columns: [${dbFields.join(", ")}]  |  Contract fields: [${contractFields.join(", ")}]`,
+      field,
       message: `DB column "${field}" in pgTable("${pair.dbTable}") has no matching field in ${pair.contractSchema}`,
       fix: suggestFix("COLUMN_MISSING_FROM_CONTRACT", {
         field,
@@ -312,6 +364,8 @@ for (const pair of SYNC_PAIRS) {
       ruleCode: "FIELD_MISSING_FROM_DB",
       file: pair.dbFile,
       line: null,
+      statement: `Contract fields: [${contractFields.join(", ")}]  |  DB columns: [${dbFields.join(", ")}]`,
+      field,
       message: `Contract field "${field}" in ${pair.contractSchema} has no matching column in pgTable("${pair.dbTable}")`,
       fix: suggestFix("FIELD_MISSING_FROM_DB", {
         field,

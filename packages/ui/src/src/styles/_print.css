@@ -210,4 +210,32 @@
   .form-grid > * + * {
     margin-top: 6pt;
   }
+
+  /* ── Skeleton: hide loading placeholders entirely ── */
+  .skeleton,
+  .skeleton-text,
+  .skeleton-heading,
+  .skeleton-avatar,
+  .skeleton-cell {
+    display: none !important;
+  }
+
+  /* ── Glass: opaque fallback for print ── */
+  .glass {
+    background: white !important;
+    border: 0.5pt solid #999;
+    backdrop-filter: none !important;
+  }
+
+  /* ── Disabled state: grey text for print clarity ── */
+  .state-disabled {
+    color: #999 !important;
+    background: transparent !important;
+  }
+
+  /* ── Drag/drop affordances: hide in print ── */
+  .drag-preview,
+  .drop-target {
+    display: none !important;
+  }
 }

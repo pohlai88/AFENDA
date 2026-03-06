@@ -14,6 +14,8 @@
  *   5. Never reuse a removed key for a different meaning.
  */
 import { z } from "zod";
+import { EntityIdSchema, OrgIdSchema } from "../shared/ids.js";
+import { UtcDateTimeSchema } from "../shared/datetime.js";
 
 // ─── Permissions (single source of truth) ────────────────────────────────────
 
@@ -57,3 +59,22 @@ export const RoleKeyValues = ["admin", "operator", "approver", "supplier", "view
 
 export const RoleKeySchema = z.enum(RoleKeyValues);
 export type RoleKey = z.infer<typeof RoleKeySchema>;
+
+// ─── Role entity (mirrors iam_role pgTable) ──────────────────────────────────
+
+/**
+ * IAM role entity — read-side DTO for the `iam_role` table.
+ *
+ * Rule: `key` is constrained to `RoleKeyValues` so adding a new role key
+ * requires updating the enum first (breaking change).
+ */
+export const RoleSchema = z.object({
+  id: EntityIdSchema,
+  orgId: OrgIdSchema,
+  key: RoleKeySchema,
+  name: z.string().trim().min(1).max(255),
+  createdAt: UtcDateTimeSchema,
+  updatedAt: UtcDateTimeSchema,
+});
+
+export type Role = z.infer<typeof RoleSchema>;

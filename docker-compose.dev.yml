@@ -15,23 +15,25 @@ services:
       timeout: 5s
       retries: 5
 
-  n8n:
-    image: n8nio/n8n:2.9.4
+  # ── Observability ────────────────────────────────────────────────────────────
+  # Jaeger v2 — all-in-one trace collector + UI.
+  # OTLP endpoints: gRPC :4317, HTTP :4318. UI: :16686.
+  # v2 uses built-in OTel Collector config (badger storage by default).
+  jaeger:
+    image: jaegertracing/jaeger:latest
     ports:
-      - "5678:5678"
+      - "16686:16686" # Jaeger UI
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
     environment:
-      - N8N_HOST=localhost
-      - N8N_PORT=5678
-      - N8N_PROTOCOL=http
-      - N8N_DIAGNOSTICS_ENABLED=false
-      - N8N_PERSONALIZATION_ENABLED=false
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-      - N8N_USER_MANAGEMENT_JWT_SECRET=${N8N_JWT_SECRET}
+      - COLLECTOR_OTLP_ENABLED=true
     volumes:
-      - afenda_n8n:/home/node/.n8n
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - afenda_jaeger:/tmp/jaeger # v2 default badger path
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:13133 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # Optional local S3-compatible storage
   minio:
@@ -53,5 +55,5 @@ services:
 
 volumes:
   afenda_pg:
-  afenda_n8n:
+  afenda_jaeger:
   afenda_minio:

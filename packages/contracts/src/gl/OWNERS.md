@@ -29,11 +29,12 @@ General Ledger (Chart of Accounts) schemas and journal-posting commands.
 
 ## Files
 
-| File                | Key exports                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `account.entity.ts` | `AccountTypeValues`, `AccountTypeSchema`, `AccountType`, `AccountCodeSchema`, `AccountCode`, `AccountSchema`, `Account`                      |
-| `gl.commands.ts`    | `JournalLineInputSchema`, `JournalLineInput`, `PostToGLCommandSchema`, `PostToGLCommand`, `ReverseEntryCommandSchema`, `ReverseEntryCommand` |
-| `index.ts`          | Domain barrel — re-exports all of the above                                                                                                  |
+| File                        | Key exports                                                                                                                                  |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account.entity.ts`         | `AccountTypeValues`, `AccountTypeSchema`, `AccountType`, `AccountCodeSchema`, `AccountCode`, `AccountSchema`, `Account`                      |
+| `journal-entry.entity.ts`   | `JournalEntrySchema`, `JournalEntry`                                                                                                         |
+| `gl.commands.ts`            | `JournalLineInputSchema`, `JournalLineInput`, `PostToGLCommandSchema`, `PostToGLCommand`, `ReverseEntryCommandSchema`, `ReverseEntryCommand` |
+| `index.ts`                  | Domain barrel — re-exports all of the above                                                                                                  |
 
 ## DB Alignment
 

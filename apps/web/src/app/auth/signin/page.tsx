@@ -20,12 +20,12 @@ import { useRouter, useSearchParams } from "next/navigation";
  */
 function SignInFormSkeleton() {
   return (
-    <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-      <div className="mb-6 h-8 w-24 animate-pulse rounded bg-gray-200" />
+    <div className="w-full max-w-sm rounded-lg border bg-card p-8 shadow-sm">
+      <div className="mb-6 h-8 w-24 skeleton rounded" />
       <div className="space-y-4">
-        <div className="h-16 w-full animate-pulse rounded bg-gray-100" />
-        <div className="h-16 w-full animate-pulse rounded bg-gray-100" />
-        <div className="h-10 w-full animate-pulse rounded bg-gray-200" />
+        <div className="h-16 w-full skeleton rounded" />
+        <div className="h-16 w-full skeleton rounded" />
+        <div className="h-10 w-full skeleton rounded" />
       </div>
     </div>
   );
@@ -65,12 +65,12 @@ function SignInForm() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-      <h1 className="mb-6 text-2xl font-semibold text-gray-900">Sign in</h1>
+    <div className="w-full max-w-sm rounded-lg border bg-card p-8 shadow-sm">
+      <h1 className="mb-6 text-2xl font-semibold text-foreground">Sign in</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-foreground-secondary">
             Email
           </label>
           <input
@@ -80,12 +80,12 @@ function SignInForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="password" className="block text-sm font-medium text-foreground-secondary">
             Password
           </label>
           <input
@@ -95,12 +95,12 @@ function SignInForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
@@ -108,7 +108,7 @@ function SignInForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50"
         >
           {isPending ? "Signing in…" : "Sign in"}
         </button>
@@ -119,7 +119,7 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50">
+    <main className="flex min-h-screen items-center justify-center bg-surface-100">
       <Suspense fallback={<SignInFormSkeleton />}>
         <SignInForm />
       </Suspense>

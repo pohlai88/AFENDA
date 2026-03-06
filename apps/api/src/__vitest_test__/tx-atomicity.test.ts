@@ -63,7 +63,7 @@ describe("transaction atomicity (EC-8)", () => {
       /* sql */ `SELECT count(*) AS cnt FROM journal_entry`,
     );
     const journalCount = Number(
-      (journalResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0,
+      (journalResult as unknown as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0,
     );
     expect(journalCount).toBe(0);
 
@@ -71,7 +71,7 @@ describe("transaction atomicity (EC-8)", () => {
     const auditResult = await app.db.execute(
       /* sql */ `SELECT count(*) AS cnt FROM audit_log WHERE action = 'gl.journal.posted'`,
     );
-    const auditCount = Number((auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
+    const auditCount = Number((auditResult as unknown as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
     expect(auditCount).toBe(0);
   });
 
@@ -93,7 +93,7 @@ describe("transaction atomicity (EC-8)", () => {
     const auditResult = await app.db.execute(
       /* sql */ `SELECT count(*) AS cnt FROM audit_log WHERE action = 'invoice.approved'`,
     );
-    const auditCount = Number((auditResult as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
+    const auditCount = Number((auditResult as unknown as { rows: Array<{ cnt: string }> }).rows[0]?.cnt ?? 0);
     expect(auditCount).toBe(0);
   });
 });

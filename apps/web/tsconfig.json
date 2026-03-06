@@ -8,7 +8,12 @@
     "moduleResolution": "Bundler",
     "outDir": ".next",
     "plugins": [{ "name": "next" }],
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@afenda/contracts": ["../../packages/contracts/src/index.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "next.config.ts"],
   "exclude": ["node_modules"]

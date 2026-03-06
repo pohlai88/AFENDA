@@ -130,6 +130,14 @@ const RULE_DOCS = {
     why: "Schema barrels must be pure re-export layers — no values, types, functions, or external imports.",
     docs: "See packages/db/OWNERS.md — Barrel Rules",
   },
+  SELF_ALIAS_IMPORT: {
+    why: "A file inside a package must use relative imports (./foo, ../shared/bar) for intra-package references. Self-aliased imports (e.g. @afenda/contracts inside packages/contracts) create a circular dependency and bypass the local file system.",
+    docs: "See PROJECT.md §14.1 — Import Direction Law",
+  },
+  CROSS_PKG_RELATIVE: {
+    why: "Cross-package imports must use the @afenda/* alias through the barrel. Relative paths that escape the package root bypass the public API and break when packages are restructured.",
+    docs: "See PROJECT.md §14.1 — Import Direction Law",
+  },
 };
 
 /** Generate a human-readable fix suggestion for a violation. */
@@ -171,6 +179,12 @@ function suggestFix(ruleCode, { pkgDir, pkg, barrel, lines } = {}) {
     case "BARREL_IMPURE":
       return `schema/index.ts must only contain \`export * from "./…"\` re-exports. Remove any value, type, or function definitions.`;
 
+    case "SELF_ALIAS_IMPORT":
+      return `Replace the @afenda/* import with a relative path (e.g. import { … } from "../shared/ids.js").`;
+
+    case "CROSS_PKG_RELATIVE":
+      return `Replace the relative path with the barrel alias: import { … } from "${pkg}";`;
+
     default:
       return "(no suggestion available)";
   }
@@ -199,7 +213,27 @@ for (const pkgDir of Object.keys(ALLOWED_INTERNAL)) {
     totalImports += imports.length;
 
     for (const { specifier: raw, line, statement } of imports) {
-      if (raw.startsWith(".") || raw.startsWith("/")) continue;
+      // ── Relative import checks ─────────────────────────────────────
+      if (raw.startsWith(".") || raw.startsWith("/")) {
+        // Check if a relative import escapes the package root.
+        // Resolve the import target relative to the file, then verify
+        // it's still within the same package directory.
+        const fileDir = resolve(file, "..");
+        const target = resolve(fileDir, raw);
+        const pkgAbs = resolve(ROOT, pkgDir);
+        if (!target.startsWith(pkgAbs + sep) && target !== pkgAbs) {
+          violations.push({
+            ruleCode: "CROSS_PKG_RELATIVE",
+            file: relFile,
+            line,
+            statement,
+            import: raw,
+            message: `Relative import "${raw}" escapes ${pkgDir} — use @afenda/* barrel alias instead`,
+            fix: suggestFix("CROSS_PKG_RELATIVE", { pkg: "@afenda/<target-package>" }),
+          });
+        }
+        continue;
+      }
 
       // node: prefixed imports — skip globally UNLESS this package forbids them
       if (raw.startsWith("node:")) {
@@ -218,6 +252,25 @@ for (const pkgDir of Object.keys(ALLOWED_INTERNAL)) {
       }
 
       const pkg = barePackage(raw);
+
+      // ── Self-alias guard ─────────────────────────────────────────────
+      // A file must not import its own package via the @afenda/* alias.
+      // e.g., a file in packages/contracts importing @afenda/contracts
+      // should use a relative path instead.
+      if (pkg.startsWith("@afenda/")) {
+        const selfAlias = `@afenda/${pkgDir.split("/")[1]}`;
+        if (pkg === selfAlias) {
+          violations.push({
+            ruleCode: "SELF_ALIAS_IMPORT",
+            file: relFile,
+            line,
+            statement,
+            import: raw,
+            message: `"${raw}" is a self-alias import inside ${pkgDir} — use a relative path instead`,
+            fix: suggestFix("SELF_ALIAS_IMPORT", { pkgDir, pkg }),
+          });
+        }
+      }
 
       // ── forbidden externals ──────────────────────────────────────────
       if (forbidden.includes(pkg)) {

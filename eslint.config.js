@@ -2,6 +2,7 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettierConfig from "eslint-config-prettier";
+import noHardcodedColors from "./tools/eslint/no-hardcoded-colors.mjs";
 
 export default tseslint.config(
   // ── Global ignores ──────────────────────────────────────────────────────────
@@ -44,6 +45,18 @@ export default tseslint.config(
 
       // Forbid console.* — use Pino logger instead
       "no-console": ["warn", { allow: ["warn", "error"] }],
+    },
+  },
+
+  // ── Design-system token enforcement (component files only) ─────────────────
+  {
+    files: ["apps/web/**/*.tsx", "packages/ui/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/__vitest_test__/**"],
+    plugins: {
+      "@afenda": { rules: { "no-hardcoded-colors": noHardcodedColors } },
+    },
+    rules: {
+      "@afenda/no-hardcoded-colors": "error",
     },
   },
 

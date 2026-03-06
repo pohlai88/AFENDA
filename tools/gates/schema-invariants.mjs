@@ -288,6 +288,7 @@ for (const fileName of schemaFiles) {
             ruleCode: "ORG_SCOPED_UNIQUE",
             file: relFile,
             line: table.startLine,
+            statement: `unique("${u.name}").on(${u.cols.map(c => "t." + c).join(", ")})`,
             message: `unique("${u.name}") on org-scoped table "${table.sqlName}" does not include orgId as the first column. Columns: [${u.cols.join(", ")}]`,
             fix: suggestFix("ORG_SCOPED_UNIQUE", { constraintName: u.name }),
           });
@@ -311,6 +312,7 @@ for (const fileName of schemaFiles) {
         ruleCode: "FK_MUST_BE_INDEXED",
         file: relFile,
         line: table.startLine,
+        statement: `Indexed columns: [${[...indexedCols].join(", ")}]  |  FK: ${fk.fieldName} (${fk.columnName})`,
         message: `FK column "${fk.columnName}" (${fk.fieldName}) on table "${table.sqlName}" has no covering index`,
         fix: suggestFix("FK_MUST_BE_INDEXED", {
           tableName: table.sqlName,

@@ -181,10 +181,22 @@ for (const filePath of sqlFiles) {
   const hasAnalyze = /\bANALYZE\b/i.test(content);
 
   if (hasDataChange && !hasAnalyze) {
+    // Find the line of the first data-change statement for diagnostics
+    let dataChangeLine = null;
+    let dataChangeStatement = null;
+    for (let j = 0; j < lines.length; j++) {
+      if (/\bUPDATE\b/i.test(lines[j]) || /\bINSERT\b.*\bSELECT\b/i.test(lines[j])) {
+        dataChangeLine = j + 1;
+        dataChangeStatement = lines[j].trim();
+        break;
+      }
+    }
+
     violations.push({
       ruleCode: "MIGRATION_MISSING_ANALYZE",
       file: relFile,
-      line: null,
+      line: dataChangeLine,
+      statement: dataChangeStatement,
       message: `Migration contains data changes (UPDATE...SET or INSERT...SELECT) but no ANALYZE statement`,
       fix: suggestFix("MIGRATION_MISSING_ANALYZE"),
     });

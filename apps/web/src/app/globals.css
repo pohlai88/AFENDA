@@ -1,19 +1,26 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   @afenda/web — Global Stylesheet
+   ═══════════════════════════════════════════════════════════════════════════
+   Tailwind v4 engine loaded first, then the 9-pillar design system:
+     Variants + OKLCH tokens (light/dark) + density profiles +
+     @theme inline + base layer + utilities + accessibility
+     (motion/forced-colors) + print safety.
+
+   App-specific overrides (if any) go AFTER these imports.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tailwind v4 engine (must precede design system) ── */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-}
+/* ── Afenda Design System (all 9 pillars) ── */
+@import "@afenda/ui/styles.css";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ── App-specific overrides ──────────────────────────────────────────────
+   Place web-app-only styles below. Design-system-level changes belong
+   in packages/ui/src/src/styles/ instead.
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, sans-serif;
-}
+   Examples:
+     - Next.js page transition overrides
+     - App-shell-specific layout (already covered by .erp-layout utility)
+     - Third-party component style fixes
+   ─────────────────────────────────────────────────────────────────────── */

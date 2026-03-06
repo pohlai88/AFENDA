@@ -25,11 +25,16 @@ const GATES = [
   resolve(__dirname, "gates/contract-db-sync.mjs"),
   resolve(__dirname, "gates/server-clock.mjs"),
   resolve(__dirname, "gates/owners-lint.mjs"),
+  resolve(__dirname, "gates/token-compliance.mjs"),
+  resolve(__dirname, "gates/ui-meta.mjs"),
+  resolve(__dirname, "gates/domain-completeness.mjs"),
 ];
 
 let failed = 0;
+const failedGates = [];
 
 for (const gate of GATES) {
+  const gateName = gate.split(/[\\/]/).pop().replace(".mjs", "");
   try {
     execFileSync(process.execPath, [gate], {
       stdio: "inherit",
@@ -37,11 +42,16 @@ for (const gate of GATES) {
     });
   } catch {
     failed++;
+    failedGates.push(gateName);
   }
 }
 
 if (failed > 0) {
-  console.error(`\n${failed}/${GATES.length} gate(s) failed.\n`);
+  console.error(`\n${failed}/${GATES.length} gate(s) failed:`);
+  for (const name of failedGates) {
+    console.error(`  ✗ ${name}`);
+  }
+  console.error();
   process.exit(1);
 } else {
   console.log(`\nAll ${GATES.length} gates passed.\n`);

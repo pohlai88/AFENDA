@@ -14,10 +14,12 @@
   "dependencies": {
     "@afenda/contracts": "workspace:*",
     "@afenda/ui": "workspace:*",
+    "clsx": "catalog:",
     "next": "catalog:",
     "next-auth": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "tailwind-merge": "catalog:"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",

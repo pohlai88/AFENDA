@@ -30,7 +30,7 @@ It owns all business rules, invariant checks, and domain policy decisions.
 | `iam/`      | Identity resolution, org lookup, RBAC context          |
 | `finance/`  | Money math (ISO 4217), posting validation, SoD policy  |
 | `document/` | Evidence registration, entity linking, retention stubs |
-| `infra/`    | Audit logging, idempotency, numbering, env config      |
+| `infra/`    | Audit logging, idempotency, numbering, env config, telemetry, tracing, OTel insights |
 
 Each directory has an `index.ts` barrel. The root `index.ts` re-exports all
 barrels so consumers only ever import from `@afenda/core`.
@@ -52,6 +52,9 @@ barrels so consumers only ever import from `@afenda/core`.
 | `writeAuditLog`              | `infra/audit.ts`                | Append-only org-scoped audit (ctx-based) |
 | `withAudit`                  | `infra/audit.ts`                | Atomic domain-op + audit in one tx       |
 | `validateEnv`                | `infra/env.ts`                  | Typed env parsing with Zod               |
+| `bootstrapTelemetry`         | `infra/telemetry.ts`            | OTel SDK init (no-op when `OTEL_ENABLED≠true`) |
+| `instrumentService`          | `infra/tracing.ts`              | Auto-wrap service module with OTel spans |
+| `generateInsights`           | `infra/otel-insights.ts`        | Trace analysis → ranked recommendations |
 
 ### Service Function Convention
 

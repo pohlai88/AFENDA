@@ -8,6 +8,7 @@
  *   OTEL_ENABLED          — "true" to activate (default: disabled)
  *   OTEL_SERVICE_NAME     — service name (e.g. "afenda-api", "afenda-worker")
  *   OTEL_EXPORTER_OTLP_ENDPOINT — e.g. "http://localhost:4318"
+ *   OTEL_EXPORTER_OTLP_PROTOCOL — "http/protobuf" (default) or "grpc"
  *
  * When OTEL_ENABLED is not "true", this module is a no-op so it is safe
  * to import unconditionally.
@@ -37,9 +38,27 @@ export async function bootstrapTelemetry(serviceName?: string): Promise<boolean>
     const { getNodeAutoInstrumentations } = await import(
       "@opentelemetry/auto-instrumentations-node"
     );
+    const { OTLPTraceExporter } = await import(
+      "@opentelemetry/exporter-trace-otlp-http"
+    );
+    const { BatchSpanProcessor } = await import("@opentelemetry/sdk-trace-base");
+
+    const endpoint = process.env["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:4318";
+
+    const traceExporter = new OTLPTraceExporter({
+      url: `${endpoint}/v1/traces`,
+    });
 
     const sdk = new NodeSDK({
       serviceName: serviceName ?? process.env["OTEL_SERVICE_NAME"] ?? "afenda",
+      spanProcessors: [
+        new BatchSpanProcessor(traceExporter, {
+          maxQueueSize: 2048,
+          maxExportBatchSize: 512,
+          scheduledDelayMillis: 5_000,
+          exportTimeoutMillis: 30_000,
+        }),
+      ],
       instrumentations: [
         getNodeAutoInstrumentations({
           // Disable fs instrumentation — too noisy for dev

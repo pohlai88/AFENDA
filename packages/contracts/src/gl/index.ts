@@ -7,4 +7,5 @@
  *   3. Consumers must import from `@afenda/contracts`, never from deep paths.
  */
 export * from "./account.entity.js";
+export * from "./journal-entry.entity.js";
 export * from "./gl.commands.js";

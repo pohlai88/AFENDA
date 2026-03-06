@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Strict mode for catching React issues early
   reactStrictMode: true,
 
+  // Workspace packages are referenced via tsconfig paths pointing at their
+  // TypeScript source.  Turbopack needs this to remap ".js" imports inside
+  // those packages to ".ts" files at build time.
+  transpilePackages: ["@afenda/contracts"],
+
   // API proxy for local dev (avoids CORS in development)
   async rewrites() {
     return [

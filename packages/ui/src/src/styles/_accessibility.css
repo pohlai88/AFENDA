@@ -309,6 +309,36 @@
     border: 1px solid ButtonText;
   }
 
+  /* Skeleton loading — disable shimmer, show border instead */
+  .skeleton {
+    forced-color-adjust: none;
+    border: 1px solid GrayText;
+    background: Canvas;
+  }
+  .skeleton::after {
+    display: none;
+  }
+
+  /* Glass surface — opaque fallback (backdrop-filter ignored) */
+  .glass {
+    forced-color-adjust: none;
+    background: Canvas;
+    border: 1px solid ButtonText;
+  }
+
+  /* Disabled state — use system GrayText */
+  .state-disabled {
+    forced-color-adjust: none;
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  /* Drag/drop affordances — system colors for visibility */
+  .drop-target {
+    forced-color-adjust: none;
+    border: 2px solid Highlight;
+  }
+
   /* Wizard step indicators */
   .wizard-step-indicator {
     border: 2px solid ButtonText;

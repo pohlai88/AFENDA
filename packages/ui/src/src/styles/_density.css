@@ -84,4 +84,7 @@
   --border-subtle: color-mix(in oklab, var(--border-subtle), var(--foreground) 20%);
   --border: color-mix(in oklab, var(--border), var(--foreground) 24%);
   --border-strong: color-mix(in oklab, var(--border-strong), var(--foreground) 30%);
+  --disabled-foreground: color-mix(in oklab, var(--foreground), transparent 35%);
+  --disabled-border: color-mix(in oklab, var(--border), var(--foreground) 18%);
+  --ring-strong: var(--foreground);
 }

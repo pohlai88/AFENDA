@@ -205,6 +205,7 @@ for (const scanRoot of SCAN_ROOTS) {
           ruleCode: "OWNERS_PHANTOM_FILE",
           file: relOwners,
           line: null,
+          statement: `Listed: [${listedFiles.join(", ")}]  |  On disk: [${actualFiles.join(", ")}]`,
           message: `"${file}" is listed in the Files table but does not exist on disk`,
           fix: suggestFix("OWNERS_PHANTOM_FILE", { file, ownersFile: relOwners }),
         });
@@ -220,6 +221,7 @@ for (const scanRoot of SCAN_ROOTS) {
         ruleCode: "OWNERS_UNLISTED_FILE",
         file: relOwners,
         line: null,
+        statement: `On disk: [${actualFiles.join(", ")}]  |  Listed: [${listedFiles.join(", ")}]`,
         message: `"${file}" exists in ${relative(ROOT, ownersDir).split(sep).join("/")}/ but is not listed in the Files table`,
         fix: suggestFix("OWNERS_UNLISTED_FILE", { file, ownersFile: relOwners }),
       });

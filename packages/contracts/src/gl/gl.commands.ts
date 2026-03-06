@@ -1,5 +1,5 @@
 /**
- * GL write commands — post journal entry, reverse entry.
+ * GL write commands — post journal entry, reverse entry, create account.
  *
  * RULES:
  *   1. Structural invariants are enforced here (contracts layer):
@@ -18,6 +18,18 @@ import {
 } from "../shared/ids.js";
 import { CurrencyCodeSchema } from "../shared/money.js";
 import { IdempotencyKeySchema } from "../shared/idempotency.js";
+import { AccountCodeSchema, AccountTypeSchema } from "./account.entity.js";
+
+// ─── Create GL account ───────────────────────────────────────────────────────
+
+export const CreateGLAccountCommandSchema = z.object({
+  idempotencyKey: IdempotencyKeySchema,
+  code: AccountCodeSchema,
+  name: z.string().trim().min(1).max(255),
+  type: AccountTypeSchema,
+});
+
+export type CreateGLAccountCommand = z.infer<typeof CreateGLAccountCommandSchema>;
 
 /**
  * A single journal line.

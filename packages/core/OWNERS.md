@@ -56,9 +56,14 @@ src/
     evidence.policy.ts    Retention, access, lifecycle (stub)
   infra/             Cross-cutting infrastructure (not business rules)
     audit.ts            Append-only audit log writer
+    audit-queries.ts    Read-path audit queries (paginated, filterable)
     env.ts              Typed environment variable access (ONLY file using zod)
     idempotency.ts      Duplicate-request detection and deduplication
+    logger.ts           Pino-based structured logging (dev: pretty, prod: JSON)
     numbering.ts        Gap-free human-readable ID generation (INV-2026-0001)
+    otel-insights.ts    OTel Insight Factory — trace analysis + recommendations
+    telemetry.ts        OTel SDK bootstrap (OTEL_ENABLED guard)
+    tracing.ts          Auto-instrumentation for domain services
   supplier/            ← S1: supplier onboarding + status service
   index.ts           Root barrel — re-exports domain barrels only
 ```
@@ -73,7 +78,7 @@ its specific files, exports, and domain-specific constraints.
 | `iam/`      | Identity resolution, org context, RBAC           | [→ iam/OWNERS.md](src/iam/OWNERS.md)           |
 | `finance/`  | Money math, posting invariants, SoD policy       | [→ finance/OWNERS.md](src/finance/OWNERS.md)   |
 | `document/` | Evidence registration, entity linking, retention | [→ document/OWNERS.md](src/document/OWNERS.md) |
-| `infra/`    | Audit, idempotency, numbering, env config        | [→ infra/OWNERS.md](src/infra/OWNERS.md)       |
+| `infra/`    | Audit, idempotency, numbering, env config, telemetry, tracing, OTel insights | [→ infra/OWNERS.md](src/infra/OWNERS.md)       |
 
 ### Nesting Rules
 
@@ -93,7 +98,7 @@ its specific files, exports, and domain-specific constraints.
 | Layer      | Directories                                  | Contains                                          |
 | ---------- | -------------------------------------------- | ------------------------------------------------- |
 | **Domain** | `iam/`, `finance/`, `document/`, `supplier/` | Business rules, invariants, policy checks         |
-| **Infra**  | `infra/`                                     | Audit logging, idempotency, numbering, env config |
+| **Infra**  | `infra/`                                     | Audit logging, idempotency, numbering, env config, telemetry, tracing, OTel insights |
 
 Hard rules:
 

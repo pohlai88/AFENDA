@@ -4,9 +4,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
 
-// OTel must bootstrap before any other imports that load http/pg
-import { bootstrapTelemetry } from "@afenda/core";
-await bootstrapTelemetry("afenda-api");
+// OTel bootstrap is handled by --import ./src/otel-preload.ts
+// (must run before static imports so http/pg can be monkey-patched)
 
 import Fastify from "fastify";
 import cors from "@fastify/cors";
@@ -21,6 +20,7 @@ import { dbPlugin } from "./plugins/db.js";
 import { authPlugin } from "./plugins/auth.js";
 import { idempotencyPlugin } from "./plugins/idempotency.js";
 import { swaggerPlugin } from "./plugins/swagger.js";
+import { otelEnrichmentPlugin } from "./plugins/otel.js";
 
 // Helpers
 import { ERR } from "./helpers/responses.js";
@@ -31,6 +31,8 @@ import { iamRoutes } from "./routes/iam.js";
 import { invoiceRoutes } from "./routes/invoices.js";
 import { glRoutes } from "./routes/gl.js";
 import { auditRoutes } from "./routes/audit.js";
+import { capabilitiesRoutes } from "./routes/capabilities.js";
+import { supplierRoutes } from "./routes/suppliers.js";
 
 // Type augmentations (side-effect import — registers Fastify generics)
 import "./types.js";
@@ -117,6 +119,9 @@ export async function buildApp() {
 
   // ── Auth (onRequest — must be after correlationId + orgSlug hooks) ─────────
   await app.register(authPlugin);
+
+  // ── OTel enrichment (after auth — stamps org/principal/correlationId on span)
+  await app.register(otelEnrichmentPlugin);
 
   // ── Rate limiting (onRequest — must be after authPlugin so req.ctx is set) ─
   // Unauthenticated requests: 100 req/min (keyed by IP).
@@ -221,6 +226,8 @@ export async function buildApp() {
   await app.register(invoiceRoutes, { prefix: "/v1" });
   await app.register(glRoutes, { prefix: "/v1" });
   await app.register(auditRoutes, { prefix: "/v1" });
+  await app.register(capabilitiesRoutes, { prefix: "/v1" });
+  await app.register(supplierRoutes, { prefix: "/v1" });
 
   return app;
 }
@@ -257,6 +264,7 @@ if (!process.env["VITEST"]) {
   app.log.info(`  GET  /v1/gl/trial-balance`);
   app.log.info(`  GET  /v1/audit-logs`);
   app.log.info(`  GET  /v1/audit-logs/:entityType/:entityId`);
+  app.log.info(`  GET  /v1/capabilities/:entityKey`);
   app.log.info(`  GET  /v1/docs              (API reference)`);
   app.log.info(`  GET  /v1/docs/openapi.json (OpenAPI spec)`);
 }

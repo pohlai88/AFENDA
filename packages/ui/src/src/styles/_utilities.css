@@ -14,6 +14,11 @@
      7f  Ticker flash animations
      7g  Layout utility classes (semantic sizing)
      7h  Financial data formatting utilities
+     7i  ERP grid layout patterns
+     7j  Interaction overlays & states
+     7k  Skeleton loading
+     7l  Glass surface
+     7m  Disabled state
    ───────────────────────────────────────────────────────────────────────── */
 
 @layer utilities {
@@ -880,5 +885,136 @@
     top: 0;
     z-index: var(--z-sticky);
     background-color: var(--surface-100);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7j · INTERACTION OVERLAYS & STATES
+     ═══════════════════════════════════════════════════════════════════════
+     Token-driven interaction surfaces for data grids and list items.
+     Use overlay tokens (color-mix based) for consistent hover/active/
+     selected/focus states across light and dark modes. */
+
+  /* Overlay helpers — apply directly or compose onto existing surfaces */
+  .overlay-hover {
+    background-color: var(--overlay-hover);
+  }
+  .overlay-active {
+    background-color: var(--overlay-active);
+  }
+  .overlay-selected {
+    background-color: var(--overlay-selected);
+  }
+  .overlay-focus {
+    background-color: var(--overlay-focus);
+  }
+
+  /* Grid row states */
+  .grid-row-hover {
+    background-color: var(--grid-hover);
+  }
+  .grid-row-selected {
+    background-color: var(--grid-selected);
+  }
+  .grid-row-focus {
+    background-color: var(--grid-focus);
+    outline: 2px solid var(--ring-strong);
+    outline-offset: -2px;
+  }
+  .grid-stripe {
+    background-color: var(--stripe);
+  }
+
+  /* Drag-and-drop affordances */
+  .drag-preview {
+    background-color: var(--drag-preview);
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius);
+    opacity: 0.9;
+  }
+  .drop-target {
+    background-color: var(--drop-target);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7k · SKELETON LOADING
+     ═══════════════════════════════════════════════════════════════════════
+     Shimmer animation for placeholder content during data loads.
+     Uses skeleton/skeleton-highlight tokens for mode-aware loading UI. */
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--skeleton);
+    border-radius: var(--radius);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--skeleton-highlight) 50%,
+      transparent
+    );
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Size presets for common skeleton shapes */
+  .skeleton-text {
+    height: 0.875rem;
+    width: 100%;
+    border-radius: 4px;
+  }
+  .skeleton-heading {
+    height: 1.25rem;
+    width: 60%;
+    border-radius: 4px;
+  }
+  .skeleton-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+  }
+  .skeleton-cell {
+    height: var(--row-h);
+    width: 100%;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7l · GLASS SURFACE
+     ═══════════════════════════════════════════════════════════════════════
+     Frosted-glass effect for floating panels, command palettes, and
+     overlay surfaces. Combines backdrop-filter with glass tokens. */
+
+  .glass {
+    background-color: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7m · DISABLED STATE
+     ═══════════════════════════════════════════════════════════════════════
+     Consistent disabled appearance using design-system tokens.
+     Apply to interactive elements that are temporarily unavailable. */
+
+  .state-disabled {
+    color: var(--disabled-foreground);
+    background-color: var(--disabled-surface);
+    border-color: var(--disabled-border);
+    pointer-events: none;
+    user-select: none;
   }
 }

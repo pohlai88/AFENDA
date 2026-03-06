@@ -16,6 +16,7 @@
   "dependencies": {
     "@afenda/contracts": "workspace:*",
     "@afenda/db": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
     "drizzle-orm": "catalog:",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
@@ -23,9 +24,10 @@
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
-    "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.70.1",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.212.0",
     "@opentelemetry/sdk-node": "^0.212.0",
+    "@opentelemetry/sdk-trace-base": "^2.5.1",
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

@@ -18,8 +18,11 @@
      Pillar 9 → Print        — Paper-safe reset for blotters/reports
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Engine ── */
-@import "tailwindcss";
+/* ── Engine ──
+   NOTE: @import "tailwindcss" is NOT included here.
+   The consuming app (e.g. apps/web/globals.css) must import
+   Tailwind BEFORE this file. This keeps the design system
+   framework-portable and avoids pnpm resolution conflicts. */
 
 /* ── Pillar 1: Variants ── */
 @import "./_variants.css";

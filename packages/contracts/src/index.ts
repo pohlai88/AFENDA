@@ -27,3 +27,6 @@ export * from "./gl/index.js";
 
 // ── evidence ──────────────────────────────────────────────────────────────────
 export * from "./evidence/index.js";
+
+// ── meta (UI autogen type system) ─────────────────────────────────────────────
+export * from "./meta/index.js";

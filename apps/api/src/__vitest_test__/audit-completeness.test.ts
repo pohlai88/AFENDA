@@ -78,7 +78,7 @@ describe("audit log completeness (EC-5)", () => {
       /* sql */ `SELECT action, entity_type, entity_id FROM audit_log ORDER BY occurred_at ASC`,
     );
     const rows = (
-      result as { rows: Array<{ action: string; entity_type: string; entity_id: string }> }
+      result as unknown as { rows: Array<{ action: string; entity_type: string; entity_id: string }> }
     ).rows;
 
     // Must have at least 3 audit rows for the 3 commands
@@ -115,7 +115,7 @@ describe("audit log completeness (EC-5)", () => {
     const result = await app.db.execute(
       /* sql */ `SELECT action FROM audit_log WHERE entity_id = '${invoiceId}' ORDER BY occurred_at ASC`,
     );
-    const actions = (result as { rows: Array<{ action: string }> }).rows.map((r) => r.action);
+    const actions = (result as unknown as { rows: Array<{ action: string }> }).rows.map((r) => r.action);
     expect(actions).toContain("invoice.submitted");
     expect(actions).toContain("invoice.rejected");
   });

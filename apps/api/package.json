@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --import ./src/otel-preload.ts src/index.ts",
     "build": "tsup src/index.ts --format esm --target es2022 --clean",
-    "start": "node dist/index.js",
+    "start": "node --import ./dist/otel-preload.js dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "eslint src/"
@@ -37,6 +37,7 @@
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
     "tsup": "catalog:",

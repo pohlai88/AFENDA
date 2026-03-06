@@ -27,11 +27,11 @@
 
   /* Universal border color + Firefox scrollbar styling.
      scrollbar-width: thin → 8px scrollbar on Firefox (matches WebKit custom).
-     scrollbar-color: thumb track → uses border token for thumb, transparent track. */
+     scrollbar-color: thumb track → uses dedicated scrollbar tokens. */
   * {
     border-color: var(--border);
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
 
   /* ── Body defaults ── */
@@ -69,10 +69,10 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--scrollbar-track);
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: var(--scrollbar-thumb);
     border: 3px solid transparent;
     background-clip: content-box;
     border-radius: 99px;
@@ -111,10 +111,10 @@
   }
 
   /* ── Dialog backdrop ──
-     Uses design-system surface tokens for consistent backdrop appearance.
-     oklch(0.15 0 0 / 0.6) provides perceptually uniform dark overlay. */
+     Uses --scrim token for consistent backdrop across dialogs & sheets.
+     Achromatic in dark mode (pure light-removal), subtly tinted in light. */
   dialog::backdrop {
-    background: oklch(0.15 0 0 / 0.6);
+    background: var(--scrim);
     backdrop-filter: blur(4px);
   }
 
