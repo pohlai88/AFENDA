@@ -1,0 +1,5 @@
+/* Per Next.js CSS docs. Isolated so globals.css @imports stay valid (#72761). */
+@import 'tailwindcss';
+
+@source '../**/*.{ts,tsx,js,jsx,mdx}';
+@source '../../../../packages/ui/src/**/*.{ts,tsx,js,jsx,mdx}';

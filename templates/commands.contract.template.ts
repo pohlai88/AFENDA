@@ -1,14 +1,14 @@
 /**
  * TEMPLATE: Command schemas for @afenda/contracts.
  *
- * Copy this file to: packages/contracts/src/<domain>/<entity>.commands.ts
+ * Copy this file to: packages/contracts/src/<pillar>/<module>/<entity>.commands.ts
  * Then: find-replace Entity with your domain name.
  *
  * RULES:
  *   1. Every command MUST include idempotencyKey.
  *   2. Server-generated fields (id, timestamps, actorPrincipalId) are NOT in commands.
  *   3. Add new error codes to shared/errors.ts.
- *   4. Add new audit actions to shared/audit.ts.
+ *   4. Add new audit actions to kernel/governance/audit/actions.ts.
  *   5. Add to barrel: packages/contracts/src/<domain>/index.ts
  */
 import { z } from "zod";

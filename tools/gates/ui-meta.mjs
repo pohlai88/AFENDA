@@ -251,7 +251,7 @@ function parseEntityFile(filePath) {
  */
 function extractKnownPermissions() {
   const perms = new Set();
-  const filePath = resolve(ROOT, "packages/contracts/src/iam/role.entity.ts");
+  const filePath = resolve(ROOT, "packages/contracts/src/kernel/identity/role.entity.ts");
   let content;
   try {
     content = readFileSync(filePath, "utf-8");
@@ -351,8 +351,13 @@ function checkFieldKitHandlerCompleteness() {
   const requiredHandlers = ["CellRenderer", "FormWidget", "filterOps", "exportAdapter"];
 
   for (const file of kitFiles) {
-    const content = readFileSync(file, "utf-8");
     const relPath = relative(ROOT, file).replaceAll("\\", "/");
+    // Skip barrel files (index.ts) — they re-export kits, not implement them
+    if (relPath.endsWith("index.ts") || relPath.endsWith("index.tsx")) {
+      continue;
+    }
+
+    const content = readFileSync(file, "utf-8");
 
     for (const handler of requiredHandlers) {
       // Check if the handler name appears as a property in the exported kit object

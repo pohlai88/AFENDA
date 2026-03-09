@@ -1,54 +1,105 @@
 /**
- * bool field kit — check/x icon cell, toggle Switch widget.
+ * bool field kit — semantic yes/no cell renderer, accessible switch form widget.
+ *
+ * RULES:
+ * - Use only for non-nullable boolean fields.
+ * - Nullable booleans should use a dedicated nullableBoolKit.
+ * - Export uses business-readable values for CSV/Excel.
  */
 import type { FieldKit } from "../types";
+import { Switch } from "../../components/switch";
+import { Label } from "../../components/label";
 
 export const boolKit: FieldKit<boolean> = {
-  CellRenderer: ({ value }) => (
-    <span className={value ? "text-success" : "text-muted-foreground"}>
-      {value ? "✓" : "✗"}
-    </span>
-  ),
-  FormWidget: ({ value, onChange, fieldKey, label, readonly, error, description }) => {
-    const checked = value ?? false;
+  CellRenderer: ({ value }) => {
+    if (value == null) {
+      return (
+        <span
+          className="text-muted-foreground"
+          aria-label="Not set"
+          title="Not set"
+        >
+          —
+        </span>
+      );
+    }
+
+    const text = value ? "Yes" : "No";
+
+    return (
+      <span
+        className={value ? "text-success" : "text-muted-foreground"}
+        aria-label={text}
+        title={text}
+      >
+        {value ? "✓" : "✗"}
+      </span>
+    );
+  },
+
+  FormWidget: ({
+    value,
+    onChange,
+    fieldKey,
+    label,
+    readonly,
+    error,
+    description,
+  }) => {
+    const checked = Boolean(value);
+    const descriptionId = description ? `${fieldKey}-description` : undefined;
+    const errorId = error ? `${fieldKey}-error` : undefined;
+    const ariaDescribedBy =
+      [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
+
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-3">
-          {/* Toggle switch */}
-          <button
-            type="button"
-            role="switch"
+          <Switch
             id={fieldKey}
-            aria-checked={checked}
-            aria-invalid={!!error}
+            checked={checked}
+            onCheckedChange={(nextChecked) => onChange(Boolean(nextChecked))}
             disabled={readonly}
-            onClick={() => onChange(!checked)}
-            className={[
-              "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-              checked ? "bg-primary" : "bg-input",
-              readonly ? "cursor-not-allowed opacity-50" : "",
-            ].join(" ")}
-          >
-            <span
-              aria-hidden="true"
-              className={[
-                "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out",
-                checked ? "translate-x-4" : "translate-x-0",
-              ].join(" ")}
-            />
-          </button>
-          <label
+            aria-invalid={error ? true : undefined}
+            aria-describedby={ariaDescribedBy}
+          />
+          <Label
             htmlFor={fieldKey}
-            className="text-sm font-medium text-foreground cursor-pointer"
+            className={readonly ? "opacity-70" : "cursor-pointer"}
           >
             {label}
-          </label>
+          </Label>
         </div>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
-        {error && <p className="text-xs text-destructive">{error}</p>}
+
+        {description ? (
+          <p id={descriptionId} className="text-xs text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+
+        {error ? (
+          <p id={errorId} className="text-xs text-destructive">
+            {error}
+          </p>
+        ) : null}
       </div>
     );
   },
+
   filterOps: [{ op: "eq", label: "Equals" }],
-  exportAdapter: (value) => (value ? "true" : "false"),
+
+  exportAdapter: (value) => (value ? "Yes" : "No"),
+
+  AuditPresenter: ({ oldValue, newValue }) => {
+    const oldText =
+      oldValue === true ? "Yes" : oldValue === false ? "No" : "Not set";
+    const newText =
+      newValue === true ? "Yes" : newValue === false ? "No" : "Not set";
+
+    return (
+      <span>
+        {oldText} → {newText}
+      </span>
+    );
+  },
 };

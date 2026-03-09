@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * GeneratedForm — metadata-driven form component.
  *
@@ -30,6 +32,9 @@ import { FieldKitErrorBoundary } from "./FieldKitErrorBoundary";
 import { Button } from "../components/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/tabs";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/card";
+import { Label } from "../components/label";
+import { Progress } from "../components/progress";
+import { Alert, AlertTitle, AlertDescription } from "../components/alert";
 import {
   Sheet,
   SheetContent,
@@ -192,9 +197,9 @@ export function GeneratedForm({
         >
           {isReadOnly ? (
             <div>
-              <label className="text-xs font-medium text-muted-foreground">
+              <Label className="text-xs font-medium text-muted-foreground">
                 {fieldDef.label}
-              </label>
+              </Label>
               <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground">
                 {renderReadOnlyValue(fieldType, value)}
               </div>

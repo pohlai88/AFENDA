@@ -1,5 +1,7 @@
 # AFENDA — Copilot Instructions
 
+> **Quick reference:** See [AGENTS.md](../AGENTS.md) for comprehensive AI agent guide
+
 This is a pnpm monorepo (Turborepo). Follow these rules strictly.
 
 ## Architecture — Import Direction Law
@@ -16,15 +18,28 @@ worker     → contracts + core + db
 
 Violating these imports will cause CI failure.
 
+## Architecture — Pillar Structure (ADR-0005)
+
+Every layer package is organised into four pillars:
+
+| Pillar | Purpose | Example modules |
+| ------ | ------- | --------------- |
+| `shared` | Cross-cutting types & utilities (contracts only) | `ids`, `errors`, `money`, `permissions` |
+| `kernel` | Organisation-scoped governance, identity, execution | `governance/audit`, `identity`, `execution/outbox` |
+| `erp` | Transactional AP/AR/GL domain logic | `finance/ap`, `finance/gl`, `supplier` |
+| `comm` | Communication & notifications | `notification` |
+
+New files must be placed under `<pillar>/<module>/` within each layer. The `module-boundaries` CI gate enforces this — violations fail CI.
+
 ## Schema-is-truth workflow
 
 Every feature follows this exact order:
-1. Zod schemas in `packages/contracts/src/<domain>/`
-2. Drizzle pgTable in `packages/db/src/schema/`
+1. Zod schemas in `packages/contracts/src/<pillar>/<module>/`
+2. Drizzle pgTable in `packages/db/src/schema/<pillar>/<module>/`
 3. SQL migration in `packages/db/drizzle/`
-4. Domain service in `packages/core/src/<domain>/`
-5. API route in `apps/api/src/routes/`
-6. Worker handler in `apps/worker/src/jobs/`
+4. Domain service in `packages/core/src/<pillar>/<module>/`
+5. API route in `apps/api/src/routes/<pillar>/<module>/`
+6. Worker handler in `apps/worker/src/jobs/<pillar>/<module>/`
 7. UI in `apps/web/src/app/`
 8. Tests + OWNERS.md updates
 
@@ -64,9 +79,11 @@ See `templates/` for scaffold files when adding new entities/domains.
 
 ## Key files
 
+- **`AGENTS.md`** — comprehensive AI agent architecture guide
 - `PROJECT.md` — full architecture spec
-- `tools/gates/` — CI enforcement scripts (10 gates)
+- `docs/adr/adr_0005_module_architecture_restructure.md` — pillar structure ADR
+- `tools/gates/` — CI enforcement scripts (18 gates incl. module-boundaries)
 - `packages/contracts/src/shared/errors.ts` — all error codes
-- `packages/contracts/src/shared/audit.ts` — all audit actions
+- `packages/contracts/src/kernel/governance/audit/actions.ts` — all audit actions
 - `packages/contracts/src/shared/permissions.ts` — all permission keys
-- `packages/contracts/src/shared/outbox.ts` — event envelope schema
+- `packages/contracts/src/kernel/execution/outbox/envelope.ts` — event envelope schema

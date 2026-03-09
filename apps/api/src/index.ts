@@ -26,13 +26,33 @@ import { otelEnrichmentPlugin } from "./plugins/otel.js";
 import { ERR } from "./helpers/responses.js";
 
 // Routes
-import { evidenceRoutes } from "./routes/evidence.js";
-import { iamRoutes } from "./routes/iam.js";
-import { invoiceRoutes } from "./routes/invoices.js";
-import { glRoutes } from "./routes/gl.js";
-import { auditRoutes } from "./routes/audit.js";
-import { capabilitiesRoutes } from "./routes/capabilities.js";
-import { supplierRoutes } from "./routes/suppliers.js";
+import { authRoutes } from "./routes/kernel/auth.js";
+import { evidenceRoutes } from "./routes/kernel/evidence.js";
+import { iamRoutes } from "./routes/kernel/identity.js";
+import { invoiceRoutes } from "./routes/erp/finance/ap.js";
+import { glRoutes } from "./routes/erp/finance/gl.js";
+import { auditRoutes } from "./routes/kernel/audit.js";
+import { capabilitiesRoutes } from "./routes/kernel/capabilities.js";
+import { supplierRoutes } from "./routes/erp/supplier.js";
+import { settingsRoutes } from "./routes/kernel/settings.js";
+import { customFieldRoutes } from "./routes/kernel/custom-fields.js";
+import { organizationRoutes } from "./routes/kernel/organization.js";
+import { numberingRoutes } from "./routes/kernel/numbering.js";
+import { exportPdfRoutes } from "./routes/kernel/export-pdf.js";
+// AP sub-entity routes
+import { holdRoutes } from "./routes/erp/finance/ap/hold.js";
+import { invoiceLineRoutes } from "./routes/erp/finance/ap/invoice-line.js";
+import { matchToleranceRoutes } from "./routes/erp/finance/ap/match-tolerance.js";
+import { paymentRunRoutes } from "./routes/erp/finance/ap/payment-run.js";
+import { paymentRunItemRoutes } from "./routes/erp/finance/ap/payment-run-item.js";
+import { paymentTermsRoutes } from "./routes/erp/finance/ap/payment-terms.js";
+import { prepaymentRoutes } from "./routes/erp/finance/ap/prepayment.js";
+import { whtCertificateRoutes } from "./routes/erp/finance/ap/wht-certificate.js";
+import { purchaseOrderRoutes } from "./routes/erp/purchasing/purchase-order.js";
+import { receiptRoutes } from "./routes/erp/purchasing/receipt.js";
+// Supplier sub-entity routes (templates — uncomment when implemented)
+// import { supplierSiteRoutes } from "./routes/erp/supplier/supplier-site.js";
+// import { supplierBankAccountRoutes } from "./routes/erp/supplier/supplier-bank-account.js";
 
 // Type augmentations (side-effect import — registers Fastify generics)
 import "./types.js";
@@ -180,7 +200,7 @@ export async function buildApp() {
             db: z.string(),
             latencyMs: z.number(),
             migrationHash: z.string().nullable(),
-            migratedAt: z.string().nullable(),
+            migratedAt: z.number().nullable(),
           }),
         },
       },
@@ -221,6 +241,7 @@ export async function buildApp() {
   );
 
   // ── Domain routes ──────────────────────────────────────────────────────────
+  await app.register(authRoutes, { prefix: "/v1" });
   await app.register(evidenceRoutes, { prefix: "/v1" });
   await app.register(iamRoutes, { prefix: "/v1" });
   await app.register(invoiceRoutes, { prefix: "/v1" });
@@ -228,6 +249,25 @@ export async function buildApp() {
   await app.register(auditRoutes, { prefix: "/v1" });
   await app.register(capabilitiesRoutes, { prefix: "/v1" });
   await app.register(supplierRoutes, { prefix: "/v1" });
+  await app.register(settingsRoutes, { prefix: "/v1" });
+  await app.register(customFieldRoutes, { prefix: "/v1" });
+  await app.register(organizationRoutes, { prefix: "/v1" });
+  await app.register(numberingRoutes, { prefix: "/v1" });
+  await app.register(exportPdfRoutes, { prefix: "/v1" });
+  // AP sub-entity routes
+  await app.register(holdRoutes, { prefix: "/v1" });
+  await app.register(invoiceLineRoutes, { prefix: "/v1" });
+  await app.register(matchToleranceRoutes, { prefix: "/v1" });
+  await app.register(paymentRunRoutes, { prefix: "/v1" });
+  await app.register(paymentRunItemRoutes, { prefix: "/v1" });
+  await app.register(paymentTermsRoutes, { prefix: "/v1" });
+  await app.register(prepaymentRoutes, { prefix: "/v1" });
+  await app.register(whtCertificateRoutes, { prefix: "/v1" });
+  await app.register(purchaseOrderRoutes, { prefix: "/v1" });
+  await app.register(receiptRoutes, { prefix: "/v1" });
+  // Supplier sub-entity routes (templates — uncomment when implemented)
+  // await app.register(supplierSiteRoutes, { prefix: "/v1" });
+  // await app.register(supplierBankAccountRoutes, { prefix: "/v1" });
 
   return app;
 }
@@ -245,6 +285,7 @@ if (!process.env["VITEST"]) {
   app.log.info(`  GET  /v1`);
   app.log.info(`  GET  /v1/me`);
   app.log.info(`  GET  /v1/me/contexts`);
+  app.log.info(`  GET  /v1/documents`);
   app.log.info(`  POST /v1/evidence/presign`);
   app.log.info(`  POST /v1/documents`);
   app.log.info(`  POST /v1/commands/attach-evidence`);
@@ -252,6 +293,9 @@ if (!process.env["VITEST"]) {
   app.log.info(`  POST /v1/commands/approve-invoice`);
   app.log.info(`  POST /v1/commands/reject-invoice`);
   app.log.info(`  POST /v1/commands/void-invoice`);
+  app.log.info(`  POST /v1/invoices/bulk-approve`);
+  app.log.info(`  POST /v1/invoices/bulk-reject`);
+  app.log.info(`  POST /v1/invoices/bulk-void`);
   app.log.info(`  POST /v1/commands/mark-paid`);
   app.log.info(`  GET  /v1/invoices`);
   app.log.info(`  GET  /v1/invoices/:invoiceId`);
@@ -267,4 +311,17 @@ if (!process.env["VITEST"]) {
   app.log.info(`  GET  /v1/capabilities/:entityKey`);
   app.log.info(`  GET  /v1/docs              (API reference)`);
   app.log.info(`  GET  /v1/docs/openapi.json (OpenAPI spec)`);
+  app.log.info(`  GET  /v1/settings`);
+  app.log.info(`  PATCH /v1/settings`);
+  app.log.info(`  GET  /v1/custom-fields`);
+  app.log.info(`  POST /v1/custom-fields`);
+  app.log.info(`  PATCH /v1/custom-fields/:id`);
+  app.log.info(`  DELETE /v1/custom-fields/:id`);
+  app.log.info(`  GET  /v1/custom-fields/entity-types`);
+  app.log.info(`  PATCH /v1/suppliers/:id/custom-fields`);
+  app.log.info(`  GET  /v1/organization`);
+  app.log.info(`  PATCH /v1/organization`);
+  app.log.info(`  GET  /v1/organization/members`);
+  app.log.info(`  GET  /v1/settings/numbering`);
+  app.log.info(`  PATCH /v1/settings/numbering`);
 }

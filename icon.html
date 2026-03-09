@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+        .afenda-text { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
+        /* High-quality hover effect */
+        .icon-container:hover .dot { fill: #0d9488; transform: scale(1.2); }
+        .dot { transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    </style>
+</head>
+<body class="bg-white flex flex-col items-center justify-center min-h-screen gap-12">
+
+    <div class="w-full max-w-md">
+        <div class="relative flex items-center">
+            <div class="absolute left-4 flex gap-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-teal-600">
+                    <circle class="dot" cx="5" cy="12" r="2" fill="currentColor" />
+                    <circle class="dot" cx="12" cy="12" r="2" fill="currentColor" />
+                    <circle class="dot" cx="19" cy="12" r="1.5" stroke="currentColor" stroke-width="1" />
+                </svg>
+            </div>
+            <input type="text" 
+                class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm font-medium placeholder-slate-400" 
+                placeholder="Search AFENDA ledger...">
+        </div>
+    </div>
+
+    <div class="flex items-center gap-4 group cursor-pointer icon-container">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="text-teal-600">
+            <circle class="dot" cx="5" cy="12" r="2.5" fill="currentColor" />
+            <circle class="dot" cx="12" cy="12" r="2.5" fill="currentColor" />
+            <circle class="dot" cx="19" cy="12" r="2" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+        <span class="text-3xl afenda-text text-slate-900 uppercase">AFENDA</span>
+    </div>
+
+</body>
+</html>

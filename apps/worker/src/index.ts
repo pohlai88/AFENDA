@@ -16,14 +16,22 @@ import {
   redactEnv,
   createLogger,
 } from "@afenda/core";
-import { processOutboxEvent } from "./jobs/process-outbox-event.js";
-import { handleInvoiceSubmitted } from "./jobs/handle-invoice-submitted.js";
-import { handleInvoiceApproved } from "./jobs/handle-invoice-approved.js";
-import { handleJournalPosted } from "./jobs/handle-journal-posted.js";
-import { handleJournalReversed } from "./jobs/handle-journal-reversed.js";
-import { handleInvoiceRejected } from "./jobs/handle-invoice-rejected.js";
-import { handleInvoiceVoided } from "./jobs/handle-invoice-voided.js";
-import { handleInvoicePaid } from "./jobs/handle-invoice-paid.js";
+import { processOutboxEvent } from "./jobs/kernel/process-outbox-event.js";
+import { handleInvoiceSubmitted } from "./jobs/erp/finance/ap/handle-invoice-submitted.js";
+import { handleInvoiceApproved } from "./jobs/erp/finance/ap/handle-invoice-approved.js";
+import { handleJournalPosted } from "./jobs/erp/finance/gl/handle-journal-posted.js";
+import { handleJournalReversed } from "./jobs/erp/finance/gl/handle-journal-reversed.js";
+import { handleInvoiceRejected } from "./jobs/erp/finance/ap/handle-invoice-rejected.js";
+import { handleInvoiceVoided } from "./jobs/erp/finance/ap/handle-invoice-voided.js";
+import { handleInvoicePaid } from "./jobs/erp/finance/ap/handle-invoice-paid.js";
+import { handleHoldEvent } from "./jobs/erp/finance/ap/handle-hold.js";
+import { handleInvoiceLineEvent } from "./jobs/erp/finance/ap/handle-invoice-line.js";
+import { handleMatchToleranceEvent } from "./jobs/erp/finance/ap/handle-match-tolerance.js";
+import { handlePaymentRunEvent } from "./jobs/erp/finance/ap/handle-payment-run.js";
+import { handlePaymentRunItemEvent } from "./jobs/erp/finance/ap/handle-payment-run-item.js";
+import { handlePaymentTermsEvent } from "./jobs/erp/finance/ap/handle-payment-terms.js";
+import { handlePrepaymentEvent } from "./jobs/erp/finance/ap/handle-prepayment.js";
+import { handleWhtCertificateEvent } from "./jobs/erp/finance/ap/handle-wht-certificate.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -68,6 +76,14 @@ const taskList = {
   handle_invoice_rejected: handleInvoiceRejected,
   handle_invoice_voided: handleInvoiceVoided,
   handle_invoice_paid: handleInvoicePaid,
+  handle_hold_event: handleHoldEvent,
+  handle_invoice_line_event: handleInvoiceLineEvent,
+  handle_match_tolerance_event: handleMatchToleranceEvent,
+  handle_payment_run_event: handlePaymentRunEvent,
+  handle_payment_run_item_event: handlePaymentRunItemEvent,
+  handle_payment_terms_event: handlePaymentTermsEvent,
+  handle_prepayment_event: handlePrepaymentEvent,
+  handle_wht_certificate_event: handleWhtCertificateEvent,
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
 } as const;

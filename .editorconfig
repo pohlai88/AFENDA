@@ -26,11 +26,14 @@ indent_size = 2
 indent_size = 2
 
 # TypeScript/JavaScript files
+# charset is re-declared explicitly: editors must always save these files as
+# UTF-8. Never paste text copied from a Windows-1252 / Latin-1 environment
+# directly into source — use ASCII-safe equivalents in comments and strings.
 [*.{ts,tsx,js,jsx,mjs,cjs}]
+charset = utf-8
 indent_size = 2
-quote_type = single
 
-# Package.json (use single quotes for consistency)
+# Package.json
 [package.json]
 indent_size = 2
 

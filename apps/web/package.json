@@ -9,16 +9,29 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
-    "lint": "next lint"
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@afenda/contracts": "workspace:*",
     "@afenda/ui": "workspace:*",
+    "@base-ui/react": "catalog:",
+    "@react-pdf/renderer": "^4.3.2",
+    "class-variance-authority": "catalog:",
     "clsx": "catalog:",
+    "exceljs": "^4.4.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "catalog:",
+    "motion": "catalog:",
     "next": "catalog:",
     "next-auth": "catalog:",
+    "next-themes": "catalog:",
+    "radix-ui": "^1.4.3",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-resizable-panels": "catalog:",
+    "recharts": "catalog:",
+    "server-only": "^0.0.1",
+    "shadcn": "^4.0.0",
     "tailwind-merge": "catalog:"
   },
   "devDependencies": {

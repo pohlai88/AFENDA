@@ -1,7 +1,7 @@
 /**
  * TEMPLATE: Entity schema for @afenda/contracts.
  *
- * Copy this file to: packages/contracts/src/<domain>/<entity>.entity.ts
+ * Copy this file to: packages/contracts/src/<pillar>/<module>/<entity>.entity.ts
  * Then: find-replace ENTITY/Entity with your domain name.
  *
  * RULES:
@@ -9,7 +9,7 @@
  *   2. Use UtcDateTimeSchema for timestamps (not z.date()).
  *   3. Export *Values and *Schema separately — *Values is importable by @afenda/db.
  *   4. Add entity to the barrel: packages/contracts/src/<domain>/index.ts
- *   5. Add ENTITY_TYPE to AuditEntityTypeValues in shared/audit.ts.
+ *   5. Add ENTITY_TYPE to AuditEntityTypeValues in kernel/governance/audit/actions.ts.
  */
 import { z } from "zod";
 // import { EntityIdSchema, OrgIdSchema } from "../shared/ids.js";

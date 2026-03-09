@@ -1,23 +1,21 @@
 /**
- * Barrel — re-exports every primitive in `contracts/shared`.
+ * Barrel — shared/ (universal primitives with zero business ownership)
  *
- * RULES:
- *   1. Exports only — no imports that execute code, no side effects, no logic.
- *   2. Order: primitive schemas first, composites that depend on them last.
- *   3. Reordering lines is a git-diff noise source — keep the order stable.
+ * ADR-0005 §3.3: shared/ is brutally narrow. Only context-free primitives here.
+ *
+ * TODO: Split errors.ts → shared/result.ts + module-local error codes
+ * TODO: Split permissions.ts → kernel + module-local permissions
  */
-// Primitive schemas first — dependants below may import from these.
+// Primitive schemas — these stay in shared/
 export * from "./ids.js";
 export * from "./datetime.js";
-export * from "./errors.js";
-export * from "./headers.js";
-export * from "./idempotency.js";
 export * from "./money.js";
 export * from "./pagination.js";
-export * from "./audit.js";
-export * from "./audit-query.js";
+export * from "./headers.js";
+
+// errors.ts and permissions.ts stay in shared/ for now (splitting deferred)
+export * from "./errors.js";
 export * from "./permissions.js";
-export * from "./sequence.js";
-// Composite schemas — depend on ids + errors.
+
+// Composite schemas — depend on ids + errors
 export * from "./envelope.js";
-export * from "./outbox.js";

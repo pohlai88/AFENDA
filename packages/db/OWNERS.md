@@ -91,31 +91,26 @@ or environment-dependent DDL produce non-reproducible migrations.
 
 ---
 
-## Subdirectory Layout
+## Subdirectory Layout (ADR-0005 pillar structure)
 
-| File / Dir            | Contents                                                                                              |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| `schema/iam.ts`       | organization, iamPrincipal, iamRole, iamPermission, iamPrincipalRole, iamRolePermission, iamPartyRole |
-| `schema/supplier.ts`  | supplier                                                                                              |
-| `schema/document.ts`  | document, evidence, evidenceOperation                                                                 |
-| `schema/finance.ts`   | account, invoice, invoiceStatusHistory, journalEntry, journalLine                                     |
-| `schema/infra.ts`     | outboxEvent, idempotency, auditLog, sequence, deadLetterJob                                           |
-| `schema/relations.ts` | Drizzle `relations()` for `db.query.*` relational API                                                 |
-| `schema/index.ts`     | Barrel re-exports only — `export *` lines, no logic                                                   |
-| `seed.ts`             | Dev seeding (demo organization, admin, CoA, sequences)                                                |
-| `drizzle.config.ts`   | drizzle-kit config pointing to schema barrel                                                          |
-
-### `schema/infra.ts` scope
-
-Only cross-cutting infrastructure tables belong here:
-
-| ✅ Belongs    | ❌ Never here              |
-| ------------- | -------------------------- |
-| outboxEvent   | settings / preferences     |
-| idempotency   | feature flags              |
-| auditLog      | user profiles (→ `iam.ts`) |
-| sequence      | notification templates     |
-| deadLetterJob | domain entities            |
+| File / Dir                            | Contents                                                         |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| `schema/_helpers.ts`                  | Shared helpers: tsz, rlsOrg, rlsPrincipal, orgIdCol, updatedAtCol |
+| `schema/kernel/identity.ts`           | party, person, organization, iamPrincipal, partyRole, membership, iamRole, iamPermission, iamRolePermission, iamPrincipalRole |
+| `schema/kernel/governance/evidence.ts`| document, evidence, evidenceOperation                            |
+| `schema/kernel/governance/audit.ts`   | auditLog                                                         |
+| `schema/kernel/execution/outbox.ts`   | outboxEvent                                                      |
+| `schema/kernel/execution/idempotency.ts` | idempotency                                                   |
+| `schema/kernel/execution/numbering.ts`| sequence                                                         |
+| `schema/kernel/execution/dead-letter.ts` | deadLetterJob                                                 |
+| `schema/erp/finance/gl.ts`           | accountTypeEnum, account, journalEntry, journalLine              |
+| `schema/erp/finance/ap.ts`           | invoiceStatusEnum, invoice, invoiceStatusHistory                 |
+| `schema/erp/supplier.ts`            | supplierStatusEnum, supplier                                     |
+| `schema/relations/`                  | Module-owned Drizzle `relations()` for `db.query.*` relational API |
+| `schema/comm/index.ts`               | ← stub barrel (comm schema reserved for Sprint 5+)               |
+| `schema/index.ts`                    | Barrel re-exports only — `export *` lines, no logic              |
+| `seed.ts`                            | Dev seeding (demo organization, admin, CoA, sequences)           |
+| `drizzle.config.ts`                  | drizzle-kit config pointing to schema barrel                     |
 
 ---
 
@@ -125,8 +120,8 @@ The barrel must be a thin re-export layer:
 
 ```ts
 // ✅ allowed
-export * from "./iam.js";
-export * from "./finance.js";
+export * from "./kernel/index.js";
+export * from "./erp/index.js";
 
 // ❌ forbidden
 export const FOO = "bar";

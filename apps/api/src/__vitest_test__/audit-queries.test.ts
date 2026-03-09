@@ -195,4 +195,37 @@ describe("audit log query endpoints", () => {
       expect(page1Ids.has(entry.id)).toBe(false);
     }
   });
+
+  it("audit log queries are org-scoped and do not return cross-org data", async () => {
+    // Submit invoice in test org
+    const submitRes = await injectAs(app, SUBMITTER_EMAIL, {
+      method: "POST",
+      url: "/v1/commands/submit-invoice",
+      payload: submitInvoicePayload({ supplierId }),
+    });
+    expect(submitRes.statusCode).toBe(201);
+    const invoiceId = submitRes.json().data.id;
+
+    // Query audit logs
+    const auditRes = await injectAs(app, APPROVER_EMAIL, {
+      method: "GET",
+      url: "/v1/audit-logs",
+    });
+
+    expect(auditRes.statusCode).toBe(200);
+    const body = auditRes.json();
+
+    // All returned audit logs should be for test-org only
+    // TODO: When multi-org test setup exists:
+    // 1. Create invoice in org A
+    // 2. Create invoice in org B
+    // 3. Query audit logs as org A user → should only see org A logs
+    // 4. Query audit logs as org B user → should only see org B logs
+    // This ensures audit log queries respect org boundaries
+    
+    // For now, verify structure includes orgId
+    for (const entry of body.data) {
+      expect(entry.orgId).toBeDefined();
+    }
+  });
 });

@@ -91,24 +91,17 @@ afenda-nexus/
 │   │       ├── app/               # App Router pages
 │   │       │   ├── layout.tsx     # Root layout + Suspense
 │   │       │   ├── page.tsx       # Dashboard
-│   │       │   ├── admin/         # Admin console, traces, insights
-│   │       │   ├── auth/          # Login/logout flows
-│   │       │   ├── finance/       # Invoice + GL views
+│   │       │   ├── (kernel)/      # Admin, auth, governance (audit/evidence/settings)
+│   │       │   ├── (erp)/         # Finance (ap/gl), suppliers
 │   │       │   └── api/internal/  # Next.js route handlers
 │   │       └── lib/               # Auth config, utilities
 │   │
 │   ├── worker/                    # Graphile Worker (LISTEN/NOTIFY)
 │   │   └── src/
 │   │       ├── index.ts           # Task registry, env validation, graceful shutdown
-│   │       └── jobs/              # Event handlers (8 tasks)
-│   │           ├── process-outbox-event.ts   # Dispatcher (routes on event.type)
-│   │           ├── handle-invoice-submitted.ts
-│   │           ├── handle-invoice-approved.ts
-│   │           ├── handle-invoice-rejected.ts
-│   │           ├── handle-invoice-voided.ts  # Auto-reverses GL entries
-│   │           ├── handle-invoice-paid.ts
-│   │           ├── handle-journal-posted.ts
-│   │           └── handle-journal-reversed.ts
+│   │       └── jobs/              # Event handlers (pillar-organized)
+│   │           ├── kernel/        # Outbox dispatcher, dead-letter retry, idempotency cleanup
+│   │           └── erp/finance/   # Invoice + journal handlers (ap/, gl/)
 │   │
 │   └── workflows/                 # Trigger.dev + React Flow (Sprint 4+, see ADR-0004)
 │
@@ -116,30 +109,17 @@ afenda-nexus/
 │   ├── contracts/                 # Pure Zod schemas — NO monorepo deps
 │   │   └── src/
 │   │       ├── index.ts           # Barrel re-export only (<60 lines)
-│   │       ├── shared/            # Primitives: IDs, money, errors, pagination, outbox, audit
-│   │       ├── iam/               # Party, principal, membership, role schemas
-│   │       ├── invoice/           # Invoice entity + command schemas
-│   │       ├── gl/                # Account, journal line, GL commands
-│   │       ├── supplier/          # Supplier entity + commands
-│   │       ├── evidence/          # Document + attachment schemas
-│   │       └── meta/              # UI metadata (entity/field/view/action/flow defs)
+│   │       ├── shared/            # Primitives: IDs, money, errors, pagination, permissions
+│   │       ├── kernel/            # System truth: identity, governance (audit/evidence/policy), execution (outbox/idempotency/numbering), registry
+│   │       ├── erp/               # Business domains: finance (ap/gl), supplier
+│   │       └── comm/              # Communication: notification
 │   │
 │   ├── core/                      # Domain logic — ONLY package that joins contracts + db
 │   │   └── src/
 │   │       ├── index.ts           # Barrel
-│   │       ├── iam/               # Auth resolution, org lookup, permissions
-│   │       ├── finance/           # Money arithmetic, posting invariants, SoD
-│   │       │   ├── money.ts       # SafeMoney (bigint, no floats)
-│   │       │   ├── posting.ts     # Journal balance checking
-│   │       │   ├── sod.ts         # Separation of duties
-│   │       │   ├── ap/            # Invoice service + queries (state machine)
-│   │       │   └── gl/            # GL posting + queries (journal entries)
-│   │       ├── document/          # Evidence registry, linking, policies
-│   │       ├── infra/             # Cross-cutting: audit, idempotency, numbering, logger, env
-│   │       │   ├── telemetry.ts   # OTel SDK bootstrap
-│   │       │   ├── tracing.ts     # instrumentService() auto-wrapper
-│   │       │   └── otel-insights.ts  # 6-analyzer insight factory
-│   │       └── policy/            # Capability engine + entity resolvers
+│   │       ├── kernel/            # Identity, governance (audit/evidence/policy), execution (outbox/idempotency/numbering), registry
+│   │       ├── erp/               # Business logic: finance (money, posting, SoD, ap/, gl/), supplier
+│   │       └── comm/              # Communication: notification
 │   │
 │   ├── db/                        # Drizzle DDL — deterministic, no business logic
 │   │   ├── drizzle.config.ts
@@ -148,12 +128,12 @@ afenda-nexus/
 │   │       ├── client.ts          # Pooler vs direct URL, strict SSL
 │   │       ├── migrate.ts         # Advisory lock, idempotent
 │   │       ├── seed.ts            # ON CONFLICT DO NOTHING, re-runnable
-│   │       └── schema/            # 24 tables across 5 domain files
-│   │           ├── iam.ts         # 10 tables (party model, RBAC)
-│   │           ├── finance.ts     # 5 tables (account, invoice, journal)
-│   │           ├── supplier.ts    # 1 table
-│   │           ├── document.ts    # 3 tables (document, evidence, ops)
-│   │           ├── infra.ts       # 5 tables (outbox, idempotency, audit, sequence, DLQ)
+│   │       └── schema/            # 24 tables organized by pillar (ADR-0005)
+│   │           ├── kernel/        # identity, governance_*, execution_*, registry
+│   │           ├── erp/           # finance/ (gl, ap), supplier
+│   │           ├── comm/          # notification
+│   │           ├── relations/     # Cross-table relation wiring (by module ownership)
+│   │           ├── _helpers.ts    # tsz(), rlsOrg() etc.
 │   │           └── index.ts       # Barrel
 │   │
 │   ├── ui/                        # Design system (shadcn/ui + Tailwind)
@@ -169,17 +149,19 @@ afenda-nexus/
 │
 ├── tools/                         # CI gates + shared utilities
 │   ├── run-gates.mjs              # Unified runner — all gates, single exit code
-│   ├── gates/                     # One script per concern (10 gates)
+│   ├── gates/                     # One script per concern (17 gates)
 │   │   ├── boundaries.mjs         # Import direction law
 │   │   ├── catalog.mjs            # pnpm catalog version hygiene
 │   │   ├── test-location.mjs      # Tests → __vitest_test__/, never colocated
 │   │   ├── schema-invariants.mjs  # Org-scoped unique, FK indexes, updatedAt
 │   │   ├── migration-lint.mjs     # SQL safety (no DROP TABLE, NOT NULL → DEFAULT)
-│   │   ├── contract-db-sync.mjs   # Zod ↔ pgTable column parity (10 pairs)
+│   │   ├── contract-db-sync.mjs   # Zod ↔ pgTable column parity (13 pairs)
 │   │   ├── server-clock.mjs       # Ban new Date() in DB code
 │   │   ├── owners-lint.mjs        # OWNERS.md ↔ filesystem parity
 │   │   ├── token-compliance.mjs   # No hardcoded Tailwind palette tokens
-│   │   └── ui-meta.mjs            # Metadata registry completeness
+│   │   ├── ui-meta.mjs            # Metadata registry completeness
+│   │   ├── domain-completeness.mjs # Domain-level consistency checks
+│   │   └── module-boundaries.mjs  # Pillar + module dependency enforcement (ADR-0005)
 │   ├── lib/                       # Shared utilities for gates
 │   │   ├── ansi.mjs               # Terminal colors
 │   │   ├── walk.mjs               # Recursive TS file discovery
@@ -192,7 +174,8 @@ afenda-nexus/
 ├── docs/
 │   └── adr/                       # Architecture Decision Records
 │       ├── 0003-identity-model-redesign.md  # Party + Principal + Membership
-│       └── 0004-workflow-engine.md          # Trigger.dev + React Flow (replaces n8n)
+│       ├── 0004-workflow-engine.md          # Trigger.dev + React Flow (replaces n8n)
+│       └── adr_0005_module_architecture_restructure.md  # Pillar structure (shared/kernel/erp/comm)
 │
 ├── .github/
 │   ├── workflows/ci.yml           # PR checks: lint, typecheck, gates, test
@@ -340,6 +323,7 @@ flowchart LR
 | GL commands | `POST /v1/commands/post-to-gl`, `POST /v1/commands/reverse-entry` |
 | GL queries | `GET /v1/journal-entries`, `GET /v1/journal-entries/:id`, `GET /v1/accounts`, `GET /v1/trial-balance` |
 | Evidence | `POST /v1/evidence/presign`, `POST /v1/documents`, `POST /v1/commands/attach-evidence` |
+| Suppliers | `GET /v1/suppliers`, `POST /v1/suppliers`, `GET /v1/suppliers/:id`, `PATCH /v1/suppliers/:id` |
 | Docs | `GET /v1/docs` (Scalar UI), `GET /v1/docs/openapi.json` |
 
 ---
@@ -400,7 +384,7 @@ Permission format: `scope.entity.action` (e.g., `ap.invoice.approve`, `gl.journa
 
 All 20 permission keys defined in: `packages/contracts/src/shared/` + DB seed.
 
-SoD policies live in `packages/core/src/finance/sod.ts`:
+SoD policies live in `packages/core/src/kernel/governance/policy/sod-rules.ts`:
 - `canApproveInvoice()` — submitter cannot approve their own invoice
 - `canMarkPaid()` — requires `ap.invoice.markpaid` permission
 
@@ -421,7 +405,7 @@ SoD policies live in `packages/core/src/finance/sod.ts`:
 
 - `amount_minor: bigint` (cents/pips)
 - `currency_code: string` (ISO 4217)
-- All arithmetic in `core/finance/money.ts` (SafeMoney type)
+- All arithmetic in `core/src/erp/finance/money/money.ts` (SafeMoney type).
 
 ### Posting invariant
 
@@ -467,14 +451,14 @@ Every request gets a `correlationId` (generated if absent). Propagated: API → 
 
 ### OpenTelemetry
 
-- `core/infra/telemetry.ts` — SDK bootstrap with `OTEL_ENABLED` guard
-- `core/infra/tracing.ts` — `instrumentService(namespace, fns)` auto-wraps service modules
+- `core/src/kernel/infrastructure/telemetry.ts` — SDK bootstrap with `OTEL_ENABLED` guard
+- `core/src/kernel/infrastructure/tracing.ts` — `instrumentService(namespace, fns)` auto-wraps service modules
 - `api/plugins/otel.ts` — stamps request context on HTTP spans
 - Auto-extracted attributes: `afenda.org.id`, `afenda.principal.id`, `afenda.correlation.id`
 
 ### Insight Factory (6 analyzers)
 
-`core/infra/otel-insights.ts` reads Jaeger traces and produces:
+`core/src/kernel/infrastructure/otel-insights.ts` reads Jaeger traces and produces:
 1. Slow operations (P95 latency + regression)
 2. Error hotspots (per-route error rates)
 3. Security signals (SoD violations, 403 patterns)
@@ -502,11 +486,20 @@ All enforced by `pnpm check:all` (unified runner: `tools/run-gates.mjs`).
 | 3 | **Test location** | `pnpm check:test-location` | Tests in `__vitest_test__/`, never colocated |
 | 4 | **Schema invariants** | `pnpm check:schema-invariants` | Org-scoped unique, FK indexes, updatedAt on mutables |
 | 5 | **Migration lint** | `pnpm check:migration-lint` | No DROP TABLE, NOT NULL requires DEFAULT |
-| 6 | **Contract↔DB sync** | `pnpm check:contract-db-sync` | Zod schema ↔ Drizzle column parity (10 entity pairs) |
+| 6 | **Contract↔DB sync** | `pnpm check:contract-db-sync` | Zod schema ↔ Drizzle column parity (15 entity pairs) |
 | 7 | **Server clock** | `pnpm check:server-clock` | Ban `new Date()` in DB-touching code |
 | 8 | **OWNERS lint** | `pnpm check:owners-lint` | OWNERS.md Files table ↔ filesystem parity |
 | 9 | **Token compliance** | `pnpm check:token-compliance` | No hardcoded color values in TSX/CSS |
 | 10 | **UI metadata** | `pnpm check:ui-meta` | Metadata registry completeness |
+| 11 | **Domain completeness** | `pnpm check:domain-completeness` | Domain-level contract/core/db/route consistency |
+| 12 | **Module boundaries** | `pnpm check:module-boundaries` | Pillar + module import enforcement (ADR-0005) |
+| 13 | **Route registry sync** | `pnpm check:route-registry-sync` | API routes registered in route-registry.json |
+| 14 | **Org isolation** | `pnpm check:org-isolation` | Multi-tenant tests verify cross-org access prevention |
+| 15 | **Audit enforcement** | `pnpm check:audit-enforcement` | Command tests verify audit log creation |
+| 16 | **Finance invariants** | `pnpm check:finance-invariants` | Critical finance tests pass (balance, idempotency, precision) |
+| 17 | **Page states** | `pnpm check:page-states` | Next.js pages declare error/loading/empty states |
+
+**Phase 1 Security Gates (2026-03-07)**: Gates 14-17 added to enforce multi-tenant isolation, audit compliance, financial integrity, and complete UI state handling. See `docs/ci-gates-evaluation.md` for detailed implementation guide.
 
 ### Gate addition protocol
 
@@ -559,21 +552,21 @@ Every PR must confirm: OWNERS.md updated, gates passed, tests added, contracts-f
 When adding a new entity (e.g., `purchase-order`), follow this exact order:
 
 ```
-1. packages/contracts/src/<domain>/<entity>.entity.ts   — Zod schema
-2. packages/contracts/src/<domain>/<entity>.commands.ts  — Command schemas
+1. packages/contracts/src/<pillar>/<module>/<entity>.entity.ts   — Zod schema
+2. packages/contracts/src/<pillar>/<module>/<entity>.commands.ts  — Command schemas
 3. packages/contracts/src/index.ts                       — Add to barrel
-4. packages/db/src/schema/<domain>.ts                    — Drizzle pgTable
+4. packages/db/src/schema/<pillar>/<module>/<entity>.ts  — Drizzle pgTable
 5. packages/db/src/schema/index.ts                       — Add to barrel
 6. drizzle/NNNN_<name>.sql                               — Migration
-7. packages/core/src/<domain>/<entity>.service.ts        — Service (state machine, SoD, outbox)
-8. packages/core/src/<domain>/<entity>.queries.ts        — Query functions
-9. packages/core/src/<domain>/index.ts                   — Barrel + instrumentService()
-10. apps/api/src/routes/<entity>.ts                      — API routes (Zod type provider)
-11. apps/worker/src/jobs/handle-<event>.ts               — Event handlers
+7. packages/core/src/<pillar>/<module>/<entity>.service.ts        — Service (state machine, SoD, outbox)
+8. packages/core/src/<pillar>/<module>/<entity>.queries.ts        — Query functions
+9. packages/core/src/<pillar>/<module>/index.ts                   — Barrel + instrumentService()
+10. apps/api/src/routes/<pillar>/<module>/<entity>.ts             — API routes (Zod type provider)
+11. apps/worker/src/jobs/<pillar>/<module>/handle-<event>.ts      — Event handlers
 12. apps/worker/src/index.ts                             — Register in task list
 13. packages/contracts/src/shared/errors.ts              — Add error codes
-14. packages/contracts/src/shared/audit.ts               — Add audit actions
-15. packages/contracts/src/shared/outbox.ts              — Add event types
+14. packages/contracts/src/kernel/governance/audit/actions.ts  — Add audit actions
+15. packages/contracts/src/kernel/execution/outbox/envelope.ts — Add event types
 16. OWNERS.md files                                      — Update in affected packages
 17. tools/gates/contract-db-sync.mjs                     — Add to ENTITY_PAIRS
 18. Tests (unit in core, integration in api)
@@ -707,7 +700,7 @@ pnpm dev                                           # web :3000, api :3001
 ```bash
 pnpm typecheck           # All packages type-check
 pnpm test                # All unit + integration tests
-pnpm check:all           # All 10 CI gates
+pnpm check:all           # All 17 CI gates
 pnpm build               # Full build
 ```
 
@@ -780,18 +773,18 @@ Invoice lifecycle (submit → approve → reject → void → post → pay), GL 
 
 ### Sprint 2 — Operational Slice ✅ (backend)
 
-Audit log queries, mark-paid command, OTel SDK + auto-instrumentation + insight factory, 10 CI gates, 22 integration tests.
+Audit log queries, mark-paid command, OTel SDK + auto-instrumentation + insight factory, 17 CI gates (incl. Phase 1 security gates), 25 integration tests.
 
-### Sprint 3 — UI Slice (next)
+### Sprint 3 — UI Slice (in progress)
 
 | # | Item | Status |
 | - | ---- | ------ |
-| 3.1 | Supplier portal: invoice submission UI | ❌ |
-| 3.2 | AP approval screen + ledger view | ❌ |
+| 3.1 | Supplier portal: invoice submission UI | 🚧 (route scaffolded) |
+| 3.2 | AP approval screen + ledger view | 🚧 (invoice list/detail pages exist) |
 | 3.3 | Audit log viewer UI | ❌ |
 | 3.4 | Dashboard + trial balance visualization | ❌ |
-| 3.5 | Auth sign-in flow + session management | ❌ |
-| 3.6 | Design system + component library (shadcn/ui) | ❌ |
+| 3.5 | Auth sign-in flow + session management | 🚧 (sign-in page + NextAuth wired) |
+| 3.6 | Design system + component library (shadcn/ui) | ✅ (shadcn/ui installed, 9-pillar CSS system) |
 
 ### Sprint 4+ — Workflow Engine (ADR-0004)
 
@@ -805,6 +798,7 @@ Trigger.dev v3 + React Flow visual builder. See `docs/adr/0004-workflow-engine.m
 | - | ----- | ------ | ---- |
 | 0003 | Identity Model Redesign (Party + Principal + Membership) | Accepted (complete) | `docs/adr/0003-identity-model-redesign.md` |
 | 0004 | Workflow Engine (Trigger.dev + React Flow replaces n8n) | Accepted (Sprint 4+) | `docs/adr/0004-workflow-engine.md` |
+| 0005 | Module Architecture Restructure (pillar structure) | Accepted (complete) | `docs/adr/adr_0005_module_architecture_restructure.md` |
 
 ---
 

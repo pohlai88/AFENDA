@@ -8,6 +8,8 @@
 // ── Test user emails (match global-setup seed) ────────────────────────────────
 export const SUBMITTER_EMAIL = "admin@test.afenda";
 export const APPROVER_EMAIL = "approver@test.afenda";
+/** Admin user — has admin.settings.read/write. Same principal as SUBMITTER_EMAIL in the test seed. */
+export const ADMIN_EMAIL = "admin@test.afenda";
 
 // ── Org ──────────────────────────────────────────────────────────────────────
 export const TEST_ORG_SLUG = "test-org";

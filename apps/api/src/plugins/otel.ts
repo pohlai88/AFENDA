@@ -18,14 +18,27 @@
 
 import type { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { extractRequestAttrs, setActiveSpanAttributes } from "@afenda/core";
+import { extractRequestAttrs, setActiveSpanAttributes, updateActiveSpanName } from "@afenda/core";
 
 async function otelPlugin(app: FastifyInstance) {
-  // ── onRequest: auto-extract domain attrs onto the HTTP span ──────────────
+  // ── onRequest: stamp domain context attrs on the HTTP span ───────────────
+  // Runs after auth so req.ctx / req.orgId are already populated.
   app.addHook("onRequest", async (req) => {
     const attrs = extractRequestAttrs(req as unknown as Record<string, unknown>);
     if (Object.keys(attrs).length > 0) {
       setActiveSpanAttributes(attrs);
+    }
+  });
+
+  // ── onSend: update span name to include the matched route template ────────
+  // The HTTP auto-instrumentation names spans with just the HTTP method ("GET").
+  // After Fastify has matched the route, routeOptions.url gives the template
+  // (e.g. "/v1/invoices/:invoiceId") so Jaeger shows meaningful operation names.
+  app.addHook("onSend", async (req) => {
+    const routeTemplate =
+      (req as unknown as { routeOptions?: { url?: string } }).routeOptions?.url;
+    if (routeTemplate) {
+      updateActiveSpanName(`${req.method} ${routeTemplate}`);
     }
   });
 

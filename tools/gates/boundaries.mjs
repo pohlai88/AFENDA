@@ -468,18 +468,18 @@ if (existsSync(SCHEMA_BARREL)) {
 
 const ENUM_SYNC_PAIRS = [
   {
-    contractsFile: "packages/contracts/src/invoice/invoice.entity.ts",
-    dbFile: "packages/db/src/schema/finance.ts",
+    contractsFile: "packages/contracts/src/erp/finance/ap/invoice.entity.ts",
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
     exports: ["InvoiceStatusValues"],
   },
   {
-    contractsFile: "packages/contracts/src/gl/account.entity.ts",
-    dbFile: "packages/db/src/schema/finance.ts",
+    contractsFile: "packages/contracts/src/erp/finance/gl/account.entity.ts",
+    dbFile: "packages/db/src/schema/erp/finance/gl.ts",
     exports: ["AccountTypeValues"],
   },
   {
-    contractsFile: "packages/contracts/src/supplier/supplier.entity.ts",
-    dbFile: "packages/db/src/schema/supplier.ts",
+    contractsFile: "packages/contracts/src/erp/supplier/supplier.entity.ts",
+    dbFile: "packages/db/src/schema/erp/supplier.ts",
     exports: ["SupplierStatusValues"],
   },
 ];

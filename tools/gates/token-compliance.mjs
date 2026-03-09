@@ -53,6 +53,9 @@ const EXCLUDE_PATTERNS = [
   /\.test\.(tsx?|jsx?)$/,         // test files
   /[/\\]__vitest_test__[/\\]/,    // test directories
   /[/\\]e2e[/\\]/,                // e2e test directories
+  // Landing / marketing pages use a curated dark-terminal palette by design.
+  // Each file carries /* shadcn-exempt */ documenting the intent.
+  /[/\\]\(marketing\)[/\\]/,
 ];
 
 // ─── Detection patterns ──────────────────────────────────────────────────────
@@ -122,15 +125,15 @@ const RULE_DOCS = {
   },
   DARK_PREFIX: {
     why: "The dark: variant duplicates theme logic that the DS handles automatically via :root / .dark CSS variables.",
-    docs: "packages/ui/src/src/styles/_tokens-dark.css",
+    docs: "packages/ui/src/styles/_tokens-dark.css",
   },
   ARBITRARY_COLOR: {
     why: "Arbitrary color values in className bypass token system and create unmaintainable one-offs.",
-    docs: "packages/ui/src/src/styles/_theme.css",
+    docs: "packages/ui/src/styles/_theme.css",
   },
   INLINE_HEX: {
     why: "Inline hex colors in style objects bypass the token system — use var(--token) references.",
-    docs: "packages/ui/src/src/styles/_tokens-light.css",
+    docs: "packages/ui/src/styles/_tokens-light.css",
   },
 };
 
@@ -162,6 +165,10 @@ for (const absPath of files) {
   const relPath = relative(ROOT, absPath).replaceAll("\\", "/");
   const content = readFileSync(absPath, "utf-8");
   const lines = content.split("\n");
+
+  // Honor file-level shadcn-exempt marker (landing pages, curated palettes)
+  const fileHeader = lines.slice(0, 5).join("\n");
+  if (/shadcn-exempt|token-compliance-exempt/.test(fileHeader)) continue;
 
   for (const rule of RULES) {
     // Some rules only apply to certain file types

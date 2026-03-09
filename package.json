@@ -14,10 +14,17 @@
     "check:catalog": "node tools/gates/catalog.mjs",
     "check:contract-db-sync": "node tools/gates/contract-db-sync.mjs",
     "check:server-clock": "node tools/gates/server-clock.mjs",
+    "check:no-unsafe-money-formatting": "node tools/gates/no-unsafe-money-formatting.mjs",
     "check:owners-lint": "node tools/gates/owners-lint.mjs",
     "check:token-compliance": "node tools/gates/token-compliance.mjs",
     "check:ui-meta": "node tools/gates/ui-meta.mjs",
     "check:domain-completeness": "node tools/gates/domain-completeness.mjs",
+    "check:route-registry-sync": "node tools/gates/route-registry-sync.mjs",
+    "check:org-isolation": "node tools/gates/org-isolation.mjs",
+    "check:audit-enforcement": "node tools/gates/audit-enforcement.mjs",
+    "check:finance-invariants": "node tools/gates/finance-invariants.mjs",
+    "check:page-states": "node tools/gates/page-states.mjs",
+    "check:ui-shell": "node tools/gates/ui-shell.mjs",
     "check:all": "node tools/run-gates.mjs",
     "scaffold": "node tools/scaffold.mjs",
     "db:migrate": "pnpm -C packages/db db:migrate",
@@ -26,7 +33,9 @@
     "db:studio": "pnpm -C packages/db db:studio",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "e2e": "pnpm -C apps/web e2e"
+    "e2e": "pnpm -C apps/web e2e",
+    "e2e:auth": "pnpm -C apps/web exec playwright test e2e/auth.spec.ts --project=chromium --workers=1",
+    "dev:e2e": "turbo run dev --filter=@afenda/web --filter=@afenda/api"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",
@@ -40,6 +49,9 @@
     "typescript": "catalog:",
     "vitest": "catalog:",
     "typescript-eslint": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-jsx-a11y": "catalog:",
+    "eslint-plugin-drizzle": "catalog:",
     "yaml": "catalog:"
   }
 }

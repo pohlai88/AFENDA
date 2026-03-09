@@ -5,7 +5,7 @@
  *
  * Prevents hardcoded Tailwind palette colors and `dark:` variant prefixes
  * in JSX className strings. Enforces exclusive use of the design-system
- * semantic tokens defined in packages/ui/src/src/styles/.
+ * semantic tokens defined in packages/ui/src/styles/.
  *
  * ── What it catches ─────────────────────────────────────────────────────
  *

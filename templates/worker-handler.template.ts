@@ -1,7 +1,7 @@
 /**
  * TEMPLATE: Worker event handler for apps/worker.
  *
- * Copy this file to: apps/worker/src/jobs/handle-<event-name>.ts
+ * Copy this file to: apps/worker/src/jobs/<pillar>/<module>/handle-<event-name>.ts
  * Then: find-replace Event/event with your domain event.
  *
  * RULES:

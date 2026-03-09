@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * FlowStepper — visualises the entity's workflow state machine.
  *

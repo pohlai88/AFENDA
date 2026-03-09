@@ -200,6 +200,8 @@ export async function setup() {
       "gl.journal.post",
       "evidence.attach",
       "admin.org.manage",
+      "admin.settings.read",
+      "admin.settings.write",
       "supplier.onboard",
       "audit.log.read",
     ];
@@ -252,7 +254,9 @@ export async function setup() {
     );
 
     for (const p of perms.filter((p: { key: string }) =>
-      ["ap.invoice.submit", "evidence.attach"].includes(p.key),
+      ["ap.invoice.submit", "evidence.attach", "admin.settings.read", "admin.settings.write"].includes(
+        p.key,
+      ),
     )) {
       await seedClient.query(
         `

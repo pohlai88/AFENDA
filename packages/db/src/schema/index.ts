@@ -1,24 +1,18 @@
 /**
  * Schema barrel — re-exports only.
  *
- * Each domain has its own file. Never add table definitions here.
- * drizzle-kit reads this file via drizzle.config.ts → schema path.
+ * Each module has its own file under pillar directories. Never add table
+ * definitions here. drizzle-kit reads this file via drizzle.config.ts → schema path.
  */
 
-// ── IAM (organization, principals, roles, permissions, memberships) ──────────
-export * from "./iam.js";
+// ── Shared helpers ───────────────────────────────────────────────────────────
+export * from "./_helpers.js";
 
-// ── Supplier ─────────────────────────────────────────────────────────────────
-export * from "./supplier.js";
+// ── Kernel (identity, governance, execution) ─────────────────────────────────
+export * from "./kernel/index.js";
 
-// ── Document + Evidence ──────────────────────────────────────────────────────
-export * from "./document.js";
+// ── ERP (finance, supplier) ──────────────────────────────────────────────────
+export * from "./erp/index.js";
 
-// ── Finance (CoA, invoice, journal) ──────────────────────────────────────────
-export * from "./finance.js";
-
-// ── Infra (outbox, idempotency, audit, sequence, dead letter) ────────────────
-export * from "./infra.js";
-
-// ── Relations (powers db.query.* relational API) ───────────────────────────
-export * from "./relations.js";
+// ── Relations (powers db.query.* relational API) ─────────────────────────────
+export * from "./relations/index.js";

@@ -48,30 +48,58 @@ const ROOT = resolve(__dirname, "../..");
  * PartyRoleSchema — updatedAt (infra, mutable tables have it but DTO is
  *                   read-model; include if consumers need optimistic locking)
  */
+// ─── Intentional exclusions ───────────────────────────────────────────────────
+//
+// org_setting: excluded by design. value_json is intentionally polymorphic —
+// one column carries all setting value types (string, number, boolean, array).
+// A 1:1 sync pair would produce false COLUMN_MISSING_FROM_CONTRACT violations.
+// Type safety is enforced by the per-key SETTING_VALUE_SCHEMAS registry in core,
+// not by Zod-to-column mapping.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
 const SYNC_PAIRS = [
   // ─── Finance ─────────────────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/finance.ts",
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
     dbTable: "invoice",
-    contractFile: "packages/contracts/src/invoice/invoice.entity.ts",
+    contractFile: "packages/contracts/src/erp/finance/ap/invoice.entity.ts",
     contractSchema: "InvoiceSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/finance.ts",
+    dbFile: "packages/db/src/schema/erp/finance/gl.ts",
     dbTable: "account",
-    contractFile: "packages/contracts/src/gl/account.entity.ts",
+    contractFile: "packages/contracts/src/erp/finance/gl/account.entity.ts",
     contractSchema: "AccountSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+
+  // ─── Purchasing ──────────────────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/erp/purchasing.ts",
+    dbTable: "purchase_order",
+    contractFile: "packages/contracts/src/erp/purchasing/purchase-order.entity.ts",
+    contractSchema: "PurchaseOrderSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/purchasing.ts",
+    dbTable: "receipt",
+    contractFile: "packages/contracts/src/erp/purchasing/receipt.entity.ts",
+    contractSchema: "ReceiptSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
 
   // ─── Supplier ────────────────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/supplier.ts",
+    dbFile: "packages/db/src/schema/erp/supplier.ts",
     dbTable: "supplier",
-    contractFile: "packages/contracts/src/supplier/supplier.entity.ts",
+    contractFile: "packages/contracts/src/erp/supplier/supplier.entity.ts",
     contractSchema: "SupplierSchema",
     excludeFromContract: [],
     excludeFromDb: [],
@@ -79,59 +107,75 @@ const SYNC_PAIRS = [
 
   // ─── IAM ─────────────────────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "party",
-    contractFile: "packages/contracts/src/iam/party.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/party.entity.ts",
     contractSchema: "PartySchema",
     excludeFromContract: ["externalKey", "updatedAt"],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "person",
-    contractFile: "packages/contracts/src/iam/party.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/party.entity.ts",
     contractSchema: "PersonSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "organization",
-    contractFile: "packages/contracts/src/iam/party.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/party.entity.ts",
     contractSchema: "OrganizationSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "iam_principal",
-    contractFile: "packages/contracts/src/iam/principal.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/principal.entity.ts",
     contractSchema: "PrincipalSchema",
     excludeFromContract: ["passwordHash", "updatedAt"],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "party_role",
-    contractFile: "packages/contracts/src/iam/membership.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/membership.entity.ts",
     contractSchema: "PartyRoleSchema",
     excludeFromContract: ["updatedAt"],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "membership",
-    contractFile: "packages/contracts/src/iam/membership.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/membership.entity.ts",
     contractSchema: "MembershipSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
+    dbTable: "auth_password_reset_token",
+    contractFile: "packages/contracts/src/kernel/identity/auth.entity.ts",
+    contractSchema: "AuthPasswordResetTokenSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
+    dbTable: "auth_portal_invitation",
+    contractFile: "packages/contracts/src/kernel/identity/auth.entity.ts",
+    contractSchema: "AuthPortalInvitationSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
 
   // ─── IAM (continued) ─────────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/iam.ts",
+    dbFile: "packages/db/src/schema/kernel/identity.ts",
     dbTable: "iam_role",
-    contractFile: "packages/contracts/src/iam/role.entity.ts",
+    contractFile: "packages/contracts/src/kernel/identity/role.entity.ts",
     contractSchema: "RoleSchema",
     excludeFromContract: [],
     excludeFromDb: [],
@@ -139,27 +183,51 @@ const SYNC_PAIRS = [
 
   // ─── Finance (continued) ─────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/finance.ts",
+    dbFile: "packages/db/src/schema/erp/finance/gl.ts",
     dbTable: "journal_entry",
-    contractFile: "packages/contracts/src/gl/journal-entry.entity.ts",
+    contractFile: "packages/contracts/src/erp/finance/gl/journal-entry.entity.ts",
     contractSchema: "JournalEntrySchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+
+  // ─── Custom Fields ────────────────────────────────────────────────────
+  // custom_field_def: admin-managed field definitions (governance metadata).
+  // CustomFieldDefSchema is the full entity mirror — includes orgId (unlike the
+  // API response schema which strips orgId for RLS clarity).
+  {
+    dbFile: "packages/db/src/schema/kernel/governance/custom-fields.ts",
+    dbTable: "custom_field_def",
+    contractFile:
+      "packages/contracts/src/kernel/governance/custom-fields/custom-field.entity.ts",
+    contractSchema: "CustomFieldDefSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  // custom_field_value: per-entity-instance values (domain business data).
+  {
+    dbFile: "packages/db/src/schema/kernel/governance/custom-fields.ts",
+    dbTable: "custom_field_value",
+    contractFile:
+      "packages/contracts/src/kernel/governance/custom-fields/custom-field.entity.ts",
+    contractSchema: "CustomFieldValueSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
 
   // ─── Document / Evidence ─────────────────────────────────────────────
   {
-    dbFile: "packages/db/src/schema/document.ts",
+    dbFile: "packages/db/src/schema/kernel/governance/evidence.ts",
     dbTable: "document",
-    contractFile: "packages/contracts/src/evidence/evidence.entity.ts",
+    contractFile: "packages/contracts/src/kernel/governance/evidence/evidence.entity.ts",
     contractSchema: "DocumentSchema",
     excludeFromContract: [],
     excludeFromDb: [],
   },
   {
-    dbFile: "packages/db/src/schema/document.ts",
+    dbFile: "packages/db/src/schema/kernel/governance/evidence.ts",
     dbTable: "evidence",
-    contractFile: "packages/contracts/src/evidence/evidence.entity.ts",
+    contractFile: "packages/contracts/src/kernel/governance/evidence/evidence.entity.ts",
     contractSchema: "EvidenceLinkSchema",
     excludeFromContract: [],
     excludeFromDb: ["idempotencyKey"],
@@ -167,6 +235,106 @@ const SYNC_PAIRS = [
     // The parser extracts fields from the inline z.object({...}) block;
     // these are the additional fields contributed by the second operand.
     intersectionFields: ["entityType", "entityId"],
+  },
+
+  // ─── AP (Accounts Payable) ───────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "payment_terms",
+    contractFile: "packages/contracts/src/erp/finance/ap/payment-terms.entity.ts",
+    contractSchema: "PaymentTermsSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "ap_hold",
+    contractFile: "packages/contracts/src/erp/finance/ap/hold.entity.ts",
+    contractSchema: "ApHoldSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "invoice_line",
+    contractFile: "packages/contracts/src/erp/finance/ap/invoice-line.entity.ts",
+    contractSchema: "InvoiceLineSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "payment_run",
+    contractFile: "packages/contracts/src/erp/finance/ap/payment-run.entity.ts",
+    contractSchema: "PaymentRunSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "payment_run_item",
+    contractFile: "packages/contracts/src/erp/finance/ap/payment-run-item.entity.ts",
+    contractSchema: "PaymentRunItemSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "prepayment",
+    contractFile: "packages/contracts/src/erp/finance/ap/prepayment.entity.ts",
+    contractSchema: "PrepaymentSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "prepayment_application",
+    contractFile: "packages/contracts/src/erp/finance/ap/prepayment.entity.ts",
+    contractSchema: "PrepaymentApplicationSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "match_tolerance",
+    contractFile: "packages/contracts/src/erp/finance/ap/match-tolerance.entity.ts",
+    contractSchema: "MatchToleranceSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "wht_certificate",
+    contractFile: "packages/contracts/src/erp/finance/ap/wht-certificate.entity.ts",
+    contractSchema: "WhtCertificateSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/ap.ts",
+    dbTable: "wht_exemption",
+    contractFile: "packages/contracts/src/erp/finance/ap/wht-certificate.entity.ts",
+    contractSchema: "WhtExemptionSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+
+  // ─── Supplier (continued) ────────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/erp/supplier.ts",
+    dbTable: "supplier_site",
+    contractFile: "packages/contracts/src/erp/supplier/supplier-site.entity.ts",
+    contractSchema: "SupplierSiteSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/supplier.ts",
+    dbTable: "supplier_bank_account",
+    contractFile: "packages/contracts/src/erp/supplier/supplier-bank-account.entity.ts",
+    contractSchema: "SupplierBankAccountSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
   },
 ];
 

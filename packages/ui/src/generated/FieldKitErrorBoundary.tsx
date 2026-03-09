@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * FieldKitErrorBoundary — catches rendering errors in FieldKit components.
  *
@@ -11,6 +13,7 @@
  *   3. Uses DS tokens only.
  */
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Input } from "../components/input";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -84,7 +87,7 @@ export class FieldKitErrorBoundary extends Component<FieldKitErrorBoundaryProps,
         <span className="text-xs text-destructive">
           Render error: {this.state.error?.message}
         </span>
-        <input
+        <Input
           type="text"
           value={displayValue}
           disabled

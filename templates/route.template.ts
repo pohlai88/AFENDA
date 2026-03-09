@@ -1,7 +1,7 @@
 /**
  * TEMPLATE: Fastify route for apps/api.
  *
- * Copy this file to: apps/api/src/routes/<entity>.ts
+ * Copy this file to: apps/api/src/routes/<pillar>/<module>/<entity>.ts
  * Then: find-replace Entity/entity with your domain name.
  *
  * RULES:
@@ -21,13 +21,20 @@
 //   CursorParamsSchema,
 // } from "@afenda/contracts";
 // import { createEntity, listEntities } from "@afenda/core";
-// import { requireAuth, requireOrg, makeSuccessSchema } from "../helpers/responses.js";
+// import { requireAuth, requireOrg, makeSuccessSchema } from "../../../helpers/responses.js";
 
-// export async function entityRoutes(app: FastifyInstance) {
-//   const typedApp = app.withTypeProvider<ZodTypeProvider>();
-//
-//   // ── Command: Create ──────────────────────────────────────────────────────
-//   typedApp.post("/v1/commands/create-entity", {
+/**
+ * <Entity> routes — REST endpoints for <entity> entity.
+ * 
+ * Register in apps/api/src/index.ts:
+ *   import { <entity>Routes } from "./routes/<pillar>/<module>/<entity>.js";
+ *   await app.register(<entity>Routes, { prefix: "/v1" });
+ */
+export async function <entity>Routes(app: FastifyInstance) {
+  const typedApp = app.withTypeProvider<ZodTypeProvider>();
+
+  // ── Command: Create ──────────────────────────────────────────────────────
+  typedApp.post("/v1/commands/create-<entity>", {
 //     config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
 //     schema: {
 //       description: "Create a new entity",

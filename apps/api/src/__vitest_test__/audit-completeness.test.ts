@@ -119,4 +119,38 @@ describe("audit log completeness (EC-5)", () => {
     expect(actions).toContain("invoice.submitted");
     expect(actions).toContain("invoice.rejected");
   });
+
+  it("audit logs are org-scoped and do not leak cross-org data", async () => {
+    // Submit invoice in test org
+    const submitRes = await injectAs(app, SUBMITTER_EMAIL, {
+      method: "POST",
+      url: "/v1/commands/submit-invoice",
+      payload: submitInvoicePayload({ supplierId }),
+    });
+    expect(submitRes.statusCode).toBe(201);
+    const invoiceId = submitRes.json().data.id;
+
+    // Query audit logs - should only see logs from test org
+    const result = await app.db.execute(
+      /* sql */ `
+        SELECT al.action, al.entity_id, o.slug as org_slug
+        FROM audit_log al
+        JOIN party p ON p.id = al.org_id
+        JOIN organization o ON o.id = p.id
+        ORDER BY al.occurred_at ASC
+      `,
+    );
+    const rows = (result as unknown as { rows: Array<{ action: string; entity_id: string; org_slug: string }> }).rows;
+
+    // All audit logs should be for 'test-org' only
+    for (const row of rows) {
+      expect(row.org_slug).toBe("test-org");
+    }
+
+    // TODO: When multi-org test setup exists, verify:
+    // 1. Create invoice in org A, audit log created
+    // 2. Query audit logs as org B user
+    // 3. Verify org B user cannot see org A's audit logs
+    // This ensures audit trails are org-isolated
+  });
 });

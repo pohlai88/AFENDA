@@ -1,70 +1,99 @@
-/**
- * FieldKit type definitions — the capability matrix contract.
- *
- * Each field type maps to a record of handlers:
- *   - CellRenderer: React component for table cells
- *   - FormWidget: React component for form inputs
- *   - FilterOps: available filter operations
- *   - ExportAdapter: transforms value for export
- *
- * RULES:
- *   1. This file defines the TYPES only — concrete implementations
- *      live in per-type modules.
- *   2. FieldKit is an object, not a class — functional style.
- */
 import type { ComponentType } from "react";
 
+export type RowRecord = Record<string, unknown>;
+export type ExportScalar = string | number | boolean | null;
+
+export type FilterOperator =
+  | "eq"
+  | "ne"
+  | "contains"
+  | "startsWith"
+  | "endsWith"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "before"
+  | "after"
+  | "between"
+  | "in"
+  | "notIn"
+  | "isEmpty"
+  | "isNotEmpty";
+
 /** Props passed to every cell renderer */
-export interface CellRendererProps<T = unknown> {
-  value: T;
+export interface CellRendererProps<
+  T = unknown,
+  TRecord extends RowRecord = RowRecord,
+> {
+  value: T | null | undefined;
   fieldKey: string;
   /** Full row record for context (e.g. currency for money) */
-  record: Record<string, unknown>;
+  record: TRecord;
+  /** Extra constraints from FieldDef.validationJson (e.g. options for relation/enum) */
+  validation?: Record<string, unknown>;
 }
 
 /** Props passed to every form widget */
-export interface FormWidgetProps<T = unknown> {
-  value: T;
-  onChange: (value: T) => void;
+export interface FormWidgetProps<
+  T = unknown,
+  TRecord extends RowRecord = RowRecord,
+> {
+  value: T | null | undefined;
+  onChange: (value: T | null) => void;
+  onBlur?: () => void;
   fieldKey: string;
   label: string;
+  record?: TRecord;
   required?: boolean;
   readonly?: boolean;
   error?: string;
   description?: string;
   /** Extra constraints from FieldDef.validationJson */
   validation?: Record<string, unknown>;
+  /** Extra UI hints from registry metadata */
+  ui?: Record<string, unknown>;
 }
 
 /** Available filter operation for a field type */
 export interface FilterOp {
-  op: string;
+  op: FilterOperator;
   label: string;
 }
 
 /** Export adapter — transforms a raw value for export */
-export type ExportAdapter<T = unknown> = (value: T, record: Record<string, unknown>) => string | number | boolean | null;
+export type ExportAdapter<
+  T = unknown,
+  TRecord extends RowRecord = RowRecord,
+> = (value: T | null | undefined, record: TRecord) => ExportScalar;
 
 /** Props passed to audit-trail diff presenters */
-export interface AuditPresenterProps<T = unknown> {
-  oldValue: T | null;
-  newValue: T | null;
+export interface AuditPresenterProps<
+  T = unknown,
+  TRecord extends RowRecord = RowRecord,
+> {
+  oldValue: T | null | undefined;
+  newValue: T | null | undefined;
   fieldKey: string;
+  record?: TRecord;
 }
 
 /**
  * The full capability kit for a single field type.
  * One per FieldType in the registry.
  */
-export interface FieldKit<T = unknown> {
+export interface FieldKit<
+  T = unknown,
+  TRecord extends RowRecord = RowRecord,
+> {
   /** React component for rendering in table cells */
-  CellRenderer: ComponentType<CellRendererProps<T>>;
+  CellRenderer: ComponentType<CellRendererProps<T, TRecord>>;
   /** React component for form input */
-  FormWidget: ComponentType<FormWidgetProps<T>>;
+  FormWidget: ComponentType<FormWidgetProps<T, TRecord>>;
   /** Available filter operations */
   filterOps: readonly FilterOp[];
   /** Export value transformer */
-  exportAdapter: ExportAdapter<T>;
+  exportAdapter: ExportAdapter<T, TRecord>;
   /** React component for rendering field diffs in audit side-panels (optional) */
-  AuditPresenter?: ComponentType<AuditPresenterProps<T>>;
+  AuditPresenter?: ComponentType<AuditPresenterProps<T, TRecord>>;
 }

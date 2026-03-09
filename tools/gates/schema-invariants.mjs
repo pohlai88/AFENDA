@@ -33,10 +33,14 @@ const ROOT = resolve(__dirname, "../..");
 const SCHEMA_DIR = resolve(ROOT, "packages/db/src/schema");
 
 /**
- * Append-only / immutable tables that are exempt from the updatedAt rule.
- * These tables are either insert-only, join tables, or seed data.
+ * Tables exempt from the updatedAt rule.
+ * Two categories:
+ *   - Append-only / immutable: insert-only, join tables, seed data.
+ *   - Audit-tracked mutables: mutable but changes are captured entirely via
+ *     audit_log; a separate updated_at column would be redundant.
  */
 const APPEND_ONLY_TABLES = new Set([
+  // ── Append-only / insert-only ─────────────────────────────────────────
   "audit_log",
   "outbox_event",
   "invoice_status_history",
@@ -52,6 +56,10 @@ const APPEND_ONLY_TABLES = new Set([
   "iam_principal_role",
   "membership",
   "dead_letter_job",
+  // ── Audit-tracked mutables (no updated_at; audit_log is the history) ──
+  // custom_field_def: admin metadata — label/options/active are mutable but
+  // all changes are audited as governance events. updated_at is not needed.
+  "custom_field_def",
 ]);
 
 const RELATIONS_MAX_LINES = 500;
@@ -69,6 +77,9 @@ const FK_INDEX_EXEMPT = new Set([
   "uploaded_by_principal_id",
   "attached_by_principal_id",
   "onboarded_by_principal_id",
+  // Generic principal audit columns (settings, custom-fields, and future modules)
+  "created_by",
+  "updated_by",
 ]);
 
 // ─── Rule Documentation ─────────────────────────────────────────────────────
@@ -263,8 +274,25 @@ const violations = [];
 let tableCount = 0;
 let fileCount = 0;
 
-// Scan schema files (skip _helpers.ts, index.ts, relations.ts)
-const schemaFiles = ["iam.ts", "finance.ts", "document.ts", "supplier.ts", "infra.ts"];
+// Scan schema files (skip _helpers.ts, index.ts, relations.ts, compat barrels)
+const schemaFiles = [
+  // ── Kernel / Identity ────────────────────────────────────────────────
+  "kernel/identity.ts",
+  // ── Kernel / Governance ──────────────────────────────────────────────
+  "kernel/governance/audit.ts",
+  "kernel/governance/evidence.ts",
+  "kernel/governance/settings.ts",
+  "kernel/governance/custom-fields.ts",
+  // ── Kernel / Execution ───────────────────────────────────────────────
+  "kernel/execution/outbox.ts",
+  "kernel/execution/idempotency.ts",
+  "kernel/execution/numbering.ts",
+  "kernel/execution/dead-letter.ts",
+  // ── ERP ──────────────────────────────────────────────────────────────
+  "erp/finance/gl.ts",
+  "erp/finance/ap.ts",
+  "erp/supplier.ts",
+];
 
 for (const fileName of schemaFiles) {
   const filePath = resolve(SCHEMA_DIR, fileName);

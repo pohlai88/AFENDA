@@ -66,6 +66,7 @@ export async function resetDb(app: FastifyInstance) {
     TRUNCATE
       journal_line,
       journal_entry,
+      ap_hold,
       invoice_status_history,
       invoice,
       outbox_event,

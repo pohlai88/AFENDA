@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const E2E_PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
+const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${E2E_PORT}`;
+
 /**
  * Playwright E2E configuration for the AFENDA web app.
  *
@@ -25,7 +28,7 @@ export default defineConfig({
   },
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+    baseURL: E2E_BASE_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
@@ -55,13 +58,16 @@ export default defineConfig({
     },
   ],
 
-  /* Start the dev server before running tests (local dev only) */
-  webServer: process.env.CI
+  /* Start the dev server before running tests (local dev only).
+   * Auth tests need web + API. dev:e2e skips worker to avoid startup failures. */
+  webServer: process.env.CI || process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: "pnpm dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-        timeout: 60_000,
+        // Use a dedicated port to avoid attaching tests to an unrelated server on :3000.
+        command: `pnpm -C apps/web exec next dev --webpack --port ${E2E_PORT}`,
+        url: E2E_BASE_URL,
+        cwd: "../..",
+        reuseExistingServer: false,
+        timeout: 120_000,
       },
 });

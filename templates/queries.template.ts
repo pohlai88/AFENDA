@@ -1,7 +1,7 @@
 /**
  * TEMPLATE: Query functions for @afenda/core.
  *
- * Copy this file to: packages/core/src/<domain>/<entity>.queries.ts
+ * Copy this file to: packages/core/src/<pillar>/<module>/<entity>.queries.ts
  * Then: find-replace Entity/entity with your domain name.
  *
  * RULES:

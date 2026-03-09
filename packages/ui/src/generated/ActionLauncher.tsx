@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * ActionLauncher — resolves an action from the registry and renders
  * the appropriate trigger (link, button, or modal opener).

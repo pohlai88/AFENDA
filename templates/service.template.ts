@@ -1,7 +1,7 @@
 /**
  * TEMPLATE: Domain service for @afenda/core.
  *
- * Copy this file to: packages/core/src/<domain>/<entity>.service.ts
+ * Copy this file to: packages/core/src/<pillar>/<module>/<entity>.service.ts
  * Then: find-replace Entity/entity with your domain name.
  *
  * RULES:
@@ -18,8 +18,9 @@
 // import type { CorrelationId } from "@afenda/contracts";
 // import { eq, and, sql } from "drizzle-orm";
 // import { entity } from "@afenda/db";
-// import { writeAuditLog } from "../infra/audit.js";
-// import { nextNumber } from "../infra/numbering.js";
+// import { writeAuditLog } from "../../kernel/governance/audit/audit.service.js";
+// import { nextNumber } from "../../kernel/execution/numbering/numbering.service.js";
+// NOTE: Relative paths above assume an erp module. Adjust depth for your pillar location.
 
 // ── Result type ───────────────────────────────────────────────────────────────
 
@@ -58,7 +59,7 @@ type EntityServiceResult<T> =
 //   //   // Outbox event
 //   //   await tx.insert(outboxEvent).values({
 //   //     orgId: ctx.activeContext.orgId,
-//   //     type: "DOMAIN.ENTITY_CREATED",
+//   //     type: "domain.entity_created",
 //   //     version: "1",
 //   //     correlationId,
 //   //     payload: { entityId: row.id },

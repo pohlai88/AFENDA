@@ -37,19 +37,25 @@ const ROOT = resolve(__dirname, "../..");
  * error codes, audit actions, or permissions.
  */
 const INFRA_TABLES = new Set([
+  // ── Kernel execution infra ────────────────────────────────────────────
   "outbox_event",
   "idempotency",
   "audit_log",
   "sequence",
   "dead_letter_job",
-  // Join/lookup tables that are internal wiring
+  // ── Kernel governance infra ───────────────────────────────────────────
+  // org_setting: excluded from contract-db-sync by design — value_json is
+  // intentionally polymorphic. Type safety is enforced by SETTING_VALUE_SCHEMAS
+  // in core, not by Zod-to-column mapping.
+  "org_setting",
+  // ── IAM join / lookup tables (internal wiring) ───────────────────────
   "iam_permission",
   "iam_role_permission",
   "iam_principal_role",
-  // Append-only history tables (covered by their parent entity pair)
+  // ── Append-only history tables (covered by parent entity sync pair) ───
   "invoice_status_history",
   "evidence_operation",
-  // Sub-tables covered by their parent entity's sync pair
+  // ── Sub-tables covered by their parent entity's sync pair ─────────────
   "journal_line",
 ]);
 
@@ -157,18 +163,32 @@ function extractConfiguredSyncTables() {
 /**
  * Extract all pgTable SQL names from DB schema files.
  * Returns array of { table, dbFile, varName }.
+ *
+ * Uses walkTs for dynamic discovery so newly added schema files are picked up
+ * automatically — no hardcoded list to maintain.
+ * _helpers.ts, index.ts, and relations files contain no pgTable definitions
+ * and contribute zero entries naturally; the regex is the filter.
  */
 function extractAllDbTables() {
   const schemaDir = resolve(ROOT, "packages/db/src/schema");
+  if (!existsSync(schemaDir)) return [];
+
   const tables = [];
-  const schemaFiles = ["iam.ts", "finance.ts", "document.ts", "supplier.ts"];
+  const files = walkTs(schemaDir);
 
-  for (const fileName of schemaFiles) {
-    const filePath = resolve(schemaDir, fileName);
-    if (!existsSync(filePath)) continue;
+  for (const file of files) {
+    const basename = file.split(/[\\/]/).pop();
+    // Skip non-table files for performance (these have no pgTable calls)
+    if (
+      basename === "_helpers.ts" ||
+      basename === "index.ts" ||
+      basename.startsWith("relations")
+    )
+      continue;
 
-    const content = readFileSync(filePath, "utf-8");
-    const relFile = `packages/db/src/schema/${fileName}`;
+    const content = readFileSync(file, "utf-8");
+    const relFile = relative(ROOT, file).split(sep).join("/");
+
     const re = /export\s+const\s+(\w+)\s*=\s*pgTable\(\s*\n?\s*"(\w+)"/g;
     let m;
     while ((m = re.exec(content)) !== null) {
@@ -224,11 +244,10 @@ function extractHandledOutboxEvents() {
   if (!existsSync(workerDir)) return new Set();
 
   const handled = new Set();
-  const entries = readdirSync(workerDir, { withFileTypes: true });
+  const files = walkTs(workerDir);
 
-  for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.endsWith(".ts")) continue;
-    const content = readFileSync(join(workerDir, entry.name), "utf-8");
+  for (const file of files) {
+    const content = readFileSync(file, "utf-8");
 
     // Match event type strings
     const re = /"([A-Z][A-Z0-9]*(?:\.[A-Z][A-Z0-9_]*)+)"/g;

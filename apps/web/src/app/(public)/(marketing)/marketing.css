@@ -1,0 +1,575 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AFENDA Marketing — Isolated Design System
+   ═══════════════════════════════════════════════════════════════════════════
+   This stylesheet provides complete CSS isolation for the marketing/landing
+   pages, preventing the ERP design system from leaking in. It also defines
+   reusable utility classes for the Bloomberg/Linear dark-terminal aesthetic.
+
+   IMPORTANT:
+     - All styles are scoped under [data-marketing] to prevent leakage.
+     - Components should use these classes instead of duplicating long
+       Tailwind strings for common patterns.
+     - This file is imported ONLY in the marketing layout, not globally.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. ROOT ISOLATION — Override ERP design system tokens ─────────────── */
+
+[data-marketing] {
+  /* Nav height: h-16 (64px) + border-b (1px) + padding — used for content offset below fixed header */
+  --mk-nav-height: 96px;
+
+  /* Re-enable ligatures disabled by ERP _base.css */
+  font-feature-settings: "liga" 1, "calt" 1;
+  letter-spacing: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+
+  /* Override design system CSS variables for this subtree */
+  --mk-bg:                 #0B0D12;
+  --mk-bg-alt:             #060810;
+  --mk-bg-deep:            #070910;
+  --mk-bg-card:            #06080A;
+  --mk-bg-terminal:        #080A0F;
+
+  --mk-text:               #f8fafc;
+  --mk-text-muted:         #94a3b8;
+  --mk-text-dim:           #64748b;
+  --mk-text-ghost:         #475569;
+
+  --mk-border:             rgba(30, 41, 59, 0.5);
+  --mk-border-strong:      rgba(51, 65, 85, 0.8);
+
+  --mk-emerald:            #10b981;
+  --mk-emerald-light:      #34d399;
+  --mk-teal:               #14b8a6;
+  --mk-teal-light:         #2dd4bf;
+  --mk-cyan:               #06b6d4;
+  --mk-cyan-light:         #22d3ee;
+
+  /* Override ERP tokens so design system components don't bleed */
+  --background:            var(--mk-bg);
+  --foreground:            var(--mk-text);
+  --selection:             rgba(20, 184, 166, 0.3);
+  --selection-foreground:  #99f6e4;
+}
+
+/* Reset design-system universal border & scrollbar on marketing subtree */
+[data-marketing] *,
+[data-marketing] *::before,
+[data-marketing] *::after {
+  border-color: var(--mk-border);
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+/* Override design system body styles that leak through inheritance */
+[data-marketing] {
+  background-color: var(--mk-bg);
+  color: var(--mk-text);
+  font-variant-numeric: normal;
+}
+
+/* Selection color for marketing pages */
+[data-marketing] ::selection {
+  background-color: var(--selection);
+  color: var(--selection-foreground);
+}
+
+
+/* ── 2. SECTION CONTAINERS ─────────────────────────────────────────────── */
+
+.mk-section {
+  position: relative;
+  z-index: 10;
+  padding-top: 8rem;
+  padding-bottom: 8rem;
+}
+
+.mk-section-alt {
+  background-color: var(--mk-bg-alt);
+}
+
+.mk-section-deep {
+  background-color: var(--mk-bg-deep);
+}
+
+.mk-section-card {
+  background-color: var(--mk-bg-card);
+}
+
+.mk-section-terminal {
+  background-color: var(--mk-bg-terminal);
+}
+
+/* Standard section badge — replaces repeated badge class strings */
+.mk-section-badge {
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(20, 101, 82, 0.5);
+  background-color: rgba(20, 184, 166, 0.08);
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(45, 212, 191, 0.9);
+}
+
+.mk-container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  max-width: 80rem;
+}
+
+@media (min-width: 640px) {
+  .mk-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mk-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+
+/* ── 3. TYPOGRAPHY ─────────────────────────────────────────────────────── */
+
+/* Mono HUD label — used extensively for section badges, status text */
+.mk-mono-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.mk-mono-label-sm {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.mk-mono-label-xs {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.mk-mono-label-xxs {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 7px;
+  letter-spacing: 0.18em;
+}
+
+/* Section headings */
+.mk-heading-hero {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+}
+
+.mk-heading-section {
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: white;
+}
+
+/* Body text */
+.mk-body-lg {
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--mk-text-muted);
+}
+
+.mk-body {
+  font-size: 0.875rem;
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--mk-text-muted);
+}
+
+
+/* ── 4. ATMOSPHERIC EFFECTS ────────────────────────────────────────────── */
+
+/* Background grid pattern for hero and sections */
+.mk-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, #000 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, #000 60%, transparent 100%);
+}
+
+/* Radial glow overlay */
+.mk-glow-hero {
+  background:
+    radial-gradient(circle at 30% 0%, rgba(16, 185, 129, 0.15), transparent 40%),
+    radial-gradient(circle at 75% 20%, rgba(6, 182, 212, 0.1), transparent 30%);
+}
+
+.mk-glow-center {
+  background: radial-gradient(ellipse at center, rgba(20, 184, 166, 0.04) 0%, transparent 60%);
+}
+
+.mk-glow-right {
+  background: radial-gradient(ellipse at right, rgba(20, 184, 166, 0.03) 0%, transparent 60%);
+}
+
+/* Ambient blob for depth */
+.mk-ambient-blob {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+}
+
+
+/* ── 5. CARD PATTERNS ──────────────────────────────────────────────────── */
+
+/* Standard glass card */
+.mk-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(30, 41, 59, 0.6);
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 300ms;
+}
+
+.mk-card:hover {
+  border-color: rgba(16, 185, 129, 0.3);
+  background-color: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* Proof/feature card with hover lift */
+.mk-card-lift {
+  composes: mk-card;
+}
+
+.mk-card-lift:hover {
+  transform: translateY(-4px);
+}
+
+/* Terminal window chrome (toolbar dots) */
+.mk-terminal-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+  background-color: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.mk-terminal-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background-color: #334155;
+}
+
+
+/* ── 6. BADGE ──────────────────────────────────────────────────────────── */
+
+.mk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(20, 101, 82, 0.5);
+  background-color: rgba(20, 184, 166, 0.08);
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(45, 212, 191, 0.9);
+}
+
+
+/* ── 7. ICON CONTAINERS ────────────────────────────────────────────────── */
+
+.mk-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  transition: all 300ms;
+}
+
+.mk-icon-box-sm {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+}
+
+
+/* ── 8. BUTTONS ────────────────────────────────────────────────────────── */
+
+.mk-btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 0.75rem;
+  background-color: #10b981;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
+  transition: all 200ms;
+  overflow: hidden;
+}
+
+.mk-btn-primary:hover {
+  background-color: #34d399;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+}
+
+.mk-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  background-color: rgba(15, 23, 42, 0.5);
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 200ms;
+}
+
+.mk-btn-outline:hover {
+  background-color: #1e293b;
+  color: white;
+}
+
+
+/* ── 9. NAV ────────────────────────────────────────────────────────────── */
+
+.mk-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: all 300ms;
+}
+
+.mk-nav-scrolled {
+  background-color: rgba(11, 13, 18, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.2);
+}
+
+.mk-nav-link {
+  font-size: 0.875rem;
+  color: var(--mk-text-dim);
+  letter-spacing: 0.025em;
+  transition: color 200ms;
+}
+
+.mk-nav-link:hover {
+  color: #e2e8f0;
+}
+
+
+/* ── 10. FLOATING HUD LABELS ───────────────────────────────────────────── */
+
+.mk-hud-label {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(6, 13, 20, 0.8);
+  padding: 0.625rem 0.875rem;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 300ms;
+}
+
+.mk-hud-label:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(10, 20, 29, 0.9);
+}
+
+.mk-hud-connector {
+  height: 1px;
+  width: 2rem;
+}
+
+@media (min-width: 640px) {
+  .mk-hud-connector { width: 3rem; }
+}
+
+@media (min-width: 1024px) {
+  .mk-hud-connector { width: 4rem; }
+}
+
+
+/* ── 11. LIVE STATUS INDICATORS ────────────────────────────────────────── */
+
+.mk-pulse-dot {
+  position: relative;
+  display: inline-flex;
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+.mk-pulse-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: #34d399;
+  opacity: 0.6;
+  animation: mk-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.mk-pulse-dot::after {
+  content: "";
+  position: relative;
+  display: inline-flex;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.9);
+}
+
+@keyframes mk-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Skip link — visible on focus for keyboard users */
+.mk-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 1rem;
+  z-index: 60;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background-color: rgba(30, 41, 59, 0.95);
+  color: white;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: left 0.2s, box-shadow 0.2s;
+}
+
+.mk-skip-link:focus {
+  left: 1rem;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.8);
+}
+
+/* Hero live ledger stream — infinite vertical scroll */
+@keyframes hero-ledger-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-hero-ledger-scroll {
+  animation: hero-ledger-scroll 18s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-ledger-scroll {
+    animation: none;
+  }
+}
+
+/* Declaration popup — eye-grabbing animations */
+@keyframes declaration-border-shine {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes declaration-glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.02); }
+}
+
+
+/* ── 12. DIAGRAM UTILITIES ─────────────────────────────────────────────── */
+
+/* SVG text defaults inside marketing */
+[data-marketing] svg text {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Ensure SVGs don't inherit ERP focus styles */
+[data-marketing] svg:focus-visible {
+  outline: none;
+}
+
+
+/* ── 13. RESPONSIVE SECTION SPACING ────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .mk-section {
+    padding-top: 10rem;
+    padding-bottom: 10rem;
+  }
+}
+
+
+/* ── 14. PRINT — Hide marketing chrome ─────────────────────────────────── */
+
+@media print {
+  [data-marketing] {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .mk-nav,
+  .mk-ambient-blob,
+  .mk-grid-bg,
+  .mk-glow-hero,
+  .mk-glow-center,
+  .mk-glow-right {
+    display: none !important;
+  }
+}

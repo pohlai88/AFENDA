@@ -127,33 +127,45 @@ invoice/
 
 ---
 
-## 6. Subdirectory Layout
+## 6. Subdirectory Layout (ADR-0005 Pillar Structure)
 
-Each directory has its own OWNERS.md that inherits these rules and documents its specific files, exports, and DB alignment snippets.
+Each directory has an `index.ts` barrel. This file governs them all.
 
-| Directory   | Contents                                                             | OWNERS                                         |
-| ----------- | -------------------------------------------------------------------- | ---------------------------------------------- |
-| `shared/`   | Headers, envelopes, money, pagination, outbox, IDs, error codes      | [→ shared/OWNERS.md](src/shared/OWNERS.md)     |
-| `iam/`      | Organization, role (permissions), principal, request-context schemas | [→ iam/OWNERS.md](src/iam/OWNERS.md)           |
-| `supplier/` | Supplier status + entity + CRUD schemas                              | [→ supplier/OWNERS.md](src/supplier/OWNERS.md) |
-| `invoice/`  | Invoice status + entity + command schemas                            | [→ invoice/OWNERS.md](src/invoice/OWNERS.md)   |
-| `gl/`       | Account type + entity + GL command schemas                           | [→ gl/OWNERS.md](src/gl/OWNERS.md)             |
-| `evidence/` | Document entity + attach/register command schemas                    | [→ evidence/OWNERS.md](src/evidence/OWNERS.md) |
+| Directory                              | Contents                                                             |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| `shared/`                              | Cross-domain primitives (IDs, money, errors, pagination, envelope, headers, permissions, datetime) — see `shared/OWNERS.md` |
+| `kernel/identity/`                     | Party, person, organization, principal, role, membership, tenant, user entity schemas |
+| `kernel/governance/audit/`             | Audit log query schemas, audit action constants                      |
+| `kernel/governance/evidence/`          | Document entity + attach/register command schemas                    |
+| `kernel/governance/policy/`            | Policy context schema                                                |
+| `kernel/governance/settings/`          | ← stub (Sprint 4+)                                                   |
+| `kernel/execution/outbox/`             | Outbox event envelope schema                                         |
+| `kernel/execution/idempotency/`        | Idempotency request-key schema                                       |
+| `kernel/execution/numbering/`          | Sequence schema                                                      |
+| `kernel/registry/`                     | Capability, entity-def, field-def, view-def, action-def, flow-def, overlay-def schemas |
+| `erp/finance/ap/`                      | Invoice status + entity + command schemas                            |
+| `erp/finance/gl/`                      | Account type + journal entry + GL command schemas                    |
+| `erp/finance/ar/ assets/ consolidation/ costing/ fiscal/ fx/ intercompany/ lease/ reporting/ tax/ treasury/` | ← stub placeholders (not in Day-1 scope) |
+| `erp/supplier/`                        | Supplier status + entity + CRUD command schemas                      |
+| `erp/crm/ hr/ inventory/ manufacturing/ project/ purchasing/ sales/` | ← stub placeholders (future) |
+| `comm/notification/ email/ webhook/ inbox/ chatter/ sms/` | ← stub placeholders (Sprint 5+)          |
 
 ### `shared/` sub-files (cross-domain primitives only)
 
 Files in `shared/` are for primitives **used in 3 or more domains**.
 Do not dump single-domain types here to avoid bloat.
 
-| File            | Contents                                                    |
-| --------------- | ----------------------------------------------------------- |
-| `ids.ts`        | Branded UUID types (`OrgId`, `PrincipalId`, `InvoiceId`, …) |
-| `money.ts`      | `MoneySchema`, `CurrencyCode`                               |
-| `envelope.ts`   | `ErrorEnvelope`, `SuccessEnvelope`, `CursorEnvelope`        |
-| `errors.ts`     | `ErrorCode` enum + `ApiError` schema                        |
-| `headers.ts`    | HTTP header name constants                                  |
-| `pagination.ts` | `CursorParams`                                              |
-| `outbox.ts`     | `OutboxEvent`                                               |
+| File             | Contents                                                    |
+| ---------------- | ----------------------------------------------------------- |
+| `ids.ts`         | Branded UUID types (`OrgId`, `PrincipalId`, `InvoiceId`, …) |
+| `money.ts`       | `MoneySchema`, `CurrencyCode`                               |
+| `envelope.ts`    | `ErrorEnvelope`, `SuccessEnvelope`, `CursorEnvelope`        |
+| `errors.ts`      | `ErrorCode` enum + `ApiError` schema                        |
+| `headers.ts`     | HTTP header name constants                                  |
+| `pagination.ts`  | `CursorParams`                                              |
+| `permissions.ts` | `PermissionValues`, `Permission`, `PERMISSION_SCOPES`       |
+| `datetime.ts`    | `UtcDateTimeSchema`, `DateSchema`, `DateRangeSchema`        |
+| `index.ts`       | Domain barrel — re-exports all of the above                 |
 
 ---
 

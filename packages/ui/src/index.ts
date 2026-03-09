@@ -9,6 +9,9 @@ export { formatMoney } from "./money";
 // ── Shared utilities ─────────────────────────────────────────────────────────
 export { cn } from "./lib/utils";
 
+// ── Common icons ─────────────────────────────────────────────────────────────
+export * from "./icons";
+
 // ── shadcn/ui component re-exports ───────────────────────────────────────────
 export * from "./components/index";
 
@@ -20,3 +23,6 @@ export * from "./field-kit/index";
 
 // ── Generated components (metadata-driven UI) ────────────────────────────────
 export * from "./generated/index";
+
+// ── App shell (layout composition) ───────────────────────────────────────────
+export * from "./app-shell/index";

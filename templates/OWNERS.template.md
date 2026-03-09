@@ -1,21 +1,25 @@
-# OWNERS — `<package>/<domain>`
+# OWNERS — `<package>/<pillar>/<module>`
 
-> **Purpose:** <One sentence describing what belongs here.>
+> **Purpose:** <Entity> domain contracts/services for the <pillar>/<module> module.
 
 ## Import Rules
 
 | May import | Must NOT import |
 | ---------- | --------------- |
-| `@afenda/contracts` | `@afenda/ui` |
-| `@afenda/db` (if core) | (list forbidden packages) |
-| `drizzle-orm` operators | raw SQL |
+| `@afenda/contracts` (shared primitives) | `@afenda/ui` |
+| `@afenda/db` (if in core package) | Other monorepo packages |
+| `drizzle-orm`, `zod` | Direct DB queries (use services) |
 
 ## Files
 
 | File | Exports | Description |
 | ---- | ------- | ----------- |
-| `example.ts` | `exampleFunction()` | Brief description |
-<!-- Add one row per .ts file in this directory -->
+| `index.ts` | Re-exports from `<entity>.entity`, `<entity>.commands`, `<entity>.service`, `<entity>.queries` | Barrel export |
+| `<entity>.entity.ts` | `<Entity>Schema`, `<Entity>StatusValues`, `<Entity>Status`, `<Entity>` | Entity type definitions |
+| `<entity>.commands.ts` | `Create<Entity>CommandSchema`, `Update<Entity>CommandSchema` | Command schemas |
+| `<entity>.service.ts` (core only) | `create<Entity>`, `update<Entity>`, `<Entity>Error` | Business logic layer |
+| `<entity>.queries.ts` (core only) | `get<Entity>`, `list<Entity>s` | Read-only query functions |
+<!-- Update exports and descriptions to match actual implementations -->
 
 ## PR Checklist
 
@@ -23,4 +27,4 @@
 - [ ] Import rules respected (run `pnpm check:boundaries`)
 - [ ] Tests added in `__vitest_test__/`
 - [ ] Error codes added to `contracts/shared/errors.ts` if new failures introduced
-- [ ] Audit actions added to `contracts/shared/audit.ts` if new auditable events
+- [ ] Audit actions added to `contracts/kernel/governance/audit/actions.ts` if new auditable events

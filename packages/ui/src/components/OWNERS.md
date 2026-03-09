@@ -4,17 +4,30 @@ Domain: `packages/ui/src/components/`
 
 ## Purpose
 
-Lightweight styled component primitives (Table, Badge, Button) that follow
-the shadcn/ui API surface. These will be replaced by actual shadcn/ui
-components when Phase 0 (shadcn init) runs.
+Production-ready **shadcn/ui** component primitives installed via `shadcn@latest`.
+These are the real components — not stubs.
+
+**Current components (35 total):**
+Accordion, Alert, AlertDialog, Avatar, Badge, Breadcrumb, Button, Calendar, Card, 
+Checkbox, Combobox, Command, Dialog, DropdownMenu, Form, HoverCard, Input, 
+InputGroup, Label, NavigationMenu, Pagination, Popover, Progress, RadioGroup, 
+Select, Separator, Sheet, Sidebar, Skeleton, Sonner (toasts), Switch, Table, 
+Tabs, Textarea, Tooltip.
 
 ## Boundary
 
-- Imports from: `react`, `react-dom` only
-- Imported by: `packages/ui/src/field-kit/`, `packages/ui/src/generated/`
+- Imports from: `react`, `react-dom`, `radix-ui`, `class-variance-authority`, `tailwind-merge`, `clsx` only
+- Imported by: `packages/ui/src/field-kit/`, `packages/ui/src/generated/`, `apps/web`
+
+## Adding a new component
+
+```bash
+pnpm --filter @afenda/ui dlx shadcn@latest add <component>
+```
+
+After adding, register the export in `src/components/index.ts`.
 
 ## Upgrade path
 
-When shadcn/ui is installed (`npx shadcn@latest add <component>`), the generated
-files land here and replace the lightweight stubs. The API surface is designed
-to be compatible, so consumers should not need changes.
+Components are managed by shadcn/ui and are copied source files (not an npm dep).
+Update individual components with `shadcn@latest add --overwrite <component>`.

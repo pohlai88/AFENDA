@@ -2,25 +2,32 @@
  * FieldKit Registry — maps FieldType → FieldKit handler.
  *
  * RULES:
- *   1. Every FieldType from contracts/meta must have a handler.
+ *   1. Every FieldType from contracts must have a handler.
  *      The ui-meta CI gate enforces this at build time.
  *   2. `getFieldKit(type)` throws if a type is unregistered —
  *      fail fast during development.
  */
 import type { FieldType } from "@afenda/contracts";
 import type { FieldKit } from "./types";
-import { stringKit } from "./kits/string";
-import { intKit } from "./kits/int";
-import { decimalKit } from "./kits/decimal";
-import { moneyKit } from "./kits/money";
-import { dateKit } from "./kits/date";
-import { datetimeKit } from "./kits/datetime";
-import { enumKit } from "./kits/enum";
-import { relationKit } from "./kits/relation";
-import { jsonKit } from "./kits/json";
-import { boolKit } from "./kits/bool";
-import { documentKit } from "./kits/document";
-import { percentKit } from "./kits/percent";
+import {
+  stringKit,
+  intKit,
+  decimalKit,
+  moneyKit,
+  dateKit,
+  datetimeKit,
+  enumKit,
+  relationKit,
+  jsonKit,
+  boolKit,
+  nullableBoolKit,
+  documentKit,
+  createDocumentKit,
+  percentKit,
+  type DocumentRef,
+  type DocumentUploadAdapter,
+  type DocumentFieldMeta,
+} from "./kits";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const REGISTRY: Record<FieldType, FieldKit<any>> = {
@@ -34,6 +41,7 @@ const REGISTRY: Record<FieldType, FieldKit<any>> = {
   relation: relationKit,
   json: jsonKit,
   bool: boolKit,
+  nullableBool: nullableBoolKit,
   document: documentKit,
   percent: percentKit,
 };
@@ -54,3 +62,17 @@ export function getFieldKit<T = unknown>(fieldType: FieldType): FieldKit<T> {
 export function hasFieldKit(fieldType: string): boolean {
   return fieldType in REGISTRY;
 }
+
+/** Register a custom document kit. Call at app startup with createDocumentKit(...). */
+export function registerDocumentKit(
+  kit: FieldKit<DocumentRef | null>,
+): void {
+  REGISTRY.document = kit as FieldKit<unknown>;
+}
+
+export {
+  createDocumentKit,
+  type DocumentRef,
+  type DocumentUploadAdapter,
+  type DocumentFieldMeta,
+};

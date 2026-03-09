@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings Capability Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:     #0a0b0e;
+    --surf:   #13151a;
+    --bd:     #1e2128;
+    --bdl:    #2a2d35;
+    --text:   #e8eaf0;
+    --muted:  #6b7280;
+    --accent: #6366f1;
+    --adim:   rgba(99,102,241,.15);
+
+    --afenda: #6366f1;
+    --odoo:   #9b59b6;
+    --zoho:   #e42527;
+    --qbo:    #2CA01C;
+    --fresh:  #0075dd;
+    --sage:   #00c875;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────────── */
+  .hdr {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--bd);
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hdr h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; line-height: 1.15; }
+  .hdr h1 em { color: var(--accent); font-style: normal; }
+  .hdr p { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .ldot { width: 11px; height: 11px; border-radius: 50%; }
+
+  /* ── Table ───────────────────────────────────────────────────────── */
+  .wrap { overflow-x: auto; border: 1px solid var(--bd); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead tr { background: var(--surf); }
+  thead th {
+    padding: 14px 14px;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    color: var(--muted); border-bottom: 1px solid var(--bd);
+    white-space: nowrap;
+  }
+  thead th:first-child { text-align: left; min-width: 210px; }
+  thead th:not(:first-child) { text-align: center; min-width: 115px; }
+
+  .ph { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pn { font-size: 13px; font-weight: 700; letter-spacing: -.2px; }
+  .pt {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    padding: 2px 6px; border-radius: 3px; font-weight: 500;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--bd); transition: background .12s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+
+  .sec-hdr td {
+    background: var(--surf);
+    padding: 7px 14px;
+    font-size: 10px; font-weight: 700; letter-spacing: .12em;
+    color: var(--accent); text-transform: uppercase;
+    border-top: 1px solid var(--bd);
+  }
+
+  td { padding: 12px 14px; vertical-align: middle; }
+  td:not(:first-child) { text-align: center; }
+
+  .dn { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .tag {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    padding: 1px 5px; border-radius: 3px; font-weight: 500; flex-shrink: 0;
+  }
+  .done { background: rgba(34,197,94,.15);  color: #22c55e; }
+  .wip  { background: rgba(234,179,8,.15);  color: #eab308; }
+  .next { background: rgba(249,115,22,.15); color: #f97316; }
+  .def  { background: rgba(107,114,128,.2); color: var(--muted); }
+
+  .ds { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* score dots */
+  .sr { display: flex; gap: 4px; align-items: center; justify-content: center; }
+  .d  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .df { /* filled – set inline */ }
+  .de { background: var(--bdl); }
+  .sn {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+    margin-left: 5px; min-width: 18px;
+  }
+
+  .afc { background: rgba(99,102,241,.05); }
+
+  /* totals */
+  .tot td {
+    background: rgba(255,255,255,.03);
+    padding: 15px 14px;
+    font-weight: 700;
+    border-top: 2px solid var(--bdl);
+  }
+  .ts { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 700; display: block; letter-spacing: -.5px; }
+  .tl { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+  .tb { height: 4px; border-radius: 2px; margin-top: 6px; }
+
+  @keyframes grow { from { width: 0; } to { width: var(--w); } }
+  .tb { width: 0; animation: grow .9s .3s ease forwards; }
+
+  /* ── Notes ───────────────────────────────────────────────────────── */
+  .notes { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .nc {
+    background: var(--surf); border: 1px solid var(--bd);
+    border-radius: 10px; padding: 20px 22px;
+  }
+  .nc h3 { font-size: 10px; font-weight: 700; letter-spacing: .1em; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+  .nc ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .nc li { font-size: 12px; color: var(--muted); line-height: 1.55; display: flex; gap: 8px; }
+  .nc li::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+  .nc li strong { color: var(--text); font-weight: 600; }
+
+  /* tooltip */
+  #tip {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1e2128; border: 1px solid var(--bdl);
+    padding: 9px 16px; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: #9ca3af;
+    max-width: 620px; text-align: center;
+    pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 99;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 800px) {
+    .notes { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>Settings Capability Rating<br><em>AFENDA</em> vs. Competitors</h1>
+    <p>10 DIMENSIONS · 5-POINT SCALE · HOVER ROW FOR NOTES · Mar 2026</p>
+  </div>
+  <div class="legend">
+    <div class="leg"><div class="ldot" style="background:var(--afenda)"></div>AFENDA</div>
+    <div class="leg"><div class="ldot" style="background:var(--odoo)"></div>Odoo 17</div>
+    <div class="leg"><div class="ldot" style="background:var(--zoho)"></div>Zoho Books</div>
+    <div class="leg"><div class="ldot" style="background:var(--qbo)"></div>QuickBooks</div>
+    <div class="leg"><div class="ldot" style="background:var(--fresh)"></div>FreshBooks</div>
+    <div class="leg"><div class="ldot" style="background:var(--sage)"></div>Sage Intacct</div>
+  </div>
+</div>
+
+<div class="wrap">
+<table>
+  <thead>
+    <tr>
+      <th>CAPABILITY DIMENSION</th>
+      <th><div class="ph"><span class="pn" style="color:var(--afenda)">AFENDA</span><span class="pt" style="background:var(--adim);color:var(--accent)">Phase 1–3</span></div></th>
+      <th><div class="ph"><span class="pn" style="color:var(--odoo)">Odoo</span><span class="pt" style="background:rgba(155,89,182,.18);color:var(--odoo)">Community 17</span></div></th>
+      <th><div class="ph"><span class="pn" style="color:var(--zoho)">Zoho Books</span><span class="pt" style="background:rgba(228,37,39,.15);color:var(--zoho)">Professional</span></div></th>
+      <th><div class="ph"><span class="pn" style="color:var(--qbo)">QuickBooks</span><span class="pt" style="background:rgba(44,160,28,.15);color:var(--qbo)">Advanced</span></div></th>
+      <th><div class="ph"><span class="pn" style="color:var(--fresh)">FreshBooks</span><span class="pt" style="background:rgba(0,117,221,.15);color:var(--fresh)">Premium</span></div></th>
+      <th><div class="ph"><span class="pn" style="color:var(--sage)">Sage Intacct</span><span class="pt" style="background:rgba(0,200,117,.15);color:var(--sage)">Enterprise</span></div></th>
+    </tr>
+  </thead>
+  <tbody id="tb"></tbody>
+</table>
+</div>
+
+<div class="notes">
+  <div class="nc">
+    <h3>AFENDA Structural Advantages</h3>
+    <ul>
+      <li><strong>Multi-tenant by design:</strong> org-scoped RLS on every settings table, atomic PATCH, effective-value merging of defaults + overrides</li>
+      <li><strong>Custom fields architecture:</strong> immutable <code>api_key</code>, value lifecycle decoupled from definition, prospective <code>required</code> enforcement, entity-centric index</li>
+      <li><strong>Feature flag discipline:</strong> explicit <em>entitlement</em> vs. <em>behavior</em> categorisation prevents engineering rollout flags polluting org settings</li>
+      <li><strong>Compile-time safety:</strong> registry coverage assertion catches missing keys at build time; CI gates enforce contract↔DB parity and schema invariants</li>
+      <li><strong>Audit trail:</strong> full per-action audit_log with correlationId, changedKeys array, custom-field lifecycle events — unmatched at this stage</li>
+    </ul>
+  </div>
+  <div class="nc">
+    <h3>Highest-Value Gaps to Close</h3>
+    <ul>
+      <li><strong>General depth (Phase 2):</strong> company name, timezone, fiscal year, base currency — prerequisite for invoicing and reporting correctness</li>
+      <li><strong>Number series admin (Phase 2):</strong> prefix + seed config per document type over existing <code>kernel/execution/numbering</code> infra — no new infra needed</li>
+      <li><strong>Custom fields — Invoice &amp; PO (Phase 4):</strong> Supplier is done; extending to transaction entities closes the Zoho/QBO custom-field gap entirely</li>
+      <li><strong>Email settings (Phase 3):</strong> SMTP server, from-address, alias routing — required before any outbound workflow goes live</li>
+      <li><strong>Permissions admin surface (Phase 4):</strong> RBAC seed data exists; runtime management UI and API are the missing pieces</li>
+    </ul>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+const C = ['#6366f1','#9b59b6','#e42527','#2CA01C','#0075dd','#00c875'];
+
+const DIMS = [
+  { sec: 'PREFERENCE LAYER', rows: [
+    { name:'General preferences', sub:'company info · units · branding · timezone · currency',
+      tag:'wip', tl:'Phase 2',
+      scores:[2,5,5,4,4,5],
+      note:'AFENDA has 4 keys (units + email button). Missing: company name, timezone, fiscal year start, base currency. Competitors all ship these on day one.' },
+    { name:'Feature / module toggles', sub:'enable or disable functional modules per org',
+      tag:'done', tl:'Done',
+      scores:[3,5,4,2,3,5],
+      note:'AFENDA: 3 behavior flags with explicit entitlement/behavior split. Architecture is production-quality; key count needs growing in Phase 2.' },
+  ]},
+  { sec: 'RUNTIME CUSTOMISATION', rows: [
+    { name:'Custom entity fields', sub:'admin-defined fields on business entities',
+      tag:'done', tl:'Phase 3',
+      scores:[4,5,5,3,2,5],
+      note:'AFENDA: full module, Supplier entity live, 5 data types, immutable api_key, value lifecycle decoupled. Invoice/PO deferred to Phase 4. Strong architecture — only breadth is behind.' },
+    { name:'Number series configuration', sub:'per-document-type prefix, seed number, fiscal-year reset',
+      tag:'next', tl:'Phase 2',
+      scores:[1,5,5,2,3,5],
+      note:'AFENDA: sequence infra exists (kernel/execution/numbering) but zero admin config model, API, or UI. Competitors all provide prefix + next-number control per document type.' },
+    { name:'Document templates', sub:'PDF and email template customisation per document type',
+      tag:'def', tl:'Phase 5+',
+      scores:[1,5,5,3,3,4],
+      note:'AFENDA: show_in_pdf flag on custom_field_def future-proofs the schema. No template engine exists yet. Zoho/Odoo both have full QWeb/Handlebars template systems.' },
+  ]},
+  { sec: 'COMMUNICATION & INTEGRATIONS', rows: [
+    { name:'Email settings', sub:'SMTP · from-address · alias routing · digest preferences',
+      tag:'next', tl:'Phase 3',
+      scores:[1,5,4,3,3,5],
+      note:'AFENDA: email button text/color branding only. No SMTP config, from-address, alias management, or outbound preference controls yet.' },
+    { name:'Integration settings', sub:'OAuth apps · payment gateways · API keys · webhooks',
+      tag:'def', tl:'Phase 4',
+      scores:[1,5,4,5,4,5],
+      note:'AFENDA: nav link exists as placeholder. Fully deferred. QuickBooks leads here with the largest third-party marketplace among ERP tools at this price tier.' },
+  ]},
+  { sec: 'GOVERNANCE & SECURITY', rows: [
+    { name:'Permissions / RBAC admin', sub:'role management · permission assignment · scoped access',
+      tag:'next', tl:'Phase 4',
+      scores:[2,5,4,3,3,5],
+      note:'AFENDA: RBAC data model + seed permissions exist in DB. No admin UI or runtime API to manage role assignments yet. Odoo and Sage Intacct have field-level and record-level security.' },
+    { name:'Audit & change history', sub:'who changed what · timestamped · correlationId',
+      tag:'done', tl:'Done',
+      scores:[5,4,3,2,1,5],
+      note:'AFENDA best-in-class for an ERP at this stage: per-action audit_log, changedKeys array, custom-field lifecycle events (created/updated/deactivated/deleted), correlationId linking.' },
+  ]},
+  { sec: 'ENGINEERING QUALITY', rows: [
+    { name:'Architecture & multi-tenancy', sub:'RLS · org isolation · atomic writes · effective reads',
+      tag:'done', tl:'Done',
+      scores:[5,4,4,3,3,5],
+      note:'AFENDA: org-scoped RLS on all settings tables, atomic PATCH with null-clears-default semantics, effective-value merging, CI gate coverage. Cleaner than Odoo's ir.config_parameter global store.' },
+    { name:'API-first & developer ergonomics', sub:'typed contracts · idempotency · schema-is-truth',
+      tag:'done', tl:'Done',
+      scores:[5,4,4,2,2,4],
+      note:'AFENDA: Zod contracts, compile-time registry coverage assertions, idempotency keys on all writes, contract↔DB CI gate. QuickBooks and FreshBooks have closed/limited APIs for settings.' },
+  ]},
+];
+
+const tag = (cls, label) =>
+  `<span class="tag ${cls}">${label}</span>`;
+
+function dots(score, ci) {
+  let h = '<div class="sr">';
+  for (let i = 1; i <= 5; i++)
+    h += i <= score
+      ? `<div class="d df" style="background:${C[ci]}"></div>`
+      : '<div class="d de"></div>';
+  h += `<span class="sn" style="color:${C[ci]}">${score}</span></div>`;
+  return h;
+}
+
+const tbody = document.getElementById('tb');
+const totals = [0,0,0,0,0,0];
+let dimCount = 0;
+
+for (const grp of DIMS) {
+  const sr = document.createElement('tr');
+  sr.className = 'sec-hdr';
+  sr.innerHTML = `<td colspan="7">${grp.sec}</td>`;
+  tbody.appendChild(sr);
+
+  for (const row of grp.rows) {
+    dimCount++;
+    row.scores.forEach((s,i) => totals[i] += s);
+
+    const tr = document.createElement('tr');
+    tr.dataset.note = row.note;
+
+    const tagCls = { done:'done', wip:'wip', next:'next', def:'def' }[row.tag];
+
+    let html = `<td>
+      <div class="dn">${row.name} ${tag(tagCls, row.tl)}</div>
+      <div class="ds">${row.sub}</div>
+    </td>`;
+    for (let i = 0; i < 6; i++)
+      html += `<td${i===0?' class="afc"':''}>${dots(row.scores[i], i)}</td>`;
+
+    tr.innerHTML = html;
+    tbody.appendChild(tr);
+  }
+}
+
+// Totals row
+const max = dimCount * 5;
+const tr = document.createElement('tr');
+tr.className = 'tot';
+let html = `<td>
+  <div class="dn">TOTAL SCORE</div>
+  <div class="ds">out of ${max} across ${dimCount} dimensions</div>
+</td>`;
+for (let i = 0; i < 6; i++) {
+  const pct = Math.round(totals[i]/max*100);
+  html += `<td${i===0?' class="afc"':''}>
+    <span class="ts" style="color:${C[i]}">${totals[i]}/${max}</span>
+    <span class="tl">${pct}% overall</span>
+    <div class="tb" style="background:${C[i]};--w:${pct}%"></div>
+  </td>`;
+}
+tr.innerHTML = html;
+tbody.appendChild(tr);
+
+// Tooltip
+const tip = document.getElementById('tip');
+tbody.querySelectorAll('tr[data-note]').forEach(r => {
+  r.addEventListener('mouseenter', () => { tip.textContent = r.dataset.note; tip.style.opacity='1'; });
+  r.addEventListener('mouseleave', () => { tip.style.opacity='0'; });
+});
+</script>
+</body>
+</html>

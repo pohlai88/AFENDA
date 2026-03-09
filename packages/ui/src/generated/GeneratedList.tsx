@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * GeneratedList — metadata-driven table component.
  *
@@ -10,8 +12,11 @@
  *   3. Row actions gated by `actionCaps[actionKey].allowed`.
  *   4. Disabled actions show the denial reason as a tooltip.
  *   5. Uses DS tokens only — no hardcoded palette colors.
+ *   6. When data.length > virtualizationThreshold, uses @tanstack/react-virtual
+ *      for efficient rendering (1000-row list < 1s target).
  */
 import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CapabilityResult, FieldCap } from "@afenda/contracts";
 import { getEntityRegistration } from "../meta/registry";
 import { getFieldKit } from "../field-kit/registry";
@@ -27,12 +32,22 @@ import {
 } from "../components/table";
 import { Badge } from "../components/badge";
 import { Button } from "../components/button";
+import { Checkbox } from "../components/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/dropdown-menu";
+import { Input } from "../components/input";
+import { Label } from "../components/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/select";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +56,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/alert-dialog";
+import { Skeleton } from "../components/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/avatar";
+import { Progress } from "../components/progress";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis
+} from "../components/pagination";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -87,6 +115,25 @@ export interface GeneratedListProps {
   onNextPage?: () => void;
   /** Called when "Previous page" is clicked */
   onPrevPage?: () => void;
+  /** Enable multi-select; when set, adds checkbox column and calls onSelectionChange */
+  selectionMode?: "none" | "multi";
+  /** Currently selected row IDs (when selectionMode is "multi") */
+  selectedIds?: string[];
+  /** Called when selection changes (when selectionMode is "multi") */
+  onSelectionChange?: (ids: string[]) => void;
+  /** When provided, only these column keys are shown (ColumnManager integration) */
+  visibleColumnKeys?: string[];
+  /** Enable keyboard navigation (arrow keys, Enter) */
+  keyboardNav?: boolean;
+  /** Called when user activates a row via keyboard (Enter) */
+  onRowActivate?: (record: Record<string, unknown>) => void;
+  /**
+   * When data.length exceeds this threshold, virtualization is enabled.
+   * Default 50. Set to Infinity to disable virtualization.
+   */
+  virtualizationThreshold?: number;
+  /** Max height of the virtualized scroll container (e.g. "70vh"). Default "70vh". */
+  virtualizedMaxHeight?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -135,6 +182,14 @@ export function GeneratedList({
   onRowAction,
   onNextPage,
   onPrevPage,
+  selectionMode = "none",
+  selectedIds = [],
+  onSelectionChange,
+  visibleColumnKeys,
+  keyboardNav = false,
+  onRowActivate,
+  virtualizationThreshold = 50,
+  virtualizedMaxHeight = "70vh",
 }: GeneratedListProps) {
   // ── Render performance instrumentation ───────────────────────────
   const renderStart = useRef(performance.now());
@@ -176,9 +231,14 @@ export function GeneratedList({
   // ── Resolve visible columns ──────────────────────────────────────
   const columns: ResolvedColumn[] = useMemo(() => {
     if (!view.columns) return [];
-    return view.columns
-      .filter((col) => resolveFieldCap(capabilities, col.fieldKey) !== "hidden")
-      .map((col) => {
+    let filtered = view.columns.filter(
+      (col) => resolveFieldCap(capabilities, col.fieldKey) !== "hidden",
+    );
+    if (visibleColumnKeys && visibleColumnKeys.length > 0) {
+      const keySet = new Set(visibleColumnKeys);
+      filtered = filtered.filter((col) => keySet.has(col.fieldKey));
+    }
+    return filtered.map((col) => {
         const fieldDef = fieldDefMap.get(col.fieldKey);
         const fieldType = fieldDef?.fieldType ?? "string";
         const kit = getFieldKit(fieldType);
@@ -194,7 +254,7 @@ export function GeneratedList({
           cellClassName: isNumeric ? "tabular-nums" : undefined,
         } satisfies ResolvedColumn;
       });
-  }, [view, capabilities, fieldDefMap]);
+  }, [view, capabilities, fieldDefMap, visibleColumnKeys]);
 
   // ── Resolve row actions ──────────────────────────────────────────
   const rowActions = useMemo(() => {
@@ -299,9 +359,103 @@ export function GeneratedList({
     }
   }, [confirmAction, onRowAction]);
 
+  // ── Selection handlers ───────────────────────────────────────────
+  const hasSelection = selectionMode === "multi" && onSelectionChange;
+  const currentPageIds = useMemo(
+    () => data.map((r) => (r["id"] as string) ?? "").filter(Boolean),
+    [data],
+  );
+  const allSelected =
+    hasSelection && currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+  const someSelected = hasSelection && currentPageIds.some((id) => selectedIds.includes(id));
+
+  const handleSelectAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (allSelected) {
+      onSelectionChange(selectedIds.filter((id) => !currentPageIds.includes(id)));
+    } else {
+      const merged = new Set([...selectedIds, ...currentPageIds]);
+      onSelectionChange([...merged]);
+    }
+  }, [onSelectionChange, allSelected, selectedIds, currentPageIds]);
+
+  const handleSelectRow = useCallback(
+    (id: string) => {
+      if (!onSelectionChange) return;
+      if (selectedIds.includes(id)) {
+        onSelectionChange(selectedIds.filter((x) => x !== id));
+      } else {
+        onSelectionChange([...selectedIds, id]);
+      }
+    },
+    [onSelectionChange, selectedIds],
+  );
+
+  // ── Keyboard navigation ───────────────────────────────────────────
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!keyboardNav || data.length === 0) return;
+      const maxIdx = data.length - 1;
+
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setFocusedRowIndex((prev) => (prev < maxIdx ? prev + 1 : prev));
+          return;
+        case "ArrowUp":
+          e.preventDefault();
+          setFocusedRowIndex((prev) => (prev > 0 ? prev - 1 : 0));
+          return;
+        case "Home":
+          e.preventDefault();
+          setFocusedRowIndex(0);
+          return;
+        case "End":
+          e.preventDefault();
+          setFocusedRowIndex(maxIdx);
+          return;
+        case "Enter":
+          if (focusedRowIndex >= 0 && focusedRowIndex < data.length) {
+            e.preventDefault();
+            const record = data[focusedRowIndex] as Record<string, unknown>;
+            onRowActivate?.(record);
+          }
+          return;
+        default:
+          return;
+      }
+    },
+    [keyboardNav, data, focusedRowIndex, onRowActivate],
+  );
+
+  // ── Virtualization ─────────────────────────────────────────────────
+  const useVirtualization = data.length > virtualizationThreshold;
+  const parentRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: data.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 48,
+    overscan: 10,
+  });
+
+  const colCount = columns.length + (hasRowActions ? 1 : 0) + (hasSelection ? 1 : 0);
+  const gridCols = `repeat(${colCount}, minmax(0, 1fr))`;
+
   // ── Render ───────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
+    <div
+      ref={tableRef}
+      className={keyboardNav ? "space-y-4 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md" : "space-y-4"}
+      tabIndex={keyboardNav ? 0 : undefined}
+      onKeyDown={keyboardNav ? handleKeyDown : undefined}
+      role={keyboardNav ? "grid" : undefined}
+      aria-rowcount={keyboardNav ? data.length : undefined}
+      aria-colcount={keyboardNav ? colCount : undefined}
+      aria-activedescendant={keyboardNav && focusedRowIndex >= 0 ? `row-${focusedRowIndex}` : undefined}
+    >
       {/* Filter bar */}
       {hasFilters && onFilterChange && (
         <FilterBar
@@ -317,6 +471,15 @@ export function GeneratedList({
       <Table>
         <TableHeader>
           <TableRow>
+            {hasSelection && (
+              <TableHead className="w-[1%] pr-0">
+                <Checkbox
+                  checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
+            )}
             {columns.map((col) => (
               <TableHead
                 key={col.fieldKey}
@@ -324,10 +487,12 @@ export function GeneratedList({
                 className={col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : undefined}
               >
                 {onSort ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleSort(col.fieldKey)}
-                    className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                    className="inline-flex h-auto gap-1 px-0 hover:text-foreground transition-colors"
                   >
                     {col.label}
                     {sort?.field === col.fieldKey && (
@@ -335,7 +500,7 @@ export function GeneratedList({
                         {sort.direction === "asc" ? "↑" : "↓"}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 ) : (
                   col.label
                 )}
@@ -349,96 +514,235 @@ export function GeneratedList({
           </TableRow>
         </TableHeader>
 
-        <TableBody>
-          {data.length === 0 ? (
+        {useVirtualization && data.length > 0 ? (
+          <TableBody>
             <TableRow>
-              <TableCell
-                colSpan={columns.length + (hasRowActions ? 1 : 0)}
-                className="h-24 text-center text-muted-foreground"
-              >
-                No records found.
+              <TableCell colSpan={colCount} className="p-0 border-0">
+                <div
+                  ref={parentRef}
+                  className="overflow-auto"
+                  style={{ maxHeight: virtualizedMaxHeight }}
+                  role="rowgroup"
+                  aria-label="Table body"
+                >
+                  <div
+                    style={{
+                      height: `${rowVirtualizer.getTotalSize()}px`,
+                      width: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const record = data[virtualRow.index] as Record<string, unknown>;
+                      const rowId = (record["id"] as string) ?? "";
+                      const rowIdx = virtualRow.index;
+                      const isFocused = keyboardNav && focusedRowIndex === rowIdx;
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          data-index={rowIdx}
+                          id={keyboardNav ? `row-${rowIdx}` : undefined}
+                          role="row"
+                          className={`border-b transition-colors hover:bg-muted/50 grid ${isFocused ? "bg-muted/50" : ""}`}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: `${virtualRow.size}px`,
+                            transform: `translateY(${virtualRow.start}px)`,
+                            gridTemplateColumns: gridCols,
+                          }}
+                          onMouseDown={keyboardNav ? () => setFocusedRowIndex(rowIdx) : undefined}
+                        >
+                          {hasSelection && (
+                            <div className="p-2 flex items-center [&>[role=checkbox]]:translate-y-[2px]">
+                              <Checkbox
+                                checked={selectedIds.includes(rowId)}
+                                onCheckedChange={() => handleSelectRow(rowId)}
+                                aria-label={`Select row ${rowIdx + 1}`}
+                              />
+                            </div>
+                          )}
+                          {columns.map((col) => (
+                            <div
+                              key={col.fieldKey}
+                              className={[
+                                "p-2 align-middle whitespace-nowrap",
+                                col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "",
+                                col.cellClassName,
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              <FieldKitErrorBoundary
+                                entityKey={entityKey}
+                                fieldKey={col.fieldKey}
+                                fieldType={fieldDefMap.get(col.fieldKey)?.fieldType ?? "string"}
+                                mode="cell"
+                                value={record[col.fieldKey]}
+                              >
+                                <col.Renderer
+                                  value={record[col.fieldKey]}
+                                  fieldKey={col.fieldKey}
+                                  record={record}
+                                  validation={
+                                    fieldDefMap.get(col.fieldKey)?.validationJson as
+                                      | Record<string, unknown>
+                                      | undefined
+                                  }
+                                />
+                              </FieldKitErrorBoundary>
+                            </div>
+                          ))}
+                          {hasRowActions && (
+                            <div className="p-2 flex items-center justify-end">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon-xs">
+                                    <span className="sr-only">Actions</span>
+                                    ⋯
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {rowActions.map((action) => (
+                                    <DropdownMenuItem
+                                      key={action.actionKey}
+                                      variant={action.variant === "destructive" ? "destructive" : "default"}
+                                      disabled={!action.allowed}
+                                      onSelect={() =>
+                                        handleRowAction(action.actionKey, record, action.confirm)
+                                      }
+                                    >
+                                      {action.label}
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </TableCell>
             </TableRow>
-          ) : (
-            data.map((record, rowIdx) => (
-              <TableRow key={(record["id"] as string) ?? rowIdx}>
-                {columns.map((col) => (
-                  <TableCell
-                    key={col.fieldKey}
-                    className={[
-                      col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : undefined,
-                      col.cellClassName,
-                    ]
-                      .filter(Boolean)
-                      .join(" ") || undefined}
-                  >
-                    <FieldKitErrorBoundary
-                      entityKey={entityKey}
-                      fieldKey={col.fieldKey}
-                      fieldType={fieldDefMap.get(col.fieldKey)?.fieldType ?? "string"}
-                      mode="cell"
-                      value={record[col.fieldKey]}
-                    >
-                      <col.Renderer
-                        value={record[col.fieldKey]}
-                        fieldKey={col.fieldKey}
-                        record={record}
-                      />
-                    </FieldKitErrorBoundary>
-                  </TableCell>
-                ))}
-                {hasRowActions && (
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-xs">
-                          <span className="sr-only">Actions</span>
-                          ⋯
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {rowActions.map((action) => (
-                          <DropdownMenuItem
-                            key={action.actionKey}
-                            variant={action.variant === "destructive" ? "destructive" : "default"}
-                            disabled={!action.allowed}
-                            onSelect={() =>
-                              handleRowAction(action.actionKey, record, action.confirm)
-                            }
-                          >
-                            {action.label}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                )}
+          </TableBody>
+        ) : (
+          <TableBody>
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={colCount}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No records found.
+                </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
+            ) : (
+              data.map((record, rowIdx) => {
+                const rowId = (record["id"] as string) ?? "";
+                const isFocused = keyboardNav && focusedRowIndex === rowIdx;
+                return (
+                  <TableRow
+                    key={rowId || rowIdx}
+                    id={keyboardNav ? `row-${rowIdx}` : undefined}
+                    data-index={rowIdx}
+                    className={isFocused ? "bg-muted/50" : undefined}
+                    onMouseDown={keyboardNav ? () => setFocusedRowIndex(rowIdx) : undefined}
+                  >
+                    {hasSelection && (
+                      <TableCell className="pr-0">
+                        <Checkbox
+                          checked={selectedIds.includes(rowId)}
+                          onCheckedChange={() => handleSelectRow(rowId)}
+                          aria-label={`Select row ${rowIdx + 1}`}
+                        />
+                      </TableCell>
+                    )}
+                    {columns.map((col) => (
+                      <TableCell
+                        key={col.fieldKey}
+                        className={[
+                          col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : undefined,
+                          col.cellClassName,
+                        ]
+                          .filter(Boolean)
+                          .join(" ") || undefined}
+                      >
+                        <FieldKitErrorBoundary
+                          entityKey={entityKey}
+                          fieldKey={col.fieldKey}
+                          fieldType={fieldDefMap.get(col.fieldKey)?.fieldType ?? "string"}
+                          mode="cell"
+                          value={record[col.fieldKey]}
+                        >
+                          <col.Renderer
+                            value={record[col.fieldKey]}
+                            fieldKey={col.fieldKey}
+                            record={record}
+                            validation={
+                              fieldDefMap.get(col.fieldKey)?.validationJson as
+                                | Record<string, unknown>
+                                | undefined
+                            }
+                          />
+                        </FieldKitErrorBoundary>
+                      </TableCell>
+                    ))}
+                    {hasRowActions && (
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon-xs">
+                              <span className="sr-only">Actions</span>
+                              ⋯
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {rowActions.map((action) => (
+                              <DropdownMenuItem
+                                key={action.actionKey}
+                                variant={action.variant === "destructive" ? "destructive" : "default"}
+                                disabled={!action.allowed}
+                                onSelect={() =>
+                                  handleRowAction(action.actionKey, record, action.confirm)
+                                }
+                              >
+                                {action.label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        )}
       </Table>
 
       {/* Pagination */}
       {pagination && (pagination.hasNext || pagination.hasPrev) && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!pagination.hasPrev}
-            onClick={onPrevPage}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!pagination.hasNext}
-            onClick={onNextPage}
-          >
-            Next
-          </Button>
-        </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={onPrevPage}
+                className={!pagination.hasPrev ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext 
+                onClick={onNextPage}
+                className={!pagination.hasNext ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
 
       {/* Confirmation dialog */}
@@ -522,80 +826,87 @@ function FilterBar({
       <div className="flex flex-wrap items-end gap-2">
         {/* Field selector */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Field</label>
-          <select
+          <Label className="text-xs font-medium text-muted-foreground">Field</Label>
+          <Select
             value={selectedField}
-            onChange={(e) => {
-              setSelectedField(e.target.value);
+            onValueChange={(v) => {
+              setSelectedField(v);
               setSelectedOp("");
               setFilterValue("");
             }}
-            className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           >
-            <option value="">Select field…</option>
-            {filterableFields.map((f) => (
-              <option key={f.fieldKey} value={f.fieldKey}>
-                {f.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-8 rounded-md border border-input bg-background px-2 py-1.5 text-sm">
+              <SelectValue placeholder="Select field…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Select field…</SelectItem>
+              {filterableFields.map((f) => (
+                <SelectItem key={f.fieldKey} value={f.fieldKey}>
+                  {f.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Operator selector */}
         {currentOps.length > 0 && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Operator</label>
-            <select
-              value={selectedOp}
-              onChange={(e) => setSelectedOp(e.target.value)}
-              className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-            >
-              <option value="">Select…</option>
-              {currentOps.map((op) => (
-                <option key={op.op} value={op.op}>
-                  {op.label}
-                </option>
-              ))}
-            </select>
+            <Label className="text-xs font-medium text-muted-foreground">Operator</Label>
+            <Select value={selectedOp} onValueChange={setSelectedOp}>
+              <SelectTrigger className="h-8 rounded-md border border-input bg-background px-2 py-1.5 text-sm">
+                <SelectValue placeholder="Select…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Select…</SelectItem>
+                {currentOps.map((op) => (
+                  <SelectItem key={op.op} value={op.op}>
+                    {op.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
         {/* Value input */}
         {selectedOp && (
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Value</label>
+            <Label className="text-xs font-medium text-muted-foreground">Value</Label>
             {currentField?.enumValues ? (
-              <select
-                value={filterValue}
-                onChange={(e) => setFilterValue(e.target.value)}
-                className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-              >
-                <option value="">Select…</option>
-                {currentField.enumValues.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
+              <Select value={filterValue} onValueChange={setFilterValue}>
+                <SelectTrigger className="h-8 rounded-md border border-input bg-background px-2 py-1.5 text-sm">
+                  <SelectValue placeholder="Select…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select…</SelectItem>
+                  {currentField.enumValues.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : currentField?.fieldType === "bool" ? (
-              <select
-                value={filterValue}
-                onChange={(e) => setFilterValue(e.target.value)}
-                className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-              >
-                <option value="">Select…</option>
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
+              <Select value={filterValue} onValueChange={setFilterValue}>
+                <SelectTrigger className="h-8 rounded-md border border-input bg-background px-2 py-1.5 text-sm">
+                  <SelectValue placeholder="Select…" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Select…</SelectItem>
+                  <SelectItem value="true">Yes</SelectItem>
+                  <SelectItem value="false">No</SelectItem>
+                </SelectContent>
+              </Select>
             ) : currentField?.fieldType === "date" || currentField?.fieldType === "datetime" ? (
-              <input
+              <Input
                 type="date"
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
                 className="rounded-md border border-input bg-background px-2 py-1.5 text-sm"
               />
             ) : (
-              <input
+              <Input
                 type="text"
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
@@ -629,24 +940,28 @@ function FilterBar({
                 <span className="font-medium">{field?.label ?? filter.fieldKey}</span>
                 <span className="text-muted-foreground">{op?.label ?? filter.op}</span>
                 <span>&ldquo;{filter.value}&rdquo;</span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => onRemove(filter.fieldKey, filter.op)}
-                  className="ml-0.5 text-muted-foreground hover:text-foreground"
+                  className="ml-0.5 h-auto p-0 text-muted-foreground hover:text-foreground"
                   aria-label={`Remove ${field?.label ?? filter.fieldKey} filter`}
                 >
                   ×
-                </button>
+                </Button>
               </span>
             );
           })}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={onClear}
-            className="text-xs text-muted-foreground hover:text-foreground underline"
+            className="h-auto text-xs text-muted-foreground hover:text-foreground underline"
           >
             Clear all
-          </button>
+          </Button>
         </div>
       )}
     </div>

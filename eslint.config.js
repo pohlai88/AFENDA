@@ -2,7 +2,12 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettierConfig from "eslint-config-prettier";
+import reactHooks from "eslint-plugin-react-hooks";
+import jsxA11y from "eslint-plugin-jsx-a11y";
+import drizzle from "eslint-plugin-drizzle";
 import noHardcodedColors from "./tools/eslint/no-hardcoded-colors.mjs";
+import noJsDateInDb from "./tools/eslint/no-js-date-in-db.mjs";
+import noRawFormElements from "./tools/eslint/no-raw-form-elements.mjs";
 
 export default tseslint.config(
   // ── Global ignores ──────────────────────────────────────────────────────────
@@ -23,6 +28,30 @@ export default tseslint.config(
 
   // ── TypeScript recommended ─────────────────────────────────────────────────
   ...tseslint.configs.recommended,
+
+  // ── Type-aware linting (projectService auto-detects tsconfig per file) ──────
+  {
+    files: [
+      "apps/**/*.ts",
+      "apps/**/*.tsx",
+      "packages/core/**/*.ts",
+      "packages/db/**/*.ts",
+      "packages/ui/**/*.ts",
+      "packages/ui/**/*.tsx",
+    ],
+    ignores: ["**/__vitest_test__/**", "**/__e2e_test__/**", "**/*.test.ts", "**/*.test.tsx"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/await-thenable": "warn",
+    },
+  },
 
   // ── Project-wide overrides ─────────────────────────────────────────────────
   {
@@ -48,15 +77,82 @@ export default tseslint.config(
     },
   },
 
-  // ── Design-system token enforcement (component files only) ─────────────────
+  // ── Accessibility (jsx-a11y) for React/JSX ───────────────────────────────
+  {
+    ...jsxA11y.flatConfigs.recommended,
+    files: ["apps/web/**/*.tsx", "packages/ui/**/*.tsx"],
+    ignores: ["**/*.test.tsx", "**/__vitest_test__/**", "packages/ui/src/components/**"],
+  },
+
+  // ── Drizzle: enforce .where() on delete/update (prevents accidental full-table ops) ─
+  {
+    files: [
+      "packages/core/src/**/*.ts",
+      "packages/db/src/**/*.ts",
+      "apps/api/src/**/*.ts",
+    ],
+    ignores: ["**/__vitest_test__/**", "**/__e2e_test__/**"],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: { drizzle },
+    rules: {
+      "drizzle/enforce-delete-with-where": ["error", { drizzleObjectName: ["db", "tx"] }],
+      "drizzle/enforce-update-with-where": ["error", { drizzleObjectName: ["db", "tx"] }],
+    },
+  },
+
+  // ── React Hooks (apps/web, packages/ui) ────────────────────────────────────
+  {
+    files: ["apps/web/**/*.ts", "apps/web/**/*.tsx", "packages/ui/**/*.ts", "packages/ui/**/*.tsx"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/__vitest_test__/**"],
+    plugins: { "react-hooks": reactHooks },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+
+  // ── @afenda custom rules (register plugin) ────────────────────────────────
+  {
+    plugins: {
+      "@afenda": {
+        rules: {
+          "no-hardcoded-colors": noHardcodedColors,
+          "no-raw-form-elements": noRawFormElements,
+          "no-js-date-in-db": noJsDateInDb,
+        },
+      },
+    },
+  },
+
+  // ── Design-system: tokens + shadcn (apps/web, packages/ui) ───────────────
   {
     files: ["apps/web/**/*.tsx", "packages/ui/**/*.tsx"],
-    ignores: ["**/*.test.tsx", "**/__vitest_test__/**"],
-    plugins: {
-      "@afenda": { rules: { "no-hardcoded-colors": noHardcodedColors } },
-    },
+    ignores: [
+      "**/*.test.tsx",
+      "**/__vitest_test__/**",
+      "packages/ui/src/components/**",
+    ],
     rules: {
       "@afenda/no-hardcoded-colors": "error",
+      "@afenda/no-raw-form-elements": "error",
+    },
+  },
+
+  // ── Server clock: no new Date() in DB code (core, api, worker) ────────────
+  {
+    files: [
+      "packages/core/src/**/*.ts",
+      "apps/api/src/**/*.ts",
+      "apps/worker/src/**/*.ts",
+    ],
+    ignores: ["**/__vitest_test__/**", "**/__e2e_test__/**"],
+    rules: {
+      "@afenda/no-js-date-in-db": "error",
     },
   },
 

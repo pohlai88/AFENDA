@@ -1,26 +1,38 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   @afenda/web — Global Stylesheet
-   ═══════════════════════════════════════════════════════════════════════════
-   Tailwind v4 engine loaded first, then the 9-pillar design system:
-     Variants + OKLCH tokens (light/dark) + density profiles +
-     @theme inline + base layer + utilities + accessibility
-     (motion/forced-colors) + print safety.
+/* Per Next.js CSS docs: nextjs.org/docs/app/getting-started/css
+   Import order: Tailwind first, then design system, then shadcn.
+   Tailwind in separate file (tailwind.css) per #72761 when combining imports. */
+@import './tailwind.css';
+@import '@afenda/ui/styles.css';
+@import 'shadcn/tailwind.css';
 
-   App-specific overrides (if any) go AFTER these imports.
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* App-specific overrides */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
 
-/* ── Tailwind v4 engine (must precede design system) ── */
-@import "tailwindcss";
-
-/* ── Afenda Design System (all 9 pillars) ── */
-@import "@afenda/ui/styles.css";
-
-/* ── App-specific overrides ──────────────────────────────────────────────
-   Place web-app-only styles below. Design-system-level changes belong
-   in packages/ui/src/src/styles/ instead.
-
-   Examples:
-     - Next.js page transition overrides
-     - App-shell-specific layout (already covered by .erp-layout utility)
-     - Third-party component style fixes
-   ─────────────────────────────────────────────────────────────────────── */
+/* Print */
+@media print {
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  [data-slot="sidebar"],
+  [data-sidebar],
+  [data-slot="global-top-bar"],
+  [data-slot="crud-sap-rail"],
+  [data-slot="list-function-bar"],
+  [data-slot="record-function-bar"],
+  .sidebar,
+  aside {
+    display: none !important;
+  }
+  main {
+    overflow: visible !important;
+  }
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

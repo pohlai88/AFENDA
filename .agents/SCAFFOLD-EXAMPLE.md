@@ -1,10 +1,10 @@
 # AFENDA Scaffold Workflow — Example Scenario
 
-> **Real example:** Adding a `purchase-order` entity to the `procurement` domain using the automated workflow.
+> **Real example:** Adding a `purchase-order` entity to the `erp/purchasing` module using the automated workflow.
 
 ## Scenario: Adding Purchase Orders
 
-**Context:** AFENDA needs to track purchase orders for procurement. A purchase order has a number, supplier, line items, amounts, and goes through an approval workflow.
+**Context:** AFENDA needs to track purchase orders for purchasing. A purchase order has a number, supplier, line items, amounts, and goes through an approval workflow.
 
 **Developer:** Alice (new to AFENDA architecture)
 
@@ -17,10 +17,10 @@
 ### Step 1: Initiate Workflow
 
 ```
-Alice: I need to add a purchase order entity to the procurement domain
+Alice: I need to add a purchase order entity to the erp/purchasing module
 
 Agent: I'll guide you through the AFENDA scaffold workflow for adding a new 
-entity. This follows the schema-is-truth pattern enforced by 10 CI gates.
+entity. This follows the schema-is-truth pattern enforced by 12 CI gates.
 
 Creating todo list with 18 steps...
 
@@ -54,22 +54,22 @@ Starting step 1: Scaffold files
 ```
 Agent: Running scaffold command...
 
-Command: pnpm scaffold procurement purchase-order
+Command: pnpm scaffold erp/purchasing purchase-order
 
 Output:
-✔  Scaffolded domain: procurement / PurchaseOrder
+✔  Scaffolded module: erp/purchasing / PurchaseOrder
 
 Created files:
-  ✓ packages/contracts/src/procurement/purchase-order.entity.ts  (Contract: Entity schema)
-  ✓ packages/contracts/src/procurement/purchase-order.commands.ts  (Contract: Command schemas)
-  ✓ packages/contracts/src/procurement/OWNERS.md  (Contract: OWNERS.md)
-  ✓ packages/core/src/procurement/purchase-order.service.ts  (Core: Domain service)
-  ✓ packages/core/src/procurement/purchase-order.queries.ts  (Core: Query functions)
-  ✓ packages/core/src/procurement/OWNERS.md  (Core: OWNERS.md)
-  ✓ apps/api/src/routes/purchase-order.ts  (API: Route handler)
-  ✓ apps/worker/src/jobs/handle-purchase-order.ts  (Worker: Event handler)
-  ✓ packages/contracts/src/procurement/index.ts  (Barrel index)
-  ✓ packages/core/src/procurement/index.ts  (Barrel index)
+  ✓ packages/contracts/src/erp/purchasing/purchase-order.entity.ts  (Contract: Entity schema)
+  ✓ packages/contracts/src/erp/purchasing/purchase-order.commands.ts  (Contract: Command schemas)
+  ✓ packages/contracts/src/erp/purchasing/OWNERS.md  (Contract: OWNERS.md)
+  ✓ packages/core/src/erp/purchasing/purchase-order.service.ts  (Core: Domain service)
+  ✓ packages/core/src/erp/purchasing/purchase-order.queries.ts  (Core: Query functions)
+  ✓ packages/core/src/erp/purchasing/OWNERS.md  (Core: OWNERS.md)
+  ✓ apps/api/src/routes/erp/purchasing/purchase-order.ts  (API: Route handler)
+  ✓ apps/worker/src/jobs/erp/purchasing/handle-purchase-order.ts  (Worker: Event handler)
+  ✓ packages/contracts/src/erp/purchasing/index.ts  (Barrel index)
+  ✓ packages/core/src/erp/purchasing/index.ts  (Barrel index)
 
 ✅ Step 1 complete!
 
@@ -82,7 +82,7 @@ Moving to step 2: Define entity Zod schemas
 
 ```
 Agent: Now let's define the entity schema in:
-packages/contracts/src/procurement/purchase-order.entity.ts
+packages/contracts/src/erp/purchasing/purchase-order.entity.ts
 
 I'll open the file. The template has placeholder types. Let's define:
 1. PurchaseOrderStatus enum (what states can a PO be in?)
@@ -157,7 +157,7 @@ Moving to step 3: Define command Zod schemas
 
 ```
 Agent: Now let's define command schemas in:
-packages/contracts/src/procurement/purchase-order.commands.ts
+packages/contracts/src/erp/purchasing/purchase-order.commands.ts
 
 I'll create schemas for:
 - CreatePurchaseOrderCommand (draft creation)
@@ -235,7 +235,7 @@ Moving to step 4: Write Drizzle table
 
 ```
 Agent: Now I'll create the Drizzle table definition in:
-packages/db/src/schema/procurement.ts
+packages/db/src/schema/erp/purchasing.ts
 
 Reading PurchaseOrderStatusValues from contracts...
 ✅ Found: ["draft", "submitted", "approved", "rejected", "cancelled"]
@@ -251,10 +251,10 @@ Creating table with:
 ```typescript
 import { relations } from "drizzle-orm";
 import { pgTable, uuid, text, pgEnum, bigint, integer, index, uniqueIndex, jsonb } from "drizzle-orm/pg-core";
-import { tsz, rlsOrg } from "../helpers.js";
-import { orgs } from "./iam.js";
-import { suppliers } from "./supplier.js";
-import { principals } from "./iam.js";
+import { tsz, rlsOrg } from "../_helpers.js";
+import { orgs } from "./kernel/identity.js";
+import { suppliers } from "./erp/supplier.js";
+import { principals } from "./kernel/identity.js";
 import { PurchaseOrderStatusValues } from "@afenda/contracts";
 
 // Enum
@@ -390,45 +390,45 @@ events in the shared contracts. This ensures all domains use consistent codes.
 Step 6: Adding error codes to packages/contracts/src/shared/errors.ts
 
 Adding:
-- PROCUREMENT_PURCHASE_ORDER_NOT_FOUND
-- PROCUREMENT_PURCHASE_ORDER_ALREADY_APPROVED
-- PROCUREMENT_PURCHASE_ORDER_INVALID_STATUS_TRANSITION
-- PROCUREMENT_PURCHASE_ORDER_ALREADY_CANCELLED
-- PROCUREMENT_PURCHASE_ORDER_MISSING_LINE_ITEMS
+- PURCHASING_PURCHASE_ORDER_NOT_FOUND
+- PURCHASING_PURCHASE_ORDER_ALREADY_APPROVED
+- PURCHASING_PURCHASE_ORDER_INVALID_STATUS_TRANSITION
+- PURCHASING_PURCHASE_ORDER_ALREADY_CANCELLED
+- PURCHASING_PURCHASE_ORDER_MISSING_LINE_ITEMS
 
 ✅ Step 6 complete!
 
-Step 7: Adding audit actions to packages/contracts/src/shared/audit.ts
+Step 7: Adding audit actions to packages/contracts/src/kernel/governance/audit/actions.ts
 
 Adding:
-- procurement.purchaseOrder.created
-- procurement.purchaseOrder.submitted
-- procurement.purchaseOrder.approved
-- procurement.purchaseOrder.rejected
-- procurement.purchaseOrder.cancelled
+- purchasing.purchaseOrder.created
+- purchasing.purchaseOrder.submitted
+- purchasing.purchaseOrder.approved
+- purchasing.purchaseOrder.rejected
+- purchasing.purchaseOrder.cancelled
 
 ✅ Step 7 complete!
 
 Step 8: Adding permissions to packages/contracts/src/shared/permissions.ts
 
 Adding:
-- procurement.purchaseOrder.create
-- procurement.purchaseOrder.read
-- procurement.purchaseOrder.submit
-- procurement.purchaseOrder.approve
-- procurement.purchaseOrder.reject
-- procurement.purchaseOrder.cancel
+- purchasing.purchaseOrder.create
+- purchasing.purchaseOrder.read
+- purchasing.purchaseOrder.submit
+- purchasing.purchaseOrder.approve
+- purchasing.purchaseOrder.reject
+- purchasing.purchaseOrder.cancel
 
 ✅ Step 8 complete!
 
-Step 9: Adding outbox events to packages/contracts/src/shared/outbox.ts
+Step 9: Adding outbox events to packages/contracts/src/kernel/execution/outbox/envelope.ts
 
 Adding:
-- PROCUREMENT.PURCHASE_ORDER_CREATED
-- PROCUREMENT.PURCHASE_ORDER_SUBMITTED
-- PROCUREMENT.PURCHASE_ORDER_APPROVED
-- PROCUREMENT.PURCHASE_ORDER_REJECTED
-- PROCUREMENT.PURCHASE_ORDER_CANCELLED
+- PURCHASING.PURCHASE_ORDER_CREATED
+- PURCHASING.PURCHASE_ORDER_SUBMITTED
+- PURCHASING.PURCHASE_ORDER_APPROVED
+- PURCHASING.PURCHASE_ORDER_REJECTED
+- PURCHASING.PURCHASE_ORDER_CANCELLED
 
 ✅ Step 9 complete!
 
@@ -465,19 +465,19 @@ Agent: Steps 11-14: Wiring barrels and registrations
 Step 11: Wiring contract barrel (packages/contracts/src/index.ts)
 
 Current exports already include:
-export * from "./procurement/index.js";
-✅ Already wired!
+export * from "./erp/index.js";
+✅ Already wired via erp barrel!
 
 Step 12: Wiring core barrel (packages/core/src/index.ts)
 
 Current exports already include:
-export * from "./procurement/index.js";
-✅ Already wired!
+export * from "./erp/index.js";
+✅ Already wired via erp barrel!
 
 Step 13: Registering API route (apps/api/src/index.ts)
 
 Adding:
-import purchaseOrderRoutes from "./routes/purchase-order.js";
+import purchaseOrderRoutes from "./routes/erp/purchasing/purchase-order.js";
 await app.register(purchaseOrderRoutes);
 
 ✅ Route registered!
@@ -485,8 +485,8 @@ await app.register(purchaseOrderRoutes);
 Step 14: Registering worker handler (apps/worker/src/index.ts)
 
 Adding:
-import { handlePurchaseOrderCreated } from "./jobs/handle-purchase-order.js";
-runner.addTask("PROCUREMENT.PURCHASE_ORDER_CREATED", handlePurchaseOrderCreated);
+import { handlePurchaseOrderCreated } from "./jobs/erp/purchasing/handle-purchase-order.js";
+runner.addTask("PURCHASING.PURCHASE_ORDER_CREATED", handlePurchaseOrderCreated);
 
 ✅ Handler registered!
 
@@ -500,11 +500,11 @@ Moving to step 15: Update OWNERS.md
 ```
 Agent: Updating OWNERS.md files with actual exports and descriptions
 
-File: packages/contracts/src/procurement/OWNERS.md
+File: packages/contracts/src/erp/purchasing/OWNERS.md
 
-# Procurement — Contracts
+# Purchasing — Contracts
 
-**Owners:** @procurement-team
+**Owners:** @purchasing-team
 
 ## Exports
 
@@ -522,7 +522,7 @@ File: packages/contracts/src/procurement/OWNERS.md
 
 ## Responsibilities
 
-Type-safe procurement contracts for purchase order lifecycle management.
+Type-safe purchasing contracts for purchase order lifecycle management.
 
 ✅ Step 15 complete!
 
@@ -535,7 +535,7 @@ Moving to step 16: Write integration tests
 
 ```
 Agent: Creating integration tests in:
-packages/core/src/procurement/__vitest_test__/purchase-order.test.ts
+packages/core/src/erp/purchasing/__vitest_test__/purchase-order.test.ts
 
 I'll write tests for:
 ✓ Happy path: create → submit → approve
@@ -632,7 +632,7 @@ describe("Purchase Order Service", () => {
 
 Agent: Running tests...
 
-Command: pnpm test --filter @afenda/core packages/core/src/procurement
+Command: pnpm test --filter @afenda/core packages/core/src/erp/purchasing
 
 Output:
 ✓ Purchase Order Service (8 tests) 1.2s
@@ -697,10 +697,10 @@ Moving to step 18: PR ready
 ```
 Agent: Excellent! All steps complete. Here's your PR checklist:
 
-## PR: feat(procurement): add purchase order entity
+## PR: feat(purchasing): add purchase order entity
 
 ### Summary
-Adds purchase order entity to procurement domain with full lifecycle:
+Adds purchase order entity to erp/purchasing module with full lifecycle:
 - Create draft POs with line items
 - Submit for approval
 - Approve/reject with audit trail
@@ -709,19 +709,19 @@ Adds purchase order entity to procurement domain with full lifecycle:
 - SoD enforcement
 
 ### Files Changed (18 files)
-- `packages/contracts/src/procurement/purchase-order.entity.ts`
-- `packages/contracts/src/procurement/purchase-order.commands.ts`
-- `packages/contracts/src/procurement/OWNERS.md`
+- `packages/contracts/src/erp/purchasing/purchase-order.entity.ts`
+- `packages/contracts/src/erp/purchasing/purchase-order.commands.ts`
+- `packages/contracts/src/erp/purchasing/OWNERS.md`
 - `packages/contracts/src/shared/errors.ts`
 - `packages/contracts/src/shared/audit.ts`
 - `packages/contracts/src/shared/permissions.ts`
 - `packages/contracts/src/shared/outbox.ts`
-- `packages/db/src/schema/procurement.ts`
+- `packages/db/src/schema/erp/purchasing.ts`
 - `packages/db/drizzle/0003_purchase_orders.sql`
-- `packages/core/src/procurement/purchase-order.service.ts`
-- `packages/core/src/procurement/purchase-order.queries.ts`
-- `packages/core/src/procurement/__vitest_test__/purchase-order.test.ts`
-- `packages/core/src/procurement/OWNERS.md`
+- `packages/core/src/erp/purchasing/purchase-order.service.ts`
+- `packages/core/src/erp/purchasing/purchase-order.queries.ts`
+- `packages/core/src/erp/purchasing/__vitest_test__/purchase-order.test.ts`
+- `packages/core/src/erp/purchasing/OWNERS.md`
 - `apps/api/src/routes/purchase-order.ts`
 - `apps/api/src/index.ts`
 - `apps/worker/src/jobs/handle-purchase-order.ts`
@@ -755,10 +755,10 @@ pnpm typecheck && pnpm test && pnpm check:all
 ```
 
 ### Next Steps
-1. Commit changes: `git add . && git commit -m "feat(procurement): add purchase order entity"`
+1. Commit changes: `git add . && git commit -m "feat(purchasing): add purchase order entity"`
 2. Push branch: `git push origin feature/purchase-orders`
 3. Create PR with this checklist in description
-4. Request review from @procurement-team
+4. Request review from @purchasing-team
 
 ✅ Workflow complete! Ready to create PR.
 

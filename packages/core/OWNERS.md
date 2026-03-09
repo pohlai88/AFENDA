@@ -34,51 +34,106 @@ import the schema from contracts — do not recreate it.
 
 ---
 
-## Directory Layout
+## Directory Layout (ADR-0005 Pillar Structure)
 
 ```
 src/
-  iam/               Identity & access context
-    auth.ts             RequestContext resolution; JWT → branded types
-    tenant.ts           Org slug → OrgId (branded UUID) resolution
-  finance/           Financial domain rules & invariants
-    money.ts            Money arithmetic (minor-unit integers, ISO 4217)
-    posting.ts          Journal balance + XOR + non-negative invariant
-    sod.ts              Separation-of-Duties policy rules
-    __vitest_test__/    Dedicated test folder (excluded from tsc build)
-      posting.test.ts     Vitest tests for posting invariants
-      sod.test.ts         Vitest tests for SoD policy rules
-    ap/                 ← S1: invoice state machine, matching, aging
-    gl/                 ← S1: GL journal posting, trial balance, period close
-  document/          Document & evidence domain
-    evidence.registry.ts  Document metadata persistence (registerDocument)
-    evidence.link.ts      Entity ↔ document linking (attachEvidence)
-    evidence.policy.ts    Retention, access, lifecycle (stub)
-  infra/             Cross-cutting infrastructure (not business rules)
-    audit.ts            Append-only audit log writer
-    audit-queries.ts    Read-path audit queries (paginated, filterable)
-    env.ts              Typed environment variable access (ONLY file using zod)
-    idempotency.ts      Duplicate-request detection and deduplication
-    logger.ts           Pino-based structured logging (dev: pretty, prod: JSON)
-    numbering.ts        Gap-free human-readable ID generation (INV-2026-0001)
-    otel-insights.ts    OTel Insight Factory — trace analysis + recommendations
-    telemetry.ts        OTel SDK bootstrap (OTEL_ENABLED guard)
-    tracing.ts          Auto-instrumentation for domain services
-  supplier/            ← S1: supplier onboarding + status service
-  index.ts           Root barrel — re-exports domain barrels only
+  kernel/                      System-level concerns (identity, governance, execution)
+    identity/                  IAM — org context, JWT resolution, RBAC
+      auth.ts                    RequestContext resolution; JWT → branded types
+      organization.ts            Org slug → OrgId (branded UUID) resolution
+      permissions.ts             Permission key constants + guard helpers
+      index.ts
+    governance/                Policy, audit, evidence
+      audit/                     Append-only audit log writer + read queries
+        audit.ts
+        audit-queries.ts
+        index.ts
+        __vitest_test__/
+          audit.test.ts
+      evidence/                  Document registration, linking, retention
+        evidence.link.ts           Entity ↔ document linking (attachEvidence)
+        evidence.policy.ts         Retention, access, lifecycle (stub)
+        evidence.registry.ts       Document metadata persistence (registerDocument)
+        index.ts
+      policy/                    Separation-of-Duties rules + capability engine
+        capability-engine.ts       RBAC capability resolver
+        sod-rules.ts               SoD gates (canApproveInvoice, canMarkPaid)
+        resolvers/                 Per-entity capability resolvers
+          ap-invoice.resolver.ts
+          gl-account.resolver.ts
+          supplier.resolver.ts
+          index.ts
+        index.ts
+      settings/                  ← stub (Sprint 4+)
+        index.ts
+      index.ts
+    execution/                 Outbox, idempotency, numbering, dead-letter
+      outbox/
+        index.ts
+      idempotency/
+        idempotency.ts           Duplicate-request detection and deduplication
+        index.ts
+      numbering/
+        numbering.ts             Gap-free human-readable ID generation (INV-2026-0001)
+        index.ts
+      index.ts
+    infrastructure/            Cross-cutting infrastructure (not business rules)
+      env.ts                     Typed environment variable access (ONLY file using zod)
+      logger.ts                  Pino-based structured logging (dev: pretty, prod: JSON)
+      otel-insights.ts           OTel Insight Factory — trace analysis + recommendations
+      telemetry.ts               OTel SDK bootstrap (OTEL_ENABLED guard)
+      tracing.ts                 Auto-instrumentation for domain services
+      index.ts
+    registry/                  ← stub (capability registry, Sprint 4+)
+      index.ts
+    index.ts
+  erp/                         Transactional AP/AR/GL domain logic
+    finance/
+      money/
+        money.ts                 Money arithmetic (minor-unit integers, ISO 4217)
+        index.ts
+      sod.ts                     ← legacy alias; SoD rules live in kernel/governance/policy/sod-rules.ts
+      ap/                        Invoice state machine, lifecycle
+        invoice.service.ts
+        invoice.queries.ts
+        index.ts
+        __vitest_test__/
+          invoice.service.test.ts
+      gl/                        GL journal posting, trial balance
+        posting.service.ts
+        posting.ts
+        gl.queries.ts
+        index.ts
+        __vitest_test__/
+          posting.service.test.ts
+      __vitest_test__/           Finance-wide invariant tests
+        money.test.ts
+        posting.test.ts
+        sod.test.ts
+      index.ts
+    supplier/                  Supplier onboarding + status service (stub index)
+      index.ts
+    crm/ hr/ inventory/ manufacturing/ project/ purchasing/ sales/
+      index.ts                   ← stub placeholders (future sprints, not in Day-1 scope)
+    index.ts
+  comm/                        Communication & notifications
+    notification/ email/ webhook/ inbox/ chatter/ sms/
+      index.ts                   ← stub placeholders (Sprint 5+)
+    index.ts
+  index.ts                     Root barrel — re-exports pillar barrels only
 ```
 
 ### Subdirectory Ownership
 
-Each directory has its own OWNERS.md that inherits the rules above and documents
-its specific files, exports, and domain-specific constraints.
+Each pillar owns its own modules. No dedicated sub-OWNERS.md files currently exist
+(the root OWNERS.md governs everything in `@afenda/core`).
 
-| Directory   | Contents                                         | OWNERS                                         |
-| ----------- | ------------------------------------------------ | ---------------------------------------------- |
-| `iam/`      | Identity resolution, org context, RBAC           | [→ iam/OWNERS.md](src/iam/OWNERS.md)           |
-| `finance/`  | Money math, posting invariants, SoD policy       | [→ finance/OWNERS.md](src/finance/OWNERS.md)   |
-| `document/` | Evidence registration, entity linking, retention | [→ document/OWNERS.md](src/document/OWNERS.md) |
-| `infra/`    | Audit, idempotency, numbering, env config, telemetry, tracing, OTel insights | [→ infra/OWNERS.md](src/infra/OWNERS.md)       |
+| Pillar          | Contents                                                               |
+| --------------- | ---------------------------------------------------------------------- |
+| `kernel/`       | Identity resolution, governance (audit/evidence/policy), execution (outbox/idempotency/numbering), infrastructure (logger/telemetry/tracing/env) |
+| `erp/`          | Financial domain: money, posting, SoD, AP invoice service, GL posting service, supplier (stub) |
+| `comm/`         | Communication: notification, email, webhook stubs (Sprint 5+) |
 
 ### Nesting Rules
 
@@ -95,10 +150,10 @@ its specific files, exports, and domain-specific constraints.
 
 ## Domain vs Infrastructure Separation (Point 4)
 
-| Layer      | Directories                                  | Contains                                          |
-| ---------- | -------------------------------------------- | ------------------------------------------------- |
-| **Domain** | `iam/`, `finance/`, `document/`, `supplier/` | Business rules, invariants, policy checks         |
-| **Infra**  | `infra/`                                     | Audit logging, idempotency, numbering, env config, telemetry, tracing, OTel insights |
+| Layer      | Directories                                                        | Contains                                          |
+| ---------- | ------------------------------------------------------------------ | ------------------------------------------------- |
+| **Domain** | `erp/finance/`, `erp/supplier/`, `kernel/identity/`, `kernel/governance/` | Business rules, invariants, policy checks  |
+| **Infra**  | `kernel/infrastructure/`                                           | Audit logging, idempotency, numbering, env config, telemetry, tracing, OTel insights |
 
 Hard rules:
 

@@ -1,6 +1,8 @@
 import { config } from "dotenv";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { scrypt, randomBytes } from "node:crypto";
+import { promisify } from "node:util";
 import { Client } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { sql, eq, inArray } from "drizzle-orm";
@@ -8,6 +10,17 @@ import * as s from "./schema/index.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
+
+const scryptAsync = promisify(scrypt);
+const SALT_LEN = 32;
+const KEY_LEN = 64;
+
+/** Hash password (matches @afenda/core format: salt:hash hex). */
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(SALT_LEN);
+  const hash = (await scryptAsync(password, salt, KEY_LEN)) as Buffer;
+  return `${salt.toString("hex")}:${hash.toString("hex")}`;
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Idempotent upsert helper — always returns the row
@@ -84,12 +97,18 @@ async function main() {
         .returning();
       if (!person) throw new Error("person upsert failed");
 
+      const demoPasswordHash = await hashPassword("demo123");
       const [principal] = await tx
         .insert(s.iamPrincipal)
-        .values({ personId: person.id, kind: "user", email: person.email })
+        .values({
+          personId: person.id,
+          kind: "user",
+          email: person.email,
+          passwordHash: demoPasswordHash,
+        })
         .onConflictDoUpdate({
           target: s.iamPrincipal.email,
-          set: { personId: person.id, kind: "user" },
+          set: { personId: person.id, kind: "user", passwordHash: demoPasswordHash },
         })
         .returning();
       if (!principal) throw new Error("principal upsert failed");
@@ -111,12 +130,19 @@ async function main() {
         .onConflictDoNothing();
 
       // ── PERMISSIONS (insert-then-select: always gets all rows) ───────────
+      // Must stay in sync with Permissions enum in @afenda/contracts.
       const permKeys = [
         "ap.invoice.submit",
         "ap.invoice.approve",
+        "ap.invoice.markpaid",
         "gl.journal.post",
         "evidence.attach",
+        "audit.log.read",
         "admin.org.manage",
+        "admin.settings.read",
+        "admin.settings.write",
+        "admin.custom-fields.read",
+        "admin.custom-fields.write",
         "supplier.onboard",
       ] as const;
 
@@ -238,6 +264,22 @@ async function main() {
             padWidth: 4,
             nextValue: 1,
           },
+          {
+            orgId: org.id,
+            entityType: "purchaseOrder",
+            periodKey,
+            prefix: `PO-${year}`,
+            padWidth: 4,
+            nextValue: 1,
+          },
+          {
+            orgId: org.id,
+            entityType: "receipt",
+            periodKey,
+            prefix: `GRN-${year}`,
+            padWidth: 4,
+            nextValue: 1,
+          },
         ])
         .onConflictDoNothing();
     });
@@ -246,6 +288,7 @@ async function main() {
     console.log("   ADR-0003: Using party/organization/person/principal/membership model");
     console.log("   org slug:     demo");
     console.log("   admin email:  admin@demo.afenda");
+    console.log("   admin pass:   demo123");
     console.log("   supplier:     Acme Supplies Ltd");
   } finally {
     await client.end();

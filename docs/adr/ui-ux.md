@@ -30,7 +30,7 @@
 
 1. **Install shadcn/ui into `@afenda/ui`.**
    Run `npx shadcn@latest init` targeting ui. Create `components.json` at the UI package root with:
-   - `tailwindCss`: pointing to `src/src/styles/index.css`
+    - `tailwindCss`: pointing to `src/styles/index.css`
    - `aliases.components`: `@afenda/ui/components`
    - `aliases.utils`: `@afenda/ui/lib/utils`
    - `style`: `new-york`

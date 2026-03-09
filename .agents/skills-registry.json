@@ -1,6 +1,6 @@
 {
   "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
-  "generatedAt": "2026-03-01T08:51:31.242Z",
+  "generatedAt": "2026-03-07T05:44:33.881Z",
   "skills": [
     {
       "name": "accessibility",
@@ -273,6 +273,15 @@
       "description": "Better Auth 2FA — TOTP, backup codes, enforcement, recovery flows",
       "path": "skills/two-factor-authentication-best-practices",
       "source": "better-auth/skills@two-factor-authentication-best-practices"
+    },
+    {
+      "name": "nextauth-authentication",
+      "category": "auth",
+      "priority": "high",
+      "description": "NextAuth.js (Auth.js v5) — session management, OAuth providers, security best practices",
+      "path": "skills/nextauth-authentication",
+      "source": "mindrally/skills@nextauth-authentication",
+      "installed": true
     },
     {
       "name": "framer-motion-animator",
