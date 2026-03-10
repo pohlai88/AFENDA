@@ -1,23 +1,32 @@
-import { memo } from "react";
 import Link from "next/link";
 
-export type AuthFooterLink = {
-  href: string;
-  label: string;
-};
+export const FOOTER_ERROR_LINKS = [
+  { href: "/auth/signin", label: "Sign in" },
+  { href: "/auth/signup", label: "Sign up" },
+];
 
-export const AuthFooterLinks = memo(function AuthFooterLinks({ links }: { links: readonly AuthFooterLink[] }) {
+export const FOOTER_RESET_LINKS = [
+  { href: "/auth/signin", label: "Back to sign in" },
+];
+
+export const FOOTER_SIGNIN_LINKS = [
+  { href: "/auth/reset-password", label: "Forgot password" },
+  { href: "/auth/signup", label: "Create account" },
+  { href: "/auth/portal/accept", label: "Accept invitation" },
+];
+
+interface AuthFooterLinksProps {
+  links: Array<{ href: string; label: string }>;
+}
+
+export function AuthFooterLinks({ links }: AuthFooterLinksProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
+    <div className="flex justify-center gap-4 text-sm text-muted-foreground">
       {links.map((link) => (
-        <Link
-          key={link.href}
-          className="font-medium underline-offset-4 hover:text-foreground hover:underline"
-          href={link.href}
-        >
+        <Link key={link.href} href={link.href} className="hover:underline">
           {link.label}
         </Link>
       ))}
     </div>
   );
-});
+}

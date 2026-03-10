@@ -1,5 +1,15 @@
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle, Button, Card, CardContent } from "@afenda/ui";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Card,
+  CardContent,
+  Separator,
+} from "@afenda/ui";
+import { AUTH_CARD_CLASS } from "../../_components/auth-card";
+import { AuthFooterLinks, FOOTER_RESET_LINKS } from "../../_components/auth-footer-links";
 import { AuthHeader } from "../../_components/auth-header";
 
 const STATUS_MAP = {
@@ -36,6 +46,13 @@ const STATUS_MAP = {
 } as const;
 
 type StatusKey = keyof typeof STATUS_MAP;
+const DEFAULT_STATE: StatusKey = "linkSent";
+
+function getStatusContent(state: string | undefined) {
+  return state != null && state in STATUS_MAP
+    ? STATUS_MAP[state as StatusKey]
+    : STATUS_MAP[DEFAULT_STATE];
+}
 
 export default async function ResetPasswordStatusPage({
   searchParams,
@@ -43,26 +60,29 @@ export default async function ResetPasswordStatusPage({
   searchParams: Promise<{ state?: string }>;
 }) {
   const params = await searchParams;
-  const state = (params.state ?? "linkSent") as StatusKey;
-  const content = STATUS_MAP[state] ?? STATUS_MAP.linkSent;
+  const content = getStatusContent(params.state);
 
   return (
-    <Card className="border-border/50 shadow-xl bg-card">
+    <Card className={AUTH_CARD_CLASS}>
       <AuthHeader title={content.title} description={content.description} />
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5">
         <Alert>
           <AlertTitle>{content.alertTitle}</AlertTitle>
           <AlertDescription>{content.alertDescription}</AlertDescription>
         </Alert>
 
-        <div className="flex gap-2">
-          <Button asChild className="w-full">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
             <Link href="/auth/signin">Go to sign in</Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline">
             <Link href="/auth/reset-password">Back to reset form</Link>
           </Button>
         </div>
+
+        <Separator />
+
+        <AuthFooterLinks links={FOOTER_RESET_LINKS} />
       </CardContent>
     </Card>
   );

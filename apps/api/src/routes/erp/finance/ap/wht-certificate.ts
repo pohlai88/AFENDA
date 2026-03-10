@@ -18,6 +18,8 @@ import {
 } from "../../../../helpers/responses.js";
 import {
   CreateWhtCertificateCommandSchema,
+  IssueWhtCertificateCommandSchema,
+  SubmitWhtCertificateCommandSchema,
   CursorParamsSchema,
   type OrgId,
   type CorrelationId,
@@ -25,6 +27,8 @@ import {
 } from "@afenda/contracts";
 import {
   createWhtCertificate,
+  issueWhtCertificate,
+  submitWhtCertificate,
   listWhtCertificates,
   getWhtCertificateById,
 } from "@afenda/core";
@@ -201,6 +205,113 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
       }
 
       return reply.status(201).send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  // ── Issue WHT certificate ───────────────────────────────────────────────────
+  typed.post(
+    "/commands/issue-wht-certificate",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Issue a WHT certificate to the supplier (DRAFT → ISSUED).",
+        tags: ["WHT Certificate"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: IssueWhtCertificateCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await issueWhtCertificate(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        { whtCertificateId: req.body.whtCertificateId },
+      );
+
+      if (!result.ok) {
+        return reply.status(mapErrorStatus(result.error.code)).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  // ── Submit WHT certificate ───────────────────────────────────────────────────
+  typed.post(
+    "/commands/submit-wht-certificate",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Submit a WHT certificate to the tax authority (ISSUED → SUBMITTED).",
+        tags: ["WHT Certificate"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: SubmitWhtCertificateCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await submitWhtCertificate(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        {
+          whtCertificateId: req.body.whtCertificateId,
+          taxAuthorityReference: req.body.taxAuthorityReference,
+        },
+      );
+
+      if (!result.ok) {
+        return reply.status(mapErrorStatus(result.error.code)).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
         data: result.data,
         correlationId: req.correlationId,
       });

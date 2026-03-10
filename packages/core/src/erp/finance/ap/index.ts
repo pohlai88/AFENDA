@@ -20,7 +20,7 @@ export type { InvoiceServiceError, InvoiceServiceResult, CreateInvoiceParams, Su
 export type { InvoiceRow, InvoiceListParams, InvoiceHistoryRow, CursorPage } from "./invoice.queries.js";
 export type { HoldServiceError, HoldServiceResult, CreateHoldParams, ReleaseHoldParams } from "./hold.service.js";
 export type { HoldRow } from "./hold.queries.js";
-export type { PaymentRunServiceError, PaymentRunServiceResult, CreatePaymentRunParams } from "./payment-run.service.js";
+export type { PaymentRunServiceError, PaymentRunServiceResult, CreatePaymentRunParams, ApprovePaymentRunParams, ExecutePaymentRunParams } from "./payment-run.service.js";
 export type { PaymentRunRow, PaymentRunListParams } from "./payment-run.queries.js";
 export type { PaymentTermsServiceError, PaymentTermsServiceResult, CreatePaymentTermsParams, UpdatePaymentTermsParams } from "./payment-terms.service.js";
 export type { PaymentTermsRow, PaymentTermsListParams } from "./payment-terms.queries.js";
@@ -37,19 +37,26 @@ import * as rawInvoiceLineQueries from "./invoice-line.queries.js";
 import * as rawValidateInvoice from "./validate-invoice.js";
 import * as rawAgingService from "./aging.service.js";
 import * as rawAgingQueries from "./aging.queries.js";
+import * as rawPaymentRunExportService from "./payment-run-export.service.js";
 
 export type { MatchToleranceServiceError, MatchToleranceServiceResult, CreateMatchToleranceParams, UpdateMatchToleranceParams, DeactivateMatchToleranceParams } from "./match-tolerance.service.js";
 export type { MatchToleranceRow, MatchToleranceListParams } from "./match-tolerance.queries.js";
 export type { PaymentRunItemServiceError, PaymentRunItemServiceResult, AddPaymentRunItemParams } from "./payment-run-item.service.js";
 export type { PaymentRunItemRow } from "./payment-run-item.queries.js";
-export type { PrepaymentServiceError, PrepaymentServiceResult, CreatePrepaymentParams } from "./prepayment.service.js";
+export type { PrepaymentServiceError, PrepaymentServiceResult, CreatePrepaymentParams, ApplyPrepaymentParams, VoidPrepaymentParams } from "./prepayment.service.js";
 export type { PrepaymentRow, PrepaymentListParams } from "./prepayment.queries.js";
-export type { WhtCertificateServiceError, WhtCertificateServiceResult, CreateWhtCertificateParams } from "./wht-certificate.service.js";
+export type { WhtCertificateServiceError, WhtCertificateServiceResult, CreateWhtCertificateParams, IssueWhtCertificateParams, SubmitWhtCertificateParams } from "./wht-certificate.service.js";
 export type { WhtCertificateRow, WhtCertificateListParams } from "./wht-certificate.queries.js";
 export type { InvoiceLineServiceError, InvoiceLineServiceResult, CreateInvoiceLineParams, UpdateInvoiceLineParams } from "./invoice-line.service.js";
 export type { InvoiceLineRow } from "./invoice-line.queries.js";
 export type { AgingServiceResult, AgingServiceError, GetAgingParams } from "./aging.service.js";
 export type { InvoiceAgingRow, GetInvoicesByAgingBucketParams } from "./aging.queries.js";
+export type {
+  PaymentRunExportError,
+  PaymentRunExportResult,
+  ExportPaymentRunISO20022Params,
+  ExportPaymentRunNACHAParams,
+} from "./payment-run-export.service.js";
 
 // Calculators (pure functions)
 export * from "./calculators/index.js";
@@ -73,6 +80,7 @@ const instrumented = instrumentService("ap", {
   ...rawInvoiceLineService,
   ...rawAgingService,
   ...rawAgingQueries,
+  ...rawPaymentRunExportService,
   ...rawInvoiceLineQueries,
   ...rawValidateInvoice,
 });
@@ -97,6 +105,8 @@ export const {
   findHoldsByInvoice,
   getHoldById,
   createPaymentRun,
+  approvePaymentRun,
+  executePaymentRun,
   listPaymentRuns,
   getPaymentRunById,
   createPaymentTerms,
@@ -113,9 +123,13 @@ export const {
   listPaymentRunItems,
   getPaymentRunItemById,
   createPrepayment,
+  applyPrepayment,
+  voidPrepayment,
   listPrepayments,
   getPrepaymentById,
   createWhtCertificate,
+  issueWhtCertificate,
+  submitWhtCertificate,
   listWhtCertificates,
   getWhtCertificateById,
   createInvoiceLine,
@@ -126,4 +140,6 @@ export const {
   getInvoicesByAgingBucket,
   getInvoiceLineById,
   validateInvoice,
+  exportPaymentRunISO20022,
+  exportPaymentRunNACHA,
 } = instrumented;

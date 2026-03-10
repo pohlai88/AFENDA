@@ -18,6 +18,8 @@ import {
 } from "../../../../helpers/responses.js";
 import {
   CreatePaymentRunCommandSchema,
+  ApprovePaymentRunCommandSchema,
+  ExecutePaymentRunCommandSchema,
   CursorParamsSchema,
   type OrgId,
   type CorrelationId,
@@ -25,8 +27,12 @@ import {
 } from "@afenda/contracts";
 import {
   createPaymentRun,
+  approvePaymentRun,
+  executePaymentRun,
   listPaymentRuns,
   getPaymentRunById,
+  exportPaymentRunISO20022,
+  exportPaymentRunNACHA,
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
@@ -188,6 +194,115 @@ export async function paymentRunRoutes(app: FastifyInstance) {
     },
   );
 
+  // ── Approve payment run ─────────────────────────────────────────────────────
+  typed.post(
+    "/commands/approve-payment-run",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Approve a payment run (DRAFT → APPROVED).",
+        tags: ["Payment Runs"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: ApprovePaymentRunCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await approvePaymentRun(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        { paymentRunId: req.body.id },
+      );
+
+      if (!result.ok) {
+        const status =
+          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        return reply.status(status).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  // ── Execute payment run ─────────────────────────────────────────────────────
+  typed.post(
+    "/commands/execute-payment-run",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Execute a payment run (APPROVED → EXECUTED). Marks all invoices as paid.",
+        tags: ["Payment Runs"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: ExecutePaymentRunCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await executePaymentRun(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        {
+          paymentRunId: req.body.id,
+          bankReference: req.body.bankReference,
+        },
+      );
+
+      if (!result.ok) {
+        const status =
+          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        return reply.status(status).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
   // ── List payment runs ───────────────────────────────────────────────────────
   typed.get(
     "/payment-runs",
@@ -224,6 +339,115 @@ export async function paymentRunRoutes(app: FastifyInstance) {
         hasMore: page.hasMore,
         correlationId: req.correlationId,
       };
+    },
+  );
+
+  // ── Export payment run (ISO 20022 or NACHA) ───────────────────────────────────
+  typed.get(
+    "/payment-runs/:paymentRunId/export",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description:
+          "Export payment run as ISO 20022 (pain.001) or NACHA ACH file. Requires debtor/originator account info via query params.",
+        tags: ["Payment Runs"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        params: z.object({ paymentRunId: z.string().uuid() }),
+        querystring: z.discriminatedUnion("format", [
+          z.object({
+            format: z.literal("ISO20022"),
+            debtorName: z.string().min(1),
+            debtorIban: z.string().min(1),
+            debtorBic: z.string().optional(),
+            debtorCurrency: z.string().length(3),
+          }),
+          z.object({
+            format: z.literal("NACHA"),
+            immediateDest: z.string().length(9),
+            immediateOrigin: z.string().min(1).max(10),
+            companyName: z.string().min(1).max(23),
+            companyId: z.string().min(1).max(10),
+            companyEntryDescription: z.string().max(10).optional(),
+          }),
+        ]),
+        response: {
+          200: z.string().describe("File content (XML or NACHA text)"),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const { paymentRunId } = req.params;
+      const q = req.query;
+
+      if (q.format === "ISO20022") {
+        const result = await exportPaymentRunISO20022(app.db, orgId as OrgId, {
+          paymentRunId,
+          debtorAccount: {
+            name: q.debtorName,
+            iban: q.debtorIban,
+            bic: q.debtorBic,
+            currency: q.debtorCurrency,
+          },
+        });
+        if (!result.ok) {
+          const status =
+            result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+          return reply.status(status).send({
+            error: {
+              code: result.error.code,
+              message: result.error.message,
+              details: result.error.meta,
+            },
+            correlationId: req.correlationId,
+          });
+        }
+        return reply
+          .header("Content-Type", "application/xml")
+          .header(
+            "Content-Disposition",
+            `attachment; filename="${result.data.fileName}"`,
+          )
+          .send(result.data.content);
+      }
+
+      // NACHA
+      const result = await exportPaymentRunNACHA(app.db, orgId as OrgId, {
+        paymentRunId,
+        originatorInfo: {
+          immediateDest: q.immediateDest,
+          immediateOrigin: q.immediateOrigin,
+          companyName: q.companyName,
+          companyId: q.companyId,
+          companyEntryDescription: q.companyEntryDescription ?? "SUPPLIER",
+        },
+      });
+      if (!result.ok) {
+        const status =
+          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        return reply.status(status).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+      return reply
+        .header("Content-Type", "text/plain; charset=us-ascii")
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${result.data.fileName}"`,
+        )
+        .send(result.data.content);
     },
   );
 

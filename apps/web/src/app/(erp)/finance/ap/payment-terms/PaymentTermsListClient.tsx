@@ -13,6 +13,7 @@ import {
   Card,
   CardContent,
 } from "@afenda/ui";
+import { fetchPaymentTerms } from "@/lib/api-client";
 
 interface PaymentTerms {
   id: string;
@@ -30,19 +31,10 @@ export function PaymentTermsListClient() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTerms() {
-      try {
-        const res = await fetch("/api/v1/payment-terms");
-        if (!res.ok) throw new Error("Failed to fetch payment terms");
-        const data = await res.json();
-        setTerms(data.data || []);
-      } catch (error) {
-        console.error("Error fetching payment terms:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchTerms();
+    fetchPaymentTerms()
+      .then((res) => setTerms(res.data || []))
+      .catch(() => setTerms([]))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) {

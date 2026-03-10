@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
+import { buildPortalSignInRedirect } from "@/platform/portals";
 
-export default function FranchiseeSignInPage({
+export default async function FranchiseeSignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
-  const params = searchParams as unknown as { callbackUrl?: string };
-  const callbackUrl = params?.callbackUrl ?? "/portal/franchisee";
-  redirect(`/auth/signin?tab=franchisee&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  const params = await searchParams;
+  redirect(buildPortalSignInRedirect("franchisee", params));
 }

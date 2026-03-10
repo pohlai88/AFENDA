@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { memo, useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -13,14 +13,20 @@ import {
   Label,
   Separator,
 } from "@afenda/ui";
-import { ErrorAlert } from "@/components/ErrorAlert";
 import { getAuthErrorMessage } from "@afenda/contracts";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { acceptPortalInvitationPublic } from "@/lib/public-auth";
-import { AuthFooterLinks } from "../../_components/auth-footer-links";
+import { AUTH_CARD_CLASS } from "../../_components/auth-card";
+import { AuthFooterLinks, FOOTER_ERROR_LINKS } from "../../_components/auth-footer-links";
 import { AuthHeader } from "../../_components/auth-header";
 import { PasswordField } from "../../_components/password-field";
+import { buildPortalSignInRedirect } from "@/platform/portals";
 
-export function PortalInvitationAcceptClient({ initialToken }: { initialToken?: string }) {
+export const PortalInvitationAcceptClient = memo(function PortalInvitationAcceptClient({
+  initialToken,
+}: {
+  initialToken?: string;
+}) {
   const [token, setToken] = useState(initialToken ?? "");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -41,22 +47,8 @@ export function PortalInvitationAcceptClient({ initialToken }: { initialToken?: 
         password,
       });
 
-      if (result.portal === "supplier") {
-        setSignInPath("/auth/portal/supplier/signin");
-        return;
-      }
-
-      if (result.portal === "customer") {
-        setSignInPath("/auth/portal/customer/signin");
-        return;
-      }
-
-      if (result.portal === "cid") {
-        setSignInPath("/auth/portal/cid/signin");
-        return;
-      }
-
-      setError(getAuthErrorMessage("AUTH_PORTAL_TYPE_UNSUPPORTED"));
+      const path = buildPortalSignInRedirect(result.portal);
+      setSignInPath(path);
     } catch (err) {
       if (err instanceof Error) {
         setError(getAuthErrorMessage(err.name));
@@ -69,7 +61,7 @@ export function PortalInvitationAcceptClient({ initialToken }: { initialToken?: 
   }
 
   return (
-    <Card className="border-border/50 shadow-xl bg-card">
+    <Card className={AUTH_CARD_CLASS}>
       <AuthHeader
         title="Accept invitation"
         description="Create your portal credentials to get started."
@@ -130,13 +122,8 @@ export function PortalInvitationAcceptClient({ initialToken }: { initialToken?: 
 
         <Separator />
 
-        <AuthFooterLinks
-          links={[
-            { href: "/auth/signin", label: "Back to sign in" },
-            { href: "/auth/reset-password", label: "Reset password" },
-          ]}
-        />
+        <AuthFooterLinks links={FOOTER_ERROR_LINKS} />
       </CardContent>
     </Card>
   );
-}
+});

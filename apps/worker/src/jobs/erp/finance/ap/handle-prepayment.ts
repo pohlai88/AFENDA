@@ -1,6 +1,10 @@
 import type { Task } from "graphile-worker";
 
-const PREPAYMENT_EVENTS = ["AP.PREPAYMENT_CREATED"] as const;
+const PREPAYMENT_EVENTS = [
+  "AP.PREPAYMENT_CREATED",
+  "AP.PREPAYMENT_APPLIED",
+  "AP.PREPAYMENT_VOIDED",
+] as const;
 
 export const handlePrepaymentEvent: Task = async (payload, helpers) => {
 	const event = payload as {

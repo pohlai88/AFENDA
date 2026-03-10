@@ -27,13 +27,14 @@
 | `payment-terms.queries.ts` | `getPaymentTerms`, `listPaymentTerms` | Payment terms query functions |
 | `payment-run.service.ts` | `createPaymentRun`, `approvePaymentRun`, `executePaymentRun` | Payment run business logic |
 | `payment-run.queries.ts` | `getPaymentRun`, `listPaymentRuns` | Payment run query functions |
+| `payment-run-export.service.ts` | `exportPaymentRunISO20022`, `exportPaymentRunNACHA` | Payment file export (ISO 20022, NACHA) |
 | `payment-run-item.service.ts` | `createPaymentRunItem`, `updatePaymentRunItem` | Payment run item business logic |
 | `payment-run-item.queries.ts` | `getPaymentRunItem`, `listPaymentRunItems` | Payment run item query functions |
 | `prepayment.service.ts` | `createPrepayment`, `applyPrepayment`, `voidPrepayment` | Prepayment business logic |
 | `prepayment.queries.ts` | `getPrepayment`, `listPrepayments` | Prepayment query functions |
 | `match-tolerance.service.ts` | `createMatchTolerance`, `updateMatchTolerance` | Match tolerance business logic |
 | `match-tolerance.queries.ts` | `getMatchTolerance`, `listMatchTolerances` | Match tolerance query functions |
-| `wht-certificate.service.ts` | `createWhtCertificate`, `approveWhtCertificate` | WHT certificate business logic |
+| `wht-certificate.service.ts` | `createWhtCertificate`, `issueWhtCertificate`, `submitWhtCertificate` | WHT certificate business logic |
 | `wht-certificate.queries.ts` | `getWhtCertificate`, `listWhtCertificates` | WHT certificate query functions |
 | `validate-invoice.ts` | `validateInvoiceForSubmission`, `validateInvoiceForApproval`, `validateInvoiceForPayment` | Shared invoice validation helpers |
 

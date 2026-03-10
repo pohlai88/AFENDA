@@ -2,6 +2,7 @@
  * kernel/identity — IAM domain services.
  */
 export * from "./auth.js";
+export * from "./auth-context.js";
 export * from "./credentials.js";
 export * from "./organization.js";
 export * from "./password.js";

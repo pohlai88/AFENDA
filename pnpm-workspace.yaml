@@ -43,6 +43,8 @@ catalog:
   react-resizable-panels: "^4.7.1"
   recharts: "2.15.4"
   motion: "12.23.24"
+  "@hookform/resolvers": "^5.2.2"
+  react-hook-form: "^7.71.2"
   # ── Dev ────────────────────────────────────────────────────────────────────
   typescript: "5.9.3"
   "@types/node": "25.3.3"

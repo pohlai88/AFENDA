@@ -200,7 +200,50 @@ const defaultListView: ListViewDefInput = {
   },
 };
 
-// ── Form View ─────────────────────────────────────────────────────────────────
+// ── Form View (Create) ─────────────────────────────────────────────────────────
+
+const createFormView: FormViewDefInput = {
+  viewType: "form",
+  viewKey: "create",
+  version: 1,
+  label: "New Invoice",
+  commandSchemaRef: "CreateInvoiceCommandSchema",
+  tabs: [
+    {
+      tabKey: "details",
+      label: "Details",
+      sections: [
+        {
+          sectionKey: "header",
+          label: "Invoice Header",
+          columns: 2,
+          fields: [
+            { fieldKey: "supplierId", colSpan: 1 },
+            { fieldKey: "poReference", colSpan: 1 },
+          ],
+        },
+        {
+          sectionKey: "amounts",
+          label: "Amounts",
+          columns: 2,
+          fields: [
+            { fieldKey: "amountMinor", colSpan: 1 },
+            { fieldKey: "currencyCode", colSpan: 1 },
+            { fieldKey: "dueDate", colSpan: 1 },
+          ],
+        },
+      ],
+    },
+  ],
+  guards: [
+    {
+      permission: "ap.invoice.submit",
+      denyMessage: "You don't have permission to create invoices.",
+    },
+  ],
+};
+
+// ── Form View (Detail) ─────────────────────────────────────────────────────────
 
 const defaultFormView: FormViewDefInput = {
   viewType: "form",
@@ -391,6 +434,7 @@ export const financeApInvoice: EntityRegistration = {
   fieldDefs,
   views: {
     default: defaultListView,
+    create: createFormView,
     detail: defaultFormView,
   },
   actions,

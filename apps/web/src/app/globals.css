@@ -15,6 +15,35 @@
   mix-blend-mode: normal;
 }
 
+/* Auth shell — design token–driven backgrounds (no inline styles) */
+.auth-shell-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--border), transparent 60%) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--border), transparent 60%) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.auth-shell-radial {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    color-mix(in oklab, var(--primary), transparent 94%),
+    transparent 70%
+  );
+}
+
+/* Password strength — Progress indicator color via design tokens */
+.password-strength-weak [data-slot="progress-indicator"] {
+  background-color: var(--destructive);
+}
+.password-strength-fair [data-slot="progress-indicator"],
+.password-strength-good [data-slot="progress-indicator"] {
+  background-color: var(--warning);
+}
+.password-strength-strong [data-slot="progress-indicator"],
+.password-strength-excellent [data-slot="progress-indicator"] {
+  background-color: var(--success);
+}
+
 /* Print */
 @media print {
   @page {
@@ -38,4 +67,68 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+}
+
+/* Auth component overflow fixes */
+.auth-shell-grid {
+  /* Enable GPU acceleration to prevent backdrop-blur performance issues */
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+.auth-shell-radial {
+  /* Enable GPU acceleration */
+  will-change: auto;
+  transform: translateZ(0);
+}
+
+/* Prevent horizontal overflow on small screens */
+@media (max-width: 640px) {
+  .auth-shell-grid,
+  .auth-shell-radial {
+    /* Reduce complexity on mobile for better performance */
+    opacity: 0.2 !important;
+  }
+}
+
+/* Safe area handling for iOS devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Ensure smooth scrolling and prevent layout shift */
+.auth-overflow-container {
+  /* Prevent layout shift during content loading */
+  contain: layout style paint;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  /* Prevent momentum scrolling issues on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbars when not needed */
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+
+.auth-overflow-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-overflow-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.auth-overflow-container::-webkit-scrollbar-thumb {
+  background-color: var(--muted);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.auth-overflow-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
 }

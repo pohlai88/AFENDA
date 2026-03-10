@@ -82,3 +82,25 @@ export const PublicAuthResultSchema = z.object({
 });
 
 export type PublicAuthResult = z.infer<typeof PublicAuthResultSchema>;
+
+/** Auth context request — email + portal for progressive auth discovery. */
+export const AuthContextRequestSchema = z.object({
+  email: z.string().email(),
+  portal: PortalTypeSchema,
+});
+
+export type AuthContextRequest = z.infer<typeof AuthContextRequestSchema>;
+
+/** Auth context response — drives SSO/Combobox/OTP UI. */
+export const AuthContextResponseSchema = z.object({
+  authMode: z.enum(["password", "sso"]),
+  organizations: z.array(
+    z.object({
+      id: z.string().uuid(),
+      name: z.string().min(1),
+    }),
+  ),
+  mfaRequired: z.boolean(),
+});
+
+export type AuthContextResponse = z.infer<typeof AuthContextResponseSchema>;

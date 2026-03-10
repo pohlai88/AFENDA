@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { memo, useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -16,16 +16,23 @@ import {
   Label,
   Separator,
 } from "@afenda/ui";
-import { ErrorAlert } from "@/components/ErrorAlert";
 import { getAuthErrorMessage } from "@afenda/contracts";
+import { ErrorAlert } from "@/components/ErrorAlert";
 import { requestPasswordResetPublic, resetPasswordPublic } from "@/lib/public-auth";
-import { AuthFooterLinks } from "../_components/auth-footer-links";
+import { AUTH_CARD_CLASS } from "../_components/auth-card";
+import { AuthFooterLinks, FOOTER_RESET_LINKS } from "../_components/auth-footer-links";
 import { AuthHeader } from "../_components/auth-header";
 import { PasswordField } from "../_components/password-field";
 
 type Step = "request" | "verify-code" | "verify-link";
 
-export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: string }) {
+const BACK_LINK_CLASS = "text-muted-foreground text-xs h-auto p-0";
+
+export const ResetPasswordClient = memo(function ResetPasswordClient({
+  tokenFromQuery,
+}: {
+  tokenFromQuery?: string;
+}) {
   const router = useRouter();
 
   // If a token is pre-filled from URL, skip to the link-verify step
@@ -97,7 +104,7 @@ export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: strin
   }
 
   return (
-    <Card className="border-border/50 shadow-xl bg-card">
+    <Card className={AUTH_CARD_CLASS}>
       <AuthHeader
         title="Reset password"
         description={
@@ -160,7 +167,7 @@ export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: strin
                 type="button"
                 variant="link"
                 size="sm"
-                className="text-muted-foreground text-xs h-auto p-0"
+                className={BACK_LINK_CLASS}
                 onClick={() => setStep(requestDelivery === "code" ? "verify-code" : "verify-link")}
               >
                 Already have a code or token?
@@ -227,7 +234,7 @@ export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: strin
                 type="button"
                 variant="link"
                 size="sm"
-                className="text-muted-foreground text-xs h-auto p-0"
+                className={BACK_LINK_CLASS}
                 onClick={() => setStep("request")}
               >
                 ← Back to request form
@@ -274,7 +281,7 @@ export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: strin
                   type="button"
                   variant="link"
                   size="sm"
-                  className="text-muted-foreground text-xs h-auto p-0"
+                  className={BACK_LINK_CLASS}
                   onClick={() => setStep("request")}
                 >
                   ← Back to request form
@@ -286,13 +293,8 @@ export function ResetPasswordClient({ tokenFromQuery }: { tokenFromQuery?: strin
 
         <Separator />
 
-        <AuthFooterLinks
-          links={[
-            { href: "/auth/signin", label: "Back to sign in" },
-            { href: "/auth/signup", label: "Create account" },
-          ]}
-        />
+        <AuthFooterLinks links={FOOTER_RESET_LINKS} />
       </CardContent>
     </Card>
   );
-}
+});

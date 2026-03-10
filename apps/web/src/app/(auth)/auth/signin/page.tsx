@@ -1,4 +1,6 @@
-import { SignInTabs } from "./SignInTabs";
+import { SigninPageClient } from "./SigninPageClient";
+import type { PortalType } from "@afenda/contracts";
+import { PortalTypeValues } from "@afenda/contracts";
 
 export default async function SignInPage({
   searchParams,
@@ -6,18 +8,19 @@ export default async function SignInPage({
   searchParams: Promise<{ callbackUrl?: string; error?: string; tab?: string }>;
 }) {
   const params = await searchParams;
-  
-  // Map tab parameter to valid auth tab type
-  const validTabs = ["personal", "organization", "supplier", "customer"] as const;
-  const defaultTab = validTabs.includes(params.tab as any) 
-    ? (params.tab as typeof validTabs[number])
-    : "personal";
-  
+
+  const portal: PortalType =
+    params.tab && PortalTypeValues.includes(params.tab as PortalType)
+      ? (params.tab as PortalType)
+      : "app";
+
+  const callbackUrl = params.callbackUrl || "/";
+
   return (
-    <SignInTabs
-      callbackUrl={typeof params.callbackUrl === "string" ? params.callbackUrl : "/"}
-      error={typeof params.error === "string" ? params.error : undefined}
-      defaultTab={defaultTab}
+    <SigninPageClient
+      initialPortal={portal}
+      callbackUrl={callbackUrl}
+      error={params.error}
     />
   );
 }

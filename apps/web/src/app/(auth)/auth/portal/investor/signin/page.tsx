@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
+import { buildPortalSignInRedirect } from "@/platform/portals";
 
-export default function InvestorSignInPage({
+export default async function InvestorSignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
-  const params = searchParams as unknown as { callbackUrl?: string };
-  const callbackUrl = params?.callbackUrl ?? "/portal/investor";
-  redirect(`/auth/signin?tab=investor&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  const params = await searchParams;
+  redirect(buildPortalSignInRedirect("investor", params));
 }

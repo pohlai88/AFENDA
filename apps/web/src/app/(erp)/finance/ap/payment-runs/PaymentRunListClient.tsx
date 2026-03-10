@@ -12,8 +12,12 @@ import {
   Badge,
   Card,
   CardContent,
+  Button,
 } from "@afenda/ui";
+import { Download } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
+import { fetchPaymentRuns } from "@/lib/api-client";
+import { PaymentRunExportDialog } from "./PaymentRunExportDialog";
 
 interface PaymentRun {
   id: string;
@@ -32,21 +36,13 @@ interface PaymentRun {
 export function PaymentRunListClient() {
   const [runs, setRuns] = useState<PaymentRun[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exportRun, setExportRun] = useState<PaymentRun | null>(null);
 
   useEffect(() => {
-    async function fetchRuns() {
-      try {
-        const res = await fetch("/api/v1/payment-runs");
-        if (!res.ok) throw new Error("Failed to fetch payment runs");
-        const data = await res.json();
-        setRuns(data.data || []);
-      } catch (error) {
-        console.error("Error fetching payment runs:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchRuns();
+    fetchPaymentRuns()
+      .then((res) => setRuns(res.data || []))
+      .catch(() => setRuns([]))
+      .finally(() => setLoading(false));
   }, []);
 
   function getStatusBadge(status: string) {
@@ -98,6 +94,7 @@ export function PaymentRunListClient() {
               <TableHead className="text-right">Discount Taken</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
+              <TableHead className="w-[80px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -125,11 +122,31 @@ export function PaymentRunListClient() {
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(run.createdAt).toLocaleDateString()}
                 </TableCell>
+                <TableCell>
+                  {(run.status === "APPROVED" || run.status === "EXECUTED") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setExportRun(run)}
+                      aria-label={`Export payment run ${run.runNumber}`}
+                    >
+                      <Download className="size-4" />
+                    </Button>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+      {exportRun && (
+        <PaymentRunExportDialog
+          paymentRunId={exportRun.id}
+          runNumber={exportRun.runNumber}
+          open={!!exportRun}
+          onOpenChange={(open) => !open && setExportRun(null)}
+        />
+      )}
     </Card>
   );
 }

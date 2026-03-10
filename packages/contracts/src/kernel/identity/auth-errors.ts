@@ -17,8 +17,8 @@
  */
 
 export const AUTH_ERROR_MESSAGES = {
-  // ── NextAuth standard errors ──
-  CredentialsSignin: "Invalid email or password.",
+  // ── NextAuth standard errors (generic to prevent email enumeration) ──
+  CredentialsSignin: "We couldn't verify your credentials.",
   OAuthSignin: "Unable to sign in with OAuth provider.",
   OAuthCallback: "OAuth callback error. Please try again.",
   OAuthCreateAccount: "Could not create OAuth account.",
@@ -28,11 +28,11 @@ export const AUTH_ERROR_MESSAGES = {
   EmailSignin: "Unable to send sign-in email.",
   SessionRequired: "Please sign in to access this page.",
 
-  // ── AFENDA IAM errors ──
-  IAM_CREDENTIALS_INVALID: "Invalid email or password.",
+  // ── AFENDA IAM errors (credential-related use generic message to prevent email enumeration) ──
+  IAM_CREDENTIALS_INVALID: "We couldn't verify your credentials.",
   IAM_ACCOUNT_LOCKED: "Your account has been locked. Contact support.",
   IAM_ACCOUNT_SUSPENDED: "Your account is suspended. Contact support.",
-  IAM_ACCOUNT_NOT_FOUND: "No account found with this email.",
+  IAM_ACCOUNT_NOT_FOUND: "We couldn't verify your credentials.",
   IAM_EMAIL_NOT_VERIFIED: "Please verify your email before signing in.",
   IAM_MFA_REQUIRED: "Multi-factor authentication required.",
   IAM_MFA_INVALID: "Invalid verification code.",
@@ -72,8 +72,8 @@ export const AUTH_ERROR_MESSAGES = {
   // ── Rate limiting ──
   AUTH_RATE_LIMIT_EXCEEDED: "Too many attempts. Please try again in a few minutes.",
 
-  // ── Generic fallback ──
-  Default: "An error occurred during sign in. Please try again.",
+  // ── Generic fallback (generic to prevent email enumeration) ──
+  Default: "We couldn't verify your credentials.",
 } as const;
 
 /**

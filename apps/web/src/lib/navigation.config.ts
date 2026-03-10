@@ -92,7 +92,12 @@ export const erpNavigationDomains: NavigationDomainConfig[] = [
     icon: "credit-card",
     items: [
       { title: "Dashboard", url: "/finance/dashboards", icon: "presentation" },
-      { title: "AP", url: "/finance/ap/invoices", icon: "credit-card" },
+      { title: "AP Invoices", url: "/finance/ap/invoices", icon: "credit-card" },
+      { title: "AP Aging", url: "/finance/ap/aging", icon: "credit-card" },
+      { title: "Payment Runs", url: "/finance/ap/payment-runs", icon: "credit-card" },
+      { title: "Payment Terms", url: "/finance/ap/payment-terms", icon: "credit-card" },
+      { title: "Prepayments", url: "/finance/ap/prepayments", icon: "credit-card" },
+      { title: "WHT Certificates", url: "/finance/ap/wht-certificates", icon: "shield" },
       { title: "AR", url: "/finance/ar/invoices", icon: "hand-coins" },
       { title: "GL Accounts", url: "/finance/gl/accounts", icon: "book-open" },
       { title: "GL Journals", url: "/finance/gl/journals", icon: "book-open" },

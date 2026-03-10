@@ -1,25 +1,9 @@
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle, Button } from "@afenda/ui";
+import { fetchCapabilities } from "@/lib/api-client";
+import NewInvoiceClient from "./NewInvoiceClient";
 
-/** New Invoice — placeholder. */
-export default function NewInvoicePage() {
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/finance/ap/invoices">← Back to invoices</Link>
-        </Button>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>New Invoice</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            New invoice placeholder. Component examination in progress.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+/** New Invoice — create draft invoice form. */
+export default async function NewInvoicePage() {
+  const capabilitiesRes = await fetchCapabilities("finance.ap_invoice");
+
+  return <NewInvoiceClient capabilities={capabilitiesRes.data} />;
 }

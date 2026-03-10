@@ -16,7 +16,9 @@ import {
   SelectContent,
   SelectItem,
   Button,
+  toast,
 } from "@afenda/ui";
+import { createPaymentRun } from "@/lib/api-client";
 
 export default function NewPaymentRunPage() {
   const router = useRouter();
@@ -33,22 +35,16 @@ export default function NewPaymentRunPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/v1/commands/create-payment-run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      const paymentDate = formData.paymentDate || new Date().toISOString().slice(0, 10);
+      const { data } = await createPaymentRun({
+        ...formData,
+        paymentDate,
       });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error?.message || "Failed to create payment run");
-      }
-
-      const data = await res.json();
-      router.push(`/finance/ap/payment-runs/${data.data.id}`);
+      toast.success(`Payment run ${data.runNumber} created.`);
+      router.push(`/finance/ap/payment-runs/${data.id}`);
     } catch (error) {
-      console.error("Error creating payment run:", error);
-      alert(error instanceof Error ? error.message : "Failed to create payment run");
+      const msg = error instanceof Error ? error.message : "Failed to create payment run";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

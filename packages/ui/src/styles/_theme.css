@@ -55,21 +55,28 @@
   /* Font sizes don't use the spacing scale */
   --font-size-density-data: var(--text-size-data);
 
-  /* Font sizes don't use the spacing scale */
-  --font-size-density-data: var(--text-size-data);
-
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR TOKENS — Surfaces, Borders & Interaction
      ═══════════════════════════════════════════════════════════════════════ */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-tertiary: var(--foreground-tertiary);
+  --color-foreground-quaternary: var(--foreground-quaternary);
   --color-surface-50: var(--surface-50);
   --color-surface-100: var(--surface-100);
+  --color-surface-150: var(--surface-150);
   --color-surface-200: var(--surface-200);
+  --color-surface-250: var(--surface-250);
   --color-surface-300: var(--surface-300);
+  --color-surface-350: var(--surface-350);
   --color-surface-400: var(--surface-400);
-  
+  --color-surface-450: var(--surface-450);
+  --color-surface-teal: var(--surface-teal);
+  --color-surface-blue: var(--surface-blue);
+  --color-surface-violet: var(--surface-violet);
+  --color-surface-amber: var(--surface-amber);
+
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -78,6 +85,8 @@
   --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-border-premium: var(--border-premium);
+  --color-border-interactive: var(--border-interactive);
   --color-input: var(--input);
 
   --color-ring: var(--ring);
@@ -98,7 +107,19 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-primary-active: var(--primary-active);
-  
+
+  --color-interactive: var(--interactive);
+  --color-interactive-foreground: var(--interactive-foreground);
+  --color-interactive-hover: var(--interactive-hover);
+  --color-interactive-active: var(--interactive-active);
+  --color-interactive-soft: var(--interactive-soft);
+
+  --color-premium: var(--premium);
+  --color-premium-foreground: var(--premium-foreground);
+  --color-premium-hover: var(--premium-hover);
+  --color-premium-active: var(--premium-active);
+  --color-premium-soft: var(--premium-soft);
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   
@@ -112,6 +133,9 @@
   --color-disabled-surface: var(--disabled-surface);
   --color-disabled-border: var(--disabled-border);
 
+  --color-text-link: var(--text-link);
+  --color-text-link-hover: var(--text-link-hover);
+
   /* Status */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -121,6 +145,15 @@
   --color-info-foreground: var(--info-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-status-blocked: var(--status-blocked);
+  --color-status-blocked-bg: var(--status-blocked-bg);
+  --color-status-archived: var(--status-archived);
+  --color-status-archived-bg: var(--status-archived-bg);
+  --color-status-escalated: var(--status-escalated);
+  --color-status-escalated-bg: var(--status-escalated-bg);
+  --color-status-flagged: var(--status-flagged);
+  --color-status-flagged-bg: var(--status-flagged-bg);
 
   /* Market */
   --color-trade-up: var(--trade-up);
@@ -170,9 +203,6 @@
   --color-viz-accent-1: var(--viz-accent-1);
   --color-viz-accent-2: var(--viz-accent-2);
   --color-viz-accent-3: var(--viz-accent-3);
-  --color-viz-threshold: var(--viz-threshold);
-  --color-viz-target: var(--viz-target);
-
   --color-viz-threshold: var(--viz-threshold);
   --color-viz-target: var(--viz-target);
 
@@ -323,6 +353,7 @@
   --color-mk-teal-light: var(--mk-teal-light);
   --color-mk-cyan: var(--mk-cyan);
   --color-mk-cyan-light: var(--mk-cyan-light);
+  --color-mk-premium: var(--mk-premium);
 
   /* ═══════════════════════════════════════════════════════════════════════
      EFFECTS & TYPOGRAPHY SCALES
@@ -333,6 +364,10 @@
   --shadow-card-hover: var(--shadow-card-hover);
   --shadow-popover: var(--shadow-popover);
   --shadow-modal: var(--shadow-modal);
+  --shadow-focus-glow: var(--focus-glow);
+  --shadow-edge-glow-primary: var(--edge-glow-primary);
+  --shadow-edge-glow-interactive: var(--edge-glow-interactive);
+  --shadow-edge-glow-danger: var(--edge-glow-danger);
   --shadow-elev-1: var(--elev-1-shadow);
   --shadow-elev-2: var(--elev-2-shadow);
   --shadow-elev-3: var(--elev-3-shadow);

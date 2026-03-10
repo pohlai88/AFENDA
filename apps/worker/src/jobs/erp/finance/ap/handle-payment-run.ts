@@ -1,6 +1,10 @@
 import type { Task } from "graphile-worker";
 
-const PAYMENT_RUN_EVENTS = ["AP.PAYMENT_RUN_CREATED"] as const;
+const PAYMENT_RUN_EVENTS = [
+  "AP.PAYMENT_RUN_CREATED",
+  "AP.PAYMENT_RUN_APPROVED",
+  "AP.PAYMENT_RUN_EXECUTED",
+] as const;
 
 export const handlePaymentRunEvent: Task = async (payload, helpers) => {
 	const event = payload as {

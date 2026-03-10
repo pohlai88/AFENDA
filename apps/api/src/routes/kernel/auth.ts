@@ -2,6 +2,7 @@
  * Auth routes — unauthenticated credential verification for NextAuth.
  *
  * Routes:
+ *   POST /v1/auth/context
  *   POST /v1/auth/verify-credentials
  *   POST /v1/auth/signup
  *   POST /v1/auth/request-password-reset
@@ -17,6 +18,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   acceptPortalInvitation,
+  getAuthContext,
   mapAuthErrorMessage,
   requestPasswordReset,
   requestPortalInvitation,
@@ -26,6 +28,8 @@ import {
 } from "@afenda/core";
 import {
   AcceptPortalInvitationCommandSchema,
+  AuthContextRequestSchema,
+  AuthContextResponseSchema,
   IAM_CREDENTIALS_INVALID,
   IAM_EMAIL_ALREADY_REGISTERED,
   IAM_PORTAL_INVITATION_EXPIRED,
@@ -111,8 +115,36 @@ async function dispatchAuthEmail(
   );
 }
 
+const AuthContextSuccessSchema = makeSuccessSchema(AuthContextResponseSchema);
+
 export async function authRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
+
+  typed.post(
+    "/auth/context",
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: "1 minute" },
+      },
+      schema: {
+        description:
+          "Get auth context for progressive UI (SSO discovery, org disambiguation, MFA gating). Never reveals whether email exists.",
+        tags: ["Auth"],
+        body: AuthContextRequestSchema,
+        response: {
+          200: AuthContextSuccessSchema,
+        },
+      },
+    },
+    async (req) => {
+      const body = AuthContextRequestSchema.parse(req.body);
+      const context = await getAuthContext(app.db, body.email, body.portal);
+      return {
+        data: context,
+        correlationId: req.correlationId,
+      };
+    },
+  );
 
   typed.post(
     "/auth/verify-credentials",

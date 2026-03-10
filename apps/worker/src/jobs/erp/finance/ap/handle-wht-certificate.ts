@@ -1,6 +1,10 @@
 import type { Task } from "graphile-worker";
 
-const WHT_CERTIFICATE_EVENTS = ["AP.WHT_CERTIFICATE_CREATED"] as const;
+const WHT_CERTIFICATE_EVENTS = [
+  "AP.WHT_CERTIFICATE_CREATED",
+  "AP.WHT_CERTIFICATE_ISSUED",
+  "AP.WHT_CERTIFICATE_SUBMITTED",
+] as const;
 
 export const handleWhtCertificateEvent: Task = async (payload, helpers) => {
 	const event = payload as {

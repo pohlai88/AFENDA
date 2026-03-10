@@ -12,7 +12,7 @@
 
 import type { DbClient } from "@afenda/db";
 import { whtCertificate, supplier, outboxEvent } from "@afenda/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import type {
   OrgId,
   PrincipalId,
@@ -157,6 +157,190 @@ export async function createWhtCertificate(
     });
 
     return { id: row.id as WhtCertificateId };
+  });
+
+  return { ok: true, data: result };
+}
+
+// ── Issue WHT Certificate ────────────────────────────────────────────────────
+
+export interface IssueWhtCertificateParams {
+  whtCertificateId: string;
+}
+
+export async function issueWhtCertificate(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  _policyCtx: { principalId?: PrincipalId | null },
+  correlationId: CorrelationId,
+  params: IssueWhtCertificateParams,
+): Promise<WhtCertificateServiceResult<{ id: WhtCertificateId }>> {
+  const orgId = ctx.activeContext.orgId;
+
+  const [row] = await db
+    .select()
+    .from(whtCertificate)
+    .where(
+      and(
+        eq(whtCertificate.orgId, orgId),
+        eq(whtCertificate.id, params.whtCertificateId),
+      ),
+    )
+    .limit(1);
+
+  if (!row) {
+    return {
+      ok: false,
+      error: {
+        code: "AP_WHT_CERTIFICATE_NOT_FOUND",
+        message: "WHT certificate not found",
+        meta: { whtCertificateId: params.whtCertificateId },
+      },
+    };
+  }
+
+  if (row.status !== "DRAFT") {
+    return {
+      ok: false,
+      error: {
+        code: "AP_WHT_CERTIFICATE_ALREADY_ISSUED",
+        message:
+          row.status === "ISSUED"
+            ? "Certificate has already been issued"
+            : row.status === "SUBMITTED"
+              ? "Certificate has already been submitted"
+              : "Certificate has been voided",
+        meta: { whtCertificateId: params.whtCertificateId },
+      },
+    };
+  }
+
+  const auditEntry = {
+    actorPrincipalId: _policyCtx.principalId ?? null,
+    action: "wht-certificate.issued" as const,
+    entityType: "wht_certificate" as const,
+    entityId: params.whtCertificateId as EntityId,
+    correlationId,
+    details: { certificateNumber: row.certificateNumber },
+  };
+
+  const result = await withAudit(db, ctx, auditEntry, async (tx) => {
+    await tx
+      .update(whtCertificate)
+      .set({
+        status: "ISSUED",
+        issuedAt: sql`now()`,
+        updatedAt: sql`now()`,
+      })
+      .where(eq(whtCertificate.id, params.whtCertificateId));
+
+    await tx.insert(outboxEvent).values({
+      orgId,
+      type: "AP.WHT_CERTIFICATE_ISSUED",
+      version: "1",
+      correlationId,
+      payload: {
+        whtCertificateId: params.whtCertificateId,
+        certificateNumber: row.certificateNumber,
+      },
+    });
+
+    return { id: params.whtCertificateId as WhtCertificateId };
+  });
+
+  return { ok: true, data: result };
+}
+
+// ── Submit WHT Certificate ────────────────────────────────────────────────────
+
+export interface SubmitWhtCertificateParams {
+  whtCertificateId: string;
+  taxAuthorityReference?: string | null;
+}
+
+export async function submitWhtCertificate(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  _policyCtx: { principalId?: PrincipalId | null },
+  correlationId: CorrelationId,
+  params: SubmitWhtCertificateParams,
+): Promise<WhtCertificateServiceResult<{ id: WhtCertificateId }>> {
+  const orgId = ctx.activeContext.orgId;
+
+  const [row] = await db
+    .select()
+    .from(whtCertificate)
+    .where(
+      and(
+        eq(whtCertificate.orgId, orgId),
+        eq(whtCertificate.id, params.whtCertificateId),
+      ),
+    )
+    .limit(1);
+
+  if (!row) {
+    return {
+      ok: false,
+      error: {
+        code: "AP_WHT_CERTIFICATE_NOT_FOUND",
+        message: "WHT certificate not found",
+        meta: { whtCertificateId: params.whtCertificateId },
+      },
+    };
+  }
+
+  if (row.status !== "ISSUED") {
+    return {
+      ok: false,
+      error: {
+        code: "AP_WHT_CERTIFICATE_ALREADY_SUBMITTED",
+        message:
+          row.status === "DRAFT"
+            ? "Certificate must be issued before submission"
+            : row.status === "SUBMITTED"
+              ? "Certificate has already been submitted"
+              : "Certificate has been voided",
+        meta: { whtCertificateId: params.whtCertificateId },
+      },
+    };
+  }
+
+  const auditEntry = {
+    actorPrincipalId: _policyCtx.principalId ?? null,
+    action: "wht-certificate.submitted" as const,
+    entityType: "wht_certificate" as const,
+    entityId: params.whtCertificateId as EntityId,
+    correlationId,
+    details: {
+      certificateNumber: row.certificateNumber,
+      taxAuthorityReference: params.taxAuthorityReference ?? null,
+    },
+  };
+
+  const result = await withAudit<{ id: WhtCertificateId }>(db, ctx, auditEntry, async (tx) => {
+    await tx
+      .update(whtCertificate)
+      .set({
+        status: "SUBMITTED",
+        submittedAt: sql`now()`,
+        taxAuthorityReference: params.taxAuthorityReference ?? null,
+        updatedAt: sql`now()`,
+      })
+      .where(eq(whtCertificate.id, params.whtCertificateId));
+
+    await tx.insert(outboxEvent).values({
+      orgId,
+      type: "AP.WHT_CERTIFICATE_SUBMITTED",
+      version: "1",
+      correlationId,
+      payload: {
+        whtCertificateId: params.whtCertificateId,
+        certificateNumber: row.certificateNumber,
+        taxAuthorityReference: params.taxAuthorityReference ?? null,
+      },
+    });
+
+    return { id: params.whtCertificateId as WhtCertificateId };
   });
 
   return { ok: true, data: result };

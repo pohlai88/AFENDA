@@ -13,7 +13,7 @@ import type { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
-import type { PortalType } from "@afenda/contracts";
+import { PortalTypeValues, type PortalType } from "@afenda/contracts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -45,7 +45,9 @@ export const authOptions: NextAuthOptions = {
 
         const rawPortal = credentials.portal;
         const portal: PortalType =
-          rawPortal === "supplier" || rawPortal === "customer" ? rawPortal : "app";
+          typeof rawPortal === "string" && PortalTypeValues.includes(rawPortal as PortalType)
+            ? (rawPortal as PortalType)
+            : "app";
 
         try {
           const res = await fetch(`${API_BASE}/v1/auth/verify-credentials`, {

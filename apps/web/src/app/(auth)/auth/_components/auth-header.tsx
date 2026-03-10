@@ -1,22 +1,17 @@
-import { memo } from "react";
-import { CardHeader, CardTitle, CardDescription } from "@afenda/ui";
-
 interface AuthHeaderProps {
-  title?: string;
+  title: string;
+  subtitle?: string;
   description?: string;
-  /** @deprecated The split-panel shell now handles branding. This prop is ignored. */
-  showBranding?: boolean;
 }
 
-export const AuthHeader = memo(function AuthHeader({ title, description }: AuthHeaderProps) {
-  if (!title && !description) return null;
-
+export function AuthHeader({ title, subtitle, description }: AuthHeaderProps) {
+  const text = description ?? subtitle;
   return (
-    <CardHeader className="pb-4">
-      <div className="space-y-1">
-        {title && <CardTitle className="text-2xl font-bold">{title}</CardTitle>}
-        {description && <CardDescription className="text-sm">{description}</CardDescription>}
-      </div>
-    </CardHeader>
+    <header className="flex flex-col form-gap text-center sm:text-left mb-8">
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      {text && (
+        <p className="text-sm text-muted-foreground">{text}</p>
+      )}
+    </header>
   );
-});
+}

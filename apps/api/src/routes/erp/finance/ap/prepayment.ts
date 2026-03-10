@@ -18,6 +18,8 @@ import {
 } from "../../../../helpers/responses.js";
 import {
   CreatePrepaymentCommandSchema,
+  ApplyPrepaymentCommandSchema,
+  VoidPrepaymentCommandSchema,
   CursorParamsSchema,
   type OrgId,
   type CorrelationId,
@@ -25,6 +27,8 @@ import {
 } from "@afenda/contracts";
 import {
   createPrepayment,
+  applyPrepayment,
+  voidPrepayment,
   listPrepayments,
   getPrepaymentById,
 } from "@afenda/core";
@@ -105,6 +109,7 @@ function serialisePrepayment(row: {
 function mapErrorStatus(code: string) {
   switch (code) {
     case "AP_PREPAYMENT_NOT_FOUND":
+    case "AP_INVOICE_NOT_FOUND":
     case "SUP_SUPPLIER_NOT_FOUND":
       return 404 as const;
     case "AP_PREPAYMENT_NUMBER_EXISTS":
@@ -175,6 +180,119 @@ export async function prepaymentRoutes(app: FastifyInstance) {
       }
 
       return reply.status(201).send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  // ── Apply prepayment to invoice ─────────────────────────────────────────────
+  typed.post(
+    "/commands/apply-prepayment",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Apply prepayment balance to an invoice.",
+        tags: ["Prepayment"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: ApplyPrepaymentCommandSchema,
+        response: {
+          200: makeSuccessSchema(
+            z.object({ applicationId: z.string().uuid() }),
+          ),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await applyPrepayment(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        {
+          prepaymentId: req.body.prepaymentId,
+          invoiceId: req.body.invoiceId,
+          amountMinor: req.body.amountMinor,
+        },
+      );
+
+      if (!result.ok) {
+        return reply.status(mapErrorStatus(result.error.code)).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
+        data: result.data,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  // ── Void prepayment ─────────────────────────────────────────────────────────
+  typed.post(
+    "/commands/void-prepayment",
+    {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+      schema: {
+        description: "Void an unused prepayment.",
+        tags: ["Prepayment"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: VoidPrepaymentCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await voidPrepayment(
+        app.db,
+        buildCtx(orgId),
+        buildPolicyCtx(req),
+        req.correlationId as CorrelationId,
+        {
+          prepaymentId: req.body.prepaymentId,
+          reason: req.body.reason,
+        },
+      );
+
+      if (!result.ok) {
+        return reply.status(mapErrorStatus(result.error.code)).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.send({
         data: result.data,
         correlationId: req.correlationId,
       });

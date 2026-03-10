@@ -15,6 +15,7 @@
     "@afenda/contracts": "workspace:*",
     "@afenda/ui": "workspace:*",
     "@base-ui/react": "catalog:",
+    "@hookform/resolvers": "catalog:",
     "@react-pdf/renderer": "^4.3.2",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -28,11 +29,13 @@
     "radix-ui": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-hook-form": "catalog:",
     "react-resizable-panels": "catalog:",
     "recharts": "catalog:",
     "server-only": "^0.0.1",
     "shadcn": "^4.0.0",
-    "tailwind-merge": "catalog:"
+    "tailwind-merge": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@afenda/tsconfig": "workspace:*",

@@ -57,6 +57,8 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
       await helpers.addJob("handle_match_tolerance_event", payload);
       break;
     case "AP.PAYMENT_RUN_CREATED":
+    case "AP.PAYMENT_RUN_APPROVED":
+    case "AP.PAYMENT_RUN_EXECUTED":
       await helpers.addJob("handle_payment_run_event", payload);
       break;
     case "AP.PAYMENT_RUN_ITEM_ADDED":
@@ -67,9 +69,13 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
       await helpers.addJob("handle_payment_terms_event", payload);
       break;
     case "AP.PREPAYMENT_CREATED":
+    case "AP.PREPAYMENT_APPLIED":
+    case "AP.PREPAYMENT_VOIDED":
       await helpers.addJob("handle_prepayment_event", payload);
       break;
     case "AP.WHT_CERTIFICATE_CREATED":
+    case "AP.WHT_CERTIFICATE_ISSUED":
+    case "AP.WHT_CERTIFICATE_SUBMITTED":
       await helpers.addJob("handle_wht_certificate_event", payload);
       break;
     case "GL.JOURNAL_POSTED":

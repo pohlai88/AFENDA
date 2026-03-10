@@ -11,7 +11,11 @@
  * - Dev mode (no session): Sends x-dev-user-email for API bypass
  */
 
-import type { CapabilityResult } from "@afenda/contracts";
+import type {
+  AuthContextResponse,
+  CapabilityResult,
+  PortalType,
+} from "@afenda/contracts";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -108,6 +112,24 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   });
 }
 
+/**
+ * Get auth context for progressive UI (SSO discovery, org disambiguation, MFA gating).
+ * Unauthenticated — no Bearer token required.
+ */
+export async function fetchAuthContext(
+  email: string,
+  portal: PortalType,
+): Promise<ApiSuccess<AuthContextResponse>> {
+  const res = await fetch(`${API_BASE}/v1/auth/context`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, portal }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Auth context API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
 /** List invoices with cursor pagination. */
 export async function fetchInvoices(params?: {
   cursor?: string;
@@ -129,6 +151,359 @@ export async function fetchInvoices(params?: {
 export async function fetchInvoice(id: string): Promise<ApiSuccess<InvoiceRow>> {
   const res = await apiFetch(`/v1/invoices/${id}`);
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List payment runs with cursor pagination. */
+export async function fetchPaymentRuns(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{
+  data: Array<{
+    id: string;
+    runNumber: string;
+    description: string | null;
+    paymentMethod: string;
+    currencyCode: string;
+    paymentDate: string;
+    totalAmountMinor: string;
+    totalDiscountMinor: string;
+    itemCount: number;
+    status: string;
+    createdAt: string;
+  }>;
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/payment-runs${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Payment runs API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List prepayments with cursor pagination. */
+export async function fetchPrepayments(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{
+  data: Array<{
+    id: string;
+    supplierId: string;
+    prepaymentNumber: string;
+    description: string | null;
+    currencyCode: string;
+    originalAmountMinor: string;
+    balanceMinor: string;
+    paymentDate: string;
+    paymentReference: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/prepayments${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Prepayments API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List payment terms with cursor pagination. */
+export async function fetchPaymentTerms(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<{
+  data: Array<{
+    id: string;
+    code: string;
+    description: string;
+    netDays: number;
+    discountPercent: string | null;
+    discountDays: number | null;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/payment-terms${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Payment terms API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List WHT certificates with cursor pagination. */
+export async function fetchWhtCertificates(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{
+  data: Array<{
+    id: string;
+    supplierId: string;
+    certificateNumber: string;
+    whtType: string;
+    jurisdictionCode: string;
+    currencyCode: string;
+    grossAmountMinor: string;
+    whtRatePercent: string;
+    whtAmountMinor: string;
+    netAmountMinor: string;
+    taxPeriod: string;
+    certificateDate: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/wht-certificates${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`WHT certificates API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Create a new payment run (DRAFT status). */
+export async function createPaymentRun(command: {
+  description?: string;
+  paymentMethod: string;
+  currencyCode: string;
+  paymentDate: string;
+}): Promise<ApiSuccess<{ id: string; runNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-payment-run", {
+    method: "POST",
+    body: JSON.stringify({
+      ...command,
+      idempotencyKey: crypto.randomUUID(),
+    }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create payment run failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Fetch AP aging report. */
+export async function fetchAgingReport(params?: {
+  asOfDate?: string;
+  supplierId?: string;
+}): Promise<
+  ApiSuccess<{
+    asOfDate: string;
+    suppliers: Array<{
+      supplierId: string;
+      supplierName: string;
+      totalOutstandingMinor: string;
+      invoiceCount: number;
+      buckets: Array<{
+        bucket: string;
+        minDays: number;
+        maxDays: number | null;
+        totalAmountMinor: string;
+        invoiceCount: number;
+        invoices: string[];
+      }>;
+    }>;
+    summary: {
+      totalOutstandingMinor: string;
+      totalInvoiceCount: number;
+      byBucket: Array<{
+        bucket: string;
+        minDays: number;
+        maxDays: number | null;
+        totalAmountMinor: string;
+        invoiceCount: number;
+        invoices: string[];
+      }>;
+    };
+  }>
+> {
+  const query = new URLSearchParams();
+  if (params?.asOfDate) query.set("asOfDate", params.asOfDate);
+  if (params?.supplierId) query.set("supplierId", params.supplierId);
+  const qs = query.toString();
+  const res = await apiFetch(`/api/v1/ap/aging${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Aging API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Fetch invoices in a specific aging bucket. */
+export async function fetchInvoicesByAgingBucket(
+  bucket: "current" | "1-30" | "31-60" | "61-90" | "90+",
+  params?: { asOfDate?: string },
+): Promise<
+  ApiSuccess<{
+    invoices: Array<{
+      id: string;
+      invoiceNumber: string;
+      supplierId: string;
+      invoiceDate: string;
+      dueDate: string;
+      amountMinor: string;
+      balanceMinor: string;
+      daysOverdue: number;
+      status: string;
+    }>;
+  }>
+> {
+  const query = new URLSearchParams();
+  if (params?.asOfDate) query.set("asOfDate", params.asOfDate);
+  const qs = query.toString();
+  const res = await apiFetch(
+    `/api/v1/ap/aging/${bucket}/invoices${qs ? `?${qs}` : ""}`,
+  );
+  if (!res.ok)
+    throw new Error(`Aging bucket API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Export payment run as ISO 20022 or NACHA file. Returns blob and filename for download. */
+export async function exportPaymentRunFile(
+  paymentRunId: string,
+  params:
+    | {
+        format: "ISO20022";
+        debtorName: string;
+        debtorIban: string;
+        debtorBic?: string;
+        debtorCurrency: string;
+      }
+    | {
+        format: "NACHA";
+        immediateDest: string;
+        immediateOrigin: string;
+        companyName: string;
+        companyId: string;
+        companyEntryDescription?: string;
+      },
+): Promise<{ blob: Blob; fileName: string }> {
+  const q = new URLSearchParams();
+  q.set("format", params.format);
+  if (params.format === "ISO20022") {
+    q.set("debtorName", params.debtorName);
+    q.set("debtorIban", params.debtorIban);
+    if (params.debtorBic) q.set("debtorBic", params.debtorBic);
+    q.set("debtorCurrency", params.debtorCurrency);
+  } else {
+    q.set("immediateDest", params.immediateDest);
+    q.set("immediateOrigin", params.immediateOrigin);
+    q.set("companyName", params.companyName);
+    q.set("companyId", params.companyId);
+    if (params.companyEntryDescription)
+      q.set("companyEntryDescription", params.companyEntryDescription);
+  }
+  const headers = await getApiHeaders();
+  const res = await fetch(
+    `${API_BASE}/v1/payment-runs/${paymentRunId}/export?${q}`,
+    {
+      headers: { ...headers },
+      credentials: "include",
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) {
+    const err = (await res.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    throw new Error(err?.error?.message ?? `Export failed (${res.status})`);
+  }
+  const blob = await res.blob();
+  const contentDisp = res.headers.get("Content-Disposition");
+  const fileName =
+    contentDisp?.match(/filename="?([^"]+)"?/)?.[1] ??
+    `payment-${params.format.toLowerCase()}.${
+      params.format === "ISO20022" ? "xml" : "ach"
+    }`;
+  return { blob, fileName };
+}
+
+/** Apply prepayment to an invoice. */
+export async function applyPrepayment(command: {
+  idempotencyKey: string;
+  prepaymentId: string;
+  invoiceId: string;
+  amountMinor: bigint | string;
+}): Promise<ApiSuccess<{ applicationId: string }>> {
+  const res = await apiFetch("/v1/commands/apply-prepayment", {
+    method: "POST",
+    body: JSON.stringify({
+      ...command,
+      amountMinor: String(command.amountMinor),
+    }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    throw new Error(body?.error?.message ?? `Apply prepayment failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Void an unused prepayment. */
+export async function voidPrepayment(command: {
+  idempotencyKey: string;
+  prepaymentId: string;
+  reason: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/void-prepayment", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    throw new Error(body?.error?.message ?? `Void prepayment failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Create a draft invoice. */
+export async function createInvoice(command: {
+  idempotencyKey: string;
+  supplierId: string;
+  amountMinor: bigint | string;
+  currencyCode: string;
+  dueDate?: string | null;
+  poReference?: string | null;
+}): Promise<ApiSuccess<{ id: string; invoiceNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-invoice", {
+    method: "POST",
+    body: JSON.stringify({
+      ...command,
+      amountMinor: String(command.amountMinor),
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create invoice failed (${res.status})`);
+  }
   return res.json();
 }
 

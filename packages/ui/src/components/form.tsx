@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react"
-import type { Label as LabelPrimitive } from "radix-ui"
-import { Slot } from "radix-ui"
+import * as React from "react";
+import type { Label as LabelPrimitive } from "radix-ui";
+import { Slot } from "radix-ui";
 import {
   Controller,
   FormProvider,
@@ -11,12 +11,12 @@ import {
   type ControllerProps,
   type FieldPath,
   type FieldValues,
-} from "react-hook-form"
+} from "react-hook-form";
 
-import { cn } from "../lib/utils"
-import { Label } from "./label"
+import { cn } from "../lib/utils";
+import { Label } from "./label";
 
-const Form = FormProvider
+const Form = FormProvider;
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,

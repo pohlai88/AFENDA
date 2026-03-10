@@ -1,21 +1,34 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   PILLAR 2 · DESIGN TOKENS — LIGHT MODE (Paper Ticket v2)
+   AFENDA · LIGHT TOKENS — Mineral Air v1
    ─────────────────────────────────────────────────────────────────────────
+   Philosophy
+   - premium institutional light mode
+   - clean, layered, not flat white
+   - consistent with AFENDA Atmosphere dark mode
+   - 4-layer elevation architecture:
+       L0 atmosphere / background
+       L1 operating surfaces
+       L2 elevated cards
+       L3 floating context
+       L4 modal / critical overlays
+   - optimized for:
+       dashboards
+       data grids
+       forms
+       shell nav
+       modals
+       popovers
+       command palette
+       portals
+
    All tokens defined at :root level — Tailwind v4 REQUIREMENT.
-   Placing these inside @layer base would cause v4 to strip them.
-
-   OKLCH anatomy: oklch(Lightness Chroma Hue)
-     L: 0 (black) → 1 (white) — perceptually linear
-     C: 0 (gray) → ~0.4 (max saturation)
-     H: 0-360 degrees on the color wheel
-
-   ⚠ TOKEN SYNC: Every token here MUST also exist in .dark and @theme inline.
-   Run `tools/audit/` to verify completeness.
+   TOKEN SYNC: Keep this in lockstep with .dark and @theme inline.
    ───────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* ═══════════════════════════════════════════════════════════════════════
      FOUNDATION — Density & Radius (base profile: 48px rows)
+     Required by @theme inline and _density.css
      ═══════════════════════════════════════════════════════════════════════ */
   --spacing-row-h: 3rem; /* 48px — legible macro view */
   --spacing-col-pad: 1rem; /* 16px — standard column padding */
@@ -23,286 +36,728 @@
   --radius: 0.5rem; /* 8px — base for shadcn radius scale */
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SURFACES — 4-Tier Depth System
+     0. CORE ATMOSPHERE / TEXT
      ═══════════════════════════════════════════════════════════════════════ */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --foreground-secondary: oklch(0.48 0 0);
 
-  --surface-50: oklch(1 0 0);
-  --surface-100: oklch(0.995 0 0);
-  --surface-200: oklch(0.985 0 0);
-  --surface-300: oklch(0.97 0 0);
-  --surface-400: oklch(0.94 0 0);
+  --background: oklch(0.985 0.004 250);
+  --foreground: oklch(0.22 0.01 250);
+  --foreground-secondary: oklch(0.42 0.012 250);
+  --foreground-tertiary: oklch(0.55 0.01 250);
+  --foreground-quaternary: oklch(0.68 0.008 250);
 
-  /* shadcn compatibility: card & popover */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--foreground-secondary);
+  --text-tertiary: var(--foreground-tertiary);
+  --text-quaternary: var(--foreground-quaternary);
+  --text-muted: var(--foreground-secondary);
+  --text-ghost: var(--foreground-quaternary);
+  --text-inverse: oklch(0.96 0.003 250);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     BORDERS — 3-Tier Visual Hierarchy
+     1. SURFACE ARCHITECTURE
      ═══════════════════════════════════════════════════════════════════════ */
-  --border-subtle: oklch(0.94 0 0 / 0.65);
-  --border: oklch(0.145 0 0 / 0.1);
-  --border-strong: oklch(0.58 0 0);
-  --input: oklch(0.95 0 0); 
+
+  --surface-0: var(--background);
+  --surface-25: oklch(0.978 0.004 250);
+  --surface-50: oklch(0.972 0.004 250);
+  --surface-75: oklch(0.966 0.004 250);
+
+  /* L1 / operating surfaces */
+  --surface-100: oklch(0.968 0.004 250);
+  --surface-150: oklch(0.962 0.0045 250);
+  --surface-175: oklch(0.956 0.005 250);
+  --surface-200: oklch(0.95 0.005 250);
+  --surface-225: oklch(0.944 0.0055 250);
+  --surface-250: oklch(0.938 0.006 250);
+
+  /* L2 / elevated content surfaces */
+  --surface-275: oklch(0.932 0.006 250);
+  --surface-300: oklch(0.926 0.0065 250);
+  --surface-325: oklch(0.92 0.007 250);
+  --surface-350: oklch(0.914 0.0075 250);
+
+  /* L3 / floating context */
+  --surface-375: oklch(0.984 0.0045 250);
+  --surface-400: oklch(0.988 0.004 250);
+  --surface-425: oklch(0.992 0.0035 250);
+
+  /* L4 / modal / critical overlays */
+  --surface-450: oklch(0.994 0.0035 250);
+  --surface-475: oklch(0.996 0.003 250);
+  --surface-500: oklch(0.998 0.0025 250);
+
+  --card: oklch(0.975 0.004 250);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(0.992 0.0035 250);
+  --popover-foreground: var(--foreground);
+
+  --modal: oklch(0.996 0.003 250);
+  --modal-foreground: var(--foreground);
+
+  --sheet: oklch(0.988 0.0038 250);
+  --sheet-foreground: var(--foreground);
+
+  --drawer: oklch(0.984 0.004 250);
+  --drawer-foreground: var(--foreground);
+
+  --tooltip: oklch(0.26 0.01 250);
+  --tooltip-foreground: oklch(0.96 0.003 250);
+
+  --glass-surface: color-mix(in oklab, white, transparent 14%);
+  --glass-surface-strong: color-mix(in oklab, white, transparent 8%);
+  --glass-border: color-mix(in oklab, var(--border), transparent 28%);
+  --glass-border-strong: color-mix(in oklab, var(--border-strong), transparent 18%);
+
+  --surface-teal: oklch(0.95 0.014 190);
+  --surface-blue: oklch(0.95 0.012 225);
+  --surface-violet: oklch(0.952 0.012 295);
+  --surface-amber: oklch(0.954 0.012 85);
+  --surface-emerald: oklch(0.95 0.012 155);
+  --surface-rose: oklch(0.95 0.012 20);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     INTERACTION — Focus & Selection
+     2. BORDERS / DIVIDERS / INPUT LINES
      ═══════════════════════════════════════════════════════════════════════ */
-  --ring: oklch(0.708 0 0);
-  --selection: oklch(0.93 0 0);
-  --selection-foreground: oklch(0.145 0 0);
 
-  /* Interaction overlays (light mode — darker foreground = smaller opacity) */
-  --overlay-hover: color-mix(in oklab, var(--foreground), transparent 96%);
-  --overlay-active: color-mix(in oklab, var(--foreground), transparent 92%);
-  --overlay-selected: color-mix(in oklab, var(--primary), transparent 90%);
-  --overlay-focus: color-mix(in oklab, var(--ring), transparent 82%);
+  --border-subtle: oklch(0.86 0.006 250 / 0.55);
+  --border: oklch(0.80 0.008 250 / 0.75);
+  --border-strong: oklch(0.72 0.01 250 / 0.82);
+  --border-stronger: oklch(0.64 0.012 250 / 0.88);
 
-  /* Focus ring tiers */
-  --ring-strong: var(--ring);
-  --ring-soft: color-mix(in oklab, var(--ring), transparent 70%);
+  --border-premium: oklch(0.76 0.05 85 / 0.78);
+  --border-interactive: oklch(0.70 0.05 220 / 0.78);
+  --border-success: oklch(0.68 0.06 155 / 0.74);
+  --border-warning: oklch(0.76 0.06 85 / 0.74);
+  --border-danger: oklch(0.64 0.07 25 / 0.74);
+  --border-info: oklch(0.68 0.05 200 / 0.74);
+
+  --input: oklch(0.82 0.008 250 / 0.75);
+  --input-hover: oklch(0.74 0.01 250 / 0.82);
+  --input-focus: var(--border-interactive);
+  --input-disabled: color-mix(in oklab, var(--border), transparent 42%);
+  --input-invalid: var(--border-danger);
+  --separator: var(--border-subtle);
+  --divider: var(--border-subtle);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC SYSTEMS — Primary / Secondary / Muted / Accent
+     3. INTERACTION / FOCUS / SELECTION / OVERLAYS
      ═══════════════════════════════════════════════════════════════════════ */
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(1 0 0);
-  --primary-hover: oklch(0.54 0.24 264.376);
-  --primary-active: oklch(0.45 0.22 264.376);
 
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: oklch(0.488 0.243 264.376);
+  --ring: oklch(0.62 0.11 190);
+  --ring-strong: oklch(0.58 0.12 190);
+  --ring-soft: color-mix(in oklab, var(--ring), transparent 76%);
+  --ring-interactive: oklch(0.60 0.09 228);
+  --ring-danger: oklch(0.58 0.17 25);
 
-  --muted: oklch(0.94 0.003 264);
-  --muted-foreground: oklch(0.55 0.01 286);
+  --selection: oklch(0.78 0.08 190 / 0.25);
+  --selection-foreground: oklch(0.24 0.02 190);
 
-  --accent: oklch(0.93 0.004 264);
-  --accent-foreground: oklch(0.488 0.243 264.376);
+  --overlay-hover: color-mix(in oklab, var(--foreground), transparent 97%);
+  --overlay-active: color-mix(in oklab, var(--foreground), transparent 94%);
+  --overlay-selected: color-mix(in oklab, var(--primary), transparent 88%);
+  --overlay-selected-strong: color-mix(in oklab, var(--primary), transparent 82%);
+  --overlay-focus: color-mix(in oklab, var(--ring), transparent 84%);
+  --overlay-interactive: color-mix(in oklab, var(--interactive), transparent 90%);
+  --overlay-premium: color-mix(in oklab, var(--premium), transparent 90%);
+  --overlay-danger: color-mix(in oklab, var(--destructive), transparent 88%);
+  --overlay-success: color-mix(in oklab, var(--success), transparent 90%);
+  --overlay-warning: color-mix(in oklab, var(--warning), transparent 90%);
+  --overlay-info: color-mix(in oklab, var(--info), transparent 90%);
 
-  --disabled-foreground: color-mix(in oklab, var(--foreground), transparent 45%);
-  --disabled-surface: color-mix(in oklab, var(--surface-200), transparent 18%);
-  --disabled-border: color-mix(in oklab, var(--border), transparent 38%);
+  --scrim: oklch(0.28 0.01 250 / 0.24);
+  --scrim-strong: oklch(0.22 0.01 250 / 0.34);
+  --backdrop: color-mix(in oklab, black, transparent 78%);
+
+  --focus-glow: 0 0 0 3px color-mix(in oklab, var(--ring), transparent 84%);
+  --focus-glow-danger: 0 0 0 3px color-mix(in oklab, var(--destructive), transparent 86%);
+  --focus-glow-interactive: 0 0 0 3px color-mix(in oklab, var(--interactive), transparent 86%);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     STATUS PALETTE
+     4. SEMANTIC LANES
      ═══════════════════════════════════════════════════════════════════════ */
-  --success: oklch(0.62 0.18 145);
-  --success-foreground: oklch(1 0 0);
-  --warning: oklch(0.78 0.14 85);
-  --warning-foreground: oklch(0.145 0 0);
-  --info: oklch(0.6 0.12 245);
-  --info-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
+
+  --primary: oklch(0.62 0.11 190);
+  --primary-foreground: oklch(0.98 0.003 190);
+  --primary-hover: oklch(0.58 0.11 190);
+  --primary-active: oklch(0.54 0.11 190);
+  --primary-soft: oklch(0.93 0.025 190);
+  --primary-muted: oklch(0.74 0.04 190);
+
+  --interactive: oklch(0.60 0.09 228);
+  --interactive-foreground: oklch(0.98 0.003 228);
+  --interactive-hover: oklch(0.56 0.09 228);
+  --interactive-active: oklch(0.52 0.09 228);
+  --interactive-soft: oklch(0.93 0.02 228);
+  --interactive-muted: oklch(0.72 0.035 228);
+
+  --premium: oklch(0.66 0.05 85);
+  --premium-foreground: oklch(0.98 0.003 85);
+  --premium-hover: oklch(0.62 0.05 85);
+  --premium-active: oklch(0.58 0.05 85);
+  --premium-soft: oklch(0.95 0.02 85);
+  --premium-muted: oklch(0.78 0.025 85);
+
+  --secondary: oklch(0.95 0.005 250);
+  --secondary-foreground: var(--foreground);
+
+  --accent: oklch(0.944 0.006 250);
+  --accent-foreground: var(--foreground);
+
+  --muted: oklch(0.938 0.006 250);
+  --muted-foreground: var(--foreground-secondary);
+
+  --neutral: oklch(0.56 0.008 250);
+  --neutral-foreground: oklch(0.98 0.003 250);
+  --neutral-soft: oklch(0.94 0.006 250);
+
+  --disabled-foreground: color-mix(in oklab, var(--foreground), transparent 56%);
+  --disabled-surface: color-mix(in oklab, var(--surface-200), transparent 20%);
+  --disabled-surface-strong: color-mix(in oklab, var(--surface-250), transparent 12%);
+  --disabled-border: color-mix(in oklab, var(--border), transparent 42%);
+  --disabled-icon: color-mix(in oklab, var(--foreground-secondary), transparent 48%);
+
+  --text-link: oklch(0.56 0.11 220);
+  --text-link-hover: oklch(0.50 0.11 220);
+  --text-link-visited: oklch(0.54 0.09 285);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     MARKET SEMANTICS
+     5. GLOBAL STATUS SYSTEM
      ═══════════════════════════════════════════════════════════════════════ */
-  --trade-up: oklch(0.62 0.18 145);
-  --trade-down: oklch(0.6 0.2 25);
-  --trade-flat: oklch(0.6 0 0);
-  --bid: oklch(0.6 0.16 240);
-  --ask: oklch(0.65 0.16 50);
 
-  /* Operational Market States */
-  --halted: oklch(0.55 0.2 310);
-  --stale: oklch(0.72 0.14 85);
-  --afterhours: oklch(0.68 0.12 255);
+  --success: oklch(0.64 0.14 155);
+  --success-foreground: oklch(0.98 0.003 155);
+  --success-bg: oklch(0.93 0.03 155);
+  --success-soft: color-mix(in oklab, var(--success), transparent 90%);
+
+  --warning: oklch(0.74 0.12 85);
+  --warning-foreground: oklch(0.24 0.02 85);
+  --warning-bg: oklch(0.95 0.03 85);
+  --warning-soft: color-mix(in oklab, var(--warning), transparent 90%);
+
+  --info: oklch(0.62 0.10 200);
+  --info-foreground: oklch(0.98 0.003 200);
+  --info-bg: oklch(0.94 0.025 200);
+  --info-soft: color-mix(in oklab, var(--info), transparent 90%);
+
+  --destructive: oklch(0.58 0.17 25);
+  --destructive-foreground: oklch(0.98 0.003 25);
+  --destructive-bg: oklch(0.94 0.03 25);
+  --destructive-soft: color-mix(in oklab, var(--destructive), transparent 90%);
+
+  --status-blocked: oklch(0.58 0.08 265);
+  --status-blocked-foreground: oklch(0.98 0.003 265);
+  --status-blocked-bg: oklch(0.94 0.02 265);
+
+  --status-archived: oklch(0.56 0.01 250);
+  --status-archived-foreground: oklch(0.98 0.003 250);
+  --status-archived-bg: oklch(0.94 0.006 250);
+
+  --status-escalated: oklch(0.68 0.12 35);
+  --status-escalated-foreground: oklch(0.98 0.003 35);
+  --status-escalated-bg: oklch(0.95 0.03 35);
+
+  --status-flagged: oklch(0.64 0.10 320);
+  --status-flagged-foreground: oklch(0.98 0.003 320);
+  --status-flagged-bg: oklch(0.95 0.025 320);
+
+  --status-paused: oklch(0.58 0.04 255);
+  --status-paused-foreground: oklch(0.98 0.003 255);
+  --status-paused-bg: oklch(0.94 0.015 255);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     DATA GRID SURFACE
+     6. MARKET / TRADING SEMANTICS
      ═══════════════════════════════════════════════════════════════════════ */
-  --grid: oklch(0.985 0 0);
-  --grid-foreground: oklch(0.145 0 0);
-  --grid-border: oklch(0.922 0 0);
+
+  --trade-up: oklch(0.64 0.16 150);
+  --trade-down: oklch(0.58 0.18 25);
+  --trade-flat: oklch(0.56 0.006 250);
+
+  --bid: oklch(0.60 0.10 230);
+  --ask: oklch(0.72 0.12 55);
+
+  --halted: oklch(0.62 0.12 310);
+  --stale: oklch(0.74 0.12 85);
+  --afterhours: oklch(0.58 0.06 255);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     7. DATA GRID / TABLE ARCHITECTURE
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --grid: oklch(0.972 0.004 250);
+  --grid-foreground: var(--foreground);
+  --grid-border: oklch(0.84 0.006 250 / 0.75);
+  --grid-border-strong: oklch(0.76 0.008 250 / 0.82);
+
+  --grid-header: oklch(0.956 0.005 250);
+  --grid-header-foreground: var(--foreground-tertiary);
+
   --grid-hover: var(--overlay-hover);
+  --grid-active: var(--overlay-active);
   --grid-selected: var(--overlay-selected);
   --grid-focus: var(--overlay-focus);
-  --stripe: color-mix(in oklab, var(--foreground), transparent 98%);
+
+  --stripe: color-mix(in oklab, black, transparent 98.5%);
+  --row-even: var(--stripe);
+  --row-odd: transparent;
+
+  --cell-muted: var(--foreground-tertiary);
+  --cell-meta: var(--foreground-quaternary);
+
+  --grid-sticky: color-mix(in oklab, var(--grid), black 1%);
+  --grid-sticky-shadow: inset -1px 0 0 var(--grid-border);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SIDEBAR
+     8. SIDEBAR / NAV / SHELL
      ═══════════════════════════════════════════════════════════════════════ */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.18 0.01 286);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --sidebar: oklch(0.964 0.005 250);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-muted: var(--foreground-secondary);
+  --sidebar-ghost: var(--foreground-quaternary);
+
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+
+  --sidebar-accent: oklch(0.95 0.005 250);
+  --sidebar-accent-foreground: var(--foreground);
+
+  --sidebar-border: oklch(0.84 0.006 250 / 0.75);
+  --sidebar-ring: var(--ring);
+
+  --sidebar-hover: var(--overlay-hover);
+  --sidebar-active: var(--overlay-selected);
+  --sidebar-selected: var(--overlay-selected-strong);
+
+  --topbar: oklch(0.978 0.004 250);
+  --topbar-foreground: var(--foreground);
+  --topbar-border: var(--border-subtle);
+
+  --app-shell: var(--background);
+  --page-shell: var(--surface-100);
+  --page-section: var(--surface-200);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     CHART PALETTE (8-stop)
+     9. CHART / DATAVIZ PALETTE
      ═══════════════════════════════════════════════════════════════════════ */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --chart-6: oklch(0.58 0.14 285);
-  --chart-7: oklch(0.65 0.1 195);
-  --chart-8: oklch(0.55 0.14 320);
 
-  /* Semantic Visualization Tokens */
-  --viz-positive: var(--chart-5);
-  --viz-negative: var(--chart-3);
+  --chart-1: oklch(0.62 0.10 195);
+  --chart-2: oklch(0.60 0.09 228);
+  --chart-3: oklch(0.74 0.12 85);
+  --chart-4: oklch(0.62 0.11 305);
+  --chart-5: oklch(0.60 0.13 25);
+  --chart-6: oklch(0.64 0.12 145);
+  --chart-7: oklch(0.58 0.06 255);
+  --chart-8: oklch(0.62 0.08 330);
+
+  --viz-positive: var(--chart-6);
+  --viz-negative: var(--chart-5);
   --viz-neutral: var(--chart-1);
+
   --viz-accent-1: var(--chart-2);
   --viz-accent-2: var(--chart-4);
-  --viz-accent-3: var(--chart-6);
+  --viz-accent-3: var(--chart-7);
   --viz-threshold: var(--chart-8);
-  --viz-target: var(--chart-7);
+  --viz-target: var(--chart-2);
+  --viz-baseline: var(--foreground-quaternary);
 
   --gauge-danger: var(--viz-negative);
-  --gauge-warning: var(--chart-4);
+  --gauge-warning: var(--chart-3);
   --gauge-success: var(--viz-positive);
 
   --waterfall-positive: var(--viz-positive);
   --waterfall-negative: var(--viz-negative);
   --waterfall-total: var(--viz-neutral);
 
+  --heat-low: oklch(0.90 0.02 230);
+  --heat-mid: oklch(0.76 0.08 195);
+  --heat-high: oklch(0.74 0.12 85);
+  --heat-critical: oklch(0.62 0.15 25);
+
   /* ═══════════════════════════════════════════════════════════════════════
-     FINANCE & ERP LIFECYCLE TOKENS
+     10. FINANCE / ERP LIFECYCLE TOKENS
      ═══════════════════════════════════════════════════════════════════════ */
-  --status-draft: oklch(0.6 0 0);
-  --status-draft-bg: oklch(0.95 0 0);
-  --status-pending: oklch(0.65 0.15 85);
-  --status-pending-bg: oklch(0.95 0.06 85);
-  --status-approved: oklch(0.5 0.12 220);
-  --status-approved-bg: oklch(0.95 0.04 220);
-  --status-posted: oklch(0.55 0.16 145);
-  --status-posted-bg: oklch(0.95 0.05 145);
-  --status-voided: oklch(0.55 0.18 25);
-  --status-voided-bg: oklch(0.95 0.05 25);
-  --status-overdue: oklch(0.5 0.2 25);
-  --status-overdue-bg: oklch(0.94 0.06 25);
-  --status-paid: oklch(0.5 0.14 145);
-  --status-paid-bg: oklch(0.94 0.04 145);
 
-  --status-partially-paid: oklch(0.58 0.12 175);
-  --status-partially-paid-bg: oklch(0.95 0.04 175);
-  --status-written-off: oklch(0.5 0 0);
-  --status-written-off-bg: oklch(0.94 0 0);
-  --status-cancelled: oklch(0.55 0.08 0);
-  --status-cancelled-bg: oklch(0.95 0.02 0);
-  --status-on-hold: oklch(0.6 0.14 280);
-  --status-on-hold-bg: oklch(0.95 0.04 280);
-  --status-in-review: oklch(0.58 0.12 200);
-  --status-in-review-bg: oklch(0.95 0.04 200);
-  --status-rejected: oklch(0.5 0.2 15);
-  --status-rejected-bg: oklch(0.94 0.06 15);
-  --status-matched: oklch(0.52 0.14 160);
-  --status-matched-bg: oklch(0.95 0.04 160);
-  --status-unmatched: oklch(0.6 0.14 55);
-  --status-unmatched-bg: oklch(0.95 0.05 55);
-  --status-reversed: oklch(0.55 0.12 310);
-  --status-reversed-bg: oklch(0.95 0.04 310);
-  --status-submitted: oklch(0.55 0.1 230);
-  --status-submitted-bg: oklch(0.95 0.04 230);
-  --status-closed: oklch(0.45 0 0);
-  --status-closed-bg: oklch(0.94 0 0);
-  --status-locked: oklch(0.42 0 0);
-  --status-locked-bg: oklch(0.93 0 0);
+  --status-draft: oklch(0.58 0.006 250);
+  --status-draft-foreground: oklch(0.98 0.003 250);
+  --status-draft-bg: oklch(0.95 0.006 250);
 
-  /* Supplier Portal Compliance */
-  --compliance-valid: oklch(0.52 0.14 145);
-  --compliance-valid-bg: oklch(0.95 0.04 145);
-  --compliance-expiring: oklch(0.62 0.16 85);
-  --compliance-expiring-bg: oklch(0.95 0.06 85);
-  --compliance-expired: oklch(0.52 0.2 25);
-  --compliance-expired-bg: oklch(0.94 0.06 25);
+  --status-pending: oklch(0.74 0.12 85);
+  --status-pending-foreground: oklch(0.24 0.02 85);
+  --status-pending-bg: oklch(0.95 0.03 85);
 
-  /* Fixed Asset Lifecycle */
-  --asset-cwip: oklch(0.6 0.12 200);
-  --asset-cwip-bg: oklch(0.95 0.04 200);
-  --asset-active: oklch(0.52 0.14 145);
-  --asset-active-bg: oklch(0.95 0.04 145);
-  --asset-impaired: oklch(0.55 0.18 35);
-  --asset-impaired-bg: oklch(0.94 0.06 35);
-  --asset-disposed: oklch(0.5 0 0);
-  --asset-disposed-bg: oklch(0.94 0 0);
+  --status-approved: oklch(0.60 0.09 220);
+  --status-approved-foreground: oklch(0.98 0.003 220);
+  --status-approved-bg: oklch(0.94 0.02 220);
 
-  /* Tax Lifecycle */
-  --tax-open: oklch(0.6 0.1 220);
-  --tax-open-bg: oklch(0.95 0.03 220);
-  --tax-filed: oklch(0.55 0.12 175);
-  --tax-filed-bg: oklch(0.95 0.04 175);
-  --tax-assessed: oklch(0.5 0.14 145);
-  --tax-assessed-bg: oklch(0.95 0.04 145);
-  --tax-adjusted: oklch(0.58 0.14 280);
-  --tax-adjusted-bg: oklch(0.95 0.04 280);
+  --status-posted: oklch(0.64 0.14 150);
+  --status-posted-foreground: oklch(0.98 0.003 150);
+  --status-posted-bg: oklch(0.93 0.03 150);
 
-  /* IFRS Classification */
-  --classification-ac: oklch(0.55 0.1 220);
-  --classification-ac-bg: oklch(0.95 0.03 220);
-  --classification-fvtpl: oklch(0.6 0.16 40);
-  --classification-fvtpl-bg: oklch(0.95 0.05 40);
-  --classification-fvoci: oklch(0.55 0.12 280);
-  --classification-fvoci-bg: oklch(0.95 0.04 280);
+  --status-voided: oklch(0.60 0.15 25);
+  --status-voided-foreground: oklch(0.98 0.003 25);
+  --status-voided-bg: oklch(0.94 0.03 25);
 
-  /* Hedge Accounting */
-  --hedge-designated: oklch(0.55 0.1 220);
-  --hedge-designated-bg: oklch(0.95 0.03 220);
-  --hedge-effective: oklch(0.52 0.14 145);
-  --hedge-effective-bg: oklch(0.95 0.04 145);
-  --hedge-ineffective: oklch(0.58 0.18 35);
-  --hedge-ineffective-bg: oklch(0.94 0.06 35);
-  --hedge-discontinued: oklch(0.5 0 0);
-  --hedge-discontinued-bg: oklch(0.94 0 0);
+  --status-overdue: oklch(0.58 0.17 25);
+  --status-overdue-foreground: oklch(0.98 0.003 25);
+  --status-overdue-bg: oklch(0.94 0.03 25);
 
-  /* Provisions (IAS 37) */
-  --provision-recognized: oklch(0.55 0.12 200);
-  --provision-recognized-bg: oklch(0.95 0.04 200);
-  --provision-utilized: oklch(0.55 0.14 145);
-  --provision-utilized-bg: oklch(0.95 0.04 145);
-  --provision-unwound: oklch(0.58 0.1 280);
-  --provision-unwound-bg: oklch(0.95 0.03 280);
+  --status-paid: oklch(0.64 0.12 145);
+  --status-paid-foreground: oklch(0.98 0.003 145);
+  --status-paid-bg: oklch(0.93 0.03 145);
 
-  /* Budget & Scenario */
-  --scenario-base: oklch(0.55 0.1 220);
-  --scenario-base-bg: oklch(0.95 0.03 220);
-  --scenario-upside: oklch(0.55 0.14 145);
-  --scenario-upside-bg: oklch(0.95 0.04 145);
-  --scenario-downside: oklch(0.55 0.18 25);
-  --scenario-downside-bg: oklch(0.94 0.05 25);
+  --status-partially-paid: oklch(0.62 0.10 175);
+  --status-partially-paid-foreground: oklch(0.98 0.003 175);
+  --status-partially-paid-bg: oklch(0.94 0.025 175);
 
-  /* Credit Management */
-  --credit-hold: oklch(0.55 0.2 25);
-  --credit-hold-bg: oklch(0.94 0.06 25);
-  --credit-warning: oklch(0.62 0.16 85);
-  --credit-warning-bg: oklch(0.95 0.06 85);
-  --credit-released: oklch(0.52 0.14 145);
-  --credit-released-bg: oklch(0.95 0.04 145);
+  --status-written-off: oklch(0.56 0.008 250);
+  --status-written-off-foreground: oklch(0.98 0.003 250);
+  --status-written-off-bg: oklch(0.94 0.006 250);
 
-  /* Bank Reconciliation */
-  --recon-matched: oklch(0.52 0.14 160);
-  --recon-matched-bg: oklch(0.95 0.04 160);
-  --recon-unmatched: oklch(0.6 0.14 55);
-  --recon-unmatched-bg: oklch(0.95 0.05 55);
-  --recon-suggested: oklch(0.58 0.12 200);
-  --recon-suggested-bg: oklch(0.95 0.04 200);
+  --status-cancelled: oklch(0.58 0.03 15);
+  --status-cancelled-foreground: oklch(0.98 0.003 15);
+  --status-cancelled-bg: oklch(0.95 0.015 15);
 
-  /* SLA / Urgency Indicators */
-  --sla-ok: oklch(0.55 0.14 145);
-  --sla-ok-bg: oklch(0.95 0.04 145);
-  --sla-warning: oklch(0.65 0.16 85);
-  --sla-warning-bg: oklch(0.95 0.06 85);
-  --sla-breach: oklch(0.55 0.2 25);
-  --sla-breach-bg: oklch(0.94 0.06 25);
+  --status-on-hold: oklch(0.62 0.10 280);
+  --status-on-hold-foreground: oklch(0.98 0.003 280);
+  --status-on-hold-bg: oklch(0.94 0.02 280);
 
-  /* Financial Data Formatting */
-  --debit: oklch(0.5 0.12 145);
-  --credit: oklch(0.55 0.16 25);
-  --variance-positive: oklch(0.55 0.14 145);
-  --variance-negative: oklch(0.55 0.16 25);
+  --status-in-review: oklch(0.62 0.10 200);
+  --status-in-review-foreground: oklch(0.98 0.003 200);
+  --status-in-review-bg: oklch(0.94 0.022 200);
+
+  --status-rejected: oklch(0.58 0.16 15);
+  --status-rejected-foreground: oklch(0.98 0.003 15);
+  --status-rejected-bg: oklch(0.94 0.03 15);
+
+  --status-matched: oklch(0.64 0.12 160);
+  --status-matched-foreground: oklch(0.98 0.003 160);
+  --status-matched-bg: oklch(0.93 0.03 160);
+
+  --status-unmatched: oklch(0.72 0.12 55);
+  --status-unmatched-foreground: oklch(0.24 0.02 55);
+  --status-unmatched-bg: oklch(0.95 0.03 55);
+
+  --status-reversed: oklch(0.62 0.09 310);
+  --status-reversed-foreground: oklch(0.98 0.003 310);
+  --status-reversed-bg: oklch(0.94 0.02 310);
+
+  --status-submitted: oklch(0.60 0.08 230);
+  --status-submitted-foreground: oklch(0.98 0.003 230);
+  --status-submitted-bg: oklch(0.94 0.018 230);
+
+  --status-closed: oklch(0.54 0.008 250);
+  --status-closed-foreground: oklch(0.98 0.003 250);
+  --status-closed-bg: oklch(0.93 0.006 250);
+
+  --status-locked: oklch(0.50 0.008 250);
+  --status-locked-foreground: oklch(0.98 0.003 250);
+  --status-locked-bg: oklch(0.92 0.006 250);
+
+  --status-open: oklch(0.60 0.08 220);
+  --status-open-foreground: oklch(0.98 0.003 220);
+  --status-open-bg: oklch(0.94 0.018 220);
+
+  --status-completed: oklch(0.64 0.12 150);
+  --status-completed-foreground: oklch(0.98 0.003 150);
+  --status-completed-bg: oklch(0.93 0.03 150);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     11. DOMAIN-SPECIFIC TOKENS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --compliance-valid: oklch(0.64 0.12 150);
+  --compliance-valid-foreground: oklch(0.98 0.003 150);
+  --compliance-valid-bg: oklch(0.93 0.03 150);
+
+  --compliance-expiring: oklch(0.74 0.12 85);
+  --compliance-expiring-foreground: oklch(0.24 0.02 85);
+  --compliance-expiring-bg: oklch(0.95 0.03 85);
+
+  --compliance-expired: oklch(0.58 0.17 25);
+  --compliance-expired-foreground: oklch(0.98 0.003 25);
+  --compliance-expired-bg: oklch(0.94 0.03 25);
+
+  --asset-cwip: oklch(0.62 0.10 200);
+  --asset-cwip-foreground: oklch(0.98 0.003 200);
+  --asset-cwip-bg: oklch(0.94 0.022 200);
+
+  --asset-active: oklch(0.64 0.12 150);
+  --asset-active-foreground: oklch(0.98 0.003 150);
+  --asset-active-bg: oklch(0.93 0.03 150);
+
+  --asset-impaired: oklch(0.66 0.12 35);
+  --asset-impaired-foreground: oklch(0.98 0.003 35);
+  --asset-impaired-bg: oklch(0.95 0.03 35);
+
+  --asset-disposed: oklch(0.54 0.008 250);
+  --asset-disposed-foreground: oklch(0.98 0.003 250);
+  --asset-disposed-bg: oklch(0.93 0.006 250);
+
+  --tax-open: oklch(0.60 0.08 220);
+  --tax-open-foreground: oklch(0.98 0.003 220);
+  --tax-open-bg: oklch(0.94 0.018 220);
+
+  --tax-filed: oklch(0.62 0.10 175);
+  --tax-filed-foreground: oklch(0.98 0.003 175);
+  --tax-filed-bg: oklch(0.94 0.022 175);
+
+  --tax-assessed: oklch(0.64 0.12 150);
+  --tax-assessed-foreground: oklch(0.98 0.003 150);
+  --tax-assessed-bg: oklch(0.93 0.03 150);
+
+  --tax-adjusted: oklch(0.62 0.09 280);
+  --tax-adjusted-foreground: oklch(0.98 0.003 280);
+  --tax-adjusted-bg: oklch(0.94 0.02 280);
+
+  --classification-ac: oklch(0.60 0.08 220);
+  --classification-ac-foreground: oklch(0.98 0.003 220);
+  --classification-ac-bg: oklch(0.94 0.018 220);
+
+  --classification-fvtpl: oklch(0.68 0.14 40);
+  --classification-fvtpl-foreground: oklch(0.98 0.003 40);
+  --classification-fvtpl-bg: oklch(0.95 0.03 40);
+
+  --classification-fvoci: oklch(0.62 0.09 280);
+  --classification-fvoci-foreground: oklch(0.98 0.003 280);
+  --classification-fvoci-bg: oklch(0.94 0.02 280);
+
+  --hedge-designated: oklch(0.60 0.08 220);
+  --hedge-designated-foreground: oklch(0.98 0.003 220);
+  --hedge-designated-bg: oklch(0.94 0.018 220);
+
+  --hedge-effective: oklch(0.64 0.12 150);
+  --hedge-effective-foreground: oklch(0.98 0.003 150);
+  --hedge-effective-bg: oklch(0.93 0.03 150);
+
+  --hedge-ineffective: oklch(0.66 0.12 35);
+  --hedge-ineffective-foreground: oklch(0.98 0.003 35);
+  --hedge-ineffective-bg: oklch(0.95 0.03 35);
+
+  --hedge-discontinued: oklch(0.54 0.008 250);
+  --hedge-discontinued-foreground: oklch(0.98 0.003 250);
+  --hedge-discontinued-bg: oklch(0.93 0.006 250);
+
+  --provision-recognized: oklch(0.62 0.10 200);
+  --provision-recognized-foreground: oklch(0.98 0.003 200);
+  --provision-recognized-bg: oklch(0.94 0.022 200);
+
+  --provision-utilized: oklch(0.64 0.12 150);
+  --provision-utilized-foreground: oklch(0.98 0.003 150);
+  --provision-utilized-bg: oklch(0.93 0.03 150);
+
+  --provision-unwound: oklch(0.62 0.08 280);
+  --provision-unwound-foreground: oklch(0.98 0.003 280);
+  --provision-unwound-bg: oklch(0.94 0.018 280);
+
+  --scenario-base: oklch(0.60 0.08 220);
+  --scenario-base-foreground: oklch(0.98 0.003 220);
+  --scenario-base-bg: oklch(0.94 0.018 220);
+
+  --scenario-upside: oklch(0.64 0.12 150);
+  --scenario-upside-foreground: oklch(0.98 0.003 150);
+  --scenario-upside-bg: oklch(0.93 0.03 150);
+
+  --scenario-downside: oklch(0.60 0.15 25);
+  --scenario-downside-foreground: oklch(0.98 0.003 25);
+  --scenario-downside-bg: oklch(0.94 0.03 25);
+
+  --credit-hold: oklch(0.58 0.17 25);
+  --credit-hold-foreground: oklch(0.98 0.003 25);
+  --credit-hold-bg: oklch(0.94 0.03 25);
+
+  --credit-warning: oklch(0.74 0.12 85);
+  --credit-warning-foreground: oklch(0.24 0.02 85);
+  --credit-warning-bg: oklch(0.95 0.03 85);
+
+  --credit-released: oklch(0.64 0.12 150);
+  --credit-released-foreground: oklch(0.98 0.003 150);
+  --credit-released-bg: oklch(0.93 0.03 150);
+
+  --recon-matched: oklch(0.64 0.12 160);
+  --recon-matched-foreground: oklch(0.98 0.003 160);
+  --recon-matched-bg: oklch(0.93 0.03 160);
+
+  --recon-unmatched: oklch(0.72 0.12 55);
+  --recon-unmatched-foreground: oklch(0.24 0.02 55);
+  --recon-unmatched-bg: oklch(0.95 0.03 55);
+
+  --recon-suggested: oklch(0.62 0.10 200);
+  --recon-suggested-foreground: oklch(0.98 0.003 200);
+  --recon-suggested-bg: oklch(0.94 0.022 200);
+
+  --sla-ok: oklch(0.64 0.12 150);
+  --sla-ok-foreground: oklch(0.98 0.003 150);
+  --sla-ok-bg: oklch(0.93 0.03 150);
+
+  --sla-warning: oklch(0.74 0.12 85);
+  --sla-warning-foreground: oklch(0.24 0.02 85);
+  --sla-warning-bg: oklch(0.95 0.03 85);
+
+  --sla-breach: oklch(0.58 0.17 25);
+  --sla-breach-foreground: oklch(0.98 0.003 25);
+  --sla-breach-bg: oklch(0.94 0.03 25);
+
+  --debit: oklch(0.64 0.12 150);
+  --credit: oklch(0.60 0.14 25);
+  --variance-positive: oklch(0.64 0.12 150);
+  --variance-negative: oklch(0.60 0.14 25);
+  --amount-neutral: var(--foreground);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     12. FORM CONTROLS / INPUT STATES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --field-bg: oklch(0.992 0.0035 250);
+  --field-bg-hover: oklch(0.988 0.004 250);
+  --field-bg-focus: oklch(0.994 0.003 250);
+  --field-foreground: var(--foreground);
+  --field-placeholder: var(--foreground-quaternary);
+  --field-border: var(--input);
+  --field-border-hover: var(--input-hover);
+  --field-border-focus: var(--input-focus);
+  --field-border-invalid: var(--input-invalid);
+
+  --checkbox-bg: var(--surface-250);
+  --checkbox-border: var(--border);
+  --checkbox-checked: var(--primary);
+
+  --radio-bg: var(--surface-250);
+  --radio-border: var(--border);
+  --radio-checked: var(--primary);
+
+  --switch-track: var(--surface-300);
+  --switch-track-checked: var(--primary);
+  --switch-thumb: oklch(0.998 0.002 250);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     13. FEEDBACK / LOADING / EMPTY STATES
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --skeleton: oklch(0.94 0.006 250);
+  --skeleton-highlight: oklch(0.97 0.004 250);
+
+  --spinner: var(--primary);
+  --progress-track: var(--surface-250);
+  --progress-value: var(--primary);
+
+  --empty-icon: var(--foreground-quaternary);
+  --empty-title: var(--foreground-secondary);
+  --empty-body: var(--foreground-tertiary);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     14. SCROLLBARS / DND / DROP / RESIZE
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: oklch(0.82 0.008 250);
+  --scrollbar-thumb-hover: oklch(0.74 0.01 250);
+
+  --drag-preview: color-mix(in oklab, var(--surface-300), transparent 8%);
+  --drop-target: color-mix(in oklab, var(--primary), transparent 84%);
+  --drop-target-strong: color-mix(in oklab, var(--primary), transparent 76%);
+
+  --resize-handle: var(--border);
+  --resize-handle-hover: var(--border-strong);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     15. SHADOWS / EDGES / DEPTH EFFECTS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --shadow-xs: 0 1px 3px oklch(0 0 0 / 0.04);
+  --shadow-sm: 0 4px 12px oklch(0 0 0 / 0.06);
+  --shadow-md: 0 8px 24px oklch(0 0 0 / 0.08);
+  --shadow-lg: 0 16px 36px oklch(0 0 0 / 0.10);
+  --shadow-xl: 0 24px 64px oklch(0 0 0 / 0.12);
+
+  --shadow-card-hover: 0 14px 32px oklch(0 0 0 / 0.10);
+  --shadow-popover: 0 18px 38px oklch(0 0 0 / 0.12), 0 0 0 1px oklch(0 0 0 / 0.03);
+  --shadow-modal: 0 28px 72px oklch(0 0 0 / 0.14), 0 0 0 1px oklch(0 0 0 / 0.04);
+
+  --elev-1-shadow: 0 6px 16px -10px oklch(0 0 0 / 0.12);
+  --elev-2-shadow: 0 12px 28px -14px oklch(0 0 0 / 0.14);
+  --elev-3-shadow: 0 18px 42px -18px oklch(0 0 0 / 0.16);
+  --elev-4-shadow: 0 24px 64px -22px oklch(0 0 0 / 0.18);
+
+  --shadow-inner: inset 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-inner-strong: inset 0 1px 4px oklch(0 0 0 / 0.07);
+
+  --edge-glow-primary: 0 0 0 1px color-mix(in oklab, var(--primary), transparent 76%);
+  --edge-glow-interactive: 0 0 0 1px color-mix(in oklab, var(--interactive), transparent 76%);
+  --edge-glow-premium: 0 0 0 1px color-mix(in oklab, var(--premium), transparent 76%);
+  --edge-glow-danger: 0 0 0 1px color-mix(in oklab, var(--destructive), transparent 76%);
+  --edge-glow-success: 0 0 0 1px color-mix(in oklab, var(--success), transparent 78%);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     16. MARKETING / HERO / WEBSITE PARITY
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --mk-bg: oklch(0.985 0.004 250);
+  --mk-bg-alt: oklch(0.978 0.004 250);
+  --mk-bg-deep: oklch(0.968 0.004 250);
+  --mk-bg-card: oklch(0.975 0.004 250);
+  --mk-bg-terminal: oklch(0.95 0.006 250);
+
+  --mk-text: oklch(0.22 0.01 250);
+  --mk-text-muted: oklch(0.44 0.012 250);
+  --mk-text-dim: oklch(0.56 0.01 250);
+  --mk-text-ghost: oklch(0.70 0.008 250);
+
+  --mk-border: oklch(0.84 0.006 250 / 0.72);
+  --mk-border-strong: oklch(0.74 0.008 250 / 0.80);
+
+  --mk-emerald: oklch(0.64 0.12 150);
+  --mk-emerald-light: oklch(0.76 0.08 150);
+  --mk-teal: oklch(0.62 0.11 190);
+  --mk-teal-light: oklch(0.76 0.07 190);
+  --mk-cyan: oklch(0.60 0.10 215);
+  --mk-cyan-light: oklch(0.74 0.06 215);
+  --mk-premium: var(--premium);
+  --mk-premium-light: oklch(0.80 0.03 85);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     17. MOTION / SPATIAL UI HINTS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --motion-fast: 120ms;
+  --motion-base: 160ms;
+  --motion-slow: 220ms;
+  --motion-emphasized: 280ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Duration aliases for @theme inline compatibility */
+  --duration-fast: var(--motion-fast);
+  --duration-normal: var(--motion-base);
+  --duration-slow: var(--motion-slow);
+
+  --ease-default: var(--ease-standard);
+  --ease-in: var(--ease-accelerate);
+  --ease-out: var(--ease-decelerate);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --transition-colors: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  --transition-shadow: box-shadow;
+  --transition-transform: transform;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     18. RADII / SHAPE TOKENS
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
 
   /* ═══════════════════════════════════════════════════════════════════════
      LAYOUT TOKENS
+     Required by @theme inline, _utilities.css, _density.css
      ═══════════════════════════════════════════════════════════════════════ */
   --shell-header-h: 3.5rem;
   --shell-content-max-w: 80rem;
@@ -334,49 +789,9 @@
   --layout-skeleton-chart: 400px;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOWS & EFFECTS
+     TYPOGRAPHY / SPACING
+     Required by @theme inline
      ═══════════════════════════════════════════════════════════════════════ */
-  --shadow-sm: 0 1px 2px oklch(0.15 0.02 260 / 0.06);
-  --shadow-md: 0 4px 12px oklch(0.15 0.02 260 / 0.08);
-  --shadow-lg: 0 8px 24px oklch(0.15 0.02 260 / 0.1);
-  --shadow-card-hover: 0 8px 30px oklch(0.15 0.02 260 / 0.12);
-  --shadow-popover: 0 8px 30px oklch(0.15 0.02 260 / 0.14), 0 0 1px oklch(0.15 0.02 260 / 0.08);
-  --shadow-modal: 0 24px 48px oklch(0.15 0.02 260 / 0.18), 0 0 1px oklch(0.15 0.02 260 / 0.1);
-
-  --elev-1-shadow: 0 10px 30px -18px oklch(0.15 0.02 260 / 0.12);
-  --elev-2-shadow: 0 18px 50px -22px oklch(0.15 0.02 260 / 0.16);
-  --elev-3-shadow: 0 28px 80px -30px oklch(0.15 0.02 260 / 0.20);
-  --shadow-inner: inset 0 1px 3px oklch(0.15 0.02 260 / 0.06);
-
-  --skeleton: oklch(0.94 0 0);
-  --skeleton-highlight: oklch(0.97 0 0);
-
-  --scrollbar-track: transparent;
-  --scrollbar-thumb: oklch(0.82 0 0);
-
-  --drag-preview: color-mix(in oklab, var(--surface-300), transparent 12%);
-  --drop-target: color-mix(in oklab, var(--primary), transparent 88%);
-
-  --glass-surface: color-mix(in oklab, var(--popover), transparent 8%);
-  --glass-border: color-mix(in oklab, var(--border), transparent 20%);
-
-  --scrim: oklch(0.15 0 0 / 0.45);
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     ANIMATION & TYPOGRAPHY
-     ═══════════════════════════════════════════════════════════════════════ */
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 400ms;
-  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  --transition-colors: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
-  --transition-shadow: box-shadow;
-  --transition-transform: transform;
-
   --fluid-display: clamp(2rem, 1.5rem + 2vw, 3.5rem);
   --fluid-h1: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
   --fluid-h2: clamp(1.375rem, 1rem + 1.2vw, 2rem);
@@ -388,9 +803,6 @@
   --ring-width: 2px;
   --ring-offset: -2px;
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     SPACING SCALE
-     ═══════════════════════════════════════════════════════════════════════ */
   --spacing-page-x: 1.5rem;
   --spacing-page-y: 1.5rem;
   --spacing-section-gap: 2rem;
@@ -402,28 +814,4 @@
   --spacing-wizard-step: 2.5rem;
   --spacing-split-gap: 0.5rem;
   --spacing-tree-indent: 1.25rem;
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     MARKETING TOKENS (Light Mode Parity)
-     ═══════════════════════════════════════════════════════════════════════ */
-  --mk-bg: oklch(0.98 0.005 260);
-  --mk-bg-alt: oklch(0.96 0.01 260);
-  --mk-bg-deep: oklch(0.94 0.015 260);
-  --mk-bg-card: oklch(1 0 0);
-  --mk-bg-terminal: oklch(0.15 0.02 260); 
-
-  --mk-text: oklch(0.2 0.02 260);
-  --mk-text-muted: oklch(0.45 0.02 260);
-  --mk-text-dim: oklch(0.55 0.02 260);
-  --mk-text-ghost: oklch(0.7 0.02 260);
-
-  --mk-border: oklch(0.9 0.01 260);
-  --mk-border-strong: oklch(0.75 0.02 260);
-
-  --mk-emerald: oklch(0.55 0.15 150);
-  --mk-emerald-light: oklch(0.65 0.18 150);
-  --mk-teal: oklch(0.55 0.12 180);
-  --mk-teal-light: oklch(0.65 0.15 180);
-  --mk-cyan: oklch(0.55 0.12 210);
-  --mk-cyan-light: oklch(0.65 0.15 210);
 }

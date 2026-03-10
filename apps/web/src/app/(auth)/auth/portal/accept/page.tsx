@@ -6,6 +6,7 @@ export default async function PortalAcceptPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const params = await searchParams;
+  const token = typeof params.token === "string" ? params.token : undefined;
 
-  return <PortalInvitationAcceptClient initialToken={typeof params.token === "string" ? params.token : undefined} />;
+  return <PortalInvitationAcceptClient initialToken={token} />;
 }

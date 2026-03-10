@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -12,8 +12,13 @@ import {
   Badge,
   Card,
   CardContent,
+  Button,
 } from "@afenda/ui";
+import { Banknote, XCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
+import { fetchPrepayments } from "@/lib/api-client";
+import { PrepaymentApplyDialog } from "./PrepaymentApplyDialog";
+import { PrepaymentVoidDialog } from "./PrepaymentVoidDialog";
 
 interface Prepayment {
   id: string;
@@ -32,22 +37,21 @@ interface Prepayment {
 export function PrepaymentListClient() {
   const [prepayments, setPrepayments] = useState<Prepayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applyPrep, setApplyPrep] = useState<Prepayment | null>(null);
+  const [voidPrep, setVoidPrep] = useState<Prepayment | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetchPrepayments();
+      setPrepayments(res.data || []);
+    } catch {
+      setPrepayments([]);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchPrepayments() {
-      try {
-        const res = await fetch("/api/v1/prepayments");
-        if (!res.ok) throw new Error("Failed to fetch prepayments");
-        const data = await res.json();
-        setPrepayments(data.data || []);
-      } catch (error) {
-        console.error("Error fetching prepayments:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPrepayments();
-  }, []);
+    refresh().finally(() => setLoading(false));
+  }, [refresh]);
 
   function getStatusBadge(status: string) {
     const variants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -95,6 +99,7 @@ export function PrepaymentListClient() {
               <TableHead className="text-right">Balance</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -123,11 +128,49 @@ export function PrepaymentListClient() {
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(prep.createdAt).toLocaleDateString()}
                 </TableCell>
+                <TableCell>
+                  {(prep.status === "PENDING" || prep.status === "AVAILABLE") && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setApplyPrep(prep)}
+                        aria-label={`Apply prepayment ${prep.prepaymentNumber}`}
+                      >
+                        <Banknote className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setVoidPrep(prep)}
+                        aria-label={`Void prepayment ${prep.prepaymentNumber}`}
+                      >
+                        <XCircle className="size-4" />
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
+      {applyPrep && (
+        <PrepaymentApplyDialog
+          prepayment={applyPrep}
+          open={!!applyPrep}
+          onOpenChange={(open) => !open && setApplyPrep(null)}
+          onSuccess={refresh}
+        />
+      )}
+      {voidPrep && (
+        <PrepaymentVoidDialog
+          prepayment={voidPrep}
+          open={!!voidPrep}
+          onOpenChange={(open) => !open && setVoidPrep(null)}
+          onSuccess={refresh}
+        />
+      )}
     </Card>
   );
 }
