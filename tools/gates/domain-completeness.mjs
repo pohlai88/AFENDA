@@ -52,6 +52,9 @@ const INFRA_TABLES = new Set([
   "iam_permission",
   "iam_role_permission",
   "iam_principal_role",
+  // ── Authentication infra ─────────────────────────────────────────────
+  // auth_login_attempt: internal security tracking table for account lockout
+  "auth_login_attempt",
   // ── Append-only history tables (covered by parent entity sync pair) ───
   "invoice_status_history",
   "evidence_operation",

@@ -15,6 +15,8 @@
 | File | Exports | Description |
 | ---- | ------- | ----------- |
 | `index.ts` | Re-exports all service and query modules | Barrel export |
+| `aging.service.ts` | `getAgingReport`, `GetAgingParams`, `AgingServiceResult` | AP aging report generation |
+| `aging.queries.ts` | `getInvoicesByAgingBucket`, `InvoiceAgingRow` | Aging bucket drill-down queries |
 | `invoice.service.ts` | `createInvoice`, `updateInvoice`, `InvoiceError` | Invoice business logic |
 | `invoice.queries.ts` | `getInvoice`, `listInvoices` | Invoice query functions |
 | `invoice-line.service.ts` | `createInvoiceLine`, `updateInvoiceLine` | Invoice line business logic |

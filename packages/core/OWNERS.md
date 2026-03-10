@@ -121,6 +121,38 @@ src/
     notification/ email/ webhook/ inbox/ chatter/ sms/
       index.ts                   ← stub placeholders (Sprint 5+)
     index.ts
+  projections/                 Portal projection/interaction layer
+    shared/                      Shared projection types + utilities
+      projection-envelope.ts       ProjectionEnvelope<T> wrapper + Zod schema
+      index.ts
+    supplier/                    Supplier portal projections
+      queries/                     Class A projections (read-only)
+        get-statement.ts             Get supplier statement (AP balance + payments)
+      composers/                   Class B projections (multi-domain composition)
+        build-dashboard.ts           Build supplier dashboard (AP + Treasury + Procurement)
+      interactions/                Class C projections (route to domain commands)
+        submit-invoice.ts            Submit invoice from supplier portal → AP domain
+      policies/                    Access control guards
+        can-view-invoice.ts          Portal-scoped permission checks
+      types/                       View model schemas
+        view-models.ts               SupplierStatementData, SupplierDashboardData
+      index.ts
+    customer/                    Customer portal projections
+      queries/ composers/ interactions/ policies/ types/
+      index.ts
+    investor/                    Investor portal projections
+      queries/ composers/ interactions/ policies/ types/
+      index.ts
+    contractor/                  Contractor portal projections
+      queries/ composers/ interactions/ policies/ types/
+      index.ts
+    franchisee/                  Franchisee portal projections
+      queries/ composers/ interactions/ policies/ types/
+      index.ts
+    cid/                         CID (internal) portal projections
+      queries/ composers/ interactions/ policies/ types/
+      index.ts
+    index.ts                     Root barrel — re-exports all portal modules
   index.ts                     Root barrel — re-exports pillar barrels only
 ```
 
@@ -134,6 +166,7 @@ Each pillar owns its own modules. No dedicated sub-OWNERS.md files currently exi
 | `kernel/`       | Identity resolution, governance (audit/evidence/policy), execution (outbox/idempotency/numbering), infrastructure (logger/telemetry/tracing/env) |
 | `erp/`          | Financial domain: money, posting, SoD, AP invoice service, GL posting service, supplier (stub) |
 | `comm/`         | Communication: notification, email, webhook stubs (Sprint 5+) |
+| `projections/`  | Portal projection/interaction layer — shapes domain truth for portal consumption |
 
 ### Nesting Rules
 
@@ -224,3 +257,150 @@ enforces parity: if the sets ever drift, CI fails.
 - Complex query builders (→ `@afenda/db` repositories)
 - HTTP handlers / routing (→ `apps/api`)
 - UI components (→ `@afenda/ui` or `apps/web`)
+
+---
+
+## Projection Layer Exports (Portal Architecture)
+
+The `projections/` directory implements the projection/interaction layer between
+canonical domain truth and portal-specific UI experiences.
+
+### Architecture
+
+```
+Canonical Domain Layer (AP, AR, IR, etc.)
+         ↓
+Projection/Interaction Layer (projections/)
+         ↓
+Portal Experience Layer (web/api routes)
+```
+
+### Key Principles
+
+1. **Domains own truth** — Canonical entities live in domain modules (erp/, kernel/)
+2. **Projections shape truth** — Transform domain data for portal consumption
+3. **Portals present truth** — UI consumes projections, never raw domain queries
+
+### Projection Classes
+
+| Class | Type        | Purpose                                      | Example                        |
+|-------|-------------|----------------------------------------------|--------------------------------|
+| A     | Read-only   | Simple domain queries with field filtering   | getSupplierStatement           |
+| B     | Composite   | Multi-domain aggregations and calculations   | buildSupplierDashboard         |
+| C     | Interaction | User actions that route to domain commands   | submitInvoiceFromPortal        |
+
+### Projection Envelope Standard
+
+All projections MUST wrap their data in `ProjectionEnvelope<T>`:
+
+```typescript
+import type { ProjectionEnvelope } from "@afenda/core/projections";
+
+export async function getSupplierStatement(
+  db: DbClient,
+  ctx: RequestContext,
+  supplierId: string
+): Promise<ProjectionEnvelope<SupplierStatementData>> {
+  // Query canonical domain
+  const balance = await getSupplierBalance(db, ctx, supplierId);
+  const payments = await getSupplierPayments(db, ctx, supplierId);
+  
+  // Wrap in envelope
+  return {
+    projectionType: "supplier-statement",
+    dominantDomain: "ap",
+    supportingDomains: ["treasury"],
+    correlationId: ctx.correlationId,
+    sourceRefs: {
+      ap: `balance:${supplierId}`,
+      treasury: `payments:${supplierId}`,
+    },
+    generatedAt: new Date(),
+    data: {
+      supplierId,
+      totalOutstanding: balance.totalOutstanding,
+      // ... shaped for supplier portal consumption
+    },
+  };
+}
+```
+
+### Interaction Pattern (Class C)
+
+Interactions NEVER write directly to domain tables. They always route to
+canonical domain commands:
+
+```typescript
+// ✅ CORRECT: Route to domain command
+export async function submitInvoiceFromPortal(
+  db: DbClient,
+  ctx: RequestContext,
+  command: SupplierSubmitInvoiceCommand
+): Promise<Result<Invoice>> {
+  // 1. Validate portal context
+  if (ctx.portal !== "supplier") {
+    return { ok: false, error: "PORTAL_UNAUTHORIZED" };
+  }
+  
+  // 2. Enrich with portal metadata
+  const enrichedCommand = {
+    ...command,
+    submittedVia: "supplier-portal",
+    submittedBy: ctx.principalId,
+  };
+  
+  // 3. Route to canonical AP domain
+  return submitInvoice(db, ctx, enrichedCommand); // ← Domain command handles everything
+}
+
+// ❌ WRONG: Direct database write
+export async function submitInvoiceFromPortal(...) {
+  await db.insert(apInvoice).values({ ... }); // ← Bypasses domain validation!
+}
+```
+
+### Portal-Specific Exports
+
+Each portal module exports:
+
+- **Queries** — Read-only projections (Class A)
+- **Composers** — Multi-domain aggregations (Class B)
+- **Interactions** — Command routing (Class C)
+- **Policies** — Access control guards
+- **Types** — View model schemas
+
+Example exports:
+
+```typescript
+// packages/core/src/projections/supplier/index.ts
+
+// Queries
+export { getSupplierStatement } from "./queries/get-statement.js";
+
+// Composers
+export { buildSupplierDashboard } from "./composers/build-dashboard.js";
+
+// Interactions
+export { submitInvoiceFromPortal } from "./interactions/submit-invoice.js";
+
+// Policies
+export { canViewInvoice, canSubmitInvoice } from "./policies/can-view-invoice.js";
+
+// Types
+export type * from "./types/view-models.js";
+```
+
+### Current Portal Modules
+
+| Portal Module | Dominant Domain | Status |
+|--------------|----------------|--------|
+| `supplier/`   | Accounts Payable (AP) | Scaffolded |
+| `customer/`   | Accounts Receivable (AR) | Scaffolded |
+| `investor/`   | Investor Relations (IR) | Scaffolded |
+| `contractor/` | Project Accounting | Scaffolded |
+| `franchisee/` | Franchise Management | Scaffolded |
+| `cid/`        | Platform Operations | Scaffolded |
+
+Functions will be added incrementally as portal features are implemented.
+
+---

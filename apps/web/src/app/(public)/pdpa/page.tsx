@@ -74,17 +74,17 @@ export default function PDPAPage() {
           <CardContent className="space-y-8">
             {/* Overview */}
             <section className="space-y-4">
-              <div className="rounded-lg border-l-4 border-blue-600 bg-blue-50 p-4 dark:bg-blue-950">
+              <div className="rounded-lg border-l-4 border-info bg-accent p-4">
                 <div className="flex items-start gap-3">
                   <FileText
-                    className="h-5 w-5 text-blue-600 mt-0.5 shrink-0"
+                    className="h-5 w-5 text-info mt-0.5 shrink-0"
                     aria-hidden="true"
                   />
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-100">
+                    <h3 className="font-semibold text-info">
                       PDPA Compliance Statement
                     </h3>
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <p className="text-sm text-info">
                       AFENDA is committed to full compliance with the Personal
                       Data Protection Act 2010 (Act 709) of Malaysia. We process
                       personal data in accordance with the seven (7) Data
@@ -100,7 +100,7 @@ export default function PDPAPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <BookOpen
-                  className="h-5 w-5 text-indigo-600"
+                  className="h-5 w-5 text-primary"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -196,7 +196,7 @@ export default function PDPAPage() {
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
                         <Check
-                          className="h-4 w-4 text-green-600"
+                          className="h-4 w-4 text-success"
                           aria-hidden="true"
                         />
                         {p.num}. {p.title}
@@ -223,7 +223,7 @@ export default function PDPAPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Database
-                  className="h-5 w-5 text-purple-600"
+                  className="h-5 w-5 text-primary"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -270,7 +270,7 @@ export default function PDPAPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Award
-                  className="h-5 w-5 text-orange-600"
+                  className="h-5 w-5 text-warning"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -305,7 +305,7 @@ export default function PDPAPage() {
                   ].map((s) => (
                     <li key={s.label} className="flex items-start gap-2">
                       <Check
-                        className="h-4 w-4 text-green-600 mt-0.5 shrink-0"
+                        className="h-4 w-4 text-success mt-0.5 shrink-0"
                         aria-hidden="true"
                       />
                       <span>
@@ -321,7 +321,7 @@ export default function PDPAPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Lock
-                  className="h-5 w-5 text-cyan-600"
+                  className="h-5 w-5 text-info"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -356,7 +356,7 @@ export default function PDPAPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <AlertCircle
-                  className="h-5 w-5 text-red-600"
+                  className="h-5 w-5 text-destructive"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -372,24 +372,24 @@ export default function PDPAPage() {
                 </p>
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">&bull;</span>
+                    <span className="text-info mt-0.5">&bull;</span>
                     <span>
                       Transfer to countries with adequate data protection
                       standards
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">&bull;</span>
+                    <span className="text-info mt-0.5">&bull;</span>
                     <span>Transfer with data subject consent</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">&bull;</span>
+                    <span className="text-info mt-0.5">&bull;</span>
                     <span>
                       Transfer necessary for contract performance
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-0.5">&bull;</span>
+                    <span className="text-info mt-0.5">&bull;</span>
                     <span>
                       Transfer with appropriate safeguards (Standard
                       Contractual Clauses)

@@ -1,6 +1,8 @@
 import { fetchCustomFieldDefs } from "@/lib/api-client";
 import { CustomFieldsClient } from "./CustomFieldsClient";
 
+export const dynamic = "force-dynamic";
+
 /** Custom fields settings — define entity-specific metadata fields. */
 export default async function CustomFieldsSettingsPage() {
   const { data } = await fetchCustomFieldDefs(undefined, true);

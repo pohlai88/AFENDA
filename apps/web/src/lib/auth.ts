@@ -4,6 +4,7 @@
  * Providers:
  * - CredentialsProvider: email + password verified via API verify-credentials
  * - GoogleProvider: OAuth 2.0 authentication via Google
+ * - GitHubProvider: OAuth 2.0 authentication via GitHub
  * 
  * Session strategy: JWT (so the API can verify tokens independently).
  */
@@ -11,6 +12,7 @@
 import type { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import type { PortalType } from "@afenda/contracts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -104,6 +106,10 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.GITHUB_SECRET ?? "",
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -120,11 +126,11 @@ export const authOptions: NextAuthOptions = {
         const authUser = user as User;
         token.email = authUser.email;
         
-        // For OAuth providers (Google), default to "app" portal
+        // For OAuth providers (Google, GitHub), default to "app" portal
         // For Credentials provider, use the portal from authorize()
-        if (account?.provider === "google") {
+        if (account?.provider === "google" || account?.provider === "github") {
           token.portal = "app";
-          token.provider = "google";
+          token.provider = account.provider;
         } else {
           token.portal = authUser.portal;
           token.provider = "credentials";

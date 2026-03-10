@@ -11,7 +11,7 @@ import {
   Label,
   Separator,
 } from "@afenda/ui";
-import { GoogleIcon } from "@afenda/ui/icons";
+import { GoogleIcon } from "@afenda/ui";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { AuthHeader } from "../_components/auth-header";
 import { AuthFooterLinks } from "../_components/auth-footer-links";

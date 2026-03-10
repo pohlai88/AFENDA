@@ -35,6 +35,8 @@ import * as rawWhtCertificateQueries from "./wht-certificate.queries.js";
 import * as rawInvoiceLineService from "./invoice-line.service.js";
 import * as rawInvoiceLineQueries from "./invoice-line.queries.js";
 import * as rawValidateInvoice from "./validate-invoice.js";
+import * as rawAgingService from "./aging.service.js";
+import * as rawAgingQueries from "./aging.queries.js";
 
 export type { MatchToleranceServiceError, MatchToleranceServiceResult, CreateMatchToleranceParams, UpdateMatchToleranceParams, DeactivateMatchToleranceParams } from "./match-tolerance.service.js";
 export type { MatchToleranceRow, MatchToleranceListParams } from "./match-tolerance.queries.js";
@@ -46,8 +48,11 @@ export type { WhtCertificateServiceError, WhtCertificateServiceResult, CreateWht
 export type { WhtCertificateRow, WhtCertificateListParams } from "./wht-certificate.queries.js";
 export type { InvoiceLineServiceError, InvoiceLineServiceResult, CreateInvoiceLineParams, UpdateInvoiceLineParams } from "./invoice-line.service.js";
 export type { InvoiceLineRow } from "./invoice-line.queries.js";
+export type { AgingServiceResult, AgingServiceError, GetAgingParams } from "./aging.service.js";
+export type { InvoiceAgingRow, GetInvoicesByAgingBucketParams } from "./aging.queries.js";
 
-// Functions — auto-wrapped with OTel spans
+// Calculators (pure functions)
+export * from "./calculators/index.js";
 const instrumented = instrumentService("ap", {
   ...rawInvoiceService,
   ...rawInvoiceQueries,
@@ -66,6 +71,8 @@ const instrumented = instrumentService("ap", {
   ...rawWhtCertificateService,
   ...rawWhtCertificateQueries,
   ...rawInvoiceLineService,
+  ...rawAgingService,
+  ...rawAgingQueries,
   ...rawInvoiceLineQueries,
   ...rawValidateInvoice,
 });
@@ -115,6 +122,8 @@ export const {
   updateInvoiceLine,
   deleteInvoiceLine,
   listInvoiceLines,
+  getAgingReport,
+  getInvoicesByAgingBucket,
   getInvoiceLineById,
   validateInvoice,
 } = instrumented;

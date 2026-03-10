@@ -7,12 +7,12 @@ Domain: `packages/ui/src/components/`
 Production-ready **shadcn/ui** component primitives installed via `shadcn@latest`.
 These are the real components — not stubs.
 
-**Current components (35 total):**
+**Current components (36 total):**
 Accordion, Alert, AlertDialog, Avatar, Badge, Breadcrumb, Button, Calendar, Card, 
 Checkbox, Combobox, Command, Dialog, DropdownMenu, Form, HoverCard, Input, 
 InputGroup, Label, NavigationMenu, Pagination, Popover, Progress, RadioGroup, 
-Select, Separator, Sheet, Sidebar, Skeleton, Sonner (toasts), Switch, Table, 
-Tabs, Textarea, Tooltip.
+Select, Separator, Sheet, Sidebar, Skeleton, Spinner, Sonner (toasts), Switch, 
+Table, Tabs, Textarea, Tooltip.
 
 ## Boundary
 

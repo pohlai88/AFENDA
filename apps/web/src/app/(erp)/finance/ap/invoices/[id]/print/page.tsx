@@ -26,7 +26,7 @@ export default async function InvoiceDetailPrintPage({
   const generatedAt = new Date().toISOString().slice(0, 19).replace("T", " ");
 
   return (
-    <div className="min-h-screen bg-white p-6 print:p-4">
+    <div className="min-h-screen bg-background p-6 print:p-4">
       <PrintOnMount />
       <div className="max-w-2xl">
         <h1 className="text-xl font-bold">Invoice {invoice.invoiceNumber}</h1>

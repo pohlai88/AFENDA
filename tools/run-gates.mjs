@@ -19,17 +19,21 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
  * Ordered list of gate scripts to run. Add new gates here.
  * 
  * Gates are organized by tier for clarity:
- *   - Phase 1: Static Correctness (7 gates)
- *   - Phase 1: Truth Correctness (7 gates)
+ *   - Phase 1: Static Correctness (9 gates)
+ *   - Phase 1: Truth Correctness (8 gates)
  *   - Phase 2: Runtime & Security (4 gates)
+ *   - Phase 2: UI Shell (1 gate)
+ * 
+ * Total: 22 gates
  */
 const GATES = [
-  // ── Phase 1: Static Correctness (7) ────────────────────────────────────
+  // ── Phase 1: Static Correctness (9) ────────────────────────────────────
   resolve(__dirname, "gates/boundaries.mjs"),
   resolve(__dirname, "gates/module-boundaries.mjs"),
   resolve(__dirname, "gates/catalog.mjs"),
   resolve(__dirname, "gates/test-location.mjs"),
   resolve(__dirname, "gates/token-compliance.mjs"),
+  resolve(__dirname, "gates/import-alias-validation.mjs"),
   resolve(__dirname, "gates/shadcn-enforcement.mjs"),
   resolve(__dirname, "gates/brand-usage.mjs"),
   resolve(__dirname, "gates/owners-lint.mjs"),

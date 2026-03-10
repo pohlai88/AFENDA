@@ -19,6 +19,7 @@ import {
   person,
 } from "@afenda/db";
 import {
+  IAM_ACCOUNT_LOCKED,
   IAM_CREDENTIALS_INVALID,
   IAM_EMAIL_ALREADY_REGISTERED,
   IAM_PORTAL_ACCESS_DENIED,
@@ -31,6 +32,7 @@ import {
   type PortalType,
 } from "@afenda/contracts";
 import { hashPassword, verifyPassword } from "./password.js";
+import { checkAccountLockout, recordLoginAttempt, formatLockoutMessage } from "./account-lockout.js";
 
 function createToken(): string {
   return randomBytes(32).toString("hex");
@@ -598,6 +600,12 @@ export async function verifyCredentialsForPortal(
 > {
   const normalizedEmail = normalizeEmail(email);
 
+  // Check for account lockout BEFORE attempting password verification
+  const lockoutStatus = await checkAccountLockout(db, normalizedEmail);
+  if (lockoutStatus.locked) {
+    return { ok: false, error: IAM_ACCOUNT_LOCKED };
+  }
+
   const rows = await db
     .select({ id: iamPrincipal.id, email: iamPrincipal.email, passwordHash: iamPrincipal.passwordHash })
     .from(iamPrincipal)
@@ -605,16 +613,39 @@ export async function verifyCredentialsForPortal(
     .limit(1);
 
   if (rows.length === 0) {
+    // Record failed attempt (principal not found)
+    await recordLoginAttempt(db, {
+      email: normalizedEmail,
+      success: false,
+      portal,
+      errorCode: IAM_CREDENTIALS_INVALID,
+    });
     return { ok: false, error: IAM_CREDENTIALS_INVALID };
   }
 
   const principal = rows[0];
   if (!principal?.id || !principal.passwordHash || !principal.email) {
+    // Record failed attempt (no password hash)
+    await recordLoginAttempt(db, {
+      email: normalizedEmail,
+      success: false,
+      portal,
+      principalId: principal?.id,
+      errorCode: IAM_CREDENTIALS_INVALID,
+    });
     return { ok: false, error: IAM_CREDENTIALS_INVALID };
   }
 
   const valid = await verifyPassword(password, principal.passwordHash);
   if (!valid) {
+    // Record failed attempt (wrong password)
+    await recordLoginAttempt(db, {
+      email: normalizedEmail,
+      success: false,
+      portal,
+      principalId: principal.id,
+      errorCode: IAM_CREDENTIALS_INVALID,
+    });
     return { ok: false, error: IAM_CREDENTIALS_INVALID };
   }
 
@@ -627,9 +658,25 @@ export async function verifyCredentialsForPortal(
       .limit(1);
 
     if (!portalMembership?.id) {
+      // Record failed attempt (no portal access)
+      await recordLoginAttempt(db, {
+        email: normalizedEmail,
+        success: false,
+        portal,
+        principalId: principal.id,
+        errorCode: IAM_PORTAL_INVITATION_REQUIRED,
+      });
       return { ok: false, error: IAM_PORTAL_INVITATION_REQUIRED };
     }
   }
+
+  // Record successful attempt
+  await recordLoginAttempt(db, {
+    email: normalizedEmail,
+    success: true,
+    portal,
+    principalId: principal.id,
+  });
 
   return {
     ok: true,
@@ -646,6 +693,9 @@ export function mapAuthErrorMessage(error: string): string {
   if (error === IAM_PORTAL_INVITATION_EXPIRED) return "Portal invitation token has expired";
   if (error === IAM_PORTAL_INVITATION_REQUIRED || error === IAM_PORTAL_ACCESS_DENIED) {
     return "This portal requires a valid invitation";
+  }
+  if (error === IAM_ACCOUNT_LOCKED) {
+    return "Account is temporarily locked due to too many failed login attempts. Please try again later.";
   }
   if (error === IAM_CREDENTIALS_INVALID) return "Invalid email or password";
   return "Authentication request failed";

@@ -7,6 +7,7 @@ import {
   uniqueIndex,
   index,
   check,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { tsz, rlsOrg, rlsPrincipal } from "../_helpers.js";
@@ -125,6 +126,11 @@ export const partyRole = pgTable(
 /**
  * MEMBERSHIP — links principal → party_role.
  * Single FK, full referential integrity. No polymorphic FKs.
+ * 
+ * Status tracking (ADR-0003):
+ *   - status: 'active' | 'revoked' | 'suspended'
+ *   - revoked_at: timestamp when membership was revoked (fail-closed: NULL = active)
+ *   - Fail-closed security: queries MUST filter by isNull(revoked_at) or status = 'active'
  */
 export const membership = pgTable(
   "membership",
@@ -136,12 +142,28 @@ export const membership = pgTable(
     partyRoleId: uuid("party_role_id")
       .notNull()
       .references(() => partyRole.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("active"),
+    revokedAt: tsz("revoked_at"),
+    revokedByPrincipalId: uuid("revoked_by_principal_id").references(() => iamPrincipal.id, {
+      onDelete: "set null",
+    }),
+    revocationReason: text("revocation_reason"),
     createdAt: tsz("created_at").defaultNow().notNull(),
   },
   (t) => [
+    check("membership_status_check", sql`${t.status} IN ('active','revoked','suspended')`),
+    check(
+      "membership_revoked_consistency_check",
+      sql`(${t.revokedAt} IS NULL AND ${t.status} != 'revoked') OR (${t.revokedAt} IS NOT NULL AND ${t.status} = 'revoked')`,
+    ),
     unique("membership_principal_party_role_uidx").on(t.principalId, t.partyRoleId),
     index("membership_principal_idx").on(t.principalId),
     index("membership_party_role_idx").on(t.partyRoleId),
+    index("membership_status_idx").on(t.status),
+    index("membership_revoked_at_idx").on(t.revokedAt).where(sql`${t.revokedAt} IS NOT NULL`),
+    index("membership_revoked_by_principal_id_idx")
+      .on(t.revokedByPrincipalId)
+      .where(sql`${t.revokedByPrincipalId} IS NOT NULL`),
     rlsPrincipal,
   ],
 );
@@ -262,7 +284,7 @@ export const authPortalInvitation = pgTable(
     updatedAt: tsz("updated_at").defaultNow().notNull(),
   },
   (t) => [
-    check("auth_portal_invitation_portal_check", sql`${t.portal} IN ('supplier','customer')`),
+    check("auth_portal_invitation_portal_check", sql`${t.portal} IN ('supplier','customer','cid','investor','franchisee','contractor')`),
     uniqueIndex("auth_portal_invitation_pending_uidx")
       .on(t.orgId, t.email, t.portal)
       .where(sql`accepted_at IS NULL`),
@@ -274,3 +296,38 @@ export const authPortalInvitation = pgTable(
     rlsOrg,
   ],
 );
+
+/**
+ * AUTH_LOGIN_ATTEMPT — track all login attempts for security monitoring and account lockout.
+ * Enables brute-force detection and account lockout after N failed attempts.
+ * 
+ * Lockout policy (configurable):
+ *   - 5 failed attempts within 15 minutes → 15-minute lockout
+ *   - Failed attempts auto-expire after 1 hour
+ */
+export const authLoginAttempt = pgTable(
+  "auth_login_attempt",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    principalId: uuid("principal_id").references(() => iamPrincipal.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    portal: text("portal").notNull(),
+    success: boolean("success").notNull(),
+    errorCode: text("error_code"),
+    attemptedAt: tsz("attempted_at").defaultNow().notNull(),
+    createdAt: tsz("created_at").defaultNow().notNull(),
+    updatedAt: tsz("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("auth_login_attempt_principal_id_idx").on(t.principalId),
+    index("auth_login_attempt_email_idx").on(t.email),
+    index("auth_login_attempt_attempted_at_idx").on(t.attemptedAt),
+    index("auth_login_attempt_ip_address_idx").on(t.ipAddress).where(sql`${t.ipAddress} IS NOT NULL`),
+    index("auth_login_attempt_email_failed_recent_idx")
+      .on(t.email, t.attemptedAt)
+      .where(sql`${t.success} = false`),
+  ],
+);
+

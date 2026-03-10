@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertCircle, Button } from "@afenda/ui";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@afenda/ui";
 
 export default function Error({
   error,

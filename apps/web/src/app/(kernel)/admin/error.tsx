@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { AlertTriangle, Button } from "@afenda/ui";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@afenda/ui";
 
 export default function Error({
   error,

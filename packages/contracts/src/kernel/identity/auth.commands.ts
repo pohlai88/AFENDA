@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { IdempotencyKeySchema } from "../execution/idempotency/request-key.js";
 
-export const PortalTypeValues = ["app", "supplier", "customer"] as const;
+export const PortalTypeValues = ["app", "supplier", "customer", "cid", "investor", "franchisee", "contractor"] as const;
 export type PortalType = (typeof PortalTypeValues)[number];
 export const PortalTypeSchema = z.enum(PortalTypeValues);
 
@@ -60,7 +60,7 @@ export const RequestPortalInvitationCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   email: z.string().email(),
   portal: PortalTypeSchema.refine((value) => value !== "app", {
-    message: "Portal invitation requires supplier or customer portal",
+    message: "Portal invitation requires supplier, customer, or cid portal",
   }),
   redirectUrl: z.string().url().optional(),
 });

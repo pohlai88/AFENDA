@@ -51,6 +51,11 @@ export function PortalInvitationAcceptClient({ initialToken }: { initialToken?: 
         return;
       }
 
+      if (result.portal === "cid") {
+        setSignInPath("/auth/portal/cid/signin");
+        return;
+      }
+
       setError(getAuthErrorMessage("AUTH_PORTAL_TYPE_UNSUPPORTED"));
     } catch (err) {
       if (err instanceof Error) {

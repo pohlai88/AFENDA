@@ -68,3 +68,5 @@ catalog:
   eslint-config-prettier: "10.1.5"
   prettier: "3.5.3"
   "@playwright/test": "1.52.0"
+  input-otp: "^1.4.2"
+  radix-ui: "^1.4.3"

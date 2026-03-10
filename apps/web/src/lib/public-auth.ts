@@ -81,7 +81,7 @@ export async function resetPasswordPublic(command: ResetPasswordCommand): Promis
 
 export async function acceptPortalInvitationPublic(
   command: AcceptPortalInvitationCommand,
-): Promise<{ portal: "supplier" | "customer" }> {
+): Promise<{ portal: "supplier" | "customer" | "cid" }> {
   const response = await fetch(`${API_BASE}/v1/auth/accept-portal-invitation`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -93,6 +93,6 @@ export async function acceptPortalInvitationPublic(
     throw toApiError(await parseApiError(response));
   }
 
-  const payload = (await response.json()) as { data: { portal: "supplier" | "customer" } };
+  const payload = (await response.json()) as { data: { portal: "supplier" | "customer" | "cid" } };
   return payload.data;
 }

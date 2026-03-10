@@ -14,3 +14,6 @@ export type { DbClient, OrgContext, CreateDbOptions, DbHealthResult } from "@afe
 // ── Pillar re-exports ────────────────────────────────────────────────────────
 export * from "./kernel/index.js";
 export * from "./erp/index.js";
+
+// ── Projection layer (portal interactions) ──────────────────────────────────
+export * from "./projections/index.js";

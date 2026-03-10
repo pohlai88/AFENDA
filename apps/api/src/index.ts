@@ -48,6 +48,7 @@ import { paymentRunItemRoutes } from "./routes/erp/finance/ap/payment-run-item.j
 import { paymentTermsRoutes } from "./routes/erp/finance/ap/payment-terms.js";
 import { prepaymentRoutes } from "./routes/erp/finance/ap/prepayment.js";
 import { whtCertificateRoutes } from "./routes/erp/finance/ap/wht-certificate.js";
+import apAgingRoutes from "./routes/erp/finance/ap/aging-routes.js";
 import { purchaseOrderRoutes } from "./routes/erp/purchasing/purchase-order.js";
 import { receiptRoutes } from "./routes/erp/purchasing/receipt.js";
 // Supplier sub-entity routes (templates — uncomment when implemented)
@@ -263,6 +264,7 @@ export async function buildApp() {
   await app.register(paymentTermsRoutes, { prefix: "/v1" });
   await app.register(prepaymentRoutes, { prefix: "/v1" });
   await app.register(whtCertificateRoutes, { prefix: "/v1" });
+  await app.register(apAgingRoutes);
   await app.register(purchaseOrderRoutes, { prefix: "/v1" });
   await app.register(receiptRoutes, { prefix: "/v1" });
   // Supplier sub-entity routes (templates — uncomment when implemented)

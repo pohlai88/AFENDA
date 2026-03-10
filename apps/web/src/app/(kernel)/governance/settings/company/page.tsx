@@ -1,6 +1,8 @@
 import { fetchOrganization, fetchSettings } from "@/lib/api-client";
 import { CompanySettingsClient } from "./CompanySettingsClient";
 
+export const dynamic = "force-dynamic";
+
 /** Company settings — org profile and company address fields. */
 export default async function CompanySettingsPage() {
   const [orgRes, settingsRes] = await Promise.all([

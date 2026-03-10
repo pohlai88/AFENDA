@@ -11,7 +11,7 @@
  * 
  * Usage:
  * ```ts
- * import { AUTH_ERROR_MESSAGES } from "@afenda/contracts/kernel/identity/auth-errors";
+ * import { AUTH_ERROR_MESSAGES } from "./auth-errors";
  * const message = AUTH_ERROR_MESSAGES[errorCode] ?? AUTH_ERROR_MESSAGES.Default;
  * ```
  */

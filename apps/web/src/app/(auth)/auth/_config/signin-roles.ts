@@ -1,6 +1,6 @@
 import type { PortalType } from "@afenda/contracts";
 import type { LucideIcon } from "lucide-react";
-import { Building2, User, Package, Users, TrendingUp } from "lucide-react";
+import { Building2, User, Package, Users, TrendingUp, Shield, Store, Wrench } from "lucide-react";
 
 /**
  * ROLES — Single source of truth for portal sign-in variants
@@ -98,7 +98,7 @@ export const ROLES = [
     value: "investor",
     label: "Investor",
     icon: TrendingUp,
-    portal: "app" as PortalType, // TODO: change to "investor" once backend portal type is added
+    portal: "investor" as PortalType,
     emailLabel: "Investor email",
     description: "Access financial statements and portfolio data",
     submitLabel: "Sign in to Investor Portal",
@@ -106,6 +106,47 @@ export const ROLES = [
     footerLinks: [
       { href: "/auth/reset-password", label: "Forgot password?" },
       { href: "/auth/portal/accept", label: "Accept invitation" },
+    ],
+  },
+  {
+    value: "franchisee",
+    label: "Franchisee",
+    icon: Store,
+    portal: "franchisee" as PortalType,
+    emailLabel: "Franchisee email",
+    description: "Manage your franchise location and operations",
+    submitLabel: "Sign in to Franchisee Portal",
+    showGoogle: false,
+    footerLinks: [
+      { href: "/auth/reset-password", label: "Forgot password?" },
+      { href: "/auth/portal/accept", label: "Accept invitation" },
+    ],
+  },
+  {
+    value: "contractor",
+    label: "Contractor",
+    icon: Wrench,
+    portal: "contractor" as PortalType,
+    emailLabel: "Contractor email",
+    description: "Access work orders and project documentation",
+    submitLabel: "Sign in to Contractor Portal",
+    showGoogle: false,
+    footerLinks: [
+      { href: "/auth/reset-password", label: "Forgot password?" },
+      { href: "/auth/portal/accept", label: "Accept invitation" },
+    ],
+  },
+  {
+    value: "cid",
+    label: "Central Intelligence",
+    icon: Shield,
+    portal: "cid" as PortalType,
+    emailLabel: "CID email",
+    description: "AFENDA Central Intelligence Team portal — multi-tenant administration",
+    submitLabel: "Sign in to CID Portal",
+    showGoogle: false,
+    footerLinks: [
+      { href: "/auth/reset-password", label: "Forgot password?" },
     ],
   },
 ] as const satisfies readonly RoleConfig[];

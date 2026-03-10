@@ -1,6 +1,8 @@
 import { fetchAuditLogs } from "@/lib/api-client";
 import { AuditLogsClient } from "./AuditLogsClient";
 
+export const dynamic = "force-dynamic";
+
 /** Audit logs — compliance trail with cursor pagination. */
 export default async function AuditLogsPage() {
   const { data, cursor, hasMore } = await fetchAuditLogs({ limit: 20 });

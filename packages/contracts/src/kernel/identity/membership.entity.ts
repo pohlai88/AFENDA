@@ -33,6 +33,12 @@ export type PartyRole = z.infer<typeof PartyRoleSchema>;
 // ─── Membership ──────────────────────────────────────────────────────────────
 
 /**
+ * Membership status values.
+ */
+export const MembershipStatusValues = ["active", "revoked", "suspended"] as const;
+export type MembershipStatus = (typeof MembershipStatusValues)[number];
+
+/**
  * Links a principal (authenticated actor) to a party_role (hat).
  *
  * This is the single source of truth for "who can act as what":
@@ -46,6 +52,10 @@ export const MembershipSchema = z.object({
   id: z.string().uuid().brand<"MembershipId">(),
   principalId: PrincipalIdSchema,
   partyRoleId: PartyRoleIdSchema,
+  status: z.enum(MembershipStatusValues),
+  revokedAt: UtcDateTimeSchema.optional(),
+  revokedByPrincipalId: PrincipalIdSchema.optional(),
+  revocationReason: z.string().optional(),
   createdAt: UtcDateTimeSchema,
 });
 

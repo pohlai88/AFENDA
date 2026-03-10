@@ -44,7 +44,7 @@ export default function GlobalsTestPage() {
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          Toggle theme (sun/moon in auth shell) — surfaces should switch between
+          Change theme (sun/moon in auth shell) — surfaces should change between
           light and dark. If they do not, design system tokens are missing from the build.
         </p>
       </div>

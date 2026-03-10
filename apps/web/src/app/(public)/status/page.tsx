@@ -103,22 +103,22 @@ function StatusIcon({ status }: { status: ServiceStatus }) {
   switch (status) {
     case "operational":
       return (
-        <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
+        <CheckCircle className="h-5 w-5 text-success" aria-hidden="true" />
       );
     case "degraded":
       return (
         <AlertTriangle
-          className="h-5 w-5 text-yellow-600"
+          className="h-5 w-5 text-warning"
           aria-hidden="true"
         />
       );
     case "outage":
       return (
-        <XCircle className="h-5 w-5 text-red-600" aria-hidden="true" />
+        <XCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
       );
     case "maintenance":
       return (
-        <Wrench className="h-5 w-5 text-blue-600" aria-hidden="true" />
+        <Wrench className="h-5 w-5 text-info" aria-hidden="true" />
       );
   }
 }
@@ -126,7 +126,7 @@ function StatusIcon({ status }: { status: ServiceStatus }) {
 function StatusBadge({ status }: { status: ServiceStatus }) {
   switch (status) {
     case "operational":
-      return <Badge className="bg-green-600">Operational</Badge>;
+      return <Badge className="bg-success">Operational</Badge>;
     case "degraded":
       return <Badge variant="secondary">Degraded Performance</Badge>;
     case "outage":
@@ -143,18 +143,18 @@ export default async function StatusPage() {
     <div className="container mx-auto max-w-5xl px-4 py-16">
       <div className="w-full space-y-8">
         {/* Simulated Data Disclaimer */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+        <div className="rounded-lg border border-border bg-accent p-4">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" aria-hidden="true" />
+            <Info className="h-5 w-5 text-info mt-0.5 shrink-0" aria-hidden="true" />
             <div className="flex-1 text-sm">
-              <p className="font-semibold text-blue-900 dark:text-blue-100">
+              <p className="font-semibold text-info">
                 Simulated Data
               </p>
-              <p className="text-blue-800 dark:text-blue-200 mt-1">
+              <p className="text-info mt-1">
                 This status page currently displays simulated service health data. In
                 production, this will be replaced with real-time monitoring from Datadog,
                 Grafana, or custom health checks. See{" "}
-                <Link href="/sla" className="underline hover:text-blue-600">
+                <Link href="/sla" className="underline hover:text-info">
                   SLA page
                 </Link>{" "}
                 for our uptime commitments.
@@ -235,7 +235,7 @@ export default async function StatusPage() {
             {status.incidents.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <CheckCircle
-                  className="h-12 w-12 mx-auto mb-3 text-green-600"
+                  className="h-12 w-12 mx-auto mb-3 text-success"
                   aria-hidden="true"
                 />
                 <p className="font-semibold">No incidents reported</p>
@@ -292,19 +292,19 @@ export default async function StatusPage() {
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="text-center p-4 rounded-lg border">
-                <p className="text-3xl font-bold text-green-600">99.97%</p>
+                <p className="text-3xl font-bold text-success">99.97%</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Overall Uptime
                 </p>
               </div>
               <div className="text-center p-4 rounded-lg border">
-                <p className="text-3xl font-bold text-blue-600">42ms</p>
+                <p className="text-3xl font-bold text-info">42ms</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Avg Response Time
                 </p>
               </div>
               <div className="text-center p-4 rounded-lg border">
-                <p className="text-3xl font-bold text-purple-600">0</p>
+                <p className="text-3xl font-bold text-primary">0</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Active Incidents
                 </p>

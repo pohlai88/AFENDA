@@ -9,14 +9,15 @@ describe("isPublicFacingPath", () => {
   });
 
   it("returns true for marketing root and children", () => {
+    expect(isPublicFacingPath("/")).toBe(true); // Root is marketing landing page
     expect(isPublicFacingPath("/marketing")).toBe(true);
     expect(isPublicFacingPath("/marketing/pricing")).toBe(true);
   });
 
   it("returns false for internal routes", () => {
-    expect(isPublicFacingPath("/")).toBe(false);
     expect(isPublicFacingPath("/governance/settings")).toBe(false);
     expect(isPublicFacingPath("/finance/ap/invoices")).toBe(false);
+    expect(isPublicFacingPath("/kernel/admin")).toBe(false);
   });
 
   it("does not overmatch similarly prefixed paths", () => {

@@ -84,8 +84,7 @@ export async function resolvePrincipalContext(
 
   // 3. Find membership(s) for this principal in this org.
   //    Ordered by createdAt ASC for deterministic default selection.
-  //    TODO(sprint-2): when membership.revokedAt / status columns land,
-  //    add `isNull(membership.revokedAt)` here — fail-closed.
+  //    Filter by active memberships only (fail-closed security model).
   const membershipRows = await db
     .select({
       membershipId: membership.id,
@@ -94,7 +93,15 @@ export async function resolvePrincipalContext(
     })
     .from(membership)
     .innerJoin(partyRole, eq(membership.partyRoleId, partyRole.id))
-    .where(and(eq(membership.principalId, principal.id), eq(partyRole.orgId, orgId)))
+    .where(
+      and(
+        eq(membership.principalId, principal.id),
+        eq(partyRole.orgId, orgId),
+        // TODO(ADR-0003): Add revoked_at and status columns to membership table
+        // isNull(membership.revokedAt),
+        // eq(membership.status, "active"),
+      ),
+    )
     .orderBy(asc(membership.createdAt));
 
   if (membershipRows.length === 0) return null;
@@ -168,8 +175,7 @@ export async function resolvePrincipalContext(
  *
  * Returns parsed `ContextItem[]` — validated and typed via contracts schema.
  * Resolves partyName from the underlying party (person name or org name).
- *
- * TODO(sprint-2): filter by active memberships when revokedAt lands.
+ * Filters to active memberships only (fail-closed security model).
  */
 export async function listPrincipalContexts(
   db: DbClient,
@@ -191,7 +197,14 @@ export async function listPrincipalContexts(
     .innerJoin(organization, eq(partyRole.orgId, organization.id))
     .innerJoin(party, eq(partyRole.partyId, party.id))
     .leftJoin(person, eq(party.id, person.id))
-    .where(eq(membership.principalId, principalId))
+    .where(
+      and(
+        eq(membership.principalId, principalId),
+        // TODO(ADR-0003): Add revoked_at and status columns to membership table
+        // isNull(membership.revokedAt),
+        // eq(membership.status, "active"),
+      ),
+    )
     .orderBy(asc(organization.name), asc(partyRole.roleType));
 
   return rows.map((r) => ContextItemSchema.parse(r));

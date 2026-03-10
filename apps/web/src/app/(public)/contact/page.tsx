@@ -46,7 +46,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Mail
-                      className="h-5 w-5 text-blue-600"
+                      className="h-5 w-5 text-info"
                       aria-hidden="true"
                     />
                     <CardTitle className="text-base">
@@ -64,7 +64,7 @@ export default function ContactPage() {
                       <strong>Email:</strong>{" "}
                       <a
                         href={`mailto:${SUPPORT_EMAIL}`}
-                        className="text-blue-600 hover:underline"
+                        className="text-info hover:underline"
                       >
                         {SUPPORT_EMAIL}
                       </a>
@@ -80,7 +80,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Shield
-                      className="h-5 w-5 text-red-600"
+                      className="h-5 w-5 text-destructive"
                       aria-hidden="true"
                     />
                     <CardTitle className="text-base">
@@ -98,7 +98,7 @@ export default function ContactPage() {
                       <strong>Email:</strong>{" "}
                       <a
                         href={`mailto:${SUPPORT_EMAIL}`}
-                        className="text-red-600 hover:underline"
+                        className="text-destructive hover:underline"
                       >
                         {SUPPORT_EMAIL}
                       </a>
@@ -114,7 +114,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Headphones
-                      className="h-5 w-5 text-green-600"
+                      className="h-5 w-5 text-success"
                       aria-hidden="true"
                     />
                     <CardTitle className="text-base">
@@ -132,7 +132,7 @@ export default function ContactPage() {
                       <strong>Email:</strong>{" "}
                       <a
                         href={`mailto:${SUPPORT_EMAIL}`}
-                        className="text-green-600 hover:underline"
+                        className="text-success hover:underline"
                       >
                         {SUPPORT_EMAIL}
                       </a>
@@ -148,7 +148,7 @@ export default function ContactPage() {
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <FileText
-                      className="h-5 w-5 text-purple-600"
+                      className="h-5 w-5 text-primary"
                       aria-hidden="true"
                     />
                     <CardTitle className="text-base">
@@ -166,7 +166,7 @@ export default function ContactPage() {
                       <strong>Email:</strong>{" "}
                       <a
                         href="mailto:legal@nexuscanon.com"
-                        className="text-purple-600 hover:underline"
+                        className="text-primary hover:underline"
                       >
                         legal@nexuscanon.com
                       </a>
@@ -182,7 +182,7 @@ export default function ContactPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Contact
-                  className="h-5 w-5 text-indigo-600"
+                  className="h-5 w-5 text-primary"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">Contact Information</h3>
@@ -194,7 +194,7 @@ export default function ContactPage() {
                   <p className="text-sm text-muted-foreground">
                     <a
                       href={`mailto:${SUPPORT_EMAIL}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-info hover:underline"
                     >
                       {SUPPORT_EMAIL}
                     </a>
@@ -227,11 +227,11 @@ export default function ContactPage() {
                 <p>Please check these resources first:</p>
                 <ul className="space-y-2 ml-4">
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 mt-0.5">&bull;</span>
+                    <span className="text-primary mt-0.5">&bull;</span>
                     <span>
                       <Link
                         href="/status"
-                        className="text-blue-600 hover:underline"
+                        className="text-info hover:underline"
                       >
                         System Status
                       </Link>{" "}
@@ -239,11 +239,11 @@ export default function ContactPage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 mt-0.5">&bull;</span>
+                    <span className="text-primary mt-0.5">&bull;</span>
                     <span>
                       <Link
                         href="/privacy"
-                        className="text-blue-600 hover:underline"
+                        className="text-info hover:underline"
                       >
                         Privacy Policy
                       </Link>{" "}
@@ -251,11 +251,11 @@ export default function ContactPage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 mt-0.5">&bull;</span>
+                    <span className="text-primary mt-0.5">&bull;</span>
                     <span>
                       <Link
                         href="/terms"
-                        className="text-blue-600 hover:underline"
+                        className="text-info hover:underline"
                       >
                         Terms of Service
                       </Link>{" "}

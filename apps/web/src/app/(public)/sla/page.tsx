@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle, Clock, Shield, Zap, Activity, AlertTriangle } from "lucide-react";
+import { CheckCircle, Clock, Shield, Zap, Activity, AlertTriangle, Info, Wrench } from "lucide-react";
 
 import {
   Badge,
@@ -34,28 +34,28 @@ const slaMetrics = [
     value: "99.95%",
     description: "Maximum 21.9 minutes downtime per month",
     icon: CheckCircle,
-    color: "text-green-500",
+    color: "text-success",
   },
   {
     label: "Recovery Time (RTO)",
     value: "< 30 min",
     description: "Maximum time to restore service after incident",
     icon: Clock,
-    color: "text-blue-500",
+    color: "text-info",
   },
   {
     label: "Recovery Point (RPO)",
     value: "< 1 min",
     description: "Maximum data loss window during incident",
     icon: Shield,
-    color: "text-teal-500",
+    color: "text-success",
   },
   {
     label: "Data Durability",
     value: "11 nines",
     description: "99.999999999% annual durability guarantee",
     icon: Shield,
-    color: "text-purple-500",
+    color: "text-primary",
   },
 ];
 
@@ -161,27 +161,38 @@ export default function SLAPage() {
             <section>
               <h3 className="font-semibold text-sm mb-4">SLA Commitments</h3>
               <div className="grid gap-4 md:grid-cols-2">
-                {slaMetrics.map((metric) => {
-                  const Icon = metric.icon;
-                  return (
-                    <Card key={metric.label} className="border-muted">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-lg bg-primary/10 p-2">
-                            <Icon className={`h-5 w-5 ${metric.color}`} aria-hidden="true" />
+                {slaMetrics.length > 0 ? (
+                  slaMetrics.map((metric) => {
+                    const Icon = metric.icon;
+                    return (
+                      <Card key={metric.label} className="border-muted">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start gap-3">
+                            <div className="rounded-lg bg-primary/10 p-2">
+                              <Icon className={`h-5 w-5 ${metric.color}`} aria-hidden="true" />
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-sm">{metric.label}</CardTitle>
+                              <p className="text-2xl font-bold mt-1">{metric.value}</p>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-sm">{metric.label}</CardTitle>
-                            <p className="text-2xl font-bold mt-1">{metric.value}</p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-xs text-muted-foreground">{metric.description}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-xs text-muted-foreground">{metric.description}</p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Card className="border-muted">
+                    <CardContent className="py-8">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
+                      <p>No data available</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </section>
 
@@ -191,21 +202,30 @@ export default function SLAPage() {
             <section className="space-y-4">
               <h3 className="font-semibold text-sm">Component Availability</h3>
               <div className="grid gap-3">
-                {componentSLA.map((item) => (
-                  <div
-                    key={item.component}
-                    className="rounded-lg border border-muted p-4 grid gap-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm">{item.component}</h4>
-                      <div className="flex gap-3 text-xs">
-                        <Badge variant="secondary">{item.uptime}</Badge>
-                        <Badge variant="outline">{item.latency}</Badge>
+                {componentSLA.length > 0 ? (
+                  componentSLA.map((item) => (
+                    <div
+                      key={item.component}
+                      className="rounded-lg border border-muted p-4 grid gap-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm">{item.component}</h4>
+                        <div className="flex gap-3 text-xs">
+                          <Badge variant="secondary">{item.uptime}</Badge>
+                          <Badge variant="outline">{item.latency}</Badge>
+                        </div>
                       </div>
+                      <p className="text-xs text-muted-foreground">{item.description}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  ))
+                ) : (
+                  <div className="rounded-lg border border-muted p-4">
+                    <div className="text-center text-sm text-muted-foreground">
+                      <Info className="h-8 w-8 mx-auto mb-2" />
+                      <p>No data available</p>
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
             </section>
 
@@ -219,21 +239,22 @@ export default function SLAPage() {
                 on incident severity.
               </p>
               <div className="grid gap-3">
-                {supportSLA.map((item) => (
-                  <div
-                    key={item.severity}
-                    className="rounded-lg border border-muted p-4 grid gap-2"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-sm">{item.severity}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.description}
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {item.availability}
-                      </Badge>
+                {supportSLA.length > 0 ? (
+                  supportSLA.map((item) => (
+                    <div
+                      key={item.severity}
+                      className="rounded-lg border border-muted p-4 grid gap-2"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-sm">{item.severity}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {item.description}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {item.availability}
+                        </Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-xs mt-2">
                       <div>
@@ -246,7 +267,15 @@ export default function SLAPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+                ) : (
+                  <div className="rounded-lg border border-muted p-4">
+                    <div className="text-center text-sm text-muted-foreground">
+                      <Clock className="h-8 w-8 mx-auto mb-2" />
+                      <p>No data available</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -256,18 +285,19 @@ export default function SLAPage() {
             <section className="space-y-4">
               <h3 className="font-semibold text-sm">Maintenance Windows</h3>
               <div className="grid gap-3">
-                {maintenanceWindows.map((item) => (
-                  <div
-                    key={item.type}
-                    className="rounded-lg border border-muted p-4 grid gap-2"
-                  >
-                    <h4 className="font-semibold text-sm">{item.type}</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div>
-                        <span className="font-semibold block text-muted-foreground">
-                          Frequency
-                        </span>
-                        <span>{item.frequency}</span>
+                {maintenanceWindows.length > 0 ? (
+                  maintenanceWindows.map((item) => (
+                    <div
+                      key={item.type}
+                      className="rounded-lg border border-muted p-4 grid gap-2"
+                    >
+                      <h4 className="font-semibold text-sm">{item.type}</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                        <div>
+                          <span className="font-semibold block text-muted-foreground">
+                            Frequency
+                          </span>
+                          <span>{item.frequency}</span>
                       </div>
                       <div>
                         <span className="font-semibold block text-muted-foreground">
@@ -289,7 +319,15 @@ export default function SLAPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                ))
+                ) : (
+                  <div className="rounded-lg border border-muted p-4">
+                    <div className="text-center text-sm text-muted-foreground">
+                      <Wrench className="h-8 w-8 mx-auto mb-2" />
+                      <p>No data available</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Scheduled maintenance windows are excluded from uptime calculations.
@@ -451,7 +489,7 @@ export default function SLAPage() {
             {/* Exclusions */}
             <section className="space-y-4 text-sm">
               <h3 className="font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" />
                 SLA Exclusions
               </h3>
               <p className="text-muted-foreground">

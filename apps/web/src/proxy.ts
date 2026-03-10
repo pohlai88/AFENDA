@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-type SessionPortal = "app" | "supplier" | "customer";
+type SessionPortal = "app" | "supplier" | "customer" | "cid" | "investor" | "franchisee" | "contractor";
 
 function isBypassPath(pathname: string): boolean {
   return (
@@ -39,6 +39,22 @@ function isCustomerPortalPath(pathname: string): boolean {
   return pathname === "/portal/customer" || pathname.startsWith("/portal/customer/");
 }
 
+function isCidPortalPath(pathname: string): boolean {
+  return pathname === "/portal/cid" || pathname.startsWith("/portal/cid/");
+}
+
+function isInvestorPortalPath(pathname: string): boolean {
+  return pathname === "/portal/investor" || pathname.startsWith("/portal/investor/");
+}
+
+function isFranchiseePortalPath(pathname: string): boolean {
+  return pathname === "/portal/franchisee" || pathname.startsWith("/portal/franchisee/");
+}
+
+function isContractorPortalPath(pathname: string): boolean {
+  return pathname === "/portal/contractor" || pathname.startsWith("/portal/contractor/");
+}
+
 function redirectTo(request: NextRequest, pathname: string): NextResponse {
   const url = request.nextUrl.clone();
   url.pathname = pathname;
@@ -46,7 +62,20 @@ function redirectTo(request: NextRequest, pathname: string): NextResponse {
   return NextResponse.redirect(url);
 }
 
-function redirectToPortalSignIn(request: NextRequest, portal: "supplier" | "customer"): NextResponse {
+function getPortalHomePath(portal: SessionPortal): string {
+  switch (portal) {
+    case "supplier": return "/portal/supplier";
+    case "customer": return "/portal/customer";
+    case "cid": return "/portal/cid";
+    case "investor": return "/portal/investor";
+    case "franchisee": return "/portal/franchisee";
+    case "contractor": return "/portal/contractor";
+    case "app": return "/";
+    default: return "/";
+  }
+}
+
+function redirectToPortalSignIn(request: NextRequest, portal: "supplier" | "customer" | "cid" | "investor" | "franchisee" | "contractor"): NextResponse {
   const url = request.nextUrl.clone();
   url.pathname = `/auth/portal/${portal}/signin`;
   url.searchParams.set("callbackUrl", request.nextUrl.pathname + request.nextUrl.search);
@@ -56,7 +85,15 @@ function redirectToPortalSignIn(request: NextRequest, portal: "supplier" | "cust
 function resolvePortal(token: unknown): SessionPortal | null {
   if (!token || typeof token !== "object") return null;
   const portal = (token as { portal?: unknown }).portal;
-  if (portal === "app" || portal === "supplier" || portal === "customer") {
+  if (
+    portal === "app" || 
+    portal === "supplier" || 
+    portal === "customer" || 
+    portal === "cid" || 
+    portal === "investor" || 
+    portal === "franchisee" || 
+    portal === "contractor"
+  ) {
     return portal;
   }
   return null;
@@ -77,7 +114,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       return redirectToPortalSignIn(request, "supplier");
     }
     if (portal !== "supplier") {
-      return redirectTo(request, portal === "customer" ? "/portal/customer" : "/");
+      return redirectTo(request, getPortalHomePath(portal));
     }
     return NextResponse.next();
   }
@@ -87,7 +124,47 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       return redirectToPortalSignIn(request, "customer");
     }
     if (portal !== "customer") {
-      return redirectTo(request, portal === "supplier" ? "/portal/supplier" : "/");
+      return redirectTo(request, getPortalHomePath(portal));
+    }
+    return NextResponse.next();
+  }
+
+  if (isCidPortalPath(pathname)) {
+    if (!portal) {
+      return redirectToPortalSignIn(request, "cid");
+    }
+    if (portal !== "cid") {
+      return redirectTo(request, getPortalHomePath(portal));
+    }
+    return NextResponse.next();
+  }
+
+  if (isInvestorPortalPath(pathname)) {
+    if (!portal) {
+      return redirectToPortalSignIn(request, "investor");
+    }
+    if (portal !== "investor") {
+      return redirectTo(request, getPortalHomePath(portal));
+    }
+    return NextResponse.next();
+  }
+
+  if (isFranchiseePortalPath(pathname)) {
+    if (!portal) {
+      return redirectToPortalSignIn(request, "franchisee");
+    }
+    if (portal !== "franchisee") {
+      return redirectTo(request, getPortalHomePath(portal));
+    }
+    return NextResponse.next();
+  }
+
+  if (isContractorPortalPath(pathname)) {
+    if (!portal) {
+      return redirectToPortalSignIn(request, "contractor");
+    }
+    if (portal !== "contractor") {
+      return redirectTo(request, getPortalHomePath(portal));
     }
     return NextResponse.next();
   }
@@ -108,11 +185,11 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   // Portal users are restricted to their own portal paths and public auth pages.
   if (portal && portal !== "app") {
     if (pathname === "/portal") {
-      return redirectTo(request, portal === "supplier" ? "/portal/supplier" : "/portal/customer");
+      return redirectTo(request, getPortalHomePath(portal));
     }
 
     if (!isPortalPath(pathname) && !isPublicPath(pathname)) {
-      return redirectTo(request, portal === "supplier" ? "/portal/supplier" : "/portal/customer");
+      return redirectTo(request, getPortalHomePath(portal));
     }
   }
 

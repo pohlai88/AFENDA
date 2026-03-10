@@ -122,18 +122,24 @@ const RULE_DOCS = {
   PALETTE_CLASS: {
     why: "Hardcoded palette colors bypass the design-system token layer, breaking theme consistency and dark-mode auto-switching.",
     docs: "packages/ui/ARCHITECTURE_afenda-design-system.md",
+    commonFix: "Replace with semantic token: bg-primary, text-muted-foreground, border-input, etc.",
   },
   DARK_PREFIX: {
     why: "The dark: variant duplicates theme logic that the DS handles automatically via :root / .dark CSS variables.",
     docs: "packages/ui/src/styles/_tokens-dark.css",
+    commonFix: "Remove dark: prefix — tokens auto-switch via .dark selector in _tokens-dark.css",
+    blockComponentNote: "Block components installed via shadcn CLI often include dark: variants. Safe to remove — our DS tokens handle dark mode.",
   },
   ARBITRARY_COLOR: {
     why: "Arbitrary color values in className bypass token system and create unmaintainable one-offs.",
     docs: "packages/ui/src/styles/_theme.css",
+    commonFix: "Define as a CSS variable in _theme.css or use existing token: var(--primary), var(--destructive), etc.",
   },
   INLINE_HEX: {
     why: "Inline hex colors in style objects bypass the token system — use var(--token) references.",
     docs: "packages/ui/src/styles/_tokens-light.css",
+    commonFix: "Use CSS variable: var(--primary), var(--destructive), etc. OR add token-compliance-exempt comment in first 5 lines for brand icons.",
+    brandIconExemption: "For official brand colors (AFENDA mark, Google icon, etc.), add '// token-compliance-exempt: reason' in file header (lines 1-5).",
   },
 };
 

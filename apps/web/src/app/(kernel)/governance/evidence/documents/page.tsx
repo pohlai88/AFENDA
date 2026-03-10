@@ -1,6 +1,8 @@
 import { fetchDocuments } from "@/lib/api-client";
 import { EvidenceDocumentsClient } from "./EvidenceDocumentsClient";
 
+export const dynamic = "force-dynamic";
+
 /** Evidence documents — uploaded files and metadata. */
 export default async function EvidenceDocumentsPage() {
   const { data, cursor, hasMore } = await fetchDocuments({ limit: 20 });

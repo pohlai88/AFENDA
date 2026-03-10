@@ -53,6 +53,7 @@ export { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./sh
 export { SidebarProvider, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuAction, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar } from "./sidebar";
 export { Skeleton } from "./skeleton";
 export { Slider } from "./slider";
+export { Spinner } from "./spinner";
 export { Switch } from "./switch";
 export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
 export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants } from "./tabs";

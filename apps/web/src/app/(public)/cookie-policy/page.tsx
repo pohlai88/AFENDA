@@ -94,20 +94,21 @@ export default function CookiePolicyPage() {
               </p>
 
               <div className="grid gap-4">
-                {cookieData.map((cookie) => {
-                  const Icon = cookie.icon;
-                  return (
-                    <Card key={cookie.name} className="border-muted">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start gap-3">
-                          <div className="rounded-lg bg-primary/10 p-2">
-                            <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
-                          </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-sm font-mono">
-                              {cookie.name}
-                            </CardTitle>
-                            <Badge variant="secondary" className="mt-1 text-xs">
+                {cookieData.length > 0 ? (
+                  cookieData.map((cookie) => {
+                    const Icon = cookie.icon;
+                    return (
+                      <Card key={cookie.name} className="border-muted">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start gap-3">
+                            <div className="rounded-lg bg-primary/10 p-2">
+                              <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-sm font-mono">
+                                {cookie.name}
+                              </CardTitle>
+                              <Badge variant="secondary" className="mt-1 text-xs">
                               {cookie.category}
                             </Badge>
                           </div>
@@ -125,7 +126,17 @@ export default function CookiePolicyPage() {
                       </CardContent>
                     </Card>
                   );
-                })}
+                })
+                ) : (
+                  <Card className="border-muted">
+                    <CardContent className="py-8">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <Info className="h-8 w-8 mx-auto mb-2" />
+                        <p>No data available</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </section>
 

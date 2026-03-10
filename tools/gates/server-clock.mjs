@@ -53,7 +53,7 @@ const RULE_DOCS = {
 };
 
 function suggestFix() {
-  return `Replace "new Date()" with "sql\`now()\`" from drizzle-orm. For computed durations, use Date.now() (numeric ms) or add a // gate:allow-js-date comment with a justification.`;
+  return `Replace "new Date()" with "sql\`now()\`" from drizzle-orm. For computed durations, use Date.now() (numeric ms) or add a "// gate:allow-js-date" comment on the same line or the line above, with a justification.`;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -111,8 +111,10 @@ for (const scanDir of SCAN_DIRS) {
       // Skip comment lines
       if (/^\s*(\/\/|\/\*|\*)/.test(line)) continue;
 
-      // Skip lines with the opt-out comment
+      // Skip lines with the opt-out comment (check current and previous line)
       if (line.includes(OPT_OUT)) continue;
+      const prevLine = i > 0 ? lines[i - 1] : "";
+      if (prevLine.includes(OPT_OUT)) continue;
 
       // Detect new Date() — with or without arguments
       if (/\bnew\s+Date\s*\(/.test(line)) {

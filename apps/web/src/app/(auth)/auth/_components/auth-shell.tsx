@@ -3,7 +3,6 @@ import { AuthBranding } from "./auth-branding";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const BRAND_QUOTES = [
-  { text: "Where numbers become canon.", author: "AFENDA" },
   { text: "Every transaction, perfectly audited.", author: "AFENDA" },
   { text: "Financial truth, immutably recorded.", author: "AFENDA" },
 ] as const;

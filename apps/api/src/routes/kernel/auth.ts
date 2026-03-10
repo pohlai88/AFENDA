@@ -77,7 +77,7 @@ const PublicAuthResultSchema = makeSuccessSchema(
 const AcceptPortalInvitationSuccessSchema = makeSuccessSchema(
   z.object({
     email: z.string().email(),
-    portal: z.enum(["supplier", "customer"]),
+    portal: z.enum(["supplier", "customer", "cid", "investor", "franchisee", "contractor"]),
     message: z.string().min(1),
   }),
 );

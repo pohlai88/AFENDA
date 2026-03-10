@@ -40,7 +40,7 @@ export default function AboutPage() {
           <CardContent className="space-y-8">
             <section className="space-y-4">
               <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-indigo-600" aria-hidden="true" />
+                <Info className="h-5 w-5 text-primary" aria-hidden="true" />
                 <h3 className="text-lg font-semibold">
                   About AFENDA &middot; NexusCanon &middot; AXIS
                 </h3>
@@ -63,7 +63,7 @@ export default function AboutPage() {
                   </p>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-600 mt-0.5 font-bold">
+                      <span className="text-primary mt-0.5 font-bold">
                         &bull;
                       </span>
                       <span>
@@ -75,7 +75,7 @@ export default function AboutPage() {
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-600 mt-0.5 font-bold">
+                      <span className="text-primary mt-0.5 font-bold">
                         &bull;
                       </span>
                       <span>
@@ -112,7 +112,7 @@ export default function AboutPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <LayoutGrid
-                  className="h-5 w-5 text-blue-600"
+                  className="h-5 w-5 text-info"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -206,7 +206,7 @@ export default function AboutPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Cpu
-                  className="h-5 w-5 text-green-600"
+                  className="h-5 w-5 text-success"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">
@@ -268,14 +268,14 @@ export default function AboutPage() {
             <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <Lightbulb
-                  className="h-5 w-5 text-orange-600"
+                  className="h-5 w-5 text-warning"
                   aria-hidden="true"
                 />
                 <h3 className="text-lg font-semibold">Business Truth Engine</h3>
               </div>
               <Separator />
-              <div className="rounded-lg border-l-4 border-indigo-600 bg-indigo-50 p-4 dark:bg-indigo-950">
-                <p className="text-sm text-indigo-900 dark:text-indigo-100 leading-relaxed mb-3">
+              <div className="rounded-lg border-l-4 border-primary bg-accent p-4">
+                <p className="text-sm text-primary leading-relaxed mb-3">
                   AFENDA is not positioned as a traditional ERP. It is
                   engineered as a{" "}
                   <strong>Business Truth Engine</strong> — where chaos is
@@ -283,9 +283,9 @@ export default function AboutPage() {
                   <em>Canon</em>), direction is aligned (<em>AXIS</em>), and
                   evolution remains possible (<em>AFENDA</em>).
                 </p>
-                <ul className="space-y-2 text-sm text-indigo-800 dark:text-indigo-200">
+                <ul className="space-y-2 text-sm text-primary">
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 dark:text-indigo-400 mt-0.5 font-bold">
+                    <span className="text-primary mt-0.5 font-bold">
                       &bull;
                     </span>
                     <span>
@@ -294,7 +294,7 @@ export default function AboutPage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 dark:text-indigo-400 mt-0.5 font-bold">
+                    <span className="text-primary mt-0.5 font-bold">
                       &bull;
                     </span>
                     <span>
@@ -303,7 +303,7 @@ export default function AboutPage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 dark:text-indigo-400 mt-0.5 font-bold">
+                    <span className="text-primary mt-0.5 font-bold">
                       &bull;
                     </span>
                     <span>
@@ -312,7 +312,7 @@ export default function AboutPage() {
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-indigo-600 dark:text-indigo-400 mt-0.5 font-bold">
+                    <span className="text-primary mt-0.5 font-bold">
                       &bull;
                     </span>
                     <span>

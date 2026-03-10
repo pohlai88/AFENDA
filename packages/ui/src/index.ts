@@ -10,7 +10,7 @@ export { formatMoney } from "./money";
 export { cn } from "./lib/utils";
 
 // ── Common icons ─────────────────────────────────────────────────────────────
-export * from "./icons";
+export { GoogleIcon } from "./icons/google-icon";
 
 // ── shadcn/ui component re-exports ───────────────────────────────────────────
 export * from "./components/index";

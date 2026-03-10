@@ -137,6 +137,7 @@ export const ErrorCodeValues = [
   "IAM_PORTAL_INVITATION_REQUIRED",
   "IAM_PORTAL_INVITATION_INVALID",
   "IAM_PORTAL_INVITATION_EXPIRED",
+  "IAM_ACCOUNT_LOCKED",            // too many failed login attempts
 
   // CFG — settings / configuration
   "CFG_SETTING_INVALID_VALUE",
@@ -164,6 +165,7 @@ export const IAM_PORTAL_ACCESS_DENIED = "IAM_PORTAL_ACCESS_DENIED" as const;
 export const IAM_PORTAL_INVITATION_REQUIRED = "IAM_PORTAL_INVITATION_REQUIRED" as const;
 export const IAM_PORTAL_INVITATION_INVALID = "IAM_PORTAL_INVITATION_INVALID" as const;
 export const IAM_PORTAL_INVITATION_EXPIRED = "IAM_PORTAL_INVITATION_EXPIRED" as const;
+export const IAM_ACCOUNT_LOCKED = "IAM_ACCOUNT_LOCKED" as const;
 
 /**
  * Enforces SCOPE_NOUN_REASON shape at runtime.

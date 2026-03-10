@@ -1,11 +1,9 @@
 /**
- * AuthBranding — Static brand lock-up for authentication pages
- * 
+ * token-compliance-exempt: AFENDA brand mark uses #14b8a6 (teal-500) as official brand color
+ * AuthBranding — Static brand lock-up for authentication pages.
  * Zero-JS alternative to AfendaLogo/AfendaMark for auth flows.
  * No Framer Motion dependency = ~30KB smaller bundle + faster paint.
- * 
  * Auth pages prioritize conversion speed over delight.
- * Marketing pages can use animated variants.
  */
 
 interface AuthBrandingProps {
