@@ -1,93 +1,14 @@
-/*
- * globals.css — Tailwind v4 + design tokens (legacy pattern: C:\AI-BOS\AFENDA-FINAL)
- *
- * Structure:
- *   1. @import tailwindcss + @source (monorepo)
- *   2. @import design system + shadcn
- *   3. @layer theme, base, components, utilities
- *   4. @custom-variant dark
- *   5. :root — Light theme tokens (inline, avoids chunking)
- *   6. .dark — Dark theme overrides
- *   7. View transitions, print
- */
-@import "tailwindcss";
-@source "../**/*.{ts,tsx,js,jsx,mdx}";
-@source "../../../../packages/ui/src/**/*.{ts,tsx,js,jsx,mdx}";
+/* ═══════════════════════════════════════════════════════════════════════════
+   AFENDA EMS — Web App Entry
+   ═══════════════════════════════════════════════════════════════════════════
+   Design system (@afenda/ui) includes Tailwind v4 + tokens + pillars.
+   All shadcn component variants are included in @afenda/ui/styles.css.
+   Add app-only overrides below — shared styles belong in packages/ui.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-@import "@afenda/ui/styles.css";
-@import "shadcn/tailwind.css";
+@import '@afenda/ui/styles.css';
 
-@layer theme, base, components, utilities;
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* Design tokens — inline to avoid Turbopack chunking (legacy pattern) */
-:root {
-  color-scheme: light;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --foreground-secondary: oklch(0.48 0 0);
-  --surface-50: oklch(1 0 0);
-  --surface-100: oklch(0.995 0 0);
-  --surface-200: oklch(0.985 0 0);
-  --surface-300: oklch(0.97 0 0);
-  --surface-400: oklch(0.94 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --border-subtle: oklch(0.94 0 0 / 0.65);
-  --border: oklch(0.145 0 0 / 0.1);
-  --border-strong: oklch(0.58 0 0);
-  --input: oklch(0.95 0 0);
-  --ring: oklch(0.708 0 0);
-  --primary: oklch(0.42 0.2 264.376);
-  --primary-foreground: oklch(1 0 0);
-  --primary-hover: oklch(0.48 0.2 264.376);
-  --primary-active: oklch(0.36 0.2 264.376);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: oklch(0.42 0.2 264.376);
-  --muted: oklch(0.94 0.003 264);
-  --muted-foreground: oklch(0.55 0.01 286);
-  --accent: oklch(0.93 0.004 264);
-  --accent-foreground: oklch(0.42 0.2 264.376);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --foreground-secondary: oklch(0.74 0 0);
-  --surface-50: oklch(0.165 0 0);
-  --surface-100: oklch(0.185 0 0);
-  --surface-200: oklch(0.205 0 0);
-  --surface-300: oklch(0.235 0 0);
-  --surface-400: oklch(0.269 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --border-subtle: oklch(0.269 0 0 / 0.75);
-  --border: oklch(0.269 0 0);
-  --border-strong: oklch(0.48 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.54 0.24 264.376);
-  --primary-active: oklch(0.45 0.22 264.376);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.985 0 0);
-}
-
-/* View transitions */
+/* App-specific overrides */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

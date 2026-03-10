@@ -15,7 +15,6 @@
       "@/components/*": ["./src/components/*", "../../packages/ui/src/components/*"],
       "@/lib/*": ["./src/lib/*", "../../packages/ui/src/lib/*"],
       "@/hooks/*": ["./src/hooks/*", "../../packages/ui/src/hooks/*"],
-      "@afenda/contracts": ["../../packages/contracts/src/index.ts"],
       "@afenda/ui": ["../../packages/ui/src/index.ts"]
     }
   },

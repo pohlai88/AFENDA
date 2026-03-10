@@ -312,6 +312,77 @@ All UI components from `@afenda/ui`:
 - `Table` + composition
 - `Separator`, `Tabs`, `Badge`, `Tooltip`
 
+### Adding New Components
+
+**CRITICAL:** Run shadcn CLI from `apps/web` and use `--path` to install into `packages/ui`.
+
+```bash
+cd apps/web
+npx shadcn@latest add <component> -y -p ../../packages/ui/src/components
+```
+
+**Why run from apps/web?**
+- shadcn CLI validates Next.js framework + Tailwind v4
+- `packages/ui` is a library package without Next.js
+- `apps/web` has required config, we use `--path` to target `packages/ui`
+
+**Examples:**
+```bash
+# Add single component
+npx shadcn@latest add scroll-area -y -p ../../packages/ui/src/components
+
+# Add multiple components
+npx shadcn@latest add button dialog card -y -p ../../packages/ui/src/components
+
+# Update existing (use -o to overwrite)
+npx shadcn@latest add chart -y -o -p ../../packages/ui/src/components
+```
+
+**After installation:**
+1. Export from `packages/ui/src/components/index.ts`
+2. Add dependencies to `packages/ui/package.json` if needed
+3. Run `pnpm install` from repo root
+
+**Full documentation:** `docs/shadcn-cli-workflow.md`
+
+### Adding New Blocks
+
+Blocks (pre-built page templates: `login-01`, `signup-01`, `sidebar-10`, etc.) are installed into their own subdirectory under `packages/ui/src/components/block/`.
+
+**CRITICAL:** Each block must get its own subdirectory. Never install multiple blocks into the same `--path`.
+
+```bash
+cd apps/web
+npx shadcn@latest add <block-name> -y -p ../../packages/ui/src/components/block/<block-name>
+```
+
+**Examples:**
+```bash
+# Auth blocks
+npx shadcn@latest add login-01 -y -p ../../packages/ui/src/components/block/login-01
+npx shadcn@latest add login-03 -y -p ../../packages/ui/src/components/block/login-03
+npx shadcn@latest add signup-01 -y -p ../../packages/ui/src/components/block/signup-01
+
+# Dashboard blocks
+npx shadcn@latest add sidebar-10 -y -p ../../packages/ui/src/components/block/sidebar-10
+```
+
+**After installation:**
+- Each block is self-contained in its subdirectory (includes its own copies of primitives)
+- Import the form component directly in `apps/web`: `import { LoginForm } from "@afenda/ui/block/login-01/login-form"`
+- Do NOT export blocks from `packages/ui/src/components/index.ts` (they are not primitives)
+
+**Installed blocks (current):**
+```
+packages/ui/src/components/block/
+  login-01/      ← simple login form (email + password + social)
+  login-03/      ← login form with muted background
+  signup-01/     ← simple signup form
+  sidebar-07/    ← sidebar variant
+  sidebar-09/    ← sidebar variant
+  sidebar-10/    ← sidebar with favorites/workspaces
+```
+
 ### Import Pattern
 
 ```typescript

@@ -31,6 +31,7 @@ const GATES = [
   resolve(__dirname, "gates/test-location.mjs"),
   resolve(__dirname, "gates/token-compliance.mjs"),
   resolve(__dirname, "gates/shadcn-enforcement.mjs"),
+  resolve(__dirname, "gates/brand-usage.mjs"),
   resolve(__dirname, "gates/owners-lint.mjs"),
   
   // ── Phase 1: Truth Correctness (8) ─────────────────────────────────────

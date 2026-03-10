@@ -134,8 +134,7 @@ export const navigationHandlers = {
     // TODO: Update active organization context
   },
 
-  onTeamChange: (team: AppShellTeam) => {
-    console.log("Team changed:", team.name);
+  onTeamChange: (_team: AppShellTeam) => {
     // TODO: Update active organization context
   },
 
@@ -148,7 +147,6 @@ export const navigationHandlers = {
   },
   
   onAddTeam: () => {
-    console.log("Add team clicked");
     // TODO: Show create organization dialog
   },
 
@@ -156,23 +154,19 @@ export const navigationHandlers = {
     // TODO: Show create organization flow
   },
   
-  onProjectView: (project: AppShellProject) => {
-    console.log("View project:", project.name);
+  onProjectView: (_project: AppShellProject) => {
     // TODO: Navigate to project detail
   },
   
-  onProjectShare: (project: AppShellProject) => {
-    console.log("Share project:", project.name);
+  onProjectShare: (_project: AppShellProject) => {
     // TODO: Show share dialog
   },
   
-  onProjectDelete: (project: AppShellProject) => {
-    console.log("Delete project:", project.name);
+  onProjectDelete: (_project: AppShellProject) => {
     // TODO: Show confirmation dialog
   },
   
   onShowMoreProjects: () => {
-    console.log("Show more projects");
     // TODO: Navigate to projects list
   },
   

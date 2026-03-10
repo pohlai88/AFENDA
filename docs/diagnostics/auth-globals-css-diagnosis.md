@@ -108,28 +108,6 @@ NextAuth is **not** the source of auth UI styles. The app uses custom sign-in pa
 
 ---
 
-## Legacy Reference (Tailwind v4 — working)
-
-**Path:** `C:\AI-BOS\AFENDA-FINAL`
-
-Working Tailwind v4 setup. Key differences from our setup:
-
-| Aspect | Legacy (working) | Current |
-|--------|------------------|---------|
-| **Token location** | `:root` and `.dark` **inline in globals.css** | Tokens in `@afenda/ui/styles.css` (package) |
-| **globals.css** | `@import "tailwindcss"` at top, no split | Split: `tailwind.css` + `@import "@afenda/ui/styles.css"` |
-| **@source** | None (Tailwind auto-detects) | Explicit `@source` for monorepo |
-| **@layer** | `@layer theme, base, components, utilities` | Not used |
-| **@theme inline** | Maps Tailwind colors → CSS vars | In `@afenda/ui` package |
-| **Build** | `build:webpack` fallback | Turbopack only |
-
-**Files to reference:**
-- `C:\AI-BOS\AFENDA-FINAL\app\globals.css` — single-file structure, inline tokens
-- `C:\AI-BOS\AFENDA-FINAL\postcss.config.mjs` — `@tailwindcss/postcss` only
-- `C:\AI-BOS\AFENDA-FINAL\next.config.ts` — `cssChunking: "strict"`, `inlineCss: true`
-
----
-
 ## Recommended Fixes
 
 ### Fix 1: Split Tailwind into separate file (IMPLEMENTED — Next.js #72761)

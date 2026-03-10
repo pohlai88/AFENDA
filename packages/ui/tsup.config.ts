@@ -6,6 +6,7 @@ export default defineConfig({
     "meta/index": "src/meta/index.ts",
     "field-kit/index": "src/field-kit/index.ts",
     "generated/index": "src/generated/index.ts",
+    "icons/index": "src/icons/index.ts",
   },
   format: "esm",
   target: "es2022",

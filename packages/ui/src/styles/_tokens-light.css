@@ -9,13 +9,6 @@
      C: 0 (gray) → ~0.4 (max saturation)
      H: 0-360 degrees on the color wheel
 
-   Naming convention:
-     --token           → CSS variable (consumed by components via var())
-     --token-foreground → guaranteed-contrast text color for that surface
-
-   Density tokens (--spacing-*, --text-size-*, --radius) are overridden
-   per density profile in _density.css. Components consume them — auto-adapt.
-
    ⚠ TOKEN SYNC: Every token here MUST also exist in .dark and @theme inline.
    Run `tools/audit/` to verify completeness.
    ───────────────────────────────────────────────────────────────────────── */
@@ -31,48 +24,37 @@
 
   /* ═══════════════════════════════════════════════════════════════════════
      SURFACES — 4-Tier Depth System
-     ═══════════════════════════════════════════════════════════════════════
-     surface-100 = brightest panel (cards)
-     surface-400 = deepest well (sidebars, insets)
-     background  = page canvas
-     foreground  = default text */
-   --background: oklch(1 0 0);
-   --foreground: oklch(0.145 0 0);
-   --foreground-secondary: oklch(0.48 0 0);
+     ═══════════════════════════════════════════════════════════════════════ */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --foreground-secondary: oklch(0.48 0 0);
 
-   --surface-50: oklch(1 0 0);
-   --surface-100: oklch(0.995 0 0);
-   --surface-200: oklch(0.985 0 0);
-   --surface-300: oklch(0.97 0 0);
-   --surface-400: oklch(0.94 0 0);
+  --surface-50: oklch(1 0 0);
+  --surface-100: oklch(0.995 0 0);
+  --surface-200: oklch(0.985 0 0);
+  --surface-300: oklch(0.97 0 0);
+  --surface-400: oklch(0.94 0 0);
 
-  /* shadcn compatibility: card = elevated surface (Dialog, Card, Sheet) */
-   --card: oklch(1 0 0);
-   --card-foreground: oklch(0.145 0 0);
-
-  /* shadcn compatibility: popover = overlay surface (Dropdown, Tooltip) */
-   --popover: oklch(1 0 0);
-   --popover-foreground: oklch(0.145 0 0);
+  /* shadcn compatibility: card & popover */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
 
   /* ═══════════════════════════════════════════════════════════════════════
      BORDERS — 3-Tier Visual Hierarchy
-     ═══════════════════════════════════════════════════════════════════════
-     subtle  → internal cell dividers (barely visible)
-     default → standard borders (panels, cards)
-     strong  → active/selected borders, headers */
-   --border-subtle: oklch(0.94 0 0 / 0.65);
-   --border: oklch(0.145 0 0 / 0.1);
-   --border-strong: oklch(0.58 0 0);
-   --input: oklch(0.95 0 0); /* Form input border (matches monochrome palette) */
+     ═══════════════════════════════════════════════════════════════════════ */
+  --border-subtle: oklch(0.94 0 0 / 0.65);
+  --border: oklch(0.145 0 0 / 0.1);
+  --border-strong: oklch(0.58 0 0);
+  --input: oklch(0.95 0 0); 
 
   /* ═══════════════════════════════════════════════════════════════════════
      INTERACTION — Focus & Selection
-     ═══════════════════════════════════════════════════════════════════════
-     ring: focus ring for keyboard navigation AND programmatic focus.
-     selection: text highlight background + foreground for contrast */
-   --ring: oklch(0.708 0 0);
-   --selection: oklch(0.93 0 0);
-   --selection-foreground: oklch(0.145 0 0);
+     ═══════════════════════════════════════════════════════════════════════ */
+  --ring: oklch(0.708 0 0);
+  --selection: oklch(0.93 0 0);
+  --selection-foreground: oklch(0.145 0 0);
 
   /* Interaction overlays (light mode — darker foreground = smaller opacity) */
   --overlay-hover: color-mix(in oklab, var(--foreground), transparent 96%);
@@ -87,137 +69,108 @@
   /* ═══════════════════════════════════════════════════════════════════════
      SEMANTIC SYSTEMS — Primary / Secondary / Muted / Accent
      ═══════════════════════════════════════════════════════════════════════ */
+  --primary: oklch(0.488 0.243 264.376);
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.54 0.24 264.376);
+  --primary-active: oklch(0.45 0.22 264.376);
 
-  /* Primary (CTA buttons, active nav, primary actions) */
-   --primary: oklch(0.18 0.01 286);
-   --primary-foreground: oklch(1 0 0);
-   --primary-hover: oklch(0.15 0.01 286);
-   --primary-active: oklch(0.12 0.01 286);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: oklch(0.488 0.243 264.376);
 
-  /* Secondary (secondary buttons, subtle backgrounds) */
-   --secondary: oklch(0.95 0.0058 264.53);
-   --secondary-foreground: oklch(0.18 0.01 286);
+  --muted: oklch(0.94 0.003 264);
+  --muted-foreground: oklch(0.55 0.01 286);
 
-  /* Muted (disabled text, placeholder, subtle labels) */
-   --muted: oklch(0.94 0.003 264);
-   --muted-foreground: oklch(0.55 0.01 286);
+  --accent: oklch(0.93 0.004 264);
+  --accent-foreground: oklch(0.488 0.243 264.376);
 
-  /* Accent (hover states, active list items, badges) */
-   --accent: oklch(0.93 0.004 264);
-   --accent-foreground: oklch(0.18 0.01 286);
-
-  /* Disabled system */
   --disabled-foreground: color-mix(in oklab, var(--foreground), transparent 45%);
   --disabled-surface: color-mix(in oklab, var(--surface-200), transparent 18%);
   --disabled-border: color-mix(in oklab, var(--border), transparent 38%);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     STATUS PALETTE — System-Wide Feedback
-     ═══════════════════════════════════════════════════════════════════════
-     success: confirmations, posted journals, balanced entries
-     warning: draft states, pending approvals, approaching limits
-     info: informational notices, navigation hints
-     destructive: errors, deletions, voiding actions */
+     STATUS PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
   --success: oklch(0.62 0.18 145);
   --success-foreground: oklch(1 0 0);
   --warning: oklch(0.78 0.14 85);
-   --warning-foreground: oklch(0.145 0 0);
+  --warning-foreground: oklch(0.145 0 0);
   --info: oklch(0.6 0.12 245);
   --info-foreground: oklch(1 0 0);
   --destructive: oklch(0.6 0.2 25);
   --destructive-foreground: oklch(1 0 0);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     MARKET SEMANTICS — Directional Data (NOT status)
-     ═══════════════════════════════════════════════════════════════════════
-     trade-up/down/flat: price movement direction coloring
-     bid/ask: order book depth (buy-side blue, sell-side amber)
-     These are SEPARATE from status — a "trade-up" is not "success" */
+     MARKET SEMANTICS
+     ═══════════════════════════════════════════════════════════════════════ */
   --trade-up: oklch(0.62 0.18 145);
   --trade-down: oklch(0.6 0.2 25);
   --trade-flat: oklch(0.6 0 0);
   --bid: oklch(0.6 0.16 240);
   --ask: oklch(0.65 0.16 50);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     OPERATIONAL MARKET STATES
-     ═══════════════════════════════════════════════════════════════════════
-     halted: exchange circuit breaker (magenta — urgent)
-     stale: data feed timeout (amber — caution)
-     afterhours: extended session (blue-violet — muted activity) */
+  /* Operational Market States */
   --halted: oklch(0.55 0.2 310);
   --stale: oklch(0.72 0.14 85);
   --afterhours: oklch(0.68 0.12 255);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     DATA GRID SURFACE — Semantic Aliases for DataTable
+     DATA GRID SURFACE
      ═══════════════════════════════════════════════════════════════════════ */
-   --grid: oklch(0.985 0 0);
-   --grid-foreground: oklch(0.145 0 0);
-   --grid-border: oklch(0.922 0 0);
+  --grid: oklch(0.985 0 0);
+  --grid-foreground: oklch(0.145 0 0);
+  --grid-border: oklch(0.922 0 0);
   --grid-hover: var(--overlay-hover);
   --grid-selected: var(--overlay-selected);
   --grid-focus: var(--overlay-focus);
   --stripe: color-mix(in oklab, var(--foreground), transparent 98%);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SIDEBAR — ERP Navigation Chrome
-     ═══════════════════════════════════════════════════════════════════════
-     Separate from surface tokens — sidebar can have independent scheme */
-   --sidebar: oklch(0.985 0 0);
-   --sidebar-foreground: oklch(0.145 0 0);
-   --sidebar-primary: oklch(0.18 0.01 286);
-   --sidebar-primary-foreground: oklch(0.985 0 0);
-   --sidebar-accent: oklch(0.97 0 0);
-   --sidebar-accent-foreground: oklch(0.205 0 0);
-   --sidebar-border: oklch(0.922 0 0);
-   --sidebar-ring: oklch(0.708 0 0);
+     SIDEBAR
+     ═══════════════════════════════════════════════════════════════════════ */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.18 0.01 286);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     CHART PALETTE — Data Visualization (8-stop)
-     ═══════════════════════════════════════════════════════════════════════
-     Each hue ≥60° apart on OKLCH wheel for colorblind safety.
-     Optimized for financial dashboards with distinct, accessible colors. */
-   --chart-1: oklch(0.646 0.222 41.116); /* amber highlight */
-   --chart-2: oklch(0.6 0.118 184.704); /* teal signal */
-   --chart-3: oklch(0.398 0.07 227.392); /* deep slate trend */
-   --chart-4: oklch(0.828 0.189 84.429); /* warm yellow */
-   --chart-5: oklch(0.769 0.188 70.08); /* golden positive */
-  --chart-6: oklch(0.58 0.14 285); /* purple — provisions/accruals */
-  --chart-7: oklch(0.65 0.1 195); /* cyan — cash/treasury */
-  --chart-8: oklch(0.55 0.14 320); /* magenta — taxes */
+     CHART PALETTE (8-stop)
+     ═══════════════════════════════════════════════════════════════════════ */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-6: oklch(0.58 0.14 285);
+  --chart-7: oklch(0.65 0.1 195);
+  --chart-8: oklch(0.55 0.14 320);
+
+  /* Semantic Visualization Tokens */
+  --viz-positive: var(--chart-5);
+  --viz-negative: var(--chart-3);
+  --viz-neutral: var(--chart-1);
+  --viz-accent-1: var(--chart-2);
+  --viz-accent-2: var(--chart-4);
+  --viz-accent-3: var(--chart-6);
+  --viz-threshold: var(--chart-8);
+  --viz-target: var(--chart-7);
+
+  --gauge-danger: var(--viz-negative);
+  --gauge-warning: var(--chart-4);
+  --gauge-success: var(--viz-positive);
+
+  --waterfall-positive: var(--viz-positive);
+  --waterfall-negative: var(--viz-negative);
+  --waterfall-total: var(--viz-neutral);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SEMANTIC VISUALIZATION TOKENS
-     ═══════════════════════════════════════════════════════════════════════
-     Charts reference these semantic tokens for consistent meaning across
-     all visualizations. Aliased from --chart-* palette. */
-  --viz-positive: var(--chart-5); /* Green - inflows, favorable variance */
-  --viz-negative: var(--chart-3); /* Orange - outflows, unfavorable variance */
-  --viz-neutral: var(--chart-1); /* Blue - totals, baselines */
-  --viz-accent-1: var(--chart-2); /* Teal - secondary series */
-  --viz-accent-2: var(--chart-4); /* Gold - budget/plan */
-  --viz-accent-3: var(--chart-6); /* Purple - provisions */
-  --viz-threshold: var(--chart-8); /* Magenta - targets/thresholds */
-  --viz-target: var(--chart-7); /* Cyan - goals */
-
-  /* Gauge zones (mapped from semantic roles) */
-  --gauge-danger: var(--viz-negative); /* Red zone for ratios < threshold */
-  --gauge-warning: var(--chart-4); /* Yellow zone for ratios near threshold */
-  --gauge-success: var(--viz-positive); /* Green zone for ratios > threshold */
-
-  /* Waterfall (mapped from semantic roles) */
-  --waterfall-positive: var(--viz-positive); /* Inflows, increases */
-  --waterfall-negative: var(--viz-negative); /* Outflows, decreases */
-  --waterfall-total: var(--viz-neutral); /* Opening/closing balances */
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     FINANCE DOCUMENT STATUS PALETTE
-     ═══════════════════════════════════════════════════════════════════════
-     Based on QuickBooks/Zoho conventions with WCAG AA contrast.
-     Each status has a text color + subtle bg for badge usage. */
-   --status-draft: oklch(0.6 0 0);
-   --status-draft-bg: oklch(0.95 0 0);
+     FINANCE & ERP LIFECYCLE TOKENS
+     ═══════════════════════════════════════════════════════════════════════ */
+  --status-draft: oklch(0.6 0 0);
+  --status-draft-bg: oklch(0.95 0 0);
   --status-pending: oklch(0.65 0.15 85);
   --status-pending-bg: oklch(0.95 0.06 85);
   --status-approved: oklch(0.5 0.12 220);
@@ -231,11 +184,10 @@
   --status-paid: oklch(0.5 0.14 145);
   --status-paid-bg: oklch(0.94 0.04 145);
 
-  /* ── Extended AP/AR Lifecycle (AP-01→AP-10, AR-01→AR-10) ── */
   --status-partially-paid: oklch(0.58 0.12 175);
   --status-partially-paid-bg: oklch(0.95 0.04 175);
-   --status-written-off: oklch(0.5 0 0);
-   --status-written-off-bg: oklch(0.94 0 0);
+  --status-written-off: oklch(0.5 0 0);
+  --status-written-off-bg: oklch(0.94 0 0);
   --status-cancelled: oklch(0.55 0.08 0);
   --status-cancelled-bg: oklch(0.95 0.02 0);
   --status-on-hold: oklch(0.6 0.14 280);
@@ -252,14 +204,12 @@
   --status-reversed-bg: oklch(0.95 0.04 310);
   --status-submitted: oklch(0.55 0.1 230);
   --status-submitted-bg: oklch(0.95 0.04 230);
-   --status-closed: oklch(0.45 0 0);
-   --status-closed-bg: oklch(0.94 0 0);
-   --status-locked: oklch(0.42 0 0);
-   --status-locked-bg: oklch(0.93 0 0);
+  --status-closed: oklch(0.45 0 0);
+  --status-closed-bg: oklch(0.94 0 0);
+  --status-locked: oklch(0.42 0 0);
+  --status-locked-bg: oklch(0.93 0 0);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     SUPPLIER PORTAL COMPLIANCE (SUPPLIER-PORTAL-FRONTEND.md)
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Supplier Portal Compliance */
   --compliance-valid: oklch(0.52 0.14 145);
   --compliance-valid-bg: oklch(0.95 0.04 145);
   --compliance-expiring: oklch(0.62 0.16 85);
@@ -267,21 +217,17 @@
   --compliance-expired: oklch(0.52 0.2 25);
   --compliance-expired-bg: oklch(0.94 0.06 25);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     FIXED ASSET LIFECYCLE (FA-01→FA-10)
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Fixed Asset Lifecycle */
   --asset-cwip: oklch(0.6 0.12 200);
   --asset-cwip-bg: oklch(0.95 0.04 200);
   --asset-active: oklch(0.52 0.14 145);
   --asset-active-bg: oklch(0.95 0.04 145);
   --asset-impaired: oklch(0.55 0.18 35);
   --asset-impaired-bg: oklch(0.94 0.06 35);
-   --asset-disposed: oklch(0.5 0 0);
-   --asset-disposed-bg: oklch(0.94 0 0);
+  --asset-disposed: oklch(0.5 0 0);
+  --asset-disposed-bg: oklch(0.94 0 0);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     TAX LIFECYCLE (TX-01→TX-10)
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Tax Lifecycle */
   --tax-open: oklch(0.6 0.1 220);
   --tax-open-bg: oklch(0.95 0.03 220);
   --tax-filed: oklch(0.55 0.12 175);
@@ -291,27 +237,25 @@
   --tax-adjusted: oklch(0.58 0.14 280);
   --tax-adjusted-bg: oklch(0.95 0.04 280);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     IFRS CLASSIFICATION TOKENS (IFRS 9 / IFRS 16 / IAS 37)
-     ═══════════════════════════════════════════════════════════════════════ */
-  --classification-ac: oklch(0.55 0.1 220); /* Amortized Cost */
+  /* IFRS Classification */
+  --classification-ac: oklch(0.55 0.1 220);
   --classification-ac-bg: oklch(0.95 0.03 220);
-  --classification-fvtpl: oklch(0.6 0.16 40); /* Fair Value P&L */
+  --classification-fvtpl: oklch(0.6 0.16 40);
   --classification-fvtpl-bg: oklch(0.95 0.05 40);
-  --classification-fvoci: oklch(0.55 0.12 280); /* Fair Value OCI */
+  --classification-fvoci: oklch(0.55 0.12 280);
   --classification-fvoci-bg: oklch(0.95 0.04 280);
 
-  /* Hedge Accounting (HA-01→HA-10) */
+  /* Hedge Accounting */
   --hedge-designated: oklch(0.55 0.1 220);
   --hedge-designated-bg: oklch(0.95 0.03 220);
   --hedge-effective: oklch(0.52 0.14 145);
   --hedge-effective-bg: oklch(0.95 0.04 145);
   --hedge-ineffective: oklch(0.58 0.18 35);
   --hedge-ineffective-bg: oklch(0.94 0.06 35);
-   --hedge-discontinued: oklch(0.5 0 0);
-   --hedge-discontinued-bg: oklch(0.94 0 0);
+  --hedge-discontinued: oklch(0.5 0 0);
+  --hedge-discontinued-bg: oklch(0.94 0 0);
 
-  /* Provisions (IAS 37 / PR-01→PR-10) */
+  /* Provisions (IAS 37) */
   --provision-recognized: oklch(0.55 0.12 200);
   --provision-recognized-bg: oklch(0.95 0.04 200);
   --provision-utilized: oklch(0.55 0.14 145);
@@ -319,9 +263,7 @@
   --provision-unwound: oklch(0.58 0.1 280);
   --provision-unwound-bg: oklch(0.95 0.03 280);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     BUDGET & SCENARIO TOKENS
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Budget & Scenario */
   --scenario-base: oklch(0.55 0.1 220);
   --scenario-base-bg: oklch(0.95 0.03 220);
   --scenario-upside: oklch(0.55 0.14 145);
@@ -329,9 +271,7 @@
   --scenario-downside: oklch(0.55 0.18 25);
   --scenario-downside-bg: oklch(0.94 0.05 25);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     CREDIT MANAGEMENT (CM-01→CM-10)
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Credit Management */
   --credit-hold: oklch(0.55 0.2 25);
   --credit-hold-bg: oklch(0.94 0.06 25);
   --credit-warning: oklch(0.62 0.16 85);
@@ -339,9 +279,7 @@
   --credit-released: oklch(0.52 0.14 145);
   --credit-released-bg: oklch(0.95 0.04 145);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     BANK RECONCILIATION (BR-01→BR-10)
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Bank Reconciliation */
   --recon-matched: oklch(0.52 0.14 160);
   --recon-matched-bg: oklch(0.95 0.04 160);
   --recon-unmatched: oklch(0.6 0.14 55);
@@ -349,9 +287,7 @@
   --recon-suggested: oklch(0.58 0.12 200);
   --recon-suggested-bg: oklch(0.95 0.04 200);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     SLA / URGENCY INDICATORS
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* SLA / Urgency Indicators */
   --sla-ok: oklch(0.55 0.14 145);
   --sla-ok-bg: oklch(0.95 0.04 145);
   --sla-warning: oklch(0.65 0.16 85);
@@ -359,25 +295,20 @@
   --sla-breach: oklch(0.55 0.2 25);
   --sla-breach-bg: oklch(0.94 0.06 25);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     FINANCIAL DATA FORMATTING — Debit/Credit & Variance
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Financial Data Formatting */
   --debit: oklch(0.5 0.12 145);
   --credit: oklch(0.55 0.16 25);
   --variance-positive: oklch(0.55 0.14 145);
   --variance-negative: oklch(0.55 0.16 25);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SHELL LAYOUT — Base-density defaults (overridden in _density.css)
+     LAYOUT TOKENS
      ═══════════════════════════════════════════════════════════════════════ */
-  --shell-header-h: 3.5rem; /* 56px — base header */
-  --shell-content-max-w: 80rem; /* 1280px — ultra-wide guardrail */
-  --shell-scroll-max-h: calc(100dvh - 3.5rem); /* viewport minus header */
-  --shell-action-gap: 0.375rem; /* 6px — toolbar gap */
+  --shell-header-h: 3.5rem;
+  --shell-content-max-w: 80rem;
+  --shell-scroll-max-h: calc(100dvh - 3.5rem);
+  --shell-action-gap: 0.375rem;
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     LAYOUT TOKENS — Semantic Sizing (replaces hardcoded w-[...])
-     ═══════════════════════════════════════════════════════════════════════ */
   --layout-page-min-h: 60vh;
   --layout-auth-min-h: 200px;
   --layout-auth-max-w: 400px;
@@ -403,7 +334,7 @@
   --layout-skeleton-chart: 400px;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOWS — 5-Tier Elevation System (Bloomberg panel depth)
+     SHADOWS & EFFECTS
      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-sm: 0 1px 2px oklch(0.15 0.02 260 / 0.06);
   --shadow-md: 0 4px 12px oklch(0.15 0.02 260 / 0.08);
@@ -412,35 +343,28 @@
   --shadow-popover: 0 8px 30px oklch(0.15 0.02 260 / 0.14), 0 0 1px oklch(0.15 0.02 260 / 0.08);
   --shadow-modal: 0 24px 48px oklch(0.15 0.02 260 / 0.18), 0 0 1px oklch(0.15 0.02 260 / 0.1);
 
-  /* Elevation shadows (light mode — subtler than dark) */
   --elev-1-shadow: 0 10px 30px -18px oklch(0.15 0.02 260 / 0.12);
   --elev-2-shadow: 0 18px 50px -22px oklch(0.15 0.02 260 / 0.16);
   --elev-3-shadow: 0 28px 80px -30px oklch(0.15 0.02 260 / 0.20);
   --shadow-inner: inset 0 1px 3px oklch(0.15 0.02 260 / 0.06);
 
-  /* Skeleton loading */
   --skeleton: oklch(0.94 0 0);
   --skeleton-highlight: oklch(0.97 0 0);
 
-  /* Scrollbar */
   --scrollbar-track: transparent;
   --scrollbar-thumb: oklch(0.82 0 0);
 
-  /* Drag & drop */
   --drag-preview: color-mix(in oklab, var(--surface-300), transparent 12%);
   --drop-target: color-mix(in oklab, var(--primary), transparent 88%);
 
-  /* Glass surface (light mode — subtle frost) */
   --glass-surface: color-mix(in oklab, var(--popover), transparent 8%);
   --glass-border: color-mix(in oklab, var(--border), transparent 20%);
 
-  /* Scrim (achromatic backdrop) */
   --scrim: oklch(0.15 0 0 / 0.45);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     ANIMATION — Timing & Easing Tokens
-     ═══════════════════════════════════════════════════════════════════════
-     Consistent motion across all components. Consumed by utilities & JS. */
+     ANIMATION & TYPOGRAPHY
+     ═══════════════════════════════════════════════════════════════════════ */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
@@ -449,17 +373,10 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Transition presets (composed from duration + easing) ── */
-  --transition-colors:
-    color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
+  --transition-colors: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke;
   --transition-shadow: box-shadow;
   --transition-transform: transform;
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     FLUID TYPOGRAPHY — Responsive text scaling
-     ═══════════════════════════════════════════════════════════════════════
-     clamp(min, preferred, max) — scales between breakpoints.
-     Avoids jarring text jumps at responsive breakpoints. */
   --fluid-display: clamp(2rem, 1.5rem + 2vw, 3.5rem);
   --fluid-h1: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
   --fluid-h2: clamp(1.375rem, 1rem + 1.2vw, 2rem);
@@ -468,25 +385,45 @@
   --fluid-body: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
   --fluid-caption: clamp(0.75rem, 0.7rem + 0.15vw, 0.875rem);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     FOCUS RING TOKENS
-     ═══════════════════════════════════════════════════════════════════════ */
   --ring-width: 2px;
   --ring-offset: -2px;
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SPACING SCALE — ERP-Specific Semantic Spacing
-     ═══════════════════════════════════════════════════════════════════════
-     Named spacing for common ERP patterns (supplements Tailwind's scale) */
-  --spacing-page-x: 1.5rem; /* Page horizontal gutters */
-  --spacing-page-y: 1.5rem; /* Page vertical padding */
-  --spacing-section-gap: 2rem; /* Between major sections */
-  --spacing-card-pad: 1.5rem; /* Card internal padding */
-  --spacing-form-gap: 1rem; /* Between form fields */
-  --spacing-inline-gap: 0.5rem; /* Between inline elements */
-  --spacing-table-cell-x: 0.75rem; /* Table cell horizontal padding */
-  --spacing-table-cell-y: 0.5rem; /* Table cell vertical padding */
-  --spacing-wizard-step: 2.5rem; /* Wizard step indicator gap */
-  --spacing-split-gap: 0.5rem; /* Resizable split-panel gap */
-  --spacing-tree-indent: 1.25rem; /* Tree hierarchy indent per level */
+     SPACING SCALE
+     ═══════════════════════════════════════════════════════════════════════ */
+  --spacing-page-x: 1.5rem;
+  --spacing-page-y: 1.5rem;
+  --spacing-section-gap: 2rem;
+  --spacing-card-pad: 1.5rem;
+  --spacing-form-gap: 1rem;
+  --spacing-inline-gap: 0.5rem;
+  --spacing-table-cell-x: 0.75rem;
+  --spacing-table-cell-y: 0.5rem;
+  --spacing-wizard-step: 2.5rem;
+  --spacing-split-gap: 0.5rem;
+  --spacing-tree-indent: 1.25rem;
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     MARKETING TOKENS (Light Mode Parity)
+     ═══════════════════════════════════════════════════════════════════════ */
+  --mk-bg: oklch(0.98 0.005 260);
+  --mk-bg-alt: oklch(0.96 0.01 260);
+  --mk-bg-deep: oklch(0.94 0.015 260);
+  --mk-bg-card: oklch(1 0 0);
+  --mk-bg-terminal: oklch(0.15 0.02 260); 
+
+  --mk-text: oklch(0.2 0.02 260);
+  --mk-text-muted: oklch(0.45 0.02 260);
+  --mk-text-dim: oklch(0.55 0.02 260);
+  --mk-text-ghost: oklch(0.7 0.02 260);
+
+  --mk-border: oklch(0.9 0.01 260);
+  --mk-border-strong: oklch(0.75 0.02 260);
+
+  --mk-emerald: oklch(0.55 0.15 150);
+  --mk-emerald-light: oklch(0.65 0.18 150);
+  --mk-teal: oklch(0.55 0.12 180);
+  --mk-teal-light: oklch(0.65 0.15 180);
+  --mk-cyan: oklch(0.55 0.12 210);
+  --mk-cyan-light: oklch(0.65 0.15 210);
 }

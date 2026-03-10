@@ -11,3 +11,4 @@ export * from "./user.entity.js";
 export * from "./organization.commands.js";
 export * from "./auth.commands.js";
 export * from "./auth.entity.js";
+export * from "./auth-errors.js";

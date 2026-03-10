@@ -13,7 +13,7 @@ import {
   Clock,
   Mail,
 } from "lucide-react";
-import { AfendaMark } from "./AfendaMark";
+import { AfendaLogo } from "./AfendaLogo";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TrustBar
@@ -346,13 +346,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-10">
           <div className="col-span-2 md:col-span-1">
             <div className="mb-4">
-              <div className="flex items-center gap-2">
-                <AfendaMark size={20} variant="animated" />
-                <span className="font-semibold text-white tracking-tight">AFENDA</span>
-              </div>
-              <p className="text-slate-500 text-sm mt-0.5">
-                Where numbers become canon.
-              </p>
+              <AfendaLogo size="sm" variant="animated" align="start" />
             </div>
             <div className="flex gap-3 mt-6">
               {["𝕏", "in", "gh"].map((s) => (

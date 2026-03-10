@@ -1,19 +1,9 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   PILLAR 3 · DESIGN TOKENS — DARK MODE (Obsidian Terminal v2)
+   PILLAR 3 · DESIGN TOKENS — DARK Mode (Obsidian Terminal v2)
    ─────────────────────────────────────────────────────────────────────────
+   Adopted from marketing.css — Bloomberg/Linear dark-terminal aesthetic.
    Premium dark-first system for OLED/AMOLED, low-light trading floors,
    and 12h+ marathon ERP sessions.
-
-   Color-science principles:
-     - Foreground at L=0.90 (not 1.0) — prevents "snow blindness" at night
-     - Background at L=0.11 (not 0.0) — prevents OLED black smearing
-     - Surface chroma capped at C≤0.04 — prevents "purple panel" on P3
-     - Borders at C≤0.016 — structural neutrality via L, not chroma
-     - Primary at L=0.78 C=0.08 — clear teal identity, no LED glow
-     - Interaction overlays use color-mix() — auto-derive, zero maintenance
-     - Status/market colors brightened ~0.06L for dark-bg legibility
-     - 3-tier text hierarchy: foreground → secondary → muted (0.90 → 0.72 → 0.62)
-     - Scrim is achromatic (C=0) — "light removed", not tinted
 
    Per Tailwind v4: .dark overrides :root variables directly.
    NEVER use .dark { @theme { } } — v4 does not support nested @theme.
@@ -23,153 +13,150 @@
    ───────────────────────────────────────────────────────────────────────── */
 
 .dark {
-  /* ── Surfaces ──
-     Chroma capped at C≤0.04 to prevent blue-purple shift on P3 displays.
-     surface-50 added for skeleton/empty-state backgrounds. ── */
-   --background: oklch(0.145 0 0);
-   --foreground: oklch(0.985 0 0);
-   --foreground-secondary: oklch(0.74 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SURFACES
+     ═══════════════════════════════════════════════════════════════════════ */
+  --background: oklch(0.09 0.01 260); /* #0B0D12 */
+  --foreground: oklch(0.985 0.002 260); /* #f8fafc */
+  --foreground-secondary: oklch(0.68 0.02 255); /* #94a3b8 */
 
-   --surface-50: oklch(0.165 0 0);
-   --surface-100: oklch(0.185 0 0);
-   --surface-200: oklch(0.205 0 0);
-   --surface-300: oklch(0.235 0 0);
-   --surface-400: oklch(0.269 0 0);
+  --surface-50: oklch(0.07 0.01 260); /* #070910 */
+  --surface-100: oklch(0.08 0.01 260); /* #080A0F */
+  --surface-200: oklch(0.09 0.01 260); /* #0B0D12 */
+  --surface-300: oklch(0.10 0.015 260);
+  --surface-400: oklch(0.12 0.02 260);
 
-   --card: oklch(0.145 0 0);
-   --card-foreground: oklch(0.985 0 0);
-   --popover: oklch(0.145 0 0);
-   --popover-foreground: oklch(0.985 0 0);
+  --card: oklch(0.06 0.01 260); /* #06080A */
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.06 0.01 260);
+  --popover-foreground: oklch(0.985 0 0);
 
-  /* ── Borders ──
-     Hierarchy via L (0.18 → 0.25 → 0.40), not chroma.
-     Chroma graduated C=0.012→0.016 — structural, never chromatic. ── */
-   --border-subtle: oklch(0.269 0 0 / 0.75);
-   --border: oklch(0.269 0 0);
-   --border-strong: oklch(0.48 0 0);
-   --input: oklch(0.269 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     BORDERS
+     ═══════════════════════════════════════════════════════════════════════ */
+  --border-subtle: oklch(0.23 0.02 260 / 0.5);
+  --border: oklch(0.23 0.02 260 / 0.5);
+  --border-strong: oklch(0.32 0.02 260 / 0.8);
+  --input: oklch(0.23 0.02 260);
 
-  /* ── Interaction ──
-     selection uses color-mix for translucency: overlays existing content
-     rather than painting an opaque block (preserves context behind selection) */
-   --ring: oklch(0.439 0 0);
-   --selection: oklch(0.36 0 0 / 0.28);
-   --selection-foreground: oklch(0.985 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     INTERACTION
+     ═══════════════════════════════════════════════════════════════════════ */
+  --ring: oklch(0.66 0.14 180); /* #14b8a6 teal */
+  --selection: oklch(0.66 0.14 180 / 0.3);
+  --selection-foreground: oklch(0.9 0.08 178); /* #99f6e4 */
 
-  /* ── Interaction overlays (micro-contrast via color-mix, not neon) ──
-     hover 6% · active 10% · selected 14% · focus 22% opacity ── */
   --overlay-hover: color-mix(in oklab, var(--foreground), transparent 94%);
   --overlay-active: color-mix(in oklab, var(--foreground), transparent 90%);
   --overlay-selected: color-mix(in oklab, var(--primary), transparent 86%);
   --overlay-focus: color-mix(in oklab, var(--ring), transparent 78%);
 
-  /* ── Focus ring tiers ──
-     strong = keyboard focus outlines · soft = container/section outlines ── */
   --ring-strong: var(--ring);
   --ring-soft: color-mix(in oklab, var(--ring), transparent 70%);
 
-  /* ── Primary system ──
-     L=0.78 sits above status colors (0.65–0.72) without LED glow.
-     Hover brightens (+0.04L), active darkens (−0.04L) — "press into surface". ── */
-   --primary: oklch(0.488 0.243 264.376);
-   --primary-foreground: oklch(0.985 0 0);
-   --primary-hover: oklch(0.54 0.24 264.376);
-   --primary-active: oklch(0.45 0.22 264.376);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC SYSTEMS
+     ═══════════════════════════════════════════════════════════════════════ */
+  --primary: oklch(0.66 0.14 180); /* #14b8a6 */
+  --primary-foreground: oklch(0.15 0.02 180); 
+  --primary-hover: oklch(0.78 0.12 178); /* #2dd4bf */
+  --primary-active: oklch(0.55 0.14 180);
 
-  /* ── Secondary system ── */
-   --secondary: oklch(0.269 0 0);
-   --secondary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.23 0.02 260);
+  --secondary-foreground: oklch(0.985 0 0);
 
-  /* ── Muted system ── */
-   --muted: oklch(0.269 0 0);
-   --muted-foreground: oklch(0.708 0 0);
+  --muted: oklch(0.23 0.02 260);
+  --muted-foreground: oklch(0.55 0.02 255); /* #64748b */
 
-  /* ── Accent system ── */
-   --accent: oklch(0.269 0 0);
-   --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.23 0.02 260);
+  --accent-foreground: oklch(0.985 0 0);
 
-  /* ── Disabled system ──
-     Derives from primitives via color-mix — auto-adapts if base changes. ── */
   --disabled-foreground: color-mix(in oklab, var(--foreground), transparent 45%);
   --disabled-surface: color-mix(in oklab, var(--surface-200), transparent 18%);
   --disabled-border: color-mix(in oklab, var(--border), transparent 38%);
 
-  /* ── Status palette (brightened ~0.06L for dark backgrounds) ── */
-  --success: oklch(0.68 0.18 150);
-   --success-foreground: oklch(0.205 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     STATUS PALETTE
+     ═══════════════════════════════════════════════════════════════════════ */
+  --success: oklch(0.65 0.16 160); /* #10b981 emerald */
+  --success-foreground: oklch(0.15 0.02 160);
   --warning: oklch(0.76 0.14 85);
-   --warning-foreground: oklch(0.205 0 0);
-  --info: oklch(0.7 0.14 245);
-   --info-foreground: oklch(0.205 0 0);
-   --destructive: oklch(0.396 0.141 25.723);
-   --destructive-foreground: oklch(0.985 0 0);
+  --warning-foreground: oklch(0.15 0.02 85);
+  --info: oklch(0.68 0.14 195); /* #06b6d4 cyan */
+  --info-foreground: oklch(0.15 0.02 195);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.985 0 0);
 
-  /* ── Market semantics (brightened for dark legibility) ── */
+  /* ═══════════════════════════════════════════════════════════════════════
+     MARKET SEMANTICS
+     ═══════════════════════════════════════════════════════════════════════ */
   --trade-up: oklch(0.68 0.18 150);
   --trade-down: oklch(0.65 0.22 25);
-   --trade-flat: oklch(0.7 0 0);
+  --trade-flat: oklch(0.7 0 0);
   --bid: oklch(0.7 0.15 230);
   --ask: oklch(0.72 0.16 55);
 
-  /* ── Operational market states ── */
   --halted: oklch(0.65 0.2 310);
   --stale: oklch(0.76 0.14 85);
   --afterhours: oklch(0.72 0.12 255);
 
-  /* ── Data grid surface ──
-     Chromas aligned with surface-200 / border-subtle for consistency. ── */
-   --grid: oklch(0.205 0 0);
-   --grid-foreground: oklch(0.985 0 0);
-   --grid-border: oklch(0.269 0 0); /* aligned with --border-subtle */
+  /* ═══════════════════════════════════════════════════════════════════════
+     DATA GRID SURFACE
+     ═══════════════════════════════════════════════════════════════════════ */
+  --grid: oklch(0.12 0.02 260);
+  --grid-foreground: oklch(0.985 0 0);
+  --grid-border: oklch(0.23 0.02 260 / 0.5);
   --grid-hover: var(--overlay-hover);
   --grid-selected: var(--overlay-selected);
   --grid-focus: var(--overlay-focus);
   --stripe: color-mix(in oklab, var(--foreground), transparent 97%);
 
-  /* ── Sidebar ── */
-   --sidebar: oklch(0.205 0 0);
-   --sidebar-foreground: oklch(0.985 0 0);
-   --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(1 0 0);
-   --sidebar-accent: oklch(0.269 0 0);
-   --sidebar-accent-foreground: oklch(0.985 0 0);
-   --sidebar-border: oklch(0.269 0 0);
-   --sidebar-ring: oklch(0.439 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     SIDEBAR
+     ═══════════════════════════════════════════════════════════════════════ */
+  --sidebar: oklch(0.12 0.02 260);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.66 0.14 180); 
+  --sidebar-primary-foreground: oklch(0.15 0.02 180);
+  --sidebar-accent: oklch(0.23 0.02 260);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.23 0.02 260 / 0.5);
+  --sidebar-ring: oklch(0.66 0.14 180);
 
-  /* ── Chart palette (adjusted for dark backgrounds) ──
-     Brightened for legibility, maintaining hue distinction from light mode. */
-   --chart-1: oklch(0.488 0.243 264.376); /* indigo */
-   --chart-2: oklch(0.696 0.17 162.48); /* mint */
-   --chart-3: oklch(0.769 0.188 70.08); /* amber */
-   --chart-4: oklch(0.627 0.265 303.9); /* violet */
-   --chart-5: oklch(0.645 0.246 16.439); /* coral */
-  --chart-6: oklch(0.65 0.14 285); /* purple — provisions/accruals */
-  --chart-7: oklch(0.7 0.12 195); /* cyan — cash/treasury */
-  --chart-8: oklch(0.62 0.14 320); /* magenta — taxes */
+  /* ═══════════════════════════════════════════════════════════════════════
+     CHART PALETTE (8-stop)
+     ═══════════════════════════════════════════════════════════════════════ */
+  --chart-1: oklch(0.66 0.14 180); /* teal #14b8a6 */
+  --chart-2: oklch(0.65 0.16 160); /* emerald #10b981 */
+  --chart-3: oklch(0.769 0.188 70.08); /* amber */
+  --chart-4: oklch(0.627 0.265 303.9); /* violet */
+  --chart-5: oklch(0.645 0.246 16.439); /* coral */
+  --chart-6: oklch(0.65 0.14 285); /* purple */
+  --chart-7: oklch(0.68 0.14 195); /* cyan #06b6d4 */
+  --chart-8: oklch(0.62 0.14 320); /* magenta */
 
-  /* ── Semantic visualization tokens (dark mode) ── */
-  --viz-positive: var(--chart-5); /* Green - inflows, favorable variance */
-  --viz-negative: var(--chart-3); /* Orange - outflows, unfavorable variance */
-  --viz-neutral: var(--chart-1); /* Blue - totals, baselines */
-  --viz-accent-1: var(--chart-2); /* Teal - secondary series */
-  --viz-accent-2: var(--chart-4); /* Gold - budget/plan */
-  --viz-accent-3: var(--chart-6); /* Purple - provisions */
-  --viz-threshold: var(--chart-8); /* Magenta - targets/thresholds */
-  --viz-target: var(--chart-7); /* Cyan - goals */
+  --viz-positive: var(--chart-2); 
+  --viz-negative: var(--chart-5); 
+  --viz-neutral: var(--chart-1); 
+  --viz-accent-1: var(--chart-7); 
+  --viz-accent-2: var(--chart-4); 
+  --viz-accent-3: var(--chart-6); 
+  --viz-threshold: var(--chart-8); 
+  --viz-target: var(--chart-7); 
 
-  /* Gauge zones (dark mode) */
   --gauge-danger: var(--viz-negative);
   --gauge-warning: var(--chart-4);
   --gauge-success: var(--viz-positive);
 
-  /* Waterfall (dark mode) */
   --waterfall-positive: var(--viz-positive);
   --waterfall-negative: var(--viz-negative);
   --waterfall-total: var(--viz-neutral);
 
-  /* ── Finance document status palette (dark mode) ── */
-   --status-draft: oklch(0.7 0 0);
-   --status-draft-bg: oklch(0.269 0 0);
+  /* ═══════════════════════════════════════════════════════════════════════
+     FINANCE & ERP LIFECYCLE TOKENS
+     ═══════════════════════════════════════════════════════════════════════ */
+  --status-draft: oklch(0.7 0 0);
+  --status-draft-bg: oklch(0.18 0.02 260);
   --status-pending: oklch(0.72 0.14 85);
   --status-pending-bg: oklch(0.22 0.04 85);
   --status-approved: oklch(0.65 0.12 220);
@@ -183,11 +170,10 @@
   --status-paid: oklch(0.6 0.14 145);
   --status-paid-bg: oklch(0.18 0.04 145);
 
-  /* ── Extended AP/AR Lifecycle (dark mode) ── */
   --status-partially-paid: oklch(0.66 0.12 175);
   --status-partially-paid-bg: oklch(0.2 0.04 175);
-   --status-written-off: oklch(0.62 0 0);
-   --status-written-off-bg: oklch(0.269 0 0);
+  --status-written-off: oklch(0.62 0 0);
+  --status-written-off-bg: oklch(0.18 0.02 260);
   --status-cancelled: oklch(0.62 0.06 0);
   --status-cancelled-bg: oklch(0.2 0.02 0);
   --status-on-hold: oklch(0.68 0.14 280);
@@ -204,12 +190,12 @@
   --status-reversed-bg: oklch(0.2 0.04 310);
   --status-submitted: oklch(0.65 0.1 230);
   --status-submitted-bg: oklch(0.2 0.04 230);
-   --status-closed: oklch(0.58 0 0);
-   --status-closed-bg: oklch(0.269 0 0);
-   --status-locked: oklch(0.55 0 0);
-   --status-locked-bg: oklch(0.269 0 0);
+  --status-closed: oklch(0.58 0 0);
+  --status-closed-bg: oklch(0.18 0.02 260);
+  --status-locked: oklch(0.55 0 0);
+  --status-locked-bg: oklch(0.18 0.02 260);
 
-  /* ── Supplier portal compliance (dark mode) ── */
+  /* Supplier Portal Compliance */
   --compliance-valid: oklch(0.62 0.14 150);
   --compliance-valid-bg: oklch(0.18 0.04 145);
   --compliance-expiring: oklch(0.7 0.15 85);
@@ -217,17 +203,17 @@
   --compliance-expired: oklch(0.62 0.2 25);
   --compliance-expired-bg: oklch(0.18 0.06 25);
 
-  /* ── Fixed asset lifecycle (dark mode) ── */
+  /* Fixed Asset Lifecycle */
   --asset-cwip: oklch(0.68 0.12 200);
   --asset-cwip-bg: oklch(0.2 0.04 200);
   --asset-active: oklch(0.62 0.14 150);
   --asset-active-bg: oklch(0.18 0.04 145);
   --asset-impaired: oklch(0.65 0.18 35);
   --asset-impaired-bg: oklch(0.18 0.06 35);
-   --asset-disposed: oklch(0.62 0 0);
-   --asset-disposed-bg: oklch(0.269 0 0);
+  --asset-disposed: oklch(0.62 0 0);
+  --asset-disposed-bg: oklch(0.18 0.02 260);
 
-  /* ── Tax lifecycle (dark mode) ── */
+  /* Tax Lifecycle */
   --tax-open: oklch(0.68 0.1 220);
   --tax-open-bg: oklch(0.2 0.03 220);
   --tax-filed: oklch(0.65 0.12 175);
@@ -237,7 +223,7 @@
   --tax-adjusted: oklch(0.66 0.14 280);
   --tax-adjusted-bg: oklch(0.2 0.04 280);
 
-  /* ── IFRS classification (dark mode) ── */
+  /* IFRS Classification */
   --classification-ac: oklch(0.65 0.1 220);
   --classification-ac-bg: oklch(0.2 0.03 220);
   --classification-fvtpl: oklch(0.68 0.16 40);
@@ -245,17 +231,17 @@
   --classification-fvoci: oklch(0.65 0.12 280);
   --classification-fvoci-bg: oklch(0.2 0.04 280);
 
-  /* ── Hedge accounting (dark mode) ── */
+  /* Hedge Accounting */
   --hedge-designated: oklch(0.65 0.1 220);
   --hedge-designated-bg: oklch(0.2 0.03 220);
   --hedge-effective: oklch(0.62 0.14 150);
   --hedge-effective-bg: oklch(0.18 0.04 145);
   --hedge-ineffective: oklch(0.66 0.18 35);
   --hedge-ineffective-bg: oklch(0.18 0.06 35);
-   --hedge-discontinued: oklch(0.62 0 0);
-   --hedge-discontinued-bg: oklch(0.269 0 0);
+  --hedge-discontinued: oklch(0.62 0 0);
+  --hedge-discontinued-bg: oklch(0.18 0.02 260);
 
-  /* ── Provisions IAS 37 (dark mode) ── */
+  /* Provisions (IAS 37) */
   --provision-recognized: oklch(0.65 0.12 200);
   --provision-recognized-bg: oklch(0.2 0.04 200);
   --provision-utilized: oklch(0.65 0.14 150);
@@ -263,7 +249,7 @@
   --provision-unwound: oklch(0.66 0.1 280);
   --provision-unwound-bg: oklch(0.2 0.03 280);
 
-  /* ── Budget & scenario (dark mode) ── */
+  /* Budget & Scenario */
   --scenario-base: oklch(0.65 0.1 220);
   --scenario-base-bg: oklch(0.2 0.03 220);
   --scenario-upside: oklch(0.65 0.14 150);
@@ -271,7 +257,7 @@
   --scenario-downside: oklch(0.65 0.18 25);
   --scenario-downside-bg: oklch(0.18 0.05 25);
 
-  /* ── Credit management (dark mode) ── */
+  /* Credit Management */
   --credit-hold: oklch(0.65 0.2 25);
   --credit-hold-bg: oklch(0.18 0.06 25);
   --credit-warning: oklch(0.7 0.15 85);
@@ -279,7 +265,7 @@
   --credit-released: oklch(0.62 0.14 150);
   --credit-released-bg: oklch(0.18 0.04 145);
 
-  /* ── Bank reconciliation (dark mode) ── */
+  /* Bank Reconciliation */
   --recon-matched: oklch(0.62 0.14 160);
   --recon-matched-bg: oklch(0.2 0.04 160);
   --recon-unmatched: oklch(0.68 0.14 55);
@@ -287,7 +273,7 @@
   --recon-suggested: oklch(0.66 0.12 200);
   --recon-suggested-bg: oklch(0.2 0.04 200);
 
-  /* ── SLA / urgency indicators (dark mode) ── */
+  /* SLA / Urgency Indicators */
   --sla-ok: oklch(0.65 0.14 150);
   --sla-ok-bg: oklch(0.18 0.04 145);
   --sla-warning: oklch(0.72 0.15 85);
@@ -295,33 +281,15 @@
   --sla-breach: oklch(0.65 0.2 25);
   --sla-breach-bg: oklch(0.18 0.05 25);
 
-  /* ── Financial data formatting (dark mode) ── */
+  /* Financial Data Formatting */
   --debit: oklch(0.65 0.14 150);
   --credit: oklch(0.65 0.16 25);
   --variance-positive: oklch(0.65 0.14 150);
   --variance-negative: oklch(0.65 0.16 25);
 
-  /* ── Skeleton loading ── */
-   --skeleton: oklch(0.24 0 0);
-   --skeleton-highlight: oklch(0.3 0 0);
-
-  /* ── Scrollbar ── */
-  --scrollbar-track: transparent;
-   --scrollbar-thumb: oklch(0.32 0 0);
-
-  /* ── Drag & drop ── */
-  --drag-preview: color-mix(in oklab, var(--surface-300), transparent 12%);
-  --drop-target: color-mix(in oklab, var(--primary), transparent 80%);
-
-  /* ── Glass surface (premium popovers/command palette) ── */
-  --glass-surface: color-mix(in oklab, var(--popover), transparent 12%);
-  --glass-border: color-mix(in oklab, var(--border), transparent 25%);
-
-  /* ── Scrim (modal/drawer backdrop) ──
-     Achromatic — simulates "light removed", not "tinted overlay". ── */
-  --scrim: oklch(0.08 0 0 / 0.62);
-
-  /* ── Shadows (dark mode — deeper for depth on dark surfaces) ── */
+  /* ═══════════════════════════════════════════════════════════════════════
+     SHADOWS & EFFECTS
+     ═══════════════════════════════════════════════════════════════════════ */
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.22);
   --shadow-md: 0 4px 12px oklch(0 0 0 / 0.30);
   --shadow-lg: 0 8px 24px oklch(0 0 0 / 0.35);
@@ -329,9 +297,46 @@
   --shadow-popover: 0 8px 30px oklch(0 0 0 / 0.42), 0 0 1px oklch(0 0 0 / 0.16);
   --shadow-modal: 0 24px 48px oklch(0 0 0 / 0.52), 0 0 1px oklch(0 0 0 / 0.22);
 
-  /* ── Elevation shadows (focused drop for premium depth) ── */
   --elev-1-shadow: 0 10px 30px -18px oklch(0 0 0 / 0.85);
   --elev-2-shadow: 0 18px 50px -22px oklch(0 0 0 / 0.88);
   --elev-3-shadow: 0 28px 80px -30px oklch(0 0 0 / 0.92);
   --shadow-inner: inset 0 1px 3px oklch(0 0 0 / 0.18);
+
+  --skeleton: oklch(0.14 0.01 260);
+  --skeleton-highlight: oklch(0.18 0.02 260);
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: oklch(0.25 0.02 260);
+
+  --drag-preview: color-mix(in oklab, var(--surface-300), transparent 12%);
+  --drop-target: color-mix(in oklab, var(--primary), transparent 80%);
+
+  --glass-surface: color-mix(in oklab, var(--popover), transparent 12%);
+  --glass-border: color-mix(in oklab, var(--border), transparent 25%);
+
+  --scrim: oklch(0.06 0 0 / 0.75);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     MARKETING TOKENS (Dark Mode Parity)
+     ═══════════════════════════════════════════════════════════════════════ */
+  --mk-bg: oklch(0.15 0.02 260);          
+  --mk-bg-alt: oklch(0.13 0.02 260);      
+  --mk-bg-deep: oklch(0.11 0.02 260);     
+  --mk-bg-card: oklch(0.14 0.02 260);     
+  --mk-bg-terminal: oklch(0.12 0.03 260); 
+
+  --mk-text: oklch(0.96 0.01 260);        
+  --mk-text-muted: oklch(0.75 0.02 260);  
+  --mk-text-dim: oklch(0.6 0.02 260);     
+  --mk-text-ghost: oklch(0.45 0.02 260);  
+
+  --mk-border: oklch(0.25 0.04 260);
+  --mk-border-strong: oklch(0.35 0.05 260);
+
+  --mk-emerald: oklch(0.68 0.15 150);      
+  --mk-emerald-light: oklch(0.8 0.15 150); 
+  --mk-teal: oklch(0.68 0.12 180);         
+  --mk-teal-light: oklch(0.8 0.12 180);    
+  --mk-cyan: oklch(0.68 0.12 210);         
+  --mk-cyan-light: oklch(0.8 0.12 210);    
 }

@@ -1,7 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────
    PILLAR 5 · THEME ENGINE (@theme inline — Figma Token Interface v2)
    ─────────────────────────────────────────────────────────────────────────
-   ─────────────────────────────────────────────────────────────────────────
    This is the ONLY place Tailwind learns about our design tokens.
    Every CSS variable must be mapped here to generate a utility class.
 
@@ -11,15 +10,10 @@
      --font-{name}: ...             → generates font-{name}
      --radius-{name}: ...           → generates rounded-{name}
      --z-{name}: N                  → available as z-{name}
+     --spacing-{name}: ...          → generates p-{name}, m-{name}, gap-{name}, h-{name}
 
    "inline" modifier: prevents Tailwind from creating a separate theme
    file — all values resolve at runtime via CSS custom properties.
-
-   TOKEN COMPLETENESS CONTRACT:
-     Every --color-* here MUST have a corresponding :root + .dark definition.
-     If you add a token to :root, map it here. No dangling tokens allowed.
-     Enforce mechanically: tools/audit/ should verify all three sets
-     (:root, .dark, @theme inline) stay in sync.
    ───────────────────────────────────────────────────────────────────────── */
 
 @theme inline {
@@ -27,14 +21,11 @@
      TYPOGRAPHY
      ═══════════════════════════════════════════════════════════════════════ */
   --font-sans: "Inter", "San Francisco", "Segoe UI", system-ui, sans-serif;
-  --font-mono:
-    "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", monospace;
+  --font-mono: "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
   /* ═══════════════════════════════════════════════════════════════════════
      Z-INDEX TOPOLOGY
-     ═══════════════════════════════════════════════════════════════════════
-     Strict ordering: grid < sticky < panel < popover < modal < toast */
+     ═══════════════════════════════════════════════════════════════════════ */
   --z-grid: 10;
   --z-sticky: 20;
   --z-panel: 30;
@@ -45,29 +36,30 @@
 
   /* ═══════════════════════════════════════════════════════════════════════
      RADIUS SCALE (shadcn compatible)
-     ═══════════════════════════════════════════════════════════════════════
-     Derives from --radius which changes per density profile.
-     max(…, 0px) prevents negative radii in ultra density. */
+     ═══════════════════════════════════════════════════════════════════════ */
   --radius-sm: max(calc(var(--radius) - 4px), 0px);
   --radius-md: max(calc(var(--radius) - 2px), 0px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     DENSITY → TAILWIND MAPPING
-     ═══════════════════════════════════════════════════════════════════════ */
-  --density-row-h: var(--spacing-row-h);
-  --density-col-pad: var(--spacing-col-pad);
-  --density-data-text: var(--text-size-data);
+     DENSITY & SHELL → TAILWIND SPACING SCALE
+     ═══════════════════════════════════════════════════════════════════════
+     Prefixed with --spacing-* so Tailwind generates w-, h-, p-, m-, gap- utilities. */
+  --spacing-density-row: var(--spacing-row-h);
+  --spacing-density-col: var(--spacing-col-pad);
+  --spacing-shell-header: var(--shell-header-h);
+  --spacing-shell-max-w: var(--shell-content-max-w);
+  --spacing-shell-action: var(--shell-action-gap);
 
-  /* Shell layout — consumed by app shell via h-(--shell-header-h) etc. */
-  --shell-header-h: var(--shell-header-h);
-  --shell-content-max-w: var(--shell-content-max-w);
-  --shell-scroll-max-h: var(--shell-scroll-max-h);
-  --shell-action-gap: var(--shell-action-gap);
+  /* Font sizes don't use the spacing scale */
+  --font-size-density-data: var(--text-size-data);
+
+  /* Font sizes don't use the spacing scale */
+  --font-size-density-data: var(--text-size-data);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Surfaces
+     COLOR TOKENS — Surfaces, Borders & Interaction
      ═══════════════════════════════════════════════════════════════════════ */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -77,29 +69,23 @@
   --color-surface-200: var(--surface-200);
   --color-surface-300: var(--surface-300);
   --color-surface-400: var(--surface-400);
+  
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Borders
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-border-subtle: var(--border-subtle);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-input: var(--input);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Interaction
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-ring: var(--ring);
   --color-ring-strong: var(--ring-strong);
   --color-ring-soft: var(--ring-soft);
   --color-selection: var(--selection);
   --color-selection-foreground: var(--selection-foreground);
 
-  /* Interaction overlays */
   --color-overlay-hover: var(--overlay-hover);
   --color-overlay-active: var(--overlay-active);
   --color-overlay-selected: var(--overlay-selected);
@@ -112,21 +98,21 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
   --color-primary-active: var(--primary-active);
+  
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
 
-  /* Disabled system */
   --color-disabled-foreground: var(--disabled-foreground);
   --color-disabled-surface: var(--disabled-surface);
   --color-disabled-border: var(--disabled-border);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Status Palette
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Status */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -136,9 +122,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Market Semantics
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* Market */
   --color-trade-up: var(--trade-up);
   --color-trade-down: var(--trade-down);
   --color-trade-flat: var(--trade-flat);
@@ -149,7 +133,7 @@
   --color-afterhours: var(--afterhours);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Data Grid
+     COLOR TOKENS — Grid & Sidebar
      ═══════════════════════════════════════════════════════════════════════ */
   --color-grid: var(--grid);
   --color-grid-foreground: var(--grid-foreground);
@@ -159,9 +143,6 @@
   --color-grid-focus: var(--grid-focus);
   --color-stripe: var(--stripe);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Sidebar (shadcn Sidebar component)
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -172,7 +153,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Charts (8-stop)
+     COLOR TOKENS — Charts & Viz
      ═══════════════════════════════════════════════════════════════════════ */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -183,8 +164,20 @@
   --color-chart-7: var(--chart-7);
   --color-chart-8: var(--chart-8);
 
+  --color-viz-positive: var(--viz-positive);
+  --color-viz-negative: var(--viz-negative);
+  --color-viz-neutral: var(--viz-neutral);
+  --color-viz-accent-1: var(--viz-accent-1);
+  --color-viz-accent-2: var(--viz-accent-2);
+  --color-viz-accent-3: var(--viz-accent-3);
+  --color-viz-threshold: var(--viz-threshold);
+  --color-viz-target: var(--viz-target);
+
+  --color-viz-threshold: var(--viz-threshold);
+  --color-viz-target: var(--viz-target);
+
   /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Finance Document Status
+     COLOR TOKENS — Lifecycle & Domain Badges
      ═══════════════════════════════════════════════════════════════════════ */
   --color-status-draft: var(--status-draft);
   --color-status-draft-bg: var(--status-draft-bg);
@@ -201,9 +194,6 @@
   --color-status-paid: var(--status-paid);
   --color-status-paid-bg: var(--status-paid-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Extended AP/AR Lifecycle
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-status-partially-paid: var(--status-partially-paid);
   --color-status-partially-paid-bg: var(--status-partially-paid-bg);
   --color-status-written-off: var(--status-written-off);
@@ -229,9 +219,6 @@
   --color-status-locked: var(--status-locked);
   --color-status-locked-bg: var(--status-locked-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Supplier Compliance
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-compliance-valid: var(--compliance-valid);
   --color-compliance-valid-bg: var(--compliance-valid-bg);
   --color-compliance-expiring: var(--compliance-expiring);
@@ -239,9 +226,6 @@
   --color-compliance-expired: var(--compliance-expired);
   --color-compliance-expired-bg: var(--compliance-expired-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Fixed Asset Lifecycle
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-asset-cwip: var(--asset-cwip);
   --color-asset-cwip-bg: var(--asset-cwip-bg);
   --color-asset-active: var(--asset-active);
@@ -251,9 +235,6 @@
   --color-asset-disposed: var(--asset-disposed);
   --color-asset-disposed-bg: var(--asset-disposed-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Tax Lifecycle
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-tax-open: var(--tax-open);
   --color-tax-open-bg: var(--tax-open-bg);
   --color-tax-filed: var(--tax-filed);
@@ -263,9 +244,6 @@
   --color-tax-adjusted: var(--tax-adjusted);
   --color-tax-adjusted-bg: var(--tax-adjusted-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — IFRS Classification
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-classification-ac: var(--classification-ac);
   --color-classification-ac-bg: var(--classification-ac-bg);
   --color-classification-fvtpl: var(--classification-fvtpl);
@@ -273,9 +251,6 @@
   --color-classification-fvoci: var(--classification-fvoci);
   --color-classification-fvoci-bg: var(--classification-fvoci-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Hedge Accounting
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-hedge-designated: var(--hedge-designated);
   --color-hedge-designated-bg: var(--hedge-designated-bg);
   --color-hedge-effective: var(--hedge-effective);
@@ -285,9 +260,6 @@
   --color-hedge-discontinued: var(--hedge-discontinued);
   --color-hedge-discontinued-bg: var(--hedge-discontinued-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Provisions (IAS 37)
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-provision-recognized: var(--provision-recognized);
   --color-provision-recognized-bg: var(--provision-recognized-bg);
   --color-provision-utilized: var(--provision-utilized);
@@ -295,9 +267,6 @@
   --color-provision-unwound: var(--provision-unwound);
   --color-provision-unwound-bg: var(--provision-unwound-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Budget & Scenario
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-scenario-base: var(--scenario-base);
   --color-scenario-base-bg: var(--scenario-base-bg);
   --color-scenario-upside: var(--scenario-upside);
@@ -305,9 +274,6 @@
   --color-scenario-downside: var(--scenario-downside);
   --color-scenario-downside-bg: var(--scenario-downside-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Credit Management
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-credit-hold: var(--credit-hold);
   --color-credit-hold-bg: var(--credit-hold-bg);
   --color-credit-warning: var(--credit-warning);
@@ -315,9 +281,6 @@
   --color-credit-released: var(--credit-released);
   --color-credit-released-bg: var(--credit-released-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Bank Reconciliation
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-recon-matched: var(--recon-matched);
   --color-recon-matched-bg: var(--recon-matched-bg);
   --color-recon-unmatched: var(--recon-unmatched);
@@ -325,9 +288,6 @@
   --color-recon-suggested: var(--recon-suggested);
   --color-recon-suggested-bg: var(--recon-suggested-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — SLA / Urgency
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-sla-ok: var(--sla-ok);
   --color-sla-ok-bg: var(--sla-ok-bg);
   --color-sla-warning: var(--sla-warning);
@@ -335,16 +295,37 @@
   --color-sla-breach: var(--sla-breach);
   --color-sla-breach-bg: var(--sla-breach-bg);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     COLOR TOKENS — Financial Data
-     ═══════════════════════════════════════════════════════════════════════ */
   --color-debit: var(--debit);
   --color-credit: var(--credit);
   --color-variance-positive: var(--variance-positive);
   --color-variance-negative: var(--variance-negative);
 
   /* ═══════════════════════════════════════════════════════════════════════
-     SHADOW TOKENS
+     MARKETING TOKENS — newly added parity for v4 class generation
+     ═══════════════════════════════════════════════════════════════════════ */
+  --color-mk-bg: var(--mk-bg);
+  --color-mk-bg-alt: var(--mk-bg-alt);
+  --color-mk-bg-deep: var(--mk-bg-deep);
+  --color-mk-bg-card: var(--mk-bg-card);
+  --color-mk-bg-terminal: var(--mk-bg-terminal);
+
+  --color-mk-text: var(--mk-text);
+  --color-mk-text-muted: var(--mk-text-muted);
+  --color-mk-text-dim: var(--mk-text-dim);
+  --color-mk-text-ghost: var(--mk-text-ghost);
+
+  --color-mk-border: var(--mk-border);
+  --color-mk-border-strong: var(--mk-border-strong);
+
+  --color-mk-emerald: var(--mk-emerald);
+  --color-mk-emerald-light: var(--mk-emerald-light);
+  --color-mk-teal: var(--mk-teal);
+  --color-mk-teal-light: var(--mk-teal-light);
+  --color-mk-cyan: var(--mk-cyan);
+  --color-mk-cyan-light: var(--mk-cyan-light);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     EFFECTS & TYPOGRAPHY SCALES
      ═══════════════════════════════════════════════════════════════════════ */
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -357,39 +338,16 @@
   --shadow-elev-3: var(--elev-3-shadow);
   --shadow-inner: var(--shadow-inner);
 
-  /* Skeleton / loading */
   --color-skeleton: var(--skeleton);
   --color-skeleton-highlight: var(--skeleton-highlight);
-
-  /* Scrollbar */
   --color-scrollbar-track: var(--scrollbar-track);
   --color-scrollbar-thumb: var(--scrollbar-thumb);
-
-  /* Drag & drop */
   --color-drag-preview: var(--drag-preview);
   --color-drop-target: var(--drop-target);
-
-  /* Glass surface */
   --color-glass-surface: var(--glass-surface);
   --color-glass-border: var(--glass-border);
-
-  /* Scrim */
   --color-scrim: var(--scrim);
 
-  /* Semantic visualization */
-  --color-viz-positive: var(--viz-positive);
-  --color-viz-negative: var(--viz-negative);
-  --color-viz-neutral: var(--viz-neutral);
-  --color-viz-accent-1: var(--viz-accent-1);
-  --color-viz-accent-2: var(--viz-accent-2);
-  --color-viz-accent-3: var(--viz-accent-3);
-  --color-viz-threshold: var(--viz-threshold);
-  --color-viz-target: var(--viz-target);
-
-  /* ═══════════════════════════════════════════════════════════════════════
-     FLUID TYPOGRAPHY — maps to text-fluid-* utilities
-     ═══════════════════════════════════════════════════════════════════════
-     Generates: text-fluid-display, text-fluid-h1 … text-fluid-caption */
   --font-size-fluid-display: var(--fluid-display);
   --font-size-fluid-h1: var(--fluid-h1);
   --font-size-fluid-h2: var(--fluid-h2);
@@ -398,10 +356,9 @@
   --font-size-fluid-body: var(--fluid-body);
   --font-size-fluid-caption: var(--fluid-caption);
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     ANIMATION TOKENS (consumed via Tailwind arbitrary values)
-     ═══════════════════════════════════════════════════════════════════════ */
-  --animate-duration-fast: var(--duration-fast);
-  --animate-duration-normal: var(--duration-normal);
-  --animate-duration-slow: var(--duration-slow);
+  /* Tailwind duration utility generation */
+  --default-transition-duration: var(--duration-normal);
+  --duration-fast: var(--duration-fast);
+  --duration-normal: var(--duration-normal);
+  --duration-slow: var(--duration-slow);
 }

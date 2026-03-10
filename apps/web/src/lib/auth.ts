@@ -1,12 +1,16 @@
 /**
  * NextAuth v4 configuration.
  *
- * CredentialsProvider: email + password verified via API verify-credentials.
+ * Providers:
+ * - CredentialsProvider: email + password verified via API verify-credentials
+ * - GoogleProvider: OAuth 2.0 authentication via Google
+ * 
  * Session strategy: JWT (so the API can verify tokens independently).
  */
 
 import type { NextAuthOptions, Session, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import type { PortalType } from "@afenda/contracts";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -89,6 +93,17 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -100,18 +115,27 @@ export const authOptions: NextAuthOptions = {
     error: "/auth/error",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         const authUser = user as User;
         token.email = authUser.email;
-        token.portal = authUser.portal;
+        
+        // For OAuth providers (Google), default to "app" portal
+        // For Credentials provider, use the portal from authorize()
+        if (account?.provider === "google") {
+          token.portal = "app";
+          token.provider = "google";
+        } else {
+          token.portal = authUser.portal;
+          token.provider = "credentials";
+        }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         (session as Session).user!.email = token.email as string;
-        (session as Session).user!.portal = token.portal as PortalType | undefined;
+        (session as Session).user!.portal = (token.portal as PortalType | undefined) ?? "app";
       }
       return session;
     },

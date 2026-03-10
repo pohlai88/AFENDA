@@ -134,7 +134,7 @@ Each directory has an `index.ts` barrel. This file governs them all.
 | Directory                              | Contents                                                             |
 | -------------------------------------- | -------------------------------------------------------------------- |
 | `shared/`                              | Cross-domain primitives (IDs, money, errors, pagination, envelope, headers, permissions, datetime) — see `shared/OWNERS.md` |
-| `kernel/identity/`                     | Party, person, organization, principal, role, membership, tenant, user entity schemas |
+| `kernel/identity/`                     | Party, person, organization, principal, role, membership, tenant, user entity schemas, auth commands + errors |
 | `kernel/governance/audit/`             | Audit log query schemas, audit action constants                      |
 | `kernel/governance/evidence/`          | Document entity + attach/register command schemas                    |
 | `kernel/governance/policy/`            | Policy context schema                                                |

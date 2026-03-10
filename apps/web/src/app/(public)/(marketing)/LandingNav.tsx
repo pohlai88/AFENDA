@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "./_landing-ui";
-import { AfendaMark } from "./AfendaMark";
+import { AfendaLogo } from "./AfendaLogo";
 
 const navLinks = [
   { label: "Platform", href: "#features" },
@@ -16,11 +16,14 @@ const navLinks = [
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
 
+  const handleScroll = useCallback(() => {
+    setScrolled(window.scrollY > 20);
+  }, []);
+
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   return (
     <nav
@@ -33,9 +36,8 @@ export function LandingNav() {
       <div className="mk-container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2.5 group">
-            <AfendaMark size={20} className="group-hover:opacity-80 transition-opacity" />
-            <span className="font-semibold text-white tracking-tight text-sm">AFENDA</span>
+          <a href="#" className="flex items-center group">
+            <AfendaLogo size="sm" showTagline={false} className="group-hover:opacity-80 transition-opacity" />
           </a>
 
           {/* Nav Links */}

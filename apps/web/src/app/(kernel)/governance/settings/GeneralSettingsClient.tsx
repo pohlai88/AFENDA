@@ -5,6 +5,7 @@ import { updateSettings } from "@/lib/api-client";
 import { Input, Label, Switch, Textarea } from "@afenda/ui";
 import type { SettingsResponse, SettingKey } from "@afenda/contracts";
 import { SETTINGS_FIELD_UI } from "./settings-ui-config";
+import { isFormDirty } from "@/lib/comparison-utils";
 
 // Derive keys from the UI config (web-local) to avoid importing runtime values
 // from @afenda/contracts in a client component (Next.js Turbopack limitation).
@@ -214,7 +215,7 @@ export function GeneralSettingsClient({ initialSettings }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const isDirty = isFormDirty(saved, draft);
 
   function handleChange(key: SettingKey, val: string | null) {
     setDraft((prev) => ({ ...prev, [key]: val }));

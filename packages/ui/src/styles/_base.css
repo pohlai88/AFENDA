@@ -39,23 +39,26 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    font-variant-numeric: tabular-nums;
-    /* Disable ligatures globally — terminal/data UIs must show literal glyphs.
+    
+    /* Terminal Data Safety:
+       1. Tabular nums force all numbers to be the exact same width.
+       2. Disable ligatures globally — terminal/data UIs must show literal glyphs.
        "liga" 0: standard ligatures off (fi, fl, etc.)
        "calt" 0: contextual alternates off (prevents glyph reflow in grid columns) */
-    font-feature-settings:
-      "liga" 0,
-      "calt" 0;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "liga" 0, "calt" 0;
   }
 
-  /* ── Focus physics ── INSIDE outline (-2px offset) prevents grid cells from
-     expanding on focus. 2px solid meets WCAG 2.4.7 (3:1 contrast ratio). */
+  /* ── Focus physics ── 
+     INSIDE outline (-2px offset) prevents grid cells from expanding on focus. 
+     2px solid meets WCAG 2.4.7 (3:1 contrast ratio). */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: -2px;
   }
 
-  /* ── Selection ── explicit foreground prevents contrast loss on colored text. */
+  /* ── Selection ── 
+     Explicit foreground prevents contrast loss on colored text. */
   ::selection {
     background-color: var(--selection);
     color: var(--selection-foreground);
@@ -95,9 +98,7 @@
     border-collapse: collapse;
   }
 
-  /* ── Fixed-layout tables for data grids ──
-     Prevents column width thrashing on dynamic data loads.
-     Apply via data attribute: <table data-fixed-layout> */
+  /* Apply via data attribute: <table data-fixed-layout> */
   table[data-fixed-layout] {
     table-layout: fixed;
     width: 100%;
@@ -116,6 +117,7 @@
   dialog::backdrop {
     background: var(--scrim);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   /* ── Skip-to-content anchor ──

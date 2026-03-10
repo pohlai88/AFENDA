@@ -18,7 +18,8 @@ const nextConfig: NextConfig = {
   // Workspace packages are referenced via tsconfig paths pointing at their
   // TypeScript source.  Turbopack needs this to remap ".js" imports inside
   // those packages to ".ts" files at build time.
-  transpilePackages: ["@afenda/contracts", "@afenda/ui"],
+  // contracts now exports compiled JS from dist/, so no longer transpiled
+  transpilePackages: ["@afenda/ui"],
 
   // API proxy for local dev (avoids CORS in development)
   async rewrites() {

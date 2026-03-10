@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { updateSettings } from "@/lib/api-client";
 import { Switch, Label } from "@afenda/ui";
 import type { SettingsResponse, SettingKey } from "@afenda/contracts";
+import { isFormDirty } from "@/lib/comparison-utils";
 
 // ── Feature flag config ────────────────────────────────────────────────────────
 // Add entries here to render new feature toggles — no structural page changes needed.
@@ -133,7 +134,7 @@ export function FeaturesSettingsClient({ initialSettings }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const isDirty = isFormDirty(saved, draft);
 
   function handleToggle(key: SettingKey, val: boolean) {
     setDraft((prev) => ({ ...prev, [key]: val }));

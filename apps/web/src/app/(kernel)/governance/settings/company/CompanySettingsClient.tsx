@@ -6,6 +6,7 @@ import type { SettingsResponse, SettingKey } from "@afenda/contracts";
 import type { OrgProfileResponse } from "@afenda/contracts";
 import { SETTINGS_FIELD_UI } from "../settings-ui-config";
 import { Input, Label } from "@afenda/ui";
+import { isFormDirty } from "@/lib/comparison-utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -225,8 +226,8 @@ export function CompanySettingsClient({ initialOrg, initialSettings }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const isOrgDirty = JSON.stringify(orgDraft) !== JSON.stringify(orgSaved);
-  const isSettingsDirty = JSON.stringify(settingsDraft) !== JSON.stringify(settingsSaved);
+  const isOrgDirty = isFormDirty(orgSaved, orgDraft);
+  const isSettingsDirty = isFormDirty(settingsSaved, settingsDraft);
   const isDirty = isOrgDirty || isSettingsDirty;
 
   function handleSettingChange(key: SettingKey, val: string | null) {

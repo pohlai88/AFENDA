@@ -159,7 +159,7 @@ export default function InvoiceListClient({
         window.location.href = `/finance/ap/invoices/${id}`;
         return;
       }
-      console.log(`Row action: ${actionKey} on ${id}`);
+      // TODO: Implement additional row actions (duplicate, export, etc.)
     },
     [],
   );

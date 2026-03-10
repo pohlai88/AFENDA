@@ -10,23 +10,28 @@
      reduce-motion:animate-none  → applies when ancestor has .reduce-motion
      touch:min-h-[52px]          → applies when ancestor has .touch-mode
      high-contrast:border-2      → applies when ancestor has .high-contrast
+     print-preview:bg-white      → applies when ancestor has .print-preview
 
    :where() gives ZERO specificity so utilities remain easy to override.
    Each selector matches the element itself (if it carries the class)
    AND any descendant of that class — both cases are needed because
    the density class might be on the same element or an ancestor.
-
-   dark uses :is() (matches Tailwind's own convention).
    ───────────────────────────────────────────────────────────────────────── */
 
-@custom-variant dark (&:is(.dark *));
+/* ── 1. Color Scheme Variant ── */
+/* Overrides Tailwind v4's default media-query dark mode to be strictly class-based */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── 2. Density Profiles ── */
 @custom-variant density-compact (&:where(.compact, .compact *));
 @custom-variant density-ultra (&:where(.ultra, .ultra *));
+
+/* ── 3. Accessibility & Inputs ── */
 @custom-variant reduce-motion (&:where(.reduce-motion, .reduce-motion *));
 @custom-variant touch (&:where(.touch-mode, .touch-mode *));
 @custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
 
+/* ── 4. Print & Export ── */
 /* Print-preview mode: apply print-like styles without actually printing.
-   Usage: print-preview:bg-white  → applies when ancestor has .print-preview
    Useful for "preview before print" screens in ERP report builders. */
 @custom-variant print-preview (&:where(.print-preview, .print-preview *));

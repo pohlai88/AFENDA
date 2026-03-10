@@ -34,7 +34,7 @@
  * Exit code 0 = clean, 1 = violations found.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -397,6 +397,21 @@ function detectCustomRadio(content, lineNum, line) {
 }
 
 /**
+ * Detect local @/components/ui/ imports in apps/web (should use @afenda/ui)
+ * Catches shadcn primitives accidentally installed into apps/web directly.
+ */
+function detectLocalShadcnImport(content, lineNum, line) {
+  // Matches: import { ... } from "@/components/ui/button" etc.
+  if (!/import\s+.*from\s+["']@\/components\/ui\//.test(line)) return null;
+
+  return {
+    ruleCode: "LOCAL_SHADCN_IMPORT",
+    message: `Local @/components/ui/ import detected — primitives must come from @afenda/ui`,
+    fix: `Replace with: import { ... } from "@afenda/ui". Shadcn primitives live in packages/ui, not apps/web.`,
+  };
+}
+
+/**
  * Detect inline style objects that bypass design tokens
  */
 function detectInlineStyles(content, lineNum, line) {
@@ -490,6 +505,14 @@ const RULE_DOCS = {
     why: "Inline style objects bypass design tokens and Tailwind utilities, making theming inconsistent.",
     docs: "See docs/adr/ui-ux.md — Use Tailwind className or design system CSS variables.",
   },
+  LOCAL_SHADCN_IMPORT: {
+    why: "Importing from @/components/ui/ in apps/web means shadcn primitives were accidentally installed locally instead of living in packages/ui.",
+    docs: "See AGENTS.md §6 and docs/shadcn-cli-workflow.md — Install primitives into packages/ui via: cd apps/web && npx shadcn@latest add <component> -y -p ../../packages/ui/src/components",
+  },
+  DUPLICATE_PRIMITIVE: {
+    why: "Shadcn primitives (button.tsx, input.tsx, etc.) must only exist in packages/ui/src/components/. Duplicates in apps/web break the monorepo's single-source-of-truth and cause version drift.",
+    docs: "See AGENTS.md §6 — Delete the duplicate and import from @afenda/ui. Install correctly via: cd apps/web && npx shadcn@latest add <primitive> -y -p ../../packages/ui/src/components",
+  },
 };
 
 // --- Main Scanner -----------------------------------------------------------
@@ -534,6 +557,10 @@ function scanFile(filePath) {
       detectCustomCheckbox,
       detectCustomRadio,
       detectInlineStyles,
+      // Only run local-import check on apps/web files (not packages/ui internals)
+      ...(relPath.startsWith("apps/web") || relPath.startsWith("apps\\web")
+        ? [detectLocalShadcnImport]
+        : []),
     ];
     
     for (const detector of detectors) {
@@ -552,12 +579,53 @@ function scanFile(filePath) {
   return violations;
 }
 
+// --- Duplicate primitive check (file-existence) ----------------------------
+
+/**
+ * SHADCN primitives are only allowed inside packages/ui/src/components/.
+ * If button.tsx / input.tsx etc. appear directly in apps/web/src/components/
+ * (or apps/web/src/components/ui/) it means a bad `npx shadcn add` ran without
+ * the correct --path flag.  Detect this at gate time.
+ */
+const SHADCN_PRIMITIVE_NAMES = [
+  "button", "input", "label", "card", "separator", "textarea",
+  "select", "switch", "checkbox", "radio-group", "dialog", "badge",
+  "tabs", "tooltip", "skeleton", "avatar", "progress", "slider",
+];
+
+const WEB_COMPONENTS_ROOT = resolve(ROOT, "apps/web/src/components");
+
+function checkDuplicatePrimitives() {
+  const violations = [];
+  for (const name of SHADCN_PRIMITIVE_NAMES) {
+    const candidates = [
+      resolve(WEB_COMPONENTS_ROOT, `${name}.tsx`),
+      resolve(WEB_COMPONENTS_ROOT, "ui", `${name}.tsx`),
+    ];
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        violations.push({
+          ruleCode: "DUPLICATE_PRIMITIVE",
+          file: relative(ROOT, candidate),
+          line: 1,
+          message: `Shadcn primitive '${name}.tsx' found in apps/web — must live in packages/ui only`,
+          fix: `Delete this file and import from @afenda/ui instead. To re-add the primitive correctly: cd apps/web && npx shadcn@latest add ${name} -y -p ../../packages/ui/src/components`,
+        });
+      }
+    }
+  }
+  return violations;
+}
+
 // --- Main Execution ---------------------------------------------------------
 
 const startTime = performance.now();
 
 const allViolations = [];
 let scannedFiles = 0;
+
+// Check for duplicate primitives FIRST (fast, no file walking)
+allViolations.push(...checkDuplicatePrimitives());
 
 for (const dir of SCAN_DIRS) {
   const files = walkTs(dir);
