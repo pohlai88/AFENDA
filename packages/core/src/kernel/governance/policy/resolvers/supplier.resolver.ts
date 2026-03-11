@@ -14,12 +14,12 @@
  */
 import { Permissions } from "@afenda/contracts";
 import type { FieldCap, ActionCap, PolicyContext } from "@afenda/contracts";
-import { hasPermission } from "../../../identity/permissions.js";
+import { hasPermission } from "../../../identity/permissions";
 import {
   registerCapabilityResolver,
   type EntityCapabilityResolver,
   type RecordContext,
-} from "../capability-engine.js";
+} from "../capability-engine";
 
 const ALWAYS_RO_FIELDS = new Set([
   "id",

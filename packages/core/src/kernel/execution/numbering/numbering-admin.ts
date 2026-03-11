@@ -14,7 +14,7 @@ import type { DbClient } from "@afenda/db";
 import { sequence } from "@afenda/db";
 import { eq } from "drizzle-orm";
 import type { OrgId, NumberingConfigEntry, SequenceEntityType } from "@afenda/contracts";
-import { ensureSequence } from "./numbering.js";
+import { ensureSequence } from "./numbering";
 
 /** List all configured sequences for an org. */
 export async function listNumberingConfigs(

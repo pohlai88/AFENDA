@@ -16,7 +16,7 @@
 
 import type { PrincipalId } from "@afenda/contracts";
 import { Permissions } from "@afenda/contracts";
-import { hasPermission } from "../../identity/permissions.js";
+import { hasPermission } from "../../identity/permissions";
 
 import type { PolicyContext, PolicyDenialCode, PolicyResult } from "@afenda/contracts";
 

@@ -4,7 +4,7 @@
 import type { DbClient } from "@afenda/db";
 import { invoice } from "@afenda/db";
 import { eq, and, sql } from "drizzle-orm";
-import { calculateAging, type AgingReport, type InvoiceForAging } from "./calculators/aging.js";
+import { calculateAging, type AgingReport, type InvoiceForAging } from "./calculators/aging";
 
 export interface GetAgingParams {
   readonly orgId: string;

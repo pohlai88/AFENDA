@@ -19,8 +19,8 @@
  *     the principalRole query, NOT by the rolePermission query.
  *
  * MEMBERSHIP:
- *   - Schema currently lacks `revokedAt` / `status`. When those columns land,
- *     queries MUST filter by `isNull(membership.revokedAt)` (fail-closed).
+ *   - Uses `revokedAt` / `status` columns (migration 0010_membership-status.sql).
+ *   - Queries filter by isNull(membership.revokedAt) + status='active' (fail-closed).
  *   - Deterministic hat selection: ordered by `membership.createdAt ASC`
  *     (oldest membership first). Explicit `partyRoleId` overrides.
  */
@@ -40,8 +40,8 @@ import {
   party,
   person,
 } from "@afenda/db";
-import { eq, and, inArray, asc, sql } from "drizzle-orm";
-import { resolveOrgId } from "./organization.js";
+import { eq, and, inArray, asc, isNull, sql } from "drizzle-orm";
+import { resolveOrgId } from "./organization";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Principal context resolution
@@ -97,9 +97,8 @@ export async function resolvePrincipalContext(
       and(
         eq(membership.principalId, principal.id),
         eq(partyRole.orgId, orgId),
-        // TODO(ADR-0003): Add revoked_at and status columns to membership table
-        // isNull(membership.revokedAt),
-        // eq(membership.status, "active"),
+        isNull(membership.revokedAt),
+        eq(membership.status, "active"),
       ),
     )
     .orderBy(asc(membership.createdAt));
@@ -200,9 +199,8 @@ export async function listPrincipalContexts(
     .where(
       and(
         eq(membership.principalId, principalId),
-        // TODO(ADR-0003): Add revoked_at and status columns to membership table
-        // isNull(membership.revokedAt),
-        // eq(membership.status, "active"),
+        isNull(membership.revokedAt),
+        eq(membership.status, "active"),
       ),
     )
     .orderBy(asc(organization.name), asc(partyRole.roleType));

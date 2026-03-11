@@ -26,10 +26,10 @@ import type {
   SettingValueResponse,
 } from "@afenda/contracts";
 import { SettingKeyValues } from "@afenda/contracts";
-import { writeAuditLog, type OrgScopedContext } from "../audit/index.js";
-import { SETTING_REGISTRY } from "./settings.registry.js";
-import { SETTING_VALUE_SCHEMAS } from "./settings.value-schemas.js";
-import { getEffectiveSettings } from "./settings.queries.js";
+import { writeAuditLog, type OrgScopedContext } from "../audit/index";
+import { SETTING_REGISTRY } from "./settings.registry";
+import { SETTING_VALUE_SCHEMAS } from "./settings.value-schemas";
+import { getEffectiveSettings } from "./settings.queries";
 
 // ── Domain error ──────────────────────────────────────────────────────────────
 

@@ -1,3 +1,3 @@
-export * from "./identity.js";
-export * from "./governance.js";
-export * from "./execution.js";
+export * from "./identity";
+export * from "./governance";
+export * from "./execution";

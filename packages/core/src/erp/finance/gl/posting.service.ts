@@ -25,10 +25,10 @@ import type {
   InvoiceId,
   AccountId,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { nextNumber } from "../../../kernel/execution/numbering/numbering.js";
-import { validateJournalBalance, type JournalLineInput } from "./posting.js";
-import { canPostToGL, type PolicyContext } from "../sod.js";
+import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { nextNumber } from "../../../kernel/execution/numbering/numbering";
+import { validateJournalBalance, type JournalLineInput } from "./posting";
+import { canPostToGL, type PolicyContext } from "../sod";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

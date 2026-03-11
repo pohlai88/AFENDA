@@ -11,6 +11,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "test:ap:calc": "vitest run src/erp/finance/ap/__vitest_test__/three-way-match.test.ts src/erp/finance/ap/__vitest_test__/detect-duplicates.test.ts src/erp/finance/ap/__vitest_test__/payment-file-iso20022.test.ts src/erp/finance/ap/__vitest_test__/payment-file-nacha.test.ts",
+    "test:ap:services": "vitest run src/erp/finance/ap/__vitest_test__/aging.service.test.ts src/erp/finance/ap/__vitest_test__/hold.service.test.ts src/erp/finance/ap/__vitest_test__/invoice.service.test.ts src/erp/finance/ap/__vitest_test__/match-tolerance.service.test.ts src/erp/finance/ap/__vitest_test__/payment-run.service.test.ts src/erp/finance/ap/__vitest_test__/payment-run-export.service.test.ts src/erp/finance/ap/__vitest_test__/prepayment.service.test.ts src/erp/finance/ap/__vitest_test__/validate-invoice.test.ts src/erp/finance/ap/__vitest_test__/wht-certificate.service.test.ts",
     "lint": "eslint src/"
   },
   "dependencies": {
@@ -18,6 +20,7 @@
     "@afenda/db": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "drizzle-orm": "catalog:",
+    "otplib": "catalog:",
     "pino": "catalog:",
     "pino-pretty": "catalog:",
     "zod": "catalog:"

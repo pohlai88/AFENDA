@@ -10,19 +10,19 @@
  */
 
 // Queries
-// export { getInvestorPortfolio } from "./queries/get-portfolio.js";
+// export { getInvestorPortfolio } from "./queries/get-portfolio";
 
 // Composers
-// export { buildInvestorDashboard } from "./composers/build-dashboard.js";
+// export { buildInvestorDashboard } from "./composers/build-dashboard";
 
 // Interactions
-// export { submitBuySellIntention } from "./interactions/submit-intention.js";
+// export { submitBuySellIntention } from "./interactions/submit-intention";
 
 // Policies
-// export { canViewHoldings, canAccessDocuments } from "./policies/can-view-holdings.js";
+// export { canViewHoldings, canAccessDocuments } from "./policies/can-view-holdings";
 
 // Types
-// export type * from "./types/view-models.js";
+// export type * from "./types/view-models";
 
 // Empty export to make this a valid module
 export {};

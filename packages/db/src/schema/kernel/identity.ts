@@ -10,7 +10,7 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { tsz, rlsOrg, rlsPrincipal } from "../_helpers.js";
+import { tsz, rlsOrg, rlsPrincipal } from "../_helpers";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ADR-0003: PARTY MODEL — identity tables (Phase 4 complete)

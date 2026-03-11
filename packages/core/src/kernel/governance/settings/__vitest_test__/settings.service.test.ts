@@ -66,14 +66,14 @@ vi.mock("@afenda/db", () => ({
 }));
 
 // Stub writeAuditLog — we just need it not to throw
-vi.mock("../../../governance/audit/index.js", () => ({
+vi.mock("../../../governance/audit/index", () => ({
   writeAuditLog: vi.fn().mockResolvedValue("audit-row-id"),
   withAudit: vi.fn(),
 }));
 
 // Import AFTER mocks
-import { upsertSettings, SettingsError } from "../settings.service.js";
-import { getEffectiveSettings } from "../settings.queries.js";
+import { upsertSettings, SettingsError } from "../settings.service";
+import { getEffectiveSettings } from "../settings.queries";
 
 // ─────────────────────────────────────────────────────────────────────────────
 

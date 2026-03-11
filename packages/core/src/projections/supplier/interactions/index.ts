@@ -1,1 +1,1 @@
-export { submitInvoiceFromPortal } from "./submit-invoice.js";
+export { submitInvoiceFromPortal } from "./submit-invoice";

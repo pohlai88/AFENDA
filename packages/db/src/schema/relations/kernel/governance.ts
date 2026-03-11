@@ -2,9 +2,9 @@
  * Relations — kernel/governance (document, evidence, audit)
  */
 import { relations } from "drizzle-orm";
-import { organization, iamPrincipal } from "../../kernel/identity.js";
-import { document, evidence } from "../../kernel/governance/evidence.js";
-import { auditLog } from "../../kernel/governance/audit.js";
+import { organization, iamPrincipal } from "../../kernel/identity";
+import { document, evidence } from "../../kernel/governance/evidence";
+import { auditLog } from "../../kernel/governance/audit";
 
 // ── Document + Evidence ───────────────────────────────────────────────────────
 

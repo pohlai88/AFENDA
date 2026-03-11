@@ -3,6 +3,6 @@
  *
  * Each resolver self-registers on import via `registerCapabilityResolver()`.
  */
-import "./ap-invoice.resolver.js";
-import "./supplier.resolver.js";
-import "./gl-account.resolver.js";
+import "./ap-invoice.resolver";
+import "./supplier.resolver";
+import "./gl-account.resolver";

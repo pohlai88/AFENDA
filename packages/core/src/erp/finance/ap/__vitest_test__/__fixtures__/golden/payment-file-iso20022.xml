@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>PMT-20260315-001</MsgId>
+      <CreDtTm>__CREATED_AT__</CreDtTm>
+      <NbOfTxs>2</NbOfTxs>
+      <CtrlSum>5001.25</CtrlSum>
+      <InitgPty>
+        <Nm>ACME Corp</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMT-20260315-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <BtchBookg>true</BtchBookg>
+      <NbOfTxs>2</NbOfTxs>
+      <CtrlSum>5001.25</CtrlSum>
+      <PmtTpInf>
+        <SvcLvl>
+          <Cd>SEPA</Cd>
+        </SvcLvl>
+      </PmtTpInf>
+      <ReqdExctnDt>2026-03-15</ReqdExctnDt>
+      <Dbtr>
+        <Nm>ACME Corp</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>GB29NWBK60161331926819</IBAN>
+        </Id>
+        <Ccy>USD</Ccy>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BIC>NWBKGB2L</BIC>
+        </FinInstnId>
+      </DbtrAgt>
+      <ChrgBr>SLEV</ChrgBr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <InstrId>INV-INV-2026-001</InstrId>
+          <EndToEndId>E2E-inv-001</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="USD">5000.00</InstdAmt>
+        </Amt>
+        <CdtrAgt>
+          <FinInstnId>
+            <BIC>COBADEFFXXX</BIC>
+          </FinInstnId>
+        </CdtrAgt>
+        <Cdtr>
+          <Nm>Widgets Ltd</Nm>
+        </Cdtr>
+        <CdtrAcct>
+          <Id>
+            <IBAN>DE89370400440532013000</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>INV-2026-001</Ustrd>
+        </RmtInf>
+      </CdtTrfTxInf>
+      <CdtTrfTxInf>
+        <PmtId>
+          <InstrId>INV-INV-2026-002</InstrId>
+          <EndToEndId>E2E-inv-002</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="USD">1.25</InstdAmt>
+        </Amt>
+        <CdtrAgt>
+          <FinInstnId>
+            <BIC>AGRIFRPP</BIC>
+          </FinInstnId>
+        </CdtrAgt>
+        <Cdtr>
+          <Nm>A&amp;B Supplies</Nm>
+        </Cdtr>
+        <CdtrAcct>
+          <Id>
+            <IBAN>FR7630006000011234567890189</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>INV-2026-002 &amp; credit</Ustrd>
+        </RmtInf>
+      </CdtTrfTxInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

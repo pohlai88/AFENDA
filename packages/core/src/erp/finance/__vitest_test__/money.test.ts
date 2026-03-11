@@ -16,7 +16,7 @@ import {
   allocateProRata,
   toMajorDecimalString,
   assertNonNegative,
-} from "../money/money.js";
+} from "../money/money";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

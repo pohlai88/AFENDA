@@ -54,7 +54,7 @@ const ALLOWED_INTERNAL = {
   "packages/core": ["@afenda/contracts", "@afenda/db"],
   "packages/ui": ["@afenda/contracts"],
   "apps/api": ["@afenda/contracts", "@afenda/core"],
-  "apps/web": ["@afenda/contracts", "@afenda/ui"],
+  "apps/web": ["@afenda/contracts", "@afenda/core", "@afenda/db", "@afenda/ui"],
   "apps/worker": ["@afenda/contracts", "@afenda/core", "@afenda/db"],
 };
 

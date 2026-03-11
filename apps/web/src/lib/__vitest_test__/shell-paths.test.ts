@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { isPublicFacingPath } from "../shell-paths";
 
 describe("isPublicFacingPath", () => {
-  it("returns true for auth root and children", () => {
+  it("returns true for auth root and children (paths reserved for future auth)", () => {
     expect(isPublicFacingPath("/auth")).toBe(true);
     expect(isPublicFacingPath("/auth/signin")).toBe(true);
     expect(isPublicFacingPath("/auth/reset-password/status")).toBe(true);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CurrencyCode } from "@afenda/contracts";
-import { validateJournalBalance, type PostingValidation } from "../gl/posting.js";
+import { validateJournalBalance, type PostingValidation } from "../gl/posting";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

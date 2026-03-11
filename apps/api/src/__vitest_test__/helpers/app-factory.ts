@@ -29,6 +29,8 @@ export async function createTestApp(): Promise<FastifyInstance> {
   process.env["NODE_ENV"] = "development";
   process.env["API_PORT"] = "19876";
   process.env["ALLOWED_ORIGINS"] = "";
+  process.env["AUTH_CHALLENGE_SECRET"] =
+    process.env["AUTH_CHALLENGE_SECRET"] ?? "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456";
 
   // Dynamic import — env vars must be set before this line
   const { buildApp } = await import("../../index.js");

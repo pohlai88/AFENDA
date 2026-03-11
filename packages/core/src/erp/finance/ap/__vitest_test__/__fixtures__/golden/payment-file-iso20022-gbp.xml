@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>PMT-20260315-gbp-001</MsgId>
+      <CreDtTm>__CREATED_AT__</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>7500.50</CtrlSum>
+      <InitgPty>
+        <Nm>ACME Corp UK</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMT-20260315-gbp-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <BtchBookg>true</BtchBookg>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>7500.50</CtrlSum>
+      <PmtTpInf>
+        <SvcLvl>
+          <Cd>UK</Cd>
+        </SvcLvl>
+      </PmtTpInf>
+      <ReqdExctnDt>2026-03-15</ReqdExctnDt>
+      <Dbtr>
+        <Nm>ACME Corp UK</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>GB29NWBK60161331926819</IBAN>
+        </Id>
+        <Ccy>GBP</Ccy>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BIC>NWBKGB2L</BIC>
+        </FinInstnId>
+      </DbtrAgt>
+      <ChrgBr>SLEV</ChrgBr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <InstrId>GBP-2026-001</InstrId>
+          <EndToEndId>E2E-inv-001-gbp</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="GBP">7500.50</InstdAmt>
+        </Amt>
+        <CdtrAgt>
+          <FinInstnId>
+            <BIC>PBNKGB22</BIC>
+          </FinInstnId>
+        </CdtrAgt>
+        <Cdtr>
+          <Nm>British Supplier Co</Nm>
+        </Cdtr>
+        <CdtrAcct>
+          <Id>
+            <IBAN>GB82WEST12345698765432</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>GBP-2026-001</Ustrd>
+        </RmtInf>
+      </CdtTrfTxInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

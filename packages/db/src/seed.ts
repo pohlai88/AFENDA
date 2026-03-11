@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 import { Client } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { sql, eq, inArray } from "drizzle-orm";
-import * as s from "./schema/index.js";
+import * as s from "./schema/index";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
@@ -57,6 +57,8 @@ async function main() {
   const client = new Client({
     connectionString: url,
     application_name: "afenda-seed",
+    // Neon cold start: allow 10s for scale-to-zero resume
+    ...(url.includes("neon.tech") && { connectionTimeoutMillis: 10_000 }),
   });
   await client.connect();
 
@@ -128,6 +130,20 @@ async function main() {
         .insert(s.membership)
         .values({ principalId: principal.id, partyRoleId: partyRole.id })
         .onConflictDoNothing();
+
+      // ── MFA (TOTP) for demo user ─────────────────────────────────────────
+      // Secret is a 32-char base32 TOTP seed (160 bits). Add to Google Authenticator
+      // to test MFA flow with admin@demo.afenda / demo123.
+      await tx
+        .insert(s.iamPrincipalMfa)
+        .values({
+          principalId: principal.id,
+          totpSecret: "AFENDA7AFENDA7AFENDA7AFENDA7AFEK",
+        })
+        .onConflictDoUpdate({
+          target: s.iamPrincipalMfa.principalId,
+          set: { totpSecret: "AFENDA7AFENDA7AFENDA7AFENDA7AFEK", updatedAt: sql`now()` },
+        });
 
       // ── PERMISSIONS (insert-then-select: always gets all rows) ───────────
       // Must stay in sync with Permissions enum in @afenda/contracts.
@@ -289,6 +305,7 @@ async function main() {
     console.log("   org slug:     demo");
     console.log("   admin email:  admin@demo.afenda");
     console.log("   admin pass:   demo123");
+    console.log("   MFA (demo):   Add secret AFENDA7AFENDA7AFENDA7AFENDA7AFEK to Google Authenticator");
     console.log("   supplier:     Acme Supplies Ltd");
   } finally {
     await client.end();

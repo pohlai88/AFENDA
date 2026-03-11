@@ -2,9 +2,9 @@
  * Relations — erp/supplier
  */
 import { relations } from "drizzle-orm";
-import { organization, iamPrincipal } from "../../kernel/identity.js";
-import { supplier } from "../../erp/supplier.js";
-import { invoice } from "../../erp/finance/ap.js";
+import { organization, iamPrincipal } from "../../kernel/identity";
+import { supplier } from "../../erp/supplier";
+import { invoice } from "../../erp/finance/ap";
 
 export const supplierRelations = relations(supplier, ({ one, many }) => ({
   // The buying organisation that owns this supplier record

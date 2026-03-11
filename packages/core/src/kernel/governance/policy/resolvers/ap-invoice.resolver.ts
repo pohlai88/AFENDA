@@ -21,13 +21,13 @@
  */
 import { Permissions } from "@afenda/contracts";
 import type { FieldCap, ActionCap, PolicyContext } from "@afenda/contracts";
-import { hasPermission } from "../../../identity/permissions.js";
-import { canApproveInvoice, canPostToGL, canMarkPaid } from "../sod-rules.js";
+import { hasPermission } from "../../../identity/permissions";
+import { canApproveInvoice, canPostToGL, canMarkPaid } from "../sod-rules";
 import {
   registerCapabilityResolver,
   type EntityCapabilityResolver,
   type RecordContext,
-} from "../capability-engine.js";
+} from "../capability-engine";
 
 // ── Helper: convert PolicyResult → ActionCap ─────────────────────────────────
 

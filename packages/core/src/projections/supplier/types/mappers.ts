@@ -5,7 +5,7 @@
  * across queries and composers.
  */
 
-import type { SupplierInvoiceView, SupplierHoldView } from "./view-models.js";
+import type { SupplierInvoiceView, SupplierHoldView } from "./view-models";
 
 /** Shape of an invoice row returned by Drizzle select or InvoiceRow. */
 export interface InvoiceRowLike {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { PrincipalId } from "@afenda/contracts";
 import { Permissions } from "@afenda/contracts";
-import { canApproveInvoice, canPostToGL, type PolicyContext } from "../sod.js";
+import { canApproveInvoice, canPostToGL, type PolicyContext } from "../sod";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,7 @@ import type { DbClient } from "@afenda/db";
 import { orgSetting } from "@afenda/db";
 import type { OrgId, SettingKey, SettingsResponse, SettingValueResponse, JsonValue } from "@afenda/contracts";
 import { SettingKeyValues } from "@afenda/contracts";
-import { SETTING_REGISTRY } from "./settings.registry.js";
+import { SETTING_REGISTRY } from "./settings.registry";
 
 // ── Raw fetch (internal) ──────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@
 
 > **Quick reference for AI assistants working with AFENDA codebase**
 
-**Last Updated:** March 9, 2026  
+**Last Updated:** March 11, 2026  
 **Version:** 1.2  
 **Purpose:** Enable AI agents to understand and contribute to AFENDA effectively
 
@@ -240,6 +240,7 @@ packages/
    # Edit migration file, add RLS policies
    pnpm db:migrate
    ```
+   If `db:generate` fails with `TypeError: Do not know how to serialize a BigInt`, see [Drizzle BigInt serialization error](#drizzle-bigint-serialization-error) in Quick Commands. Prefer string IDs in JSON payloads (outbox, audit) to avoid this.
 
 4. **Domain Service** (`packages/core/src/<pillar>/<module>/`)
    ```typescript
@@ -656,6 +657,15 @@ pnpm db:studio
 pnpm db:reset
 ```
 
+#### Drizzle BigInt serialization error
+
+`pnpm db:generate` may fail with `TypeError: Do not know how to serialize a BigInt` when the schema contains `bigint` columns. This occurs because Drizzle-kit internally uses `JSON.stringify` during schema diffing, and JavaScript `BigInt` is not JSON-serializable.
+
+- **Root cause:** Drizzle → JSON.stringify → BigInt not serializable
+- **Quick fix:** Use `bigint("col", { mode: "number" })` or `text` for columns that end up in JSON payloads (loses precision for large integers)
+- **Best fix:** Avoid BigInt in JSON payloads. Use string IDs (e.g. `uuid`, `text`) — AFENDA already prefers string IDs for audit/outbox payloads
+- **Workaround:** `db:generate` and `db:studio` use `tsx node_modules/drizzle-kit/bin.cjs` to avoid ESM/require issues; if BigInt error persists, create migrations manually in `packages/db/drizzle/`
+
 ### Build
 
 ```bash
@@ -781,6 +791,8 @@ type: "spring", stiffness: 400, damping: 25
 | **`AGENTS.md`** | This file - AI agent quick reference |
 | **`.github/copilot-instructions.md`** | GitHub Copilot rules |
 | **`docs/adr/adr_0005_module_architecture_restructure.md`** | Pillar structure ADR |
+| **`docs/production-readiness.md`** | Pre-deploy checklist (env, Neon, Redis, security) |
+| **`docs/neon-optimization.md`** | Neon DB optimization guide |
 
 ### Configuration
 

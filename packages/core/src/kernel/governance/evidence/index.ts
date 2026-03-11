@@ -4,15 +4,15 @@
  * Auto-instrumented: every function call produces an OTel span `evidence.<fn_name>`.
  * S1+ growth: retention policies, virus-scan integration, thumbnail generation.
  */
-import { instrumentService } from "../../infrastructure/tracing.js";
-import * as rawRegistry from "./evidence.registry.js";
-import * as rawLink from "./evidence.link.js";
+import { instrumentService } from "../../infrastructure/tracing";
+import * as rawRegistry from "./evidence.registry";
+import * as rawLink from "./evidence.link";
 
 // Policy module is mostly types + constants — re-export directly
-export * from "./evidence.policy.js";
+export * from "./evidence.policy";
 
 // Error class — re-export directly (not a callable function)
-export { RegisterDocumentError } from "./evidence.registry.js";
+export { RegisterDocumentError } from "./evidence.registry";
 
 // Types — compile-time only
 export type {
@@ -22,12 +22,12 @@ export type {
   RegisterDocumentResult,
   RegisterDocumentWithAudit,
   RegisterDocumentErrorCode,
-} from "./evidence.registry.js";
-export type { AttachEvidenceParams } from "./evidence.link.js";
+} from "./evidence.registry";
+export type { AttachEvidenceParams } from "./evidence.link";
 
 // Queries — not instrumented (read-only, low cardinality)
-export { listDocuments } from "./evidence.queries.js";
-export type { DocumentListRow, ListDocumentsParams } from "./evidence.queries.js";
+export { listDocuments } from "./evidence.queries";
+export type { DocumentListRow, ListDocumentsParams } from "./evidence.queries";
 
 // Functions — auto-wrapped with OTel spans
 const instrumented = instrumentService("evidence", { ...rawRegistry, ...rawLink });

@@ -1,9 +1,9 @@
 export {
   buildSupplierStatement,
   buildSupplierDashboard,
-} from "./build-statement.js";
+} from "./build-statement";
 
 export type {
   BuildStatementParams,
   BuildDashboardParams,
-} from "./build-statement.js";
+} from "./build-statement";

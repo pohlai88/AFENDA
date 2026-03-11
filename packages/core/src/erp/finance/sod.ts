@@ -7,7 +7,7 @@
  */
 
 // Re-export canonical SoD rules from kernel
-export { canApproveInvoice, canPostToGL, canMarkPaid } from "../../kernel/governance/policy/sod-rules.js";
+export { canApproveInvoice, canPostToGL, canMarkPaid } from "../../kernel/governance/policy/sod-rules";
 
 // Re-export policy types from contracts (canonical source)
 export type { PolicyContext, PolicyDenialCode, PolicyResult } from "@afenda/contracts";

@@ -14,8 +14,8 @@ import type {
   InvoiceId,
 } from "@afenda/contracts";
 import { Permissions } from "@afenda/contracts";
-import type { PolicyContext } from "../../sod.js";
-import type { OrgScopedContext } from "../../../../kernel/governance/audit/audit.js";
+import type { PolicyContext } from "../../sod";
+import type { OrgScopedContext } from "../../../../kernel/governance/audit/audit";
 
 // ── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -43,18 +43,18 @@ vi.mock("@afenda/db", () => ({
 }));
 
 // Mock audit service
-vi.mock("../../../../kernel/governance/audit/audit.js", () => ({
+vi.mock("../../../../kernel/governance/audit/audit", () => ({
   withAudit: vi.fn(async (_db: any, _ctx: any, _entry: any, fn: any) => {
     return fn(mockDb);
   }),
 }));
 
 // Mock numbering service
-vi.mock("../../../../kernel/execution/numbering/numbering.js", () => ({
+vi.mock("../../../../kernel/execution/numbering/numbering", () => ({
   nextNumber: vi.fn(async () => "JE-2026-0001"),
 }));
 
-import { postToGL, reverseJournalEntry } from "../posting.service.js";
+import { postToGL, reverseJournalEntry } from "../posting.service";
 
 // ── Test constants ───────────────────────────────────────────────────────────
 

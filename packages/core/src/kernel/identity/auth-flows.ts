@@ -7,8 +7,10 @@ import type { DbClient } from "@afenda/db";
 import {
   authPasswordResetToken,
   authPortalInvitation,
+  authSessionGrant,
   iamPermission,
   iamPrincipal,
+  iamPrincipalMfa,
   iamPrincipalRole,
   iamRole,
   iamRolePermission,
@@ -25,14 +27,20 @@ import {
   IAM_PORTAL_ACCESS_DENIED,
   IAM_PORTAL_INVITATION_EXPIRED,
   IAM_PORTAL_INVITATION_INVALID,
+  IAM_MFA_NOT_IMPLEMENTED,
   IAM_PORTAL_INVITATION_REQUIRED,
   IAM_RESET_TOKEN_EXPIRED,
   IAM_RESET_TOKEN_INVALID,
   type PasswordResetDelivery,
   type PortalType,
 } from "@afenda/contracts";
-import { hashPassword, verifyPassword } from "./password.js";
-import { checkAccountLockout, recordLoginAttempt, formatLockoutMessage } from "./account-lockout.js";
+import { hashPassword, verifyPassword } from "./password";
+import {
+  checkAccountLockout,
+  clearFailedLoginAttempts,
+  recordLoginAttempt,
+  formatLockoutMessage,
+} from "./account-lockout";
 
 function createToken(): string {
   return randomBytes(32).toString("hex");
@@ -270,6 +278,75 @@ export async function requestPasswordReset(
   return { accepted: true, email: principalRow.email, token, delivery };
 }
 
+export type VerifyResetTokenResult =
+  | { ok: true; email: string; expiresAt?: string }
+  | { ok: false; error: string };
+
+export async function verifyResetToken(
+  db: DbClient,
+  input: { token: string; email?: string },
+): Promise<VerifyResetTokenResult> {
+  const tokenHash = hashToken(input.token);
+  const isCode = /^\d{6}$/.test(input.token);
+
+  const [tokenRow] = await db
+    .select({
+      id: authPasswordResetToken.id,
+      principalId: authPasswordResetToken.principalId,
+      usedAt: authPasswordResetToken.usedAt,
+      expiresAt: authPasswordResetToken.expiresAt,
+      isExpired: sql<boolean>`${authPasswordResetToken.expiresAt} <= now()`,
+    })
+    .from(authPasswordResetToken)
+    .where(eq(authPasswordResetToken.tokenHash, tokenHash))
+    .limit(1);
+
+  if (!tokenRow?.id || !tokenRow.principalId) {
+    return { ok: false, error: IAM_RESET_TOKEN_INVALID };
+  }
+
+  if (isCode) {
+    const normalizedEmail = normalizeEmail(input.email ?? "");
+    if (!normalizedEmail) {
+      return { ok: false, error: IAM_RESET_TOKEN_INVALID };
+    }
+
+    const [principalRow] = await db
+      .select({ email: iamPrincipal.email })
+      .from(iamPrincipal)
+      .where(eq(iamPrincipal.id, tokenRow.principalId))
+      .limit(1);
+
+    if (!principalRow?.email || normalizeEmail(principalRow.email) !== normalizedEmail) {
+      return { ok: false, error: IAM_RESET_TOKEN_INVALID };
+    }
+  }
+
+  if (tokenRow.usedAt) {
+    return { ok: false, error: IAM_RESET_TOKEN_INVALID };
+  }
+
+  if (tokenRow.isExpired) {
+    return { ok: false, error: IAM_RESET_TOKEN_EXPIRED };
+  }
+
+  const [principalRow] = await db
+    .select({ email: iamPrincipal.email })
+    .from(iamPrincipal)
+    .where(eq(iamPrincipal.id, tokenRow.principalId))
+    .limit(1);
+
+  if (!principalRow?.email) {
+    return { ok: false, error: IAM_RESET_TOKEN_INVALID };
+  }
+
+  return {
+    ok: true,
+    email: principalRow.email,
+    expiresAt: tokenRow.expiresAt ? tokenRow.expiresAt.toISOString() : undefined,
+  };
+}
+
 export type ResetPasswordResult =
   | { ok: true }
   | { ok: false; error: string };
@@ -390,7 +467,7 @@ export async function requestPortalInvitation(
 }
 
 export type AcceptPortalInvitationResult =
-  | { ok: true; email: string; portal: Exclude<PortalType, "app"> }
+  | { ok: true; principalId: string; email: string; portal: Exclude<PortalType, "app"> }
   | { ok: false; error: string };
 
 async function ensurePersonForPrincipal(
@@ -480,7 +557,7 @@ export async function acceptPortalInvitation(
   const normalizedEmail = normalizeEmail(invitation.email);
   const portal = invitation.portal as Exclude<PortalType, "app">;
 
-  await db.transaction(async (tx) => {
+  const txResult = await db.transaction(async (tx) => {
     const [existingPrincipal] = await tx
       .select({
         id: iamPrincipal.id,
@@ -580,12 +657,137 @@ export async function acceptPortalInvitation(
         updatedAt: sql`now()`,
       })
       .where(eq(authPortalInvitation.id, invitation.id));
+
+    return { principalId, email: normalizedEmail, portal };
   });
+  return {
+    ok: true,
+    principalId: txResult.principalId,
+    email: txResult.email,
+    portal: txResult.portal,
+  };
+}
+
+export type VerifyInviteTokenResult =
+  | { ok: true; email: string; portal: Exclude<PortalType, "app">; tenantName?: string; tenantSlug?: string; expiresAt?: string }
+  | { ok: false; error: string };
+
+export async function verifyInviteToken(
+  db: DbClient,
+  input: { token: string },
+): Promise<VerifyInviteTokenResult> {
+  const tokenHash = hashToken(input.token);
+
+  const [row] = await db
+    .select({
+      email: authPortalInvitation.email,
+      portal: authPortalInvitation.portal,
+      expiresAt: authPortalInvitation.expiresAt,
+      acceptedAt: authPortalInvitation.acceptedAt,
+      orgName: organization.name,
+      orgSlug: organization.slug,
+    })
+    .from(authPortalInvitation)
+    .innerJoin(organization, eq(authPortalInvitation.orgId, organization.id))
+    .where(eq(authPortalInvitation.tokenHash, tokenHash))
+    .limit(1);
+
+  if (!row?.email || !row.portal) {
+    return { ok: false, error: IAM_PORTAL_INVITATION_INVALID };
+  }
+
+  if (row.acceptedAt) {
+    return { ok: false, error: IAM_PORTAL_INVITATION_INVALID };
+  }
+
+  const isExpired = row.expiresAt ? row.expiresAt.getTime() <= Date.now() : false;
+  if (isExpired) {
+    return { ok: false, error: IAM_PORTAL_INVITATION_EXPIRED };
+  }
 
   return {
     ok: true,
-    email: normalizedEmail,
+    email: row.email,
+    portal: row.portal as Exclude<PortalType, "app">,
+    tenantName: row.orgName ?? undefined,
+    tenantSlug: row.orgSlug ?? undefined,
+    expiresAt: row.expiresAt ? row.expiresAt.toISOString() : undefined,
+  };
+}
+
+// ── Session grants (one-time token for web session establishment) ──────────────
+
+export type CreateSessionGrantResult =
+  | { ok: true; grant: string }
+  | { ok: false; error: string };
+
+export async function createSessionGrant(
+  db: DbClient,
+  input: { principalId: string; email: string; portal?: PortalType },
+): Promise<CreateSessionGrantResult> {
+  const token = createToken();
+  const tokenHash = hashToken(token);
+  const portal = input.portal ?? "app";
+
+  await db.insert(authSessionGrant).values({
+    principalId: input.principalId,
+    tokenHash,
+    email: input.email,
     portal,
+    expiresAt: sql`now() + interval '5 minutes'`,
+  });
+
+  return { ok: true, grant: token };
+}
+
+export type VerifySessionGrantResult =
+  | { ok: true; principalId: string; email: string; portal: string }
+  | { ok: false; error: string };
+
+const IAM_SESSION_GRANT_INVALID = "IAM_SESSION_GRANT_INVALID";
+const IAM_SESSION_GRANT_EXPIRED = "IAM_SESSION_GRANT_EXPIRED";
+
+export async function verifySessionGrant(
+  db: DbClient,
+  input: { grant: string },
+): Promise<VerifySessionGrantResult> {
+  const tokenHash = hashToken(input.grant);
+
+  const [row] = await db
+    .select({
+      id: authSessionGrant.id,
+      principalId: authSessionGrant.principalId,
+      email: authSessionGrant.email,
+      portal: authSessionGrant.portal,
+      usedAt: authSessionGrant.usedAt,
+      isExpired: sql<boolean>`${authSessionGrant.expiresAt} <= now()`,
+    })
+    .from(authSessionGrant)
+    .where(eq(authSessionGrant.tokenHash, tokenHash))
+    .limit(1);
+
+  if (!row?.id || !row.principalId || !row.email) {
+    return { ok: false, error: IAM_SESSION_GRANT_INVALID };
+  }
+
+  if (row.usedAt) {
+    return { ok: false, error: IAM_SESSION_GRANT_INVALID };
+  }
+
+  if (row.isExpired) {
+    return { ok: false, error: IAM_SESSION_GRANT_EXPIRED };
+  }
+
+  await db
+    .update(authSessionGrant)
+    .set({ usedAt: sql`now()` })
+    .where(eq(authSessionGrant.id, row.id));
+
+  return {
+    ok: true,
+    principalId: row.principalId,
+    email: row.email,
+    portal: row.portal ?? "app",
   };
 }
 
@@ -595,7 +797,7 @@ export async function verifyCredentialsForPortal(
   password: string,
   portal: PortalType = "app",
 ): Promise<
-  | { ok: true; principalId: string; email: string }
+  | { ok: true; principalId: string; email: string; requiresMfa?: boolean }
   | { ok: false; error: string }
 > {
   const normalizedEmail = normalizeEmail(email);
@@ -670,6 +872,8 @@ export async function verifyCredentialsForPortal(
     }
   }
 
+  await clearFailedLoginAttempts(db, normalizedEmail);
+
   // Record successful attempt
   await recordLoginAttempt(db, {
     email: normalizedEmail,
@@ -678,10 +882,17 @@ export async function verifyCredentialsForPortal(
     principalId: principal.id,
   });
 
+  const [mfaRow] = await db
+    .select({ id: iamPrincipalMfa.id })
+    .from(iamPrincipalMfa)
+    .where(eq(iamPrincipalMfa.principalId, principal.id))
+    .limit(1);
+
   return {
     ok: true,
     principalId: principal.id,
     email: principal.email,
+    requiresMfa: !!mfaRow?.id,
   };
 }
 
@@ -698,5 +909,9 @@ export function mapAuthErrorMessage(error: string): string {
     return "Account is temporarily locked due to too many failed login attempts. Please try again later.";
   }
   if (error === IAM_CREDENTIALS_INVALID) return "Invalid email or password";
+  if (error === "IAM_MFA_INVALID") return "Invalid verification code.";
+  if (error === IAM_MFA_NOT_IMPLEMENTED) return "MFA verification is not yet available via API.";
+  if (error === "IAM_SESSION_GRANT_INVALID") return "Session grant is invalid or has already been used.";
+  if (error === "IAM_SESSION_GRANT_EXPIRED") return "Session grant has expired.";
   return "Authentication request failed";
 }

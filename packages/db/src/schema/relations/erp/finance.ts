@@ -2,10 +2,10 @@
  * Relations — erp/finance (accounts, invoices, journals)
  */
 import { relations } from "drizzle-orm";
-import { organization, iamPrincipal } from "../../kernel/identity.js";
-import { supplier } from "../../erp/supplier.js";
-import { account, journalEntry, journalLine } from "../../erp/finance/gl.js";
-import { invoice, invoiceStatusHistory } from "../../erp/finance/ap.js";
+import { organization, iamPrincipal } from "../../kernel/identity";
+import { supplier } from "../../erp/supplier";
+import { account, journalEntry, journalLine } from "../../erp/finance/gl";
+import { invoice, invoiceStatusHistory } from "../../erp/finance/ap";
 
 // ── Accounts ──────────────────────────────────────────────────────────────────
 

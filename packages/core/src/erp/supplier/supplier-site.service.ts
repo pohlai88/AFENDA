@@ -14,7 +14,7 @@
  */
 
 // import type { DbClient } from "@afenda/db";
-// import type { OrgScopedContext, PolicyContext } from "./types.js";
+// import type { OrgScopedContext, PolicyContext } from "./types";
 // import type { CorrelationId } from "@afenda/contracts";
 // import { eq, and, sql } from "drizzle-orm";
 // import { entity } from "@afenda/db";

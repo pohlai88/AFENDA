@@ -11,8 +11,9 @@ import {
   numeric,
   boolean,
 } from "drizzle-orm/pg-core";
-import { organization, iamPrincipal } from "../../kernel/identity.js";
-import { supplier } from "../supplier.js";
+import { sql } from "drizzle-orm";
+import { organization, iamPrincipal } from "../../kernel/identity";
+import { supplier } from "../supplier";
 import {
   InvoiceStatusValues,
   PaymentTermsStatusValues,
@@ -27,7 +28,7 @@ import {
   WhtTypeValues,
   WhtCertificateStatusValues,
 } from "@afenda/contracts";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { tsz, rlsOrg } from "../../_helpers";
 
 export const invoiceStatusEnum = pgEnum("invoice_status", InvoiceStatusValues);
 export const paymentTermsStatusEnum = pgEnum("payment_terms_status", PaymentTermsStatusValues);
@@ -255,9 +256,13 @@ export const paymentRun = pgTable(
     paymentDate: date("payment_date").notNull(),
 
     /** Total amount in minor units (sum of all items) */
-    totalAmountMinor: bigint("total_amount_minor", { mode: "bigint" }).notNull().default(BigInt(0)),
+    totalAmountMinor: bigint("total_amount_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0::bigint`),
     /** Total early payment discount taken in minor units */
-    totalDiscountMinor: bigint("total_discount_minor", { mode: "bigint" }).notNull().default(BigInt(0)),
+    totalDiscountMinor: bigint("total_discount_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0::bigint`),
     /** Number of items in this run */
     itemCount: integer("item_count").notNull().default(0),
 
@@ -332,7 +337,9 @@ export const paymentRunItem = pgTable(
     /** Amount being paid in minor units */
     amountPaidMinor: bigint("amount_paid_minor", { mode: "bigint" }).notNull(),
     /** Early payment discount taken in minor units */
-    discountTakenMinor: bigint("discount_taken_minor", { mode: "bigint" }).notNull().default(BigInt(0)),
+    discountTakenMinor: bigint("discount_taken_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0::bigint`),
 
     /** Current status */
     status: paymentRunItemStatusEnum("status").notNull().default("PENDING"),

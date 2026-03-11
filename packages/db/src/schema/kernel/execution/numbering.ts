@@ -6,8 +6,8 @@ import {
   integer,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { organization } from "../identity.js";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { organization } from "../identity";
+import { tsz, rlsOrg } from "../../_helpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SEQUENCE (gap-free human-readable numbers per org + entity type + period)

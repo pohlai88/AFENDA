@@ -173,11 +173,8 @@ export default function CookiePolicyPage() {
                   prevent you from signing in to AFENDA.
                 </li>
                 <li>
-                  <strong>Sign out:</strong> The{" "}
-                  <Link href="/auth/signout" className="text-primary hover:underline">
-                    Sign Out
-                  </Link>{" "}
-                  action clears your session cookie immediately.
+                  <strong>Sign out:</strong> Session management will be available when new
+                  auth is scaffolded.
                 </li>
               </ul>
               <p className="text-muted-foreground text-xs mt-4">

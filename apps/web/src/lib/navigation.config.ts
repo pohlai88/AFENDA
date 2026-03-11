@@ -121,6 +121,7 @@ export const erpNavigationDomains: NavigationDomainConfig[] = [
       { title: "General", url: "/governance/settings", icon: "folder" },
       { title: "Company", url: "/governance/settings/company", icon: "briefcase" },
       { title: "Security", url: "/governance/settings/security", icon: "shield" },
+      { title: "Security Ops", url: "/app/admin/security", icon: "shield" },
       { title: "Features", url: "/governance/settings/features", icon: "presentation" },
       { title: "Access", url: "/governance/settings/access", icon: "users" },
       { title: "Audit Logs", url: "/governance/audit/logs", icon: "book-open" },

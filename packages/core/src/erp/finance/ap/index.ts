@@ -5,61 +5,61 @@
  * produces an OTel span named `ap.<fn_name>` with org/principal/correlation
  * attributes derived from the argument shapes.  No manual annotation needed.
  */
-import { instrumentService } from "../../../kernel/infrastructure/tracing.js";
-import * as rawInvoiceService from "./invoice.service.js";
-import * as rawInvoiceQueries from "./invoice.queries.js";
-import * as rawHoldService from "./hold.service.js";
-import * as rawHoldQueries from "./hold.queries.js";
-import * as rawPaymentRunService from "./payment-run.service.js";
-import * as rawPaymentRunQueries from "./payment-run.queries.js";
-import * as rawPaymentTermsService from "./payment-terms.service.js";
-import * as rawPaymentTermsQueries from "./payment-terms.queries.js";
+import { instrumentService } from "../../../kernel/infrastructure/tracing";
+import * as rawInvoiceService from "./invoice.service";
+import * as rawInvoiceQueries from "./invoice.queries";
+import * as rawHoldService from "./hold.service";
+import * as rawHoldQueries from "./hold.queries";
+import * as rawPaymentRunService from "./payment-run.service";
+import * as rawPaymentRunQueries from "./payment-run.queries";
+import * as rawPaymentTermsService from "./payment-terms.service";
+import * as rawPaymentTermsQueries from "./payment-terms.queries";
 
 // Types are compile-time only — re-export directly
-export type { InvoiceServiceError, InvoiceServiceResult, CreateInvoiceParams, SubmitInvoiceParams, MarkPaidParams, BulkInvoiceResult } from "./invoice.service.js";
-export type { InvoiceRow, InvoiceListParams, InvoiceHistoryRow, CursorPage } from "./invoice.queries.js";
-export type { HoldServiceError, HoldServiceResult, CreateHoldParams, ReleaseHoldParams } from "./hold.service.js";
-export type { HoldRow } from "./hold.queries.js";
-export type { PaymentRunServiceError, PaymentRunServiceResult, CreatePaymentRunParams, ApprovePaymentRunParams, ExecutePaymentRunParams } from "./payment-run.service.js";
-export type { PaymentRunRow, PaymentRunListParams } from "./payment-run.queries.js";
-export type { PaymentTermsServiceError, PaymentTermsServiceResult, CreatePaymentTermsParams, UpdatePaymentTermsParams } from "./payment-terms.service.js";
-export type { PaymentTermsRow, PaymentTermsListParams } from "./payment-terms.queries.js";
-import * as rawMatchToleranceService from "./match-tolerance.service.js";
-import * as rawMatchToleranceQueries from "./match-tolerance.queries.js";
-import * as rawPaymentRunItemService from "./payment-run-item.service.js";
-import * as rawPaymentRunItemQueries from "./payment-run-item.queries.js";
-import * as rawPrepaymentService from "./prepayment.service.js";
-import * as rawPrepaymentQueries from "./prepayment.queries.js";
-import * as rawWhtCertificateService from "./wht-certificate.service.js";
-import * as rawWhtCertificateQueries from "./wht-certificate.queries.js";
-import * as rawInvoiceLineService from "./invoice-line.service.js";
-import * as rawInvoiceLineQueries from "./invoice-line.queries.js";
-import * as rawValidateInvoice from "./validate-invoice.js";
-import * as rawAgingService from "./aging.service.js";
-import * as rawAgingQueries from "./aging.queries.js";
-import * as rawPaymentRunExportService from "./payment-run-export.service.js";
+export type { InvoiceServiceError, InvoiceServiceResult, CreateInvoiceParams, SubmitInvoiceParams, MarkPaidParams, BulkInvoiceResult } from "./invoice.service";
+export type { InvoiceRow, InvoiceListParams, InvoiceHistoryRow, CursorPage } from "./invoice.queries";
+export type { HoldServiceError, HoldServiceResult, CreateHoldParams, ReleaseHoldParams } from "./hold.service";
+export type { HoldRow } from "./hold.queries";
+export type { PaymentRunServiceError, PaymentRunServiceResult, CreatePaymentRunParams, ApprovePaymentRunParams, ExecutePaymentRunParams } from "./payment-run.service";
+export type { PaymentRunRow, PaymentRunListParams } from "./payment-run.queries";
+export type { PaymentTermsServiceError, PaymentTermsServiceResult, CreatePaymentTermsParams, UpdatePaymentTermsParams } from "./payment-terms.service";
+export type { PaymentTermsRow, PaymentTermsListParams } from "./payment-terms.queries";
+import * as rawMatchToleranceService from "./match-tolerance.service";
+import * as rawMatchToleranceQueries from "./match-tolerance.queries";
+import * as rawPaymentRunItemService from "./payment-run-item.service";
+import * as rawPaymentRunItemQueries from "./payment-run-item.queries";
+import * as rawPrepaymentService from "./prepayment.service";
+import * as rawPrepaymentQueries from "./prepayment.queries";
+import * as rawWhtCertificateService from "./wht-certificate.service";
+import * as rawWhtCertificateQueries from "./wht-certificate.queries";
+import * as rawInvoiceLineService from "./invoice-line.service";
+import * as rawInvoiceLineQueries from "./invoice-line.queries";
+import * as rawValidateInvoice from "./validate-invoice";
+import * as rawAgingService from "./aging.service";
+import * as rawAgingQueries from "./aging.queries";
+import * as rawPaymentRunExportService from "./payment-run-export.service";
 
-export type { MatchToleranceServiceError, MatchToleranceServiceResult, CreateMatchToleranceParams, UpdateMatchToleranceParams, DeactivateMatchToleranceParams } from "./match-tolerance.service.js";
-export type { MatchToleranceRow, MatchToleranceListParams } from "./match-tolerance.queries.js";
-export type { PaymentRunItemServiceError, PaymentRunItemServiceResult, AddPaymentRunItemParams } from "./payment-run-item.service.js";
-export type { PaymentRunItemRow } from "./payment-run-item.queries.js";
-export type { PrepaymentServiceError, PrepaymentServiceResult, CreatePrepaymentParams, ApplyPrepaymentParams, VoidPrepaymentParams } from "./prepayment.service.js";
-export type { PrepaymentRow, PrepaymentListParams } from "./prepayment.queries.js";
-export type { WhtCertificateServiceError, WhtCertificateServiceResult, CreateWhtCertificateParams, IssueWhtCertificateParams, SubmitWhtCertificateParams } from "./wht-certificate.service.js";
-export type { WhtCertificateRow, WhtCertificateListParams } from "./wht-certificate.queries.js";
-export type { InvoiceLineServiceError, InvoiceLineServiceResult, CreateInvoiceLineParams, UpdateInvoiceLineParams } from "./invoice-line.service.js";
-export type { InvoiceLineRow } from "./invoice-line.queries.js";
-export type { AgingServiceResult, AgingServiceError, GetAgingParams } from "./aging.service.js";
-export type { InvoiceAgingRow, GetInvoicesByAgingBucketParams } from "./aging.queries.js";
+export type { MatchToleranceServiceError, MatchToleranceServiceResult, CreateMatchToleranceParams, UpdateMatchToleranceParams, DeactivateMatchToleranceParams } from "./match-tolerance.service";
+export type { MatchToleranceRow, MatchToleranceListParams } from "./match-tolerance.queries";
+export type { PaymentRunItemServiceError, PaymentRunItemServiceResult, AddPaymentRunItemParams } from "./payment-run-item.service";
+export type { PaymentRunItemRow } from "./payment-run-item.queries";
+export type { PrepaymentServiceError, PrepaymentServiceResult, CreatePrepaymentParams, ApplyPrepaymentParams, VoidPrepaymentParams } from "./prepayment.service";
+export type { PrepaymentRow, PrepaymentListParams } from "./prepayment.queries";
+export type { WhtCertificateServiceError, WhtCertificateServiceResult, CreateWhtCertificateParams, IssueWhtCertificateParams, SubmitWhtCertificateParams } from "./wht-certificate.service";
+export type { WhtCertificateRow, WhtCertificateListParams } from "./wht-certificate.queries";
+export type { InvoiceLineServiceError, InvoiceLineServiceResult, CreateInvoiceLineParams, UpdateInvoiceLineParams } from "./invoice-line.service";
+export type { InvoiceLineRow } from "./invoice-line.queries";
+export type { AgingServiceResult, AgingServiceError, GetAgingParams } from "./aging.service";
+export type { InvoiceAgingRow, GetInvoicesByAgingBucketParams } from "./aging.queries";
 export type {
   PaymentRunExportError,
   PaymentRunExportResult,
   ExportPaymentRunISO20022Params,
   ExportPaymentRunNACHAParams,
-} from "./payment-run-export.service.js";
+} from "./payment-run-export.service";
 
 // Calculators (pure functions)
-export * from "./calculators/index.js";
+export * from "./calculators/index";
 const instrumented = instrumentService("ap", {
   ...rawInvoiceService,
   ...rawInvoiceQueries,

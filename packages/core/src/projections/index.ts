@@ -46,13 +46,13 @@
  */
 
 // Shared types
-export * from "./shared/projection-envelope.js";
-export * from "./shared/projection-types.js";
+export * from "./shared/projection-envelope";
+export * from "./shared/projection-types";
 
 // Portal projection modules
-export * as supplierProjections from "./supplier/index.js";
-export * as customerProjections from "./customer/index.js";
-export * as investorProjections from "./investor/index.js";
-export * as contractorProjections from "./contractor/index.js";
-export * as franchiseeProjections from "./franchisee/index.js";
-export * as cidProjections from "./cid/index.js";
+export * as supplierProjections from "./supplier/index";
+export * as customerProjections from "./customer/index";
+export * as investorProjections from "./investor/index";
+export * as contractorProjections from "./contractor/index";
+export * as franchiseeProjections from "./franchisee/index";
+export * as cidProjections from "./cid/index";

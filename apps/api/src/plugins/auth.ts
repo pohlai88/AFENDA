@@ -54,11 +54,11 @@ async function deriveNextAuthKey(secret: string): Promise<CryptoKey> {
 async function decryptNextAuthToken(
   token: string,
   secret: string,
-): Promise<{ email?: string } | null> {
+): Promise<{ email?: string; requiresMfa?: boolean } | null> {
   try {
     const key = await deriveNextAuthKey(secret);
     const { payload } = await jwtDecrypt(token, key);
-    return payload as { email?: string };
+    return payload as { email?: string; requiresMfa?: boolean };
   } catch {
     return null; // expired, tampered, or wrong secret
   }
@@ -76,12 +76,18 @@ export const authPlugin = fp(async function authPlugin(app: FastifyInstance) {
     // Skip infra endpoints — no user context needed
     if (req.url === "/healthz" || req.url === "/readyz") return;
 
-    const isDev = process.env["NODE_ENV"] !== "production";
+    const nodeEnv = process.env["NODE_ENV"];
+    const isDev = nodeEnv === "development" || nodeEnv === "test";
     const slug = req.orgSlug ?? "demo";
 
     // ── Dev-mode shortcut ──────────────────────────────────────────────────
     if (isDev && req.headers[DEV_HEADER]) {
       const email = req.headers[DEV_HEADER] as string;
+
+      app.log.warn(
+        { correlationId: req.correlationId, orgSlug: slug, email },
+        "Dev auth bypass used via x-dev-user-email",
+      );
 
       const ctx = await resolvePrincipalContext(app.db, email, slug, req.correlationId);
       if (ctx) {
@@ -95,18 +101,34 @@ export const authPlugin = fp(async function authPlugin(app: FastifyInstance) {
 
     // ── Bearer token (NextAuth JWE) ──────────────────────────────────────────
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) return;
+    if (!authHeader) return;
+    if (!authHeader.startsWith("Bearer ")) return;
 
-    const token = authHeader.slice(7);
+    const token = authHeader.slice(7).trim();
+    // NextAuth JWE should have five dot-separated segments.
+    if (!/^([^\.]+\.){4}[^\.]+$/.test(token)) {
+      app.log.debug({ correlationId: req.correlationId }, "Bearer token format invalid");
+      return;
+    }
+
     const secret = process.env["NEXTAUTH_SECRET"];
     if (!secret) {
-      app.log.warn("NEXTAUTH_SECRET not set — cannot verify Bearer token");
+      app.log.error("NEXTAUTH_SECRET not set — cannot verify Bearer token");
       return;
     }
 
     const payload = await decryptNextAuthToken(token, secret);
     if (!payload?.email) {
       app.log.debug("Bearer token invalid or expired");
+      return;
+    }
+
+    // ── MFA enforcement ────────────────────────────────────────────────────
+    // If the session has requiresMfa=true, the user authenticated with
+    // email+password but has not yet completed TOTP verification.
+    // Block all routes except the MFA challenge endpoint itself.
+    if (payload.requiresMfa === true && req.url !== "/v1/auth/verify-mfa-challenge") {
+      app.log.debug({ correlationId: req.correlationId }, "MFA required — request blocked");
       return;
     }
 

@@ -1,5 +1,5 @@
 import { pgTable, text, uuid, unique, index, pgEnum, boolean } from "drizzle-orm/pg-core";
-import { organization, iamPrincipal } from "../kernel/identity.js";
+import { organization, iamPrincipal } from "../kernel/identity";
 import {
   SupplierStatusValues,
   SupplierSiteTypeValues,
@@ -8,7 +8,7 @@ import {
   BankAccountVerificationStatusValues,
   SupplierBankAccountStatusValues,
 } from "@afenda/contracts";
-import { tsz, rlsOrg } from "../_helpers.js";
+import { tsz, rlsOrg } from "../_helpers";
 
 export const supplierStatusEnum = pgEnum("supplier_status", SupplierStatusValues);
 export const supplierSiteTypeEnum = pgEnum("supplier_site_type", SupplierSiteTypeValues);

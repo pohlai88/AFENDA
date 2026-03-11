@@ -14,15 +14,15 @@ import type { DbClient } from "@afenda/db";
 import { invoice, supplier, apHold } from "@afenda/db";
 import { eq, and, count, desc, sql } from "drizzle-orm";
 import type { CorrelationId, SupplierId } from "@afenda/contracts";
-import type { OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { createProjectionEnvelope } from "../../shared/projection-envelope.js";
-import type { ProjectionResult } from "../../shared/projection-types.js";
-import type { ProjectionEnvelope } from "../../shared/projection-envelope.js";
+import type { OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { createProjectionEnvelope } from "../../shared/projection-envelope";
+import type { ProjectionResult } from "../../shared/projection-types";
+import type { ProjectionEnvelope } from "../../shared/projection-envelope";
 import type {
   SupplierStatementData,
   SupplierDashboardData,
-} from "../types/view-models.js";
-import { toInvoiceView } from "../types/mappers.js";
+} from "../types/view-models";
+import { toInvoiceView } from "../types/mappers";
 
 // ── Parameters ───────────────────────────────────────────────────────────────
 

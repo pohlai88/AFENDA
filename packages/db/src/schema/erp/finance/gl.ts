@@ -10,9 +10,10 @@ import {
   unique,
 } from "drizzle-orm/pg-core";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
-import { organization, iamPrincipal } from "../../kernel/identity.js";
+import { sql } from "drizzle-orm";
+import { organization, iamPrincipal } from "../../kernel/identity";
 import { AccountTypeValues } from "@afenda/contracts";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { tsz, rlsOrg } from "../../_helpers";
 
 export const accountTypeEnum = pgEnum("account_type", AccountTypeValues);
 
@@ -78,8 +79,12 @@ export const journalLine = pgTable(
     accountId: uuid("account_id")
       .notNull()
       .references(() => account.id),
-    debitMinor: bigint("debit_minor", { mode: "bigint" }).notNull().default(0n),
-    creditMinor: bigint("credit_minor", { mode: "bigint" }).notNull().default(0n),
+    debitMinor: bigint("debit_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0::bigint`),
+    creditMinor: bigint("credit_minor", { mode: "bigint" })
+      .notNull()
+      .default(sql`0::bigint`),
     currencyCode: text("currency_code").notNull(),
     memo: text("memo"),
     // JSON-safe dimension bag (cost center, project, department).

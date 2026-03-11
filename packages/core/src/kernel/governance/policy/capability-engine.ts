@@ -12,8 +12,8 @@
  *   5. The engine does NOT import from `@afenda/ui` — it uses contracts types only.
  */
 import type { CapabilityResult, FieldCap, ActionCap, PolicyContext } from "@afenda/contracts";
-import { createLogger } from "../../infrastructure/logger.js";
-import { instrumentService } from "../../infrastructure/tracing.js";
+import { createLogger } from "../../infrastructure/logger";
+import { instrumentService } from "../../infrastructure/tracing";
 
 const log = createLogger("policy");
 

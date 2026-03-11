@@ -128,6 +128,15 @@ export async function recordLoginAttempt(
 }
 
 /**
+ * Clear stale failed attempts after a successful login.
+ */
+export async function clearFailedLoginAttempts(db: DbClient, email: string): Promise<void> {
+  await db
+    .delete(authLoginAttempt)
+    .where(and(eq(authLoginAttempt.email, email), eq(authLoginAttempt.success, false)));
+}
+
+/**
  * Get the lockout configuration (for display purposes).
  * Returns a human-readable description of the lockout policy.
  */

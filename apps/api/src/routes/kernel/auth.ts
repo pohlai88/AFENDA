@@ -1,14 +1,19 @@
 /**
  * Auth routes — unauthenticated credential verification for NextAuth.
  *
- * Routes:
+ * Routes (AuthFlowResult shape where noted):
  *   POST /v1/auth/context
  *   POST /v1/auth/verify-credentials
+ *   POST /v1/auth/login (AuthFlowResult)
  *   POST /v1/auth/signup
  *   POST /v1/auth/request-password-reset
- *   POST /v1/auth/reset-password
+ *   POST /v1/auth/verify-reset-token (AuthFlowResult)
+ *   POST /v1/auth/reset-password (AuthFlowResult)
  *   POST /v1/auth/request-portal-invitation
- *   POST /v1/auth/accept-portal-invitation
+ *   POST /v1/auth/verify-invite-token (AuthFlowResult)
+ *   POST /v1/auth/accept-portal-invitation (AuthFlowResult)
+ *   POST /v1/auth/verify-mfa-challenge (AuthFlowResult, 501 until MFA in core)
+ *   POST /v1/auth/verify-session-grant (AuthFlowResult)
  *
  * No Bearer token required. Rate-limited by IP.
  */
@@ -18,6 +23,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   acceptPortalInvitation,
+  createSessionGrant,
   getAuthContext,
   mapAuthErrorMessage,
   requestPasswordReset,
@@ -25,6 +31,10 @@ import {
   resetPasswordWithToken,
   signUpSelfService,
   verifyCredentials,
+  verifyMfaChallenge,
+  verifyInviteToken,
+  verifyResetToken,
+  verifySessionGrant,
 } from "@afenda/core";
 import {
   AcceptPortalInvitationCommandSchema,
@@ -32,16 +42,21 @@ import {
   AuthContextResponseSchema,
   IAM_CREDENTIALS_INVALID,
   IAM_EMAIL_ALREADY_REGISTERED,
-  IAM_PORTAL_INVITATION_EXPIRED,
-  IAM_PORTAL_INVITATION_INVALID,
-  IAM_PORTAL_INVITATION_REQUIRED,
-  IAM_RESET_TOKEN_EXPIRED,
-  IAM_RESET_TOKEN_INVALID,
+  IAM_MFA_NOT_IMPLEMENTED,
+  LoginCommandSchema,
+  LoginDataSchema,
   PortalTypeSchema,
   RequestPasswordResetCommandSchema,
   RequestPortalInvitationCommandSchema,
   ResetPasswordCommandSchema,
   SignUpCommandSchema,
+  VerifyInviteTokenCommandSchema,
+  VerifyInviteTokenDataSchema,
+  VerifyMfaChallengeCommandSchema,
+  VerifyResetTokenCommandSchema,
+  VerifyResetTokenDataSchema,
+  VerifySessionGrantCommandSchema,
+  VerifySessionGrantDataSchema,
 } from "@afenda/contracts";
 import {
   ApiErrorResponseSchema,
@@ -78,14 +93,6 @@ const PublicAuthResultSchema = makeSuccessSchema(
   }),
 );
 
-const AcceptPortalInvitationSuccessSchema = makeSuccessSchema(
-  z.object({
-    email: z.string().email(),
-    portal: z.enum(["supplier", "customer", "cid", "investor", "franchisee", "contractor"]),
-    message: z.string().min(1),
-  }),
-);
-
 async function dispatchAuthEmail(
   app: FastifyInstance,
   payload: { to: string; subject: string; text: string },
@@ -116,6 +123,25 @@ async function dispatchAuthEmail(
 }
 
 const AuthContextSuccessSchema = makeSuccessSchema(AuthContextResponseSchema);
+
+/** AuthFlowResult response — 200 for both ok and !ok (client switches on ok). */
+const AuthFlowResultSchema = <T extends z.ZodType>(dataSchema: T) =>
+  z.union([
+    z.object({ ok: z.literal(true), data: dataSchema, correlationId: z.string().uuid().optional() }),
+    z.object({
+      ok: z.literal(false),
+      code: z.string().min(1),
+      message: z.string().min(1),
+      correlationId: z.string().uuid().optional(),
+    }),
+  ]);
+
+const VerifyResetTokenResponseSchema = AuthFlowResultSchema(VerifyResetTokenDataSchema);
+const VerifyInviteTokenResponseSchema = AuthFlowResultSchema(VerifyInviteTokenDataSchema);
+const LoginDataWithMfaSchema = LoginDataSchema.extend({
+  requiresMfa: z.boolean().optional(),
+});
+const LoginResponseSchema = AuthFlowResultSchema(LoginDataWithMfaSchema);
 
 export async function authRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -181,6 +207,7 @@ export async function authRoutes(app: FastifyInstance) {
         data: {
           principalId: result.principalId,
           email: result.email,
+          requiresMfa: result.requiresMfa ?? false,
         },
         correlationId: req.correlationId,
       };
@@ -274,7 +301,13 @@ export async function authRoutes(app: FastifyInstance) {
             text: `Use this AFENDA password reset code: ${reset.token}. This code expires in 10 minutes.`,
           });
         } else {
-          const baseUrl = body.redirectUrl ?? process.env["NEXT_PUBLIC_WEB_URL"] ?? "http://localhost:3000/auth/reset-password";
+          const defaultResetBase =
+            process.env["NEXT_PUBLIC_WEB_URL"] ??
+            process.env["NEXT_PUBLIC_APP_URL"] ??
+            "http://localhost:3000";
+          const baseUrl =
+            body.redirectUrl ??
+            `${defaultResetBase.replace(/\/$/, "")}/auth/reset-password`;
           const separator = baseUrl.includes("?") ? "&" : "?";
           const resetUrl = `${baseUrl}${separator}token=${encodeURIComponent(reset.token)}`;
 
@@ -297,22 +330,66 @@ export async function authRoutes(app: FastifyInstance) {
   );
 
   typed.post(
+    "/auth/verify-reset-token",
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: "1 minute" },
+      },
+      schema: {
+        description: "Verify password reset token without consuming it. API source of truth.",
+        tags: ["Auth"],
+        body: VerifyResetTokenCommandSchema,
+        response: {
+          200: VerifyResetTokenResponseSchema,
+        },
+      },
+    },
+    async (req) => {
+      const body = VerifyResetTokenCommandSchema.parse(req.body);
+      const result = await verifyResetToken(app.db, {
+        token: body.token,
+        email: body.email,
+      });
+
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
+          correlationId: req.correlationId,
+        };
+      }
+
+      return {
+        ok: true as const,
+        data: {
+          email: result.email,
+          expiresAt: result.expiresAt,
+        },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  const ResetPasswordDataSchema = z.object({ message: z.string().min(1) });
+  const ResetPasswordResponseSchema = AuthFlowResultSchema(ResetPasswordDataSchema);
+
+  typed.post(
     "/auth/reset-password",
     {
       config: {
         rateLimit: { max: 5, timeWindow: "1 minute" },
       },
       schema: {
-        description: "Reset password using a one-time reset token.",
+        description: "Reset password using a one-time reset token. AuthFlowResult shape.",
         tags: ["Auth"],
         body: ResetPasswordCommandSchema,
         response: {
-          200: PublicAuthResultSchema,
-          400: ApiErrorResponseSchema,
+          200: ResetPasswordResponseSchema,
         },
       },
     },
-    async (req, reply) => {
+    async (req) => {
       const body = ResetPasswordCommandSchema.parse(req.body);
       const result = await resetPasswordWithToken(app.db, {
         token: body.token,
@@ -321,20 +398,17 @@ export async function authRoutes(app: FastifyInstance) {
       });
 
       if (!result.ok) {
-        return reply.status(400).send({
-          error: {
-            code: result.error,
-            message: mapAuthErrorMessage(result.error),
-          },
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
           correlationId: req.correlationId,
-        });
+        };
       }
 
       return {
-        data: {
-          accepted: true,
-          message: "Password has been reset successfully.",
-        },
+        ok: true as const,
+        data: { message: "Password has been reset successfully." },
         correlationId: req.correlationId,
       };
     },
@@ -373,7 +447,13 @@ export async function authRoutes(app: FastifyInstance) {
         portal: body.portal,
       });
 
-      const baseUrl = body.redirectUrl ?? process.env["NEXT_PUBLIC_WEB_URL"] ?? "http://localhost:3000/auth/portal/accept";
+      const defaultBase =
+        process.env["NEXT_PUBLIC_WEB_URL"] ??
+        process.env["NEXT_PUBLIC_APP_URL"] ??
+        "http://localhost:3000";
+      const baseUrl =
+        body.redirectUrl ??
+        `${defaultBase.replace(/\/$/, "")}/auth/invite`;
       const separator = baseUrl.includes("?") ? "&" : "?";
       const inviteUrl = `${baseUrl}${separator}token=${encodeURIComponent(invitation.token)}&portal=${encodeURIComponent(invitation.portal)}`;
 
@@ -394,22 +474,71 @@ export async function authRoutes(app: FastifyInstance) {
   );
 
   typed.post(
+    "/auth/verify-invite-token",
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: "1 minute" },
+      },
+      schema: {
+        description: "Verify portal invitation token without consuming it. API source of truth.",
+        tags: ["Auth"],
+        body: VerifyInviteTokenCommandSchema,
+        response: {
+          200: VerifyInviteTokenResponseSchema,
+        },
+      },
+    },
+    async (req) => {
+      const body = VerifyInviteTokenCommandSchema.parse(req.body);
+      const result = await verifyInviteToken(app.db, { token: body.token });
+
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
+          correlationId: req.correlationId,
+        };
+      }
+
+      return {
+        ok: true as const,
+        data: {
+          email: result.email,
+          portal: result.portal,
+          tenantName: result.tenantName,
+          tenantSlug: result.tenantSlug,
+          expiresAt: result.expiresAt,
+        },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  const AcceptPortalInvitationDataSchema = z.object({
+    email: z.string().email(),
+    portal: z.enum(["supplier", "customer", "cid", "investor", "franchisee", "contractor"]),
+    message: z.string().min(1),
+    sessionGrant: z.string().min(32),
+  });
+  const AcceptPortalInvitationResponseSchema = AuthFlowResultSchema(AcceptPortalInvitationDataSchema);
+
+  typed.post(
     "/auth/accept-portal-invitation",
     {
       config: {
         rateLimit: { max: 20, timeWindow: "1 minute" },
       },
       schema: {
-        description: "Accept supplier/customer invitation token and activate portal login.",
+        description: "Accept supplier/customer invitation token and activate portal login. AuthFlowResult shape.",
         tags: ["Auth"],
         body: AcceptPortalInvitationCommandSchema,
         response: {
-          200: AcceptPortalInvitationSuccessSchema,
-          400: ApiErrorResponseSchema,
+          200: AcceptPortalInvitationResponseSchema,
         },
       },
     },
-    async (req, reply) => {
+    async (req) => {
       const body = AcceptPortalInvitationCommandSchema.parse(req.body);
       const result = await acceptPortalInvitation(app.db, {
         token: body.token,
@@ -418,20 +547,177 @@ export async function authRoutes(app: FastifyInstance) {
       });
 
       if (!result.ok) {
-        return reply.status(400).send({
-          error: {
-            code: result.error,
-            message: mapAuthErrorMessage(result.error),
-          },
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
           correlationId: req.correlationId,
-        });
+        };
+      }
+
+      const grantResult = await createSessionGrant(app.db, {
+        principalId: result.principalId,
+        email: result.email,
+        portal: result.portal,
+      });
+
+      if (!grantResult.ok) {
+        return {
+          ok: false as const,
+          code: grantResult.error,
+          message: mapAuthErrorMessage(grantResult.error),
+          correlationId: req.correlationId,
+        };
       }
 
       return {
+        ok: true as const,
         data: {
           email: result.email,
           portal: result.portal,
           message: "Invitation accepted. You can now sign in to the portal.",
+          sessionGrant: grantResult.grant,
+        },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  const VerifySessionGrantResponseSchema = AuthFlowResultSchema(VerifySessionGrantDataSchema);
+
+  typed.post(
+    "/auth/verify-session-grant",
+    {
+      config: {
+        rateLimit: { max: 20, timeWindow: "1 minute" },
+      },
+      schema: {
+        description: "Verify one-time session grant from invite/MFA flow. Returns principalId for session creation.",
+        tags: ["Auth"],
+        body: VerifySessionGrantCommandSchema,
+        response: {
+          200: VerifySessionGrantResponseSchema,
+        },
+      },
+    },
+    async (req) => {
+      const body = VerifySessionGrantCommandSchema.parse(req.body);
+      const result = await verifySessionGrant(app.db, { grant: body.grant });
+
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
+          correlationId: req.correlationId,
+        };
+      }
+
+      return {
+        ok: true as const,
+        data: {
+          principalId: result.principalId,
+          email: result.email,
+          portal: result.portal,
+        },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  typed.post(
+    "/auth/verify-mfa-challenge",
+    {
+      config: {
+        rateLimit: { max: 10, timeWindow: "1 minute" },
+      },
+      schema: {
+        description: "Verify MFA challenge. Validates TOTP code against challenge, returns session grant.",
+        tags: ["Auth"],
+        body: VerifyMfaChallengeCommandSchema,
+        response: {
+          200: z.union([
+            z.object({
+              ok: z.literal(true),
+              data: z.object({
+                principalId: z.string().uuid(),
+                email: z.string().email(),
+                sessionGrant: z.string().min(32),
+              }),
+              correlationId: z.string().uuid().optional(),
+            }),
+            z.object({
+              ok: z.literal(false),
+              code: z.string().min(1),
+              message: z.string().min(1),
+              correlationId: z.string().uuid().optional(),
+            }),
+          ]),
+        },
+      },
+    },
+    async (req) => {
+      const body = VerifyMfaChallengeCommandSchema.parse(req.body);
+      const result = await verifyMfaChallenge(app.db, {
+        mfaToken: body.mfaToken,
+        code: body.code,
+      });
+
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
+          correlationId: req.correlationId,
+        };
+      }
+
+      return {
+        ok: true as const,
+        data: {
+          principalId: result.principalId,
+          email: result.email,
+          sessionGrant: result.sessionGrant,
+        },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  typed.post(
+    "/auth/login",
+    {
+      config: {
+        rateLimit: { max: 30, timeWindow: "1 minute" },
+      },
+      schema: {
+        description: "Verify credentials and return principalId/email. AuthFlowResult shape. Alias for verify-credentials.",
+        tags: ["Auth"],
+        body: LoginCommandSchema,
+        response: {
+          200: LoginResponseSchema,
+        },
+      },
+    },
+    async (req) => {
+      const { email, password, portal } = LoginCommandSchema.parse(req.body);
+      const result = await verifyCredentials(app.db, email, password, portal ?? "app");
+
+      if (!result.ok) {
+        return {
+          ok: false as const,
+          code: result.error,
+          message: mapAuthErrorMessage(result.error),
+          correlationId: req.correlationId,
+        };
+      }
+
+      return {
+        ok: true as const,
+        data: {
+          principalId: result.principalId,
+          email: result.email,
+          requiresMfa: result.requiresMfa ?? false,
         },
         correlationId: req.correlationId,
       };

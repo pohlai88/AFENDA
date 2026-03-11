@@ -147,17 +147,17 @@ export function generateNACHAFile(
   for (const item of items) {
     line = "";
     line += "6"; // Record Type Code
-    line += "22"; // Transaction Code (22 = Automated Deposit (checking), 32 = savings)
-    line += pad(item.supplierRoutingNumber, 9); // Receiving DFI Routing Number
-    line += "0"; // Check Digit (calculated by ACH operator, set to 0 for now)
+    line += item.accountType === "savings" ? "32" : "22"; // Transaction Code (22 = Automated Deposit (checking), 32 = savings)
+    line += pad(item.supplierRoutingNumber.slice(0, 8), 8); // Receiving DFI Routing Number (positions 4-11, 8 digits)
+    line += item.supplierRoutingNumber.length >= 9 ? item.supplierRoutingNumber[8]! : "0"; // Check Digit (position 12)
     line += pad(item.supplierAccountNumber, 17); // DFI Account Number
     line += zeroPad(item.amountMinor.toString(), 10); // Amount (10 digits, in cents)
     line += pad(item.individualId ?? item.invoiceNumber, 15); // Individual Identification Number
     line += pad(item.supplierName, 22); // Individual Name
     line += "  "; // Discretionary Data
     line += "0"; // Addenda Record Indicator (0 = no addenda)
-    line += pad(item.supplierRoutingNumber.slice(0, 8), 15); // Trace Number (first 8 digits of routing + sequence)
-    line += zeroPad(traceNumber, 7); // Trace Sequence Number
+    line += originatorInfo.immediateDest.slice(0, 8); // Trace Number: 8-digit ODFI routing (positions 80-87)
+    line += zeroPad(traceNumber, 7); // Trace Sequence Number (positions 88-94)
     
     if (line.length !== 94) {
       throw new Error(`Entry detail must be exactly 94 characters (got ${line.length})`);

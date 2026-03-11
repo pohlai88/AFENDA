@@ -23,14 +23,14 @@ import type {
   PaymentRunItemForExport,
   DebtorAccount,
   ISO20022PaymentFile,
-} from "./calculators/payment-file-iso20022.js";
+} from "./calculators/payment-file-iso20022";
 import type {
   NACHAOriginatorInfo,
   NACHAPaymentItem,
   NACHAPaymentFile,
-} from "./calculators/payment-file-nacha.js";
-import { generateISO20022PaymentFile } from "./calculators/payment-file-iso20022.js";
-import { generateNACHAFile } from "./calculators/payment-file-nacha.js";
+} from "./calculators/payment-file-nacha";
+import { generateISO20022PaymentFile } from "./calculators/payment-file-iso20022";
+import { generateNACHAFile } from "./calculators/payment-file-nacha";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

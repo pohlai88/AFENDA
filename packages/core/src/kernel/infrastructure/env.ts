@@ -105,17 +105,43 @@ export const BaseEnvSchema = z.object({
 
 // ── API ──────────────────────────────────────────────────────────────────────
 
+const PLACEHOLDER_SECRETS = new Set([
+  "your-nextauth-secret-generate-with-openssl-rand-base64-32",
+  "dev-secret-change-in-production",
+  "ci-test-secret-not-for-production",
+  "change-in-production",
+]);
+
 export const ApiEnvSchema = BaseEnvSchema.extend({
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   ALLOWED_ORIGINS: origins,
-  NEXTAUTH_SECRET: nonEmpty("NEXTAUTH_SECRET").pipe(
-    z.string().min(16, "NEXTAUTH_SECRET must be at least 16 characters"),
+  AUTH_CHALLENGE_SECRET: nonEmpty("AUTH_CHALLENGE_SECRET").pipe(
+    z.string().min(32, "AUTH_CHALLENGE_SECRET must be at least 32 hex chars"),
   ),
+  NEXTAUTH_SECRET: nonEmpty("NEXTAUTH_SECRET")
+    .pipe(z.string().min(16, "NEXTAUTH_SECRET must be at least 16 characters"))
+    .pipe(
+      z.string().refine(
+        (s) => {
+          if (process.env.NODE_ENV !== "production") return true;
+          return !PLACEHOLDER_SECRETS.has(s) && !s.includes("change-in-production");
+        },
+        { message: "NEXTAUTH_SECRET must not be a placeholder in production" },
+      ),
+    ),
   S3_ENDPOINT: url("S3_ENDPOINT"),
   S3_REGION: z.string().default("auto"),
   S3_BUCKET: s3Bucket,
   S3_ACCESS_KEY_ID: nonEmpty("S3_ACCESS_KEY_ID"),
   S3_SECRET_ACCESS_KEY: nonEmpty("S3_SECRET_ACCESS_KEY"),
+}).superRefine((value, ctx) => {
+  if (value.NODE_ENV === "production" && value.ALLOWED_ORIGINS.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["ALLOWED_ORIGINS"],
+      message: "ALLOWED_ORIGINS must include at least one origin in production",
+    });
+  }
 });
 
 export type ApiEnv = z.infer<typeof ApiEnvSchema>;
@@ -143,6 +169,8 @@ const SECRET_KEYS: ReadonlySet<string> = new Set([
   "DATABASE_URL",
   "WORKER_DATABASE_URL",
   "NEXTAUTH_SECRET",
+  "AUTH_CHALLENGE_SECRET",
+  "AUTH_EVIDENCE_SIGNING_SECRET",
   "S3_SECRET_ACCESS_KEY",
   "S3_ACCESS_KEY_ID",
 ]);

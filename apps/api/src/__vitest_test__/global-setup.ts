@@ -2,7 +2,8 @@
  * Vitest globalSetup — provisions the `afenda_test` database.
  *
  * 1. Connects to the default `afenda_dev` database.
- * 2. Creates `afenda_test` if it doesn't exist.
+ * 2. Creates `afenda_test` if it doesn't exist (or drops/recreates it if
+ *    it was bootstrapped via schema-push rather than migrations).
  * 3. Runs Drizzle migrations against `afenda_test`.
  * 4. Seeds minimal test fixtures (org, principals, CoA, supplier, sequences).
  *
@@ -44,6 +45,51 @@ export async function setup() {
   }
 
   // ── 2. Run migrations ───────────────────────────────────────────────────
+  const migrationsFolder = resolve(__dirname, "../../../../packages/db/drizzle");
+
+  // Detect push-bootstrapped DB: schema exists but no __drizzle_migrations table.
+  // In that case, drop + recreate so migrations can run cleanly from scratch.
+  const probeClient = new Client({ connectionString: TEST_DB_URL });
+  await probeClient.connect();
+  try {
+    const { rows } = await probeClient.query<{ has_migration_table: boolean }>(
+      `SELECT EXISTS (
+         SELECT FROM information_schema.tables
+         WHERE table_schema = 'public' AND table_name = '__drizzle_migrations'
+       ) AS has_migration_table`,
+    );
+    const hasMigrationTable = rows[0]?.has_migration_table ?? false;
+
+    if (!hasMigrationTable) {
+      // Check if schema was push-bootstrapped (tables exist without migration tracking)
+      const { rows: schemaRows } = await probeClient.query<{ has_schema: boolean }>(
+        `SELECT EXISTS (
+           SELECT FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'party'
+         ) AS has_schema`,
+      );
+      if (schemaRows[0]?.has_schema) {
+        console.log("⚠️  push-bootstrapped afenda_test detected — rebuilding from migrations");
+        await probeClient.end();
+        const rebuildAdmin = new Client({ connectionString: ADMIN_URL });
+        await rebuildAdmin.connect();
+        try {
+          await rebuildAdmin.query(`DROP DATABASE afenda_test WITH (FORCE)`);
+          await rebuildAdmin.query(`CREATE DATABASE afenda_test OWNER afenda`);
+          console.log("✅ recreated afenda_test database");
+        } finally {
+          await rebuildAdmin.end();
+        }
+      } else {
+        await probeClient.end();
+      }
+    } else {
+      await probeClient.end();
+    }
+  } catch {
+    await probeClient.end();
+  }
+
   const migrateClient = new Client({
     connectionString: TEST_DB_URL,
     application_name: "afenda-test-migrate",
@@ -52,7 +98,6 @@ export async function setup() {
   try {
     await migrateClient.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
     const db = drizzle(migrateClient);
-    const migrationsFolder = resolve(__dirname, "../../../../packages/db/drizzle");
     await migrate(db, { migrationsFolder });
     console.log("✅ migrations applied to afenda_test");
   } finally {

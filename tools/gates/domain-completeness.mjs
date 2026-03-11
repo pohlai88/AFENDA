@@ -55,6 +55,44 @@ const INFRA_TABLES = new Set([
   // ── Authentication infra ─────────────────────────────────────────────
   // auth_login_attempt: internal security tracking table for account lockout
   "auth_login_attempt",
+  "auth_challenges",
+  "iam_principal_mfa",
+  "auth_audit_outbox",
+  "auth_session_revocations",
+  "auth_anomaly_acknowledgements",
+  // ── Auth session infra (short-lived tokens, pure auth plumbing) ──────
+  // auth_session_grant: one-time token exchanged for NextAuth session cookie;
+  // not a business entity, never exposed via API response DTO.
+  "auth_session_grant",
+  // ── Auth compliance / SOX infrastructure ─────────────────────────────
+  // These tables back the compliance feature layer (control runs, review
+  // workflows, evidence packages, retention, chain-of-custody).  They are
+  // backend-internal — no API routes or consumer DTOs exist yet.  When API
+  // routes are added, Zod schemas must be authored and sync pairs added to
+  // contract-db-sync.mjs at that time.
+  "auth_control_runs",
+  "auth_review_attestations",
+  "auth_review_cases",
+  "auth_review_cycles",
+  "auth_review_escalations",
+  "auth_review_reminders",
+  "auth_chain_of_custody",
+  "auth_retention_policies",
+  "auth_evidence_exports",
+  "auth_evidence_packages",
+  "auth_evidence_package_items",
+  "auth_export_manifests",
+  // ── Auth security / access infra ──────────────────────────────────────
+  // auth_incidents: platform-wide security incident log (login anomalies,
+  // lockouts).  Service-internal — queried by admin/auditor pages but data
+  // shape is projected inline; no standalone entity DTO yet.
+  "auth_incidents",
+  // auth_approval_matrix: role-based approval rules for evidence/control sign-
+  // off. Configuration table managed by internal admin flows only.
+  "auth_approval_matrix",
+  // auth_auditor_access_grants: read-only portal access granted to external
+  // auditors.  Managed by core service; no API response DTO yet.
+  "auth_auditor_access_grants",
   // ── Append-only history tables (covered by parent entity sync pair) ───
   "invoice_status_history",
   "evidence_operation",

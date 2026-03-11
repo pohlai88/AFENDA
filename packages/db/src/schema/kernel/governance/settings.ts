@@ -1,6 +1,6 @@
 import { pgTable, text, uuid, jsonb, unique, index } from "drizzle-orm/pg-core";
-import { organization, iamPrincipal } from "../identity.js";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { organization, iamPrincipal } from "../identity";
+import { tsz, rlsOrg } from "../../_helpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ORG SETTING — org-scoped key/value configuration store

@@ -2,10 +2,10 @@ export {
   getSupplierInvoices,
   getSupplierInvoiceDetail,
   getSupplierInvoiceHolds,
-} from "./get-invoices.js";
+} from "./get-invoices";
 
 export type {
   GetSupplierInvoicesParams,
   GetInvoiceDetailParams,
   GetInvoiceHoldsParams,
-} from "./get-invoices.js";
+} from "./get-invoices";

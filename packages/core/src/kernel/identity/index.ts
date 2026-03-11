@@ -1,11 +1,14 @@
 /**
  * kernel/identity — IAM domain services.
  */
-export * from "./auth.js";
-export * from "./auth-context.js";
-export * from "./credentials.js";
-export * from "./organization.js";
-export * from "./password.js";
-export * from "./permissions.js";
-export * from "./auth-flows.js";
-export * from "./account-lockout.js";
+export * from "./auth";
+export * from "./auth-challenge.repository";
+export * from "./auth-audit-outbox.queries";
+export * from "./auth-context";
+export * from "./credentials";
+export * from "./organization";
+export * from "./password";
+export * from "./permissions";
+export * from "./auth-flows";
+export * from "./account-lockout";
+export * from "./auth-mfa";

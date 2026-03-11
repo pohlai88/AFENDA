@@ -140,6 +140,10 @@ export const ErrorCodeValues = [
   "IAM_PORTAL_INVITATION_INVALID",
   "IAM_PORTAL_INVITATION_EXPIRED",
   "IAM_ACCOUNT_LOCKED",            // too many failed login attempts
+  "IAM_MFA_INVALID",               // invalid or expired MFA verification code
+  "IAM_MFA_NOT_IMPLEMENTED",       // MFA verification not yet available via API
+  "IAM_SESSION_GRANT_INVALID",     // session grant invalid or already used
+  "IAM_SESSION_GRANT_EXPIRED",     // session grant expired
 
   // CFG — settings / configuration
   "CFG_SETTING_INVALID_VALUE",
@@ -168,6 +172,10 @@ export const IAM_PORTAL_INVITATION_REQUIRED = "IAM_PORTAL_INVITATION_REQUIRED" a
 export const IAM_PORTAL_INVITATION_INVALID = "IAM_PORTAL_INVITATION_INVALID" as const;
 export const IAM_PORTAL_INVITATION_EXPIRED = "IAM_PORTAL_INVITATION_EXPIRED" as const;
 export const IAM_ACCOUNT_LOCKED = "IAM_ACCOUNT_LOCKED" as const;
+export const IAM_MFA_INVALID = "IAM_MFA_INVALID" as const;
+export const IAM_MFA_NOT_IMPLEMENTED = "IAM_MFA_NOT_IMPLEMENTED" as const;
+export const IAM_SESSION_GRANT_INVALID = "IAM_SESSION_GRANT_INVALID" as const;
+export const IAM_SESSION_GRANT_EXPIRED = "IAM_SESSION_GRANT_EXPIRED" as const;
 
 /**
  * Enforces SCOPE_NOUN_REASON shape at runtime.

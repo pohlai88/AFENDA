@@ -1,2 +1,2 @@
-export * from "./view-models.js";
-export * from "./mappers.js";
+export * from "./view-models";
+export * from "./mappers";

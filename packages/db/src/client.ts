@@ -15,7 +15,7 @@ import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as schema from "./schema/index.js";
+import * as schema from "./schema/index";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Client factory
@@ -29,24 +29,86 @@ export interface CreateDbOptions {
   max?: number;
   /** Close idle connections after this many ms (default: 30 000) */
   idleTimeoutMillis?: number;
-  /** Abort connection attempt after this many ms (default: 5 000) */
+  /** Abort connection attempt after this many ms (default: 5 000, 10 000 for Neon) */
   connectionTimeoutMillis?: number;
+}
+
+/** Neon cold start can take ~300–500ms; use longer timeout to avoid spurious failures. */
+const NEON_CONNECTION_TIMEOUT_MS = 10_000;
+
+/** Parse DB_POOL_MAX from env (default 10). */
+function getPoolMax(optsMax: number | undefined): number {
+  const env = process.env["DB_POOL_MAX"];
+  if (!env) return optsMax ?? 10;
+  const n = parseInt(env, 10);
+  return Number.isNaN(n) || n < 1 ? (optsMax ?? 10) : Math.min(n, 100);
+}
+
+/** Parse DB_IDLE_TIMEOUT_MS from env. For Neon scale-to-zero, use 10000 to release connections sooner. */
+function getIdleTimeout(optsIdle: number | undefined): number {
+  const env = process.env["DB_IDLE_TIMEOUT_MS"];
+  if (env) {
+    const n = parseInt(env, 10);
+    if (!Number.isNaN(n) && n >= 1000) return n;
+  }
+  return optsIdle ?? 30_000;
 }
 
 /**
  * Create a pooled Drizzle client.
  *
  * Returns `{ db, pool }` so callers can `await pool.end()` on shutdown.
+ * When connecting to Neon (neon.tech), connectionTimeoutMillis defaults to 10s
+ * to accommodate cold starts from scale-to-zero.
+ *
+ * Env overrides: DB_POOL_MAX, DB_IDLE_TIMEOUT_MS
  */
 export function createDb(connectionString: string, opts: CreateDbOptions = {}) {
+  const isNeon = connectionString.includes("neon.tech");
+  const connectionTimeoutMillis =
+    opts.connectionTimeoutMillis ?? (isNeon ? NEON_CONNECTION_TIMEOUT_MS : 5_000);
+  const max = getPoolMax(opts.max);
+  const idleTimeoutMillis = getIdleTimeout(opts.idleTimeoutMillis);
+
   const pool = new Pool({
     connectionString,
-    max: opts.max ?? 10,
-    idleTimeoutMillis: opts.idleTimeoutMillis ?? 30_000,
-    connectionTimeoutMillis: opts.connectionTimeoutMillis ?? 5_000,
+    max,
+    idleTimeoutMillis,
+    connectionTimeoutMillis,
   });
   const db: DbClient = drizzle(pool, { schema });
   return { db, pool };
+}
+
+/** Options for warmUpDbWithRetry */
+export interface WarmUpOptions {
+  /** Max retries (default 3) */
+  maxRetries?: number;
+  /** Initial delay ms before first retry (default 1000) */
+  initialDelayMs?: number;
+}
+
+/**
+ * Warm up the DB connection with retry. Use on API/worker startup when using Neon
+ * to handle scale-to-zero cold starts. Runs SELECT 1; retries with exponential backoff.
+ */
+export async function warmUpDbWithRetry(
+  db: DbClient,
+  opts: WarmUpOptions = {},
+): Promise<void> {
+  const maxRetries = opts.maxRetries ?? 3;
+  const initialDelayMs = opts.initialDelayMs ?? 1000;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      await db.execute(sql`SELECT 1`);
+      return;
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+      const delay = initialDelayMs * Math.pow(2, attempt);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -10,19 +10,19 @@
  */
 
 // Queries
-// export { getPlatformMetrics } from "./queries/get-platform-metrics.js";
+// export { getPlatformMetrics } from "./queries/get-platform-metrics";
 
 // Composers
-// export { buildCidDashboard } from "./composers/build-dashboard.js";
+// export { buildCidDashboard } from "./composers/build-dashboard";
 
 // Interactions
-// export { provisionOrganization } from "./interactions/provision-organization.js";
+// export { provisionOrganization } from "./interactions/provision-organization";
 
 // Policies
-// export { canAccessPlatform, canManageOrgs } from "./policies/can-access-platform.js";
+// export { canAccessPlatform, canManageOrgs } from "./policies/can-access-platform";
 
 // Types
-// export type * from "./types/view-models.js";
+// export type * from "./types/view-models";
 
 // Empty export to make this a valid module
 export {};

@@ -8,17 +8,17 @@
 import type { DbClient } from "@afenda/db";
 import { iamPrincipal } from "@afenda/db";
 import { eq, sql } from "drizzle-orm";
-import { hashPassword, verifyPassword } from "./password.js";
+import { hashPassword, verifyPassword } from "./password";
 import {
   IAM_CREDENTIALS_INVALID,
   IAM_PASSWORD_CHANGE_INVALID,
   IAM_PRINCIPAL_NOT_FOUND,
   type PortalType,
 } from "@afenda/contracts";
-import { verifyCredentialsForPortal } from "./auth-flows.js";
+import { verifyCredentialsForPortal } from "./auth-flows";
 
 export type VerifyCredentialsResult =
-  | { ok: true; principalId: string; email: string }
+  | { ok: true; principalId: string; email: string; requiresMfa?: boolean }
   | { ok: false; error: string };
 
 /**
@@ -36,7 +36,12 @@ export async function verifyCredentials(
     return { ok: false, error: result.error || IAM_CREDENTIALS_INVALID };
   }
 
-  return { ok: true, principalId: result.principalId, email: result.email };
+  return {
+    ok: true,
+    principalId: result.principalId,
+    email: result.email,
+    requiresMfa: result.requiresMfa,
+  };
 }
 
 export type ChangePasswordResult =

@@ -27,12 +27,12 @@ import type {
   InvoiceStatus,
   EntityId,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { nextNumber } from "../../../kernel/execution/numbering/numbering.js";
-import { canApproveInvoice, canMarkPaid } from "../sod.js";
-import { hasActiveHolds } from "./hold.queries.js";
-import { validateInvoice } from "./validate-invoice.js";
-import type { PolicyContext } from "../sod.js";
+import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { nextNumber } from "../../../kernel/execution/numbering/numbering";
+import { canApproveInvoice, canMarkPaid } from "../sod";
+import { hasActiveHolds } from "./hold.queries";
+import { validateInvoice } from "./validate-invoice";
+import type { PolicyContext } from "../sod";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

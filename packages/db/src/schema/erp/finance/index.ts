@@ -1,2 +1,2 @@
-export * from "./gl.js";
-export * from "./ap.js";
+export * from "./gl";
+export * from "./ap";

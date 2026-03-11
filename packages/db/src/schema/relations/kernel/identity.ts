@@ -15,15 +15,15 @@ import {
   iamRolePermission,
   authPasswordResetToken,
   authPortalInvitation,
-} from "../../kernel/identity.js";
-import { supplier } from "../../erp/supplier.js";
-import { document } from "../../kernel/governance/evidence.js";
-import { account, journalEntry } from "../../erp/finance/gl.js";
-import { invoice, invoiceStatusHistory } from "../../erp/finance/ap.js";
-import { outboxEvent } from "../../kernel/execution/outbox.js";
-import { auditLog } from "../../kernel/governance/audit.js";
-import { sequence } from "../../kernel/execution/numbering.js";
-import { idempotency } from "../../kernel/execution/idempotency.js";
+} from "../../kernel/identity";
+import { supplier } from "../../erp/supplier";
+import { document } from "../../kernel/governance/evidence";
+import { account, journalEntry } from "../../erp/finance/gl";
+import { invoice, invoiceStatusHistory } from "../../erp/finance/ap";
+import { outboxEvent } from "../../kernel/execution/outbox";
+import { auditLog } from "../../kernel/governance/audit";
+import { sequence } from "../../kernel/execution/numbering";
+import { idempotency } from "../../kernel/execution/idempotency";
 
 // ── Party Model (ADR-0003) ────────────────────────────────────────────────────
 

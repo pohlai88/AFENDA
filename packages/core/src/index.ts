@@ -8,12 +8,18 @@
  */
 
 // ── DB client (re-exported from @afenda/db) ──────────────────────────────────
-export { createDb, checkDbHealth, withOrgContext } from "@afenda/db";
-export type { DbClient, OrgContext, CreateDbOptions, DbHealthResult } from "@afenda/db";
+export { createDb, checkDbHealth, withOrgContext, warmUpDbWithRetry } from "@afenda/db";
+export type {
+  DbClient,
+  OrgContext,
+  CreateDbOptions,
+  DbHealthResult,
+  WarmUpOptions,
+} from "@afenda/db";
 
 // ── Pillar re-exports ────────────────────────────────────────────────────────
-export * from "./kernel/index.js";
-export * from "./erp/index.js";
+export * from "./kernel/index";
+export * from "./erp/index";
 
 // ── Projection layer (portal interactions) ──────────────────────────────────
-export * from "./projections/index.js";
+export * from "./projections/index";

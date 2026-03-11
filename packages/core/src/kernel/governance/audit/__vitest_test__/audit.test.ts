@@ -33,7 +33,7 @@ vi.mock("@afenda/db", () => ({
 }));
 
 // Import after mock registration
-import { writeAuditLog, withAudit } from "../audit.js";
+import { writeAuditLog, withAudit } from "../audit";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

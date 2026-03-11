@@ -21,8 +21,8 @@
  *
  * Usage:
  *   // finance/ap/index.ts
- *   import { instrumentService } from "../../infra/tracing.js";
- *   import * as raw from "./invoice.service.js";
+ *   import { instrumentService } from "../../infra/tracing";
+ *   import * as raw from "./invoice.service";
  *   export const { submitInvoice, approveInvoice, ... } = instrumentService("ap", raw);
  *
  *   // That's it. Every call to submitInvoice() now produces a span:

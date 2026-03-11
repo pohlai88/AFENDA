@@ -31,12 +31,12 @@ import type {
   CustomFieldValuesResponse,
 } from "@afenda/contracts";
 import { CustomFieldEntityTypeValues } from "@afenda/contracts";
-import { writeAuditLog, type OrgScopedContext } from "../audit/index.js";
+import { writeAuditLog, type OrgScopedContext } from "../audit/index";
 import {
   getCustomFieldDefById,
   getCustomFieldDefs,
   getCustomFieldDefsByApiKeys,
-} from "./custom-fields.queries.js";
+} from "./custom-fields.queries";
 
 // -- Domain error --------------------------------------------------------------
 
@@ -411,5 +411,5 @@ export async function upsertCustomFieldValues(
   return result;
 }
 
-export { getCustomFieldValues } from "./custom-fields.queries.js";
+export { getCustomFieldValues } from "./custom-fields.queries";
 

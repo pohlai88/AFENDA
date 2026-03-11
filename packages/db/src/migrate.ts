@@ -9,12 +9,16 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
 
 async function main() {
-  const url = process.env["DATABASE_URL"];
-  if (!url) throw new Error("DATABASE_URL is required");
+  // Prefer direct connection for migrations (DDL, advisory locks, CREATE INDEX CONCURRENTLY)
+  const url =
+    process.env["DATABASE_URL_MIGRATIONS"]?.trim() || process.env["DATABASE_URL"];
+  if (!url) throw new Error("DATABASE_URL or DATABASE_URL_MIGRATIONS is required");
 
   const client = new Client({
     connectionString: url,
     application_name: "afenda-drizzle-migrate",
+    // Neon cold start: allow 10s for scale-to-zero resume
+    ...(url.includes("neon.tech") && { connectionTimeoutMillis: 10_000 }),
   });
 
   await client.connect();
@@ -31,7 +35,7 @@ async function main() {
     const db = drizzle(client);
     await migrate(db, { migrationsFolder: resolve(__dirname, "../drizzle") });
 
-    console.log("✅ migrations applied");
+    process.stdout.write("✅ migrations applied\n");
   } finally {
     await client.end();
   }

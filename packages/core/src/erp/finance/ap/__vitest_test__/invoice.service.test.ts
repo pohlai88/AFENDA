@@ -7,8 +7,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { OrgId, PrincipalId, CorrelationId, InvoiceId, SupplierId } from "@afenda/contracts";
 import { Permissions } from "@afenda/contracts";
-import type { PolicyContext } from "../../sod.js";
-import type { OrgScopedContext } from "../../../../kernel/governance/audit/audit.js";
+import type { PolicyContext } from "../../sod";
+import type { OrgScopedContext } from "../../../../kernel/governance/audit/audit";
 
 // ── Mock setup ───────────────────────────────────────────────────────────────
 
@@ -53,7 +53,7 @@ vi.mock("@afenda/db", () => ({
 }));
 
 // Mock audit service — withAudit executes the callback directly
-vi.mock("../../../../kernel/governance/audit/audit.js", () => ({
+vi.mock("../../../../kernel/governance/audit/audit", () => ({
   withAudit: vi.fn(async (_db: any, _ctx: any, _entry: any, fn: any) => {
     return fn(mockDb);
   }),
@@ -61,11 +61,11 @@ vi.mock("../../../../kernel/governance/audit/audit.js", () => ({
 }));
 
 // Mock numbering service
-vi.mock("../../../../kernel/execution/numbering/numbering.js", () => ({
+vi.mock("../../../../kernel/execution/numbering/numbering", () => ({
   nextNumber: vi.fn(async () => "INV-2026-0001"),
 }));
 
-import { submitInvoice, approveInvoice, rejectInvoice, voidInvoice } from "../invoice.service.js";
+import { submitInvoice, approveInvoice, rejectInvoice, voidInvoice } from "../invoice.service";
 
 // ── Test constants ───────────────────────────────────────────────────────────
 

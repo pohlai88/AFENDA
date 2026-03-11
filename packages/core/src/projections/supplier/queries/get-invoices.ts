@@ -14,12 +14,12 @@ import type { DbClient } from "@afenda/db";
 import { invoice, apHold } from "@afenda/db";
 import { eq, and, asc, desc } from "drizzle-orm";
 import type { CorrelationId, SupplierId, InvoiceId, InvoiceStatus } from "@afenda/contracts";
-import type { OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { createProjectionEnvelope } from "../../shared/projection-envelope.js";
-import type { ProjectionResult } from "../../shared/projection-types.js";
-import type { ProjectionEnvelope } from "../../shared/projection-envelope.js";
-import type { SupplierInvoiceView, SupplierHoldView } from "../types/view-models.js";
-import { toInvoiceView, toHoldView } from "../types/mappers.js";
+import type { OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { createProjectionEnvelope } from "../../shared/projection-envelope";
+import type { ProjectionResult } from "../../shared/projection-types";
+import type { ProjectionEnvelope } from "../../shared/projection-envelope";
+import type { SupplierInvoiceView, SupplierHoldView } from "../types/view-models";
+import { toInvoiceView, toHoldView } from "../types/mappers";
 
 // ── Query Parameters ─────────────────────────────────────────────────────────
 

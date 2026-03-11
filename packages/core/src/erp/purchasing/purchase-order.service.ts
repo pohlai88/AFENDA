@@ -17,9 +17,9 @@ import type {
   SupplierId,
   EntityId,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
-import { nextNumber } from "../../kernel/execution/numbering/numbering.js";
-import type { PolicyContext } from "../finance/sod.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
+import { nextNumber } from "../../kernel/execution/numbering/numbering";
+import type { PolicyContext } from "../finance/sod";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

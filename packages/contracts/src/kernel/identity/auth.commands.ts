@@ -24,7 +24,7 @@ export const SignUpCommandSchema = z.object({
   fullName: z.string().trim().min(1).max(120),
   companyName: z.string().trim().min(1).max(160),
   email: z.string().email(),
-  password: z.string().min(8).max(256),
+  password: z.string().min(12).max(256),
 });
 
 export type SignUpCommand = z.infer<typeof SignUpCommandSchema>;
@@ -42,7 +42,7 @@ export const ResetPasswordCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   token: PasswordResetCredentialSchema,
   email: z.string().email().optional(),
-  newPassword: z.string().min(8).max(256),
+  newPassword: z.string().min(12).max(256),
 }).superRefine((value, ctx) => {
   const isCode = /^\d{6}$/.test(value.token);
   if (isCode && !value.email) {
@@ -71,7 +71,7 @@ export const AcceptPortalInvitationCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   token: z.string().min(16),
   fullName: z.string().trim().min(1).max(120),
-  password: z.string().min(8).max(256),
+  password: z.string().min(12).max(256),
 });
 
 export type AcceptPortalInvitationCommand = z.infer<typeof AcceptPortalInvitationCommandSchema>;
@@ -104,3 +104,94 @@ export const AuthContextResponseSchema = z.object({
 });
 
 export type AuthContextResponse = z.infer<typeof AuthContextResponseSchema>;
+
+// ── AuthFlowResult (API source of truth) ────────────────────────────────────────
+
+/** Normalized result shape for all auth flow API endpoints. */
+export const AuthFlowResultOkSchema = <T extends z.ZodType>(dataSchema: T) =>
+  z.object({ ok: z.literal(true), data: dataSchema });
+
+export const AuthFlowResultErrSchema = z.object({
+  ok: z.literal(false),
+  code: z.string().min(1),
+  message: z.string().min(1),
+});
+
+export type AuthFlowResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; code: string; message: string };
+
+/** Verify reset token request. */
+export const VerifyResetTokenCommandSchema = z.object({
+  token: PasswordResetCredentialSchema,
+  email: z.string().email().optional(),
+});
+
+export type VerifyResetTokenCommand = z.infer<typeof VerifyResetTokenCommandSchema>;
+
+/** Verify reset token success data. */
+export const VerifyResetTokenDataSchema = z.object({
+  email: z.string().email(),
+  expiresAt: z.string().datetime().optional(),
+});
+
+export type VerifyResetTokenData = z.infer<typeof VerifyResetTokenDataSchema>;
+
+/** Verify invite token request. */
+export const VerifyInviteTokenCommandSchema = z.object({
+  token: z.string().min(16),
+});
+
+export type VerifyInviteTokenCommand = z.infer<typeof VerifyInviteTokenCommandSchema>;
+
+/** Verify invite token success data. */
+export const VerifyInviteTokenDataSchema = z.object({
+  email: z.string().email(),
+  portal: z.enum(["supplier", "customer", "cid", "investor", "franchisee", "contractor"]),
+  tenantName: z.string().min(1).optional(),
+  tenantSlug: z.string().min(1).optional(),
+  expiresAt: z.string().datetime().optional(),
+});
+
+export type VerifyInviteTokenData = z.infer<typeof VerifyInviteTokenDataSchema>;
+
+/** Verify MFA challenge request. */
+export const VerifyMfaChallengeCommandSchema = z.object({
+  mfaToken: z.string().min(1),
+  code: z.string().min(6).max(8),
+});
+
+export type VerifyMfaChallengeCommand = z.infer<typeof VerifyMfaChallengeCommandSchema>;
+
+/** Login (verify credentials) request. */
+export const LoginCommandSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+  portal: PortalTypeSchema.optional(),
+});
+
+export type LoginCommand = z.infer<typeof LoginCommandSchema>;
+
+/** Login success data. */
+export const LoginDataSchema = z.object({
+  principalId: z.string().uuid(),
+  email: z.string().email(),
+});
+
+export type LoginData = z.infer<typeof LoginDataSchema>;
+
+/** Verify session grant request (one-time token from invite/MFA flow). */
+export const VerifySessionGrantCommandSchema = z.object({
+  grant: z.string().min(32),
+});
+
+export type VerifySessionGrantCommand = z.infer<typeof VerifySessionGrantCommandSchema>;
+
+/** Verify session grant success data. */
+export const VerifySessionGrantDataSchema = z.object({
+  principalId: z.string().uuid(),
+  email: z.string().email(),
+  portal: z.string().min(1),
+});
+
+export type VerifySessionGrantData = z.infer<typeof VerifySessionGrantDataSchema>;

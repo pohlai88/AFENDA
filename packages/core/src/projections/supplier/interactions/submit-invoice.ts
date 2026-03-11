@@ -13,10 +13,10 @@
 import type { DbClient } from "@afenda/db";
 import type { CorrelationId, SupplierId, InvoiceId } from "@afenda/contracts";
 import type { PolicyContext } from "@afenda/contracts";
-import type { OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { submitInvoice } from "../../../erp/finance/ap/index.js";
-import type { ProjectionResult } from "../../shared/projection-types.js";
-import type { SubmitInvoiceInput, SubmitInvoiceOutput } from "../types/view-models.js";
+import type { OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { submitInvoice } from "../../../erp/finance/ap/index";
+import type { ProjectionResult } from "../../shared/projection-types";
+import type { SubmitInvoiceInput, SubmitInvoiceOutput } from "../types/view-models";
 
 /**
  * Submit an invoice through the supplier portal.

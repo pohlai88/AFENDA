@@ -21,8 +21,8 @@ import type {
   PaymentRunId,
   EntityId,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
-import { nextNumber, ensureSequence } from "../../../kernel/execution/numbering/numbering.js";
+import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
+import { nextNumber, ensureSequence } from "../../../kernel/execution/numbering/numbering";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

@@ -34,11 +34,11 @@ vi.mock("@afenda/db", () => ({
   sequence: {},
 }));
 
-vi.mock("../../../../kernel/governance/audit/audit.js", () => ({
+vi.mock("../../../../kernel/governance/audit/audit", () => ({
   withAudit: vi.fn(async (_db: any, _ctx: any, _entry: any, fn: any) => fn(mockDb)),
 }));
 
-vi.mock("../../../../kernel/execution/numbering/numbering.js", () => ({
+vi.mock("../../../../kernel/execution/numbering/numbering", () => ({
   nextNumber: vi.fn(async () => "PR-2026-0001"),
   ensureSequence: vi.fn(),
 }));
@@ -47,7 +47,7 @@ import {
   createPaymentRun,
   approvePaymentRun,
   executePaymentRun,
-} from "../payment-run.service.js";
+} from "../payment-run.service";
 
 const ORG_ID = "11111111-1111-1111-1111-111111111111" as OrgId;
 const CORRELATION_ID = "cccccccc-cccc-cccc-cccc-cccccccccccc" as CorrelationId;
@@ -100,6 +100,71 @@ describe("approvePaymentRun", () => {
       expect(result.error.code).toBe("AP_PAYMENT_RUN_NOT_FOUND");
     }
   });
+
+  it("returns error when run is already approved", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "APPROVED", itemCount: 3 }]);
+
+    const result = await approvePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_PAYMENT_RUN_ALREADY_APPROVED");
+    }
+  });
+
+  it("returns error when run has no items", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "DRAFT", itemCount: 0 }]);
+
+    const result = await approvePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_PAYMENT_RUN_EMPTY");
+    }
+  });
+
+  it("returns ok when run approved successfully", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "DRAFT", itemCount: 2 }]);
+
+    const result = await approvePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.id).toBe("run-id");
+    }
+
+    const insertedRows = mockInsertValues.mock.calls.map((call) => call[0]);
+    expect(insertedRows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "AP.PAYMENT_RUN_APPROVED",
+          payload: expect.objectContaining({
+            paymentRunId: "run-id",
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("returns error when run status is not draft", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "EXECUTING", itemCount: 1 }]);
+
+    const result = await approvePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_PAYMENT_RUN_NOT_DRAFT");
+      expect(result.error.meta?.currentStatus).toBe("EXECUTING");
+    }
+  });
 });
 
 describe("executePaymentRun", () => {
@@ -118,5 +183,126 @@ describe("executePaymentRun", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("AP_PAYMENT_RUN_NOT_FOUND");
     }
+  });
+
+  it("returns error when run is already executed", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "EXECUTED" }]);
+
+    const result = await executePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+      bankReference: null,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_PAYMENT_RUN_ALREADY_EXECUTED");
+    }
+  });
+
+  it("returns error when run is not approved", async () => {
+    mockSelectWhere.mockResolvedValue([{ id: "run-id", status: "DRAFT" }]);
+
+    const result = await executePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+      bankReference: null,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_PAYMENT_RUN_NOT_DRAFT");
+      expect(result.error.meta?.currentStatus).toBe("DRAFT");
+    }
+  });
+
+  it("returns error when an invoice in run is not posted", async () => {
+    mockSelectWhere
+      .mockResolvedValueOnce([{ id: "run-id", status: "APPROVED" }])
+      .mockResolvedValueOnce([
+        {
+          id: "item-1",
+          invoiceId: "inv-1",
+          amountPaidMinor: 1000n,
+          invoiceNumber: "INV-001",
+        },
+      ])
+      .mockResolvedValueOnce([{ status: "approved" }]);
+
+    const result = await executePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+      bankReference: null,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("AP_INVOICE_INVALID_STATUS_TRANSITION");
+      expect(result.error.meta?.invoiceId).toBe("inv-1");
+    }
+  });
+
+  it("returns ok when run executed successfully (no items)", async () => {
+    // First call: paymentRun status query; second: paymentRunItem empty set
+    mockSelectWhere
+      .mockResolvedValueOnce([{ id: "run-id", status: "APPROVED" }])
+      .mockResolvedValueOnce([]);
+
+    const result = await executePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+      bankReference: "BANK-REF-001",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.id).toBe("run-id");
+    }
+  });
+
+  it("returns ok when run executes with posted invoice item", async () => {
+    mockSelectWhere
+      .mockResolvedValueOnce([{ id: "run-id", status: "APPROVED" }])
+      .mockResolvedValueOnce([
+        {
+          id: "item-1",
+          invoiceId: "inv-1",
+          amountPaidMinor: 2000n,
+          invoiceNumber: "INV-2001",
+        },
+      ])
+      .mockResolvedValueOnce([{ status: "posted" }]);
+
+    const result = await executePaymentRun(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
+      paymentRunId: "run-id",
+      bankReference: "BANK-OK-001",
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.id).toBe("run-id");
+    }
+
+    expect(mockUpdateSet).toHaveBeenCalled();
+    expect(mockInsertValues).toHaveBeenCalled();
+
+    const insertedRows = mockInsertValues.mock.calls.map((call) => call[0]);
+    expect(insertedRows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "AP.INVOICE_PAID",
+          payload: expect.objectContaining({
+            invoiceId: "inv-1",
+            paymentRunId: "run-id",
+            amountPaidMinor: "2000",
+            paymentReference: "BANK-OK-001",
+          }),
+        }),
+        expect.objectContaining({
+          type: "AP.PAYMENT_RUN_EXECUTED",
+          payload: expect.objectContaining({
+            paymentRunId: "run-id",
+            bankReference: "BANK-OK-001",
+            itemCount: 1,
+          }),
+        }),
+      ]),
+    );
   });
 });

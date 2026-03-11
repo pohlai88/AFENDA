@@ -21,36 +21,36 @@ export type {
   SupplierDashboardData,
   SubmitInvoiceInput,
   SubmitInvoiceOutput,
-} from "./types/index.js";
+} from "./types/index";
 
 // Queries (Class A)
 export {
   getSupplierInvoices,
   getSupplierInvoiceDetail,
   getSupplierInvoiceHolds,
-} from "./queries/index.js";
+} from "./queries/index";
 export type {
   GetSupplierInvoicesParams,
   GetInvoiceDetailParams,
   GetInvoiceHoldsParams,
-} from "./queries/index.js";
+} from "./queries/index";
 
 // Composers (Class B)
 export {
   buildSupplierStatement,
   buildSupplierDashboard,
-} from "./composers/index.js";
+} from "./composers/index";
 export type {
   BuildStatementParams,
   BuildDashboardParams,
-} from "./composers/index.js";
+} from "./composers/index";
 
 // Interactions (Class C)
-export { submitInvoiceFromPortal } from "./interactions/index.js";
+export { submitInvoiceFromPortal } from "./interactions/index";
 
 // Policies
 export {
   canViewSupplierInvoices,
   canSubmitSupplierInvoice,
   canViewSupplierHolds,
-} from "./policies/index.js";
+} from "./policies/index";

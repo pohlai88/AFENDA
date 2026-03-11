@@ -27,12 +27,12 @@ import type {
   EvidenceOperationId,
   WorkspaceId,
   EvidenceId,
-} from "./evidence.policy.js";
+} from "./evidence.policy";
 import {
   assertEvidenceRegisterAllowed,
   buildEvidenceRegisterAuditEvent,
   EvidencePolicyError,
-} from "./evidence.policy.js";
+} from "./evidence.policy";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

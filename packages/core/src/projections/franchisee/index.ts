@@ -10,19 +10,19 @@
  */
 
 // Queries
-// export { getFranchiseePerformance } from "./queries/get-performance.js";
+// export { getFranchiseePerformance } from "./queries/get-performance";
 
 // Composers
-// export { buildFranchiseeDashboard } from "./composers/build-dashboard.js";
+// export { buildFranchiseeDashboard } from "./composers/build-dashboard";
 
 // Interactions
-// export { submitRoyaltyReport } from "./interactions/submit-royalty-report.js";
+// export { submitRoyaltyReport } from "./interactions/submit-royalty-report";
 
 // Policies
-// export { canViewOperations, canSubmitReport } from "./policies/can-view-operations.js";
+// export { canViewOperations, canSubmitReport } from "./policies/can-view-operations";
 
 // Types
-// export type * from "./types/view-models.js";
+// export type * from "./types/view-models";
 
 // Empty export to make this a valid module
 export {};

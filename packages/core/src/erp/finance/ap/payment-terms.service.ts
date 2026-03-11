@@ -20,7 +20,7 @@ import type {
   PaymentTermsId,
   EntityId,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

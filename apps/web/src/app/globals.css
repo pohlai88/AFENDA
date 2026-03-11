@@ -118,6 +118,44 @@
   width: 8px;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   AUTH PALETTE ENHANCEMENT — Premium Dark Surface & Border Tokens
+   Showcases the Atmosphere Graphite v1 elevation architecture
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Input focus states — elevate with semantic interactive borders */
+.auth input:focus-visible,
+.auth textarea:focus-visible {
+  border-color: var(--border-interactive);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--border-interactive), transparent 85%);
+  outline: none;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+/* Button hover — subtle elevation using surface tokens */
+.auth button[type="submit"]:hover,
+.auth button[data-auth-action]:hover {
+  background-color: color-mix(in oklab, var(--primary), transparent 8%);
+  border-color: var(--border-interactive);
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+/* Assurance card icons — elevated with primary color */
+.auth [data-auth-assurance-icon] {
+  color: var(--primary);
+  transition: color 150ms ease-out;
+}
+
+.auth [data-auth-assurance-icon]:hover {
+  color: color-mix(in oklab, var(--primary), transparent 15%);
+}
+
+/* Badge accent — premium styling for journey context */
+.auth badge {
+  border-color: var(--border-interactive);
+  background-color: color-mix(in oklab, var(--surface-375), transparent 20%);
+}
+
 .auth-overflow-container::-webkit-scrollbar-track {
   background: transparent;
 }
@@ -131,4 +169,176 @@
 
 .auth-overflow-container::-webkit-scrollbar-thumb:hover {
   background-color: var(--muted-foreground);
+}
+
+/* Auth viewport-fit responsive density */
+.auth-responsive-shell {
+  container-type: size;
+}
+
+.auth-responsive-mobile {
+  max-height: calc(100dvh - 1rem);
+}
+
+.auth-stepped-shell {
+  grid-template-columns: 1.08fr 0.92fr;
+}
+
+@media (max-height: 980px) {
+  .auth-responsive-shell {
+    height: calc(100dvh - 3.25rem) !important;
+  }
+
+  .auth-responsive-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .auth-responsive-header-actions {
+    gap: 0.25rem !important;
+  }
+
+  .auth-responsive-card-header,
+  .auth-responsive-card-content,
+  .auth-responsive-aside-card-content {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  .auth-responsive-card-header {
+    padding-top: 1.5rem !important;
+  }
+
+  .auth-responsive-card-content {
+    padding-bottom: 1.5rem !important;
+  }
+
+  .auth-responsive-card-content,
+  .auth-responsive-aside-content,
+  .auth-responsive-aside-card-content {
+    gap: 1.25rem !important;
+  }
+
+  .auth-responsive-card-description {
+    font-size: 0.975rem !important;
+    line-height: 1.5rem !important;
+  }
+}
+
+@media (max-height: 860px) {
+  .auth-responsive-shell {
+    height: calc(100dvh - 2.5rem) !important;
+  }
+
+  .auth-responsive-aside,
+  .auth-responsive-panel {
+    padding: 1.5rem !important;
+  }
+
+  .auth-responsive-header {
+    margin-bottom: 1rem !important;
+  }
+
+  .auth-responsive-header > div {
+    gap: 0.75rem !important;
+  }
+
+  .auth-responsive-card-title {
+    font-size: clamp(1.5rem, 2.2vw, 1.75rem) !important;
+  }
+
+  .auth-responsive-card-description,
+  .auth-responsive-aside-copy p,
+  .auth-responsive-aside-card-content p {
+    font-size: 0.92rem !important;
+    line-height: 1.45rem !important;
+  }
+
+  .auth-responsive-aside-copy {
+    gap: 0.75rem !important;
+  }
+
+  .auth-responsive-aside-card .text-lg {
+    font-size: 1rem !important;
+  }
+
+  .auth-responsive-aside-card-content,
+  .auth-responsive-card-content {
+    gap: 1rem !important;
+  }
+
+  /* Compact split mode */
+  .auth-stepped-shell {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-height: 760px) {
+  .auth-responsive-shell {
+    height: calc(100dvh - 1.75rem) !important;
+  }
+
+  .auth-responsive-aside,
+  .auth-responsive-panel {
+    padding: 1.25rem !important;
+  }
+
+  .auth-responsive-header {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .auth-responsive-card-header,
+  .auth-responsive-card-content,
+  .auth-responsive-aside-card-content {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+
+  .auth-responsive-card-header {
+    padding-top: 1.25rem !important;
+  }
+
+  .auth-responsive-card-content {
+    padding-bottom: 1.25rem !important;
+  }
+
+  .auth-responsive-card-title {
+    font-size: 1.4rem !important;
+  }
+
+  .auth-responsive-aside-copy h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem) !important;
+    line-height: 1.05 !important;
+  }
+
+  .auth-responsive-aside-card-content,
+  .auth-responsive-card-content,
+  .auth-responsive-aside-content {
+    gap: 0.875rem !important;
+  }
+
+  .auth-stepped-shell {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-height: 700px) {
+  .auth-responsive-shell {
+    height: calc(100dvh - 1.25rem) !important;
+  }
+
+  .auth-responsive-panel {
+    padding: 1rem !important;
+  }
+
+  .auth-responsive-aside {
+    padding: 1rem !important;
+  }
+
+  .auth-responsive-header {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .auth-stepped-shell {
+    grid-template-columns: 1fr 1fr !important;
+  }
 }

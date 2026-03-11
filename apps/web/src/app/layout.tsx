@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Geist } from "next/font/google";
 import { TooltipProvider, ToastNotification } from "@afenda/ui";
 import Script from "next/script";
-import { SessionProvider } from "@/components/SessionProvider";
 import { ShellLayoutWrapper } from "@/components/ShellLayoutWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css"
@@ -69,12 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
-          <SessionProvider>
-            <TooltipProvider>
-              <ShellLayoutWrapper>{children}</ShellLayoutWrapper>
-              <ToastNotification />
-            </TooltipProvider>
-          </SessionProvider>
+          <TooltipProvider>
+            <ShellLayoutWrapper>{children}</ShellLayoutWrapper>
+            <ToastNotification />
+          </TooltipProvider>
         </ThemeProvider>
         <Script id="sw-register" strategy="afterInteractive">
           {`

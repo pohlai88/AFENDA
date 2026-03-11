@@ -36,6 +36,9 @@ export const AUTH_ERROR_MESSAGES = {
   IAM_EMAIL_NOT_VERIFIED: "Please verify your email before signing in.",
   IAM_MFA_REQUIRED: "Multi-factor authentication required.",
   IAM_MFA_INVALID: "Invalid verification code.",
+  IAM_MFA_NOT_IMPLEMENTED: "MFA verification is not yet available via API.",
+  IAM_SESSION_GRANT_INVALID: "Session grant is invalid or has already been used.",
+  IAM_SESSION_GRANT_EXPIRED: "Session grant has expired.",
 
   // ── Portal-specific errors ──
   IAM_PORTAL_INVITATION_REQUIRED:
@@ -51,6 +54,8 @@ export const AUTH_ERROR_MESSAGES = {
   AUTH_PORTAL_ACCEPT_FAILED: "Failed to accept invitation. Please try again.",
 
   // ── Auth transport errors ──
+  AUTH_MOCK_NOT_AVAILABLE:
+    "Auth mock does not own user/invite state. Use API or set up mock data.",
   AUTH_UPSTREAM_UNAVAILABLE: "Authentication service is temporarily unavailable. Please try again.",
   AUTH_INVALID_RESPONSE: "Authentication failed due to an invalid server response.",
   AUTH_NETWORK_ERROR: "Network error. Check your connection and try again.",
@@ -59,7 +64,7 @@ export const AUTH_ERROR_MESSAGES = {
   // ── Validation errors ──
   VALIDATION_EMAIL_INVALID: "Please enter a valid email address.",
   VALIDATION_EMAIL_REQUIRED: "Please enter the account email.",
-  VALIDATION_PASSWORD_TOO_SHORT: "Password must be at least 8 characters.",
+  VALIDATION_PASSWORD_TOO_SHORT: "Password must be at least 12 characters.",
   VALIDATION_PASSWORD_WEAK: "Password is too weak. Use letters, numbers, and symbols.",
   VALIDATION_CODE_REQUIRED: "Please enter the 6-digit code.",
   VALIDATION_TOKEN_REQUIRED: "Please enter the reset token.",

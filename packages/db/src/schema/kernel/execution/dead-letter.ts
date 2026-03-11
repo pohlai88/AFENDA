@@ -1,6 +1,6 @@
 import { pgTable, text, uuid, bigint, jsonb, index } from "drizzle-orm/pg-core";
-import { organization } from "../identity.js";
-import { tsz } from "../../_helpers.js";
+import { organization } from "../identity";
+import { tsz } from "../../_helpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEAD LETTER (failed worker jobs after N retries)

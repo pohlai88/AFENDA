@@ -981,7 +981,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               className="mt-10 flex flex-col sm:flex-row items-center gap-3"
             >
               <Link
-                href="/auth/signin"
+                href="/"
                 className="group relative h-12 overflow-hidden rounded-xl bg-emerald-500 px-8 text-sm font-semibold text-slate-950 shadow-[0_8px_30px_rgba(16,185,129,0.25)] transition-all hover:bg-emerald-400 hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)] inline-flex items-center justify-center"
               >
                 <span className="relative z-10 flex items-center">

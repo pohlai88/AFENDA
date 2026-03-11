@@ -37,6 +37,12 @@
 | `wht-certificate.service.ts` | `createWhtCertificate`, `issueWhtCertificate`, `submitWhtCertificate` | WHT certificate business logic |
 | `wht-certificate.queries.ts` | `getWhtCertificate`, `listWhtCertificates` | WHT certificate query functions |
 | `validate-invoice.ts` | `validateInvoiceForSubmission`, `validateInvoiceForApproval`, `validateInvoiceForPayment` | Shared invoice validation helpers |
+| `calculators/index.ts` | Re-exports all calculators | Barrel export for calculators |
+| `calculators/aging.ts` | `calculateAging`, `InvoiceForAging`, `AgingReport`, `AgingBucket`, `SupplierAging` | Pure aging bucket calculator |
+| `calculators/three-way-match.ts` | `threeWayMatch`, `MatchInput`, `MatchResult` | Pure 3-way PO/Receipt/Invoice match calculator |
+| `calculators/detect-duplicates.ts` | `detectDuplicates`, `InvoiceFingerprint`, `DuplicateGroup` | Pure fingerprint-based duplicate detection |
+| `calculators/payment-file-iso20022.ts` | `generateISO20022PaymentFile`, `ISO20022PaymentFile` | Pure ISO 20022 pain.001.001.03 XML generator |
+| `calculators/payment-file-nacha.ts` | `generateNACHAFile`, `NACHAPaymentFile`, `NACHAPaymentItem`, `NACHAOriginatorInfo` | Pure NACHA ACH fixed-width file generator |
 
 ## PR Checklist
 

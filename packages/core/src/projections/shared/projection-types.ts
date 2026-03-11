@@ -14,9 +14,9 @@
 
 import type { DbClient } from "@afenda/db";
 import type { CorrelationId } from "@afenda/contracts";
-import type { OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import type { OrgScopedContext } from "../../kernel/governance/audit/audit";
 import type { PolicyContext } from "@afenda/contracts";
-import type { ProjectionEnvelope } from "./projection-envelope.js";
+import type { ProjectionEnvelope } from "./projection-envelope";
 
 // ── Service Result Pattern ───────────────────────────────────────────────────
 

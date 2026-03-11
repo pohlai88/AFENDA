@@ -16,13 +16,13 @@ import {
 } from "@afenda/db";
 import { eq, and, inArray } from "drizzle-orm";
 import type { InvoiceId, PrincipalId, CorrelationId } from "@afenda/contracts";
-import { threeWayMatch } from "./calculators/three-way-match.js";
+import { threeWayMatch } from "./calculators/three-way-match";
 import {
   detectDuplicates,
   type InvoiceFingerprint,
-} from "./calculators/detect-duplicates.js";
-import { createHold } from "./hold.service.js";
-import type { OrgScopedContext } from "../../../kernel/governance/audit/audit.js";
+} from "./calculators/detect-duplicates";
+import { createHold } from "./hold.service";
+import type { OrgScopedContext } from "../../../kernel/governance/audit/audit";
 
 export interface ValidateInvoiceResult {
   readonly invoiceId: string;

@@ -44,7 +44,7 @@ export type HoldStatus = (typeof HoldStatusValues)[number];
 
 // ── Hold schema ───────────────────────────────────────────────────────────────
 
-export const HoldSchema = z.object({
+export const ApHoldSchema = z.object({
   id: HoldIdSchema,
   orgId: OrgIdSchema,
   invoiceId: InvoiceIdSchema,
@@ -74,4 +74,7 @@ export const HoldSchema = z.object({
   updatedAt: UtcDateTimeSchema,
 });
 
+export const HoldSchema = ApHoldSchema;
+
 export type Hold = z.infer<typeof HoldSchema>;
+

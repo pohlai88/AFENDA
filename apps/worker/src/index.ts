@@ -17,6 +17,7 @@ import {
   createLogger,
 } from "@afenda/core";
 import { processOutboxEvent } from "./jobs/kernel/process-outbox-event.js";
+import { processAuthAuditOutbox } from "./jobs/kernel/process-auth-audit-outbox.js";
 import { handleInvoiceSubmitted } from "./jobs/erp/finance/ap/handle-invoice-submitted.js";
 import { handleInvoiceApproved } from "./jobs/erp/finance/ap/handle-invoice-approved.js";
 import { handleJournalPosted } from "./jobs/erp/finance/gl/handle-journal-posted.js";
@@ -70,6 +71,7 @@ log.info({ concurrency: env.WORKER_CONCURRENCY }, "concurrency");
 // Add new tasks here as Sprint 1+ domain handlers are implemented.
 const taskList = {
   process_outbox_event: processOutboxEvent,
+  process_auth_audit_outbox: processAuthAuditOutbox,
   // Sprint 1 domain handlers:
   handle_invoice_submitted: handleInvoiceSubmitted,
   handle_invoice_approved: handleInvoiceApproved,
@@ -94,6 +96,9 @@ const runner = await run({
   noHandleSignals: true, // We manage signals ourselves for clean coordinated shutdown
   taskList,
   logger: graphileLogger,
+  // Drain the auth audit outbox every minute.
+  // jobKey ensures only one instance is queued at a time if the previous run is slow.
+  crontab: `* * * * * process_auth_audit_outbox ?jobKey=auth_audit_drain&jobKeyMode=replace`,
 });
 
 log.info(

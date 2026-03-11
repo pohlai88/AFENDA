@@ -9,8 +9,8 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { organization } from "../identity.js";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { organization } from "../identity";
+import { tsz, rlsOrg } from "../../_helpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // IDEMPOTENCY

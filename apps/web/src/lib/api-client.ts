@@ -25,38 +25,33 @@ const DEFAULT_ORG = "demo";
 
 /**
  * Get auth headers for API requests.
- * - In Server Components: Reads token from cookies
+ * - In Server Components: Reads session token from cookies, sends Authorization: Bearer
  * - In Client Components: Returns minimal headers (browser sends cookies automatically)
- * - In dev mode without session: Returns x-dev-user-email for API bypass
+ * - In dev mode without session: Sends x-dev-user-email for API bypass
  */
 export async function getApiHeaders(): Promise<Record<string, string>> {
   const headers: Record<string, string> = {
     "x-org-id": DEFAULT_ORG,
   };
 
-  // Check if we're in a server context (cookies is available)
   const isServer = typeof window === "undefined";
-  
-  if (isServer) {
-    try {
-      // Dynamic import to avoid bundling server-only code in client
-      const { getSessionToken } = await import("./auth-token");
-      const token = await getSessionToken();
-      
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-        return headers;
-      }
-    } catch (err) {
-      // If auth-token import fails (shouldn't happen), continue without token
-      console.warn("Failed to get session token:", err);
-    }
-  }
-
-  // Dev mode fallback
   const isDev = process.env.NODE_ENV !== "production";
-  if (isDev && isServer) {
-    headers["x-dev-user-email"] = "admin@demo.afenda";
+
+  if (isServer) {
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const sessionToken =
+      cookieStore.get("authjs.session-token")?.value ??
+      cookieStore.get("__Secure-authjs.session-token")?.value;
+
+    if (sessionToken) {
+      headers["Authorization"] = `Bearer ${sessionToken}`;
+      return headers;
+    }
+
+    if (isDev) {
+      headers["x-dev-user-email"] = "admin@demo.afenda";
+    }
   }
 
   return headers;

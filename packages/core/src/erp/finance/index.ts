@@ -1,7 +1,7 @@
 /**
  * erp/finance — money primitives, posting, SoD, AP, GL.
  */
-export * from "./money/index.js";
-export * from "./sod.js";
-export * from "./ap/index.js";
-export * from "./gl/index.js";
+export * from "./money/index";
+export * from "./sod";
+export * from "./ap/index";
+export * from "./gl/index";

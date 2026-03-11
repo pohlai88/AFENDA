@@ -6,8 +6,8 @@ import {
   jsonb,
   index,
 } from "drizzle-orm/pg-core";
-import { organization } from "../identity.js";
-import { tsz, rlsOrg } from "../../_helpers.js";
+import { organization } from "../identity";
+import { tsz, rlsOrg } from "../../_helpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // OUTBOX (append-only — no updates, no deletes)

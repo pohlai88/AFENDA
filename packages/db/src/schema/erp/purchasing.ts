@@ -2,13 +2,13 @@
  * Purchase Order and Receipt schemas — for 3-way matching (PO → Receipt → Invoice).
  */
 import { pgTable, pgEnum, text, uuid, bigint, unique, index } from "drizzle-orm/pg-core";
-import { organization } from "../kernel/identity.js";
-import { supplier } from "./supplier.js";
+import { organization } from "../kernel/identity";
+import { supplier } from "./supplier";
 import {
   PurchaseOrderStatusValues,
   ReceiptStatusValues,
 } from "@afenda/contracts";
-import { tsz, rlsOrg } from "../_helpers.js";
+import { tsz, rlsOrg } from "../_helpers";
 
 export const purchaseOrderStatusEnum = pgEnum("purchase_order_status", PurchaseOrderStatusValues);
 export const receiptStatusEnum = pgEnum("receipt_status", ReceiptStatusValues);

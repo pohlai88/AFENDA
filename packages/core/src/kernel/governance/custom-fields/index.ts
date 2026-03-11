@@ -21,7 +21,7 @@ export {
   getCustomFieldDefs,
   upsertCustomFieldValues,
   getCustomFieldValues,
-} from "./custom-fields.service.js";
+} from "./custom-fields.service";
 
 
-export { getCustomFieldDefById, getCustomFieldDefsByApiKeys } from "./custom-fields.queries.js";
+export { getCustomFieldDefById, getCustomFieldDefsByApiKeys } from "./custom-fields.queries";

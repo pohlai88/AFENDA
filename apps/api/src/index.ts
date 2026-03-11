@@ -103,8 +103,12 @@ export async function buildApp() {
   await app.register(swaggerPlugin);
 
   // ── CORS ───────────────────────────────────────────────────────────────────
+  if (!isDev && env.ALLOWED_ORIGINS.length === 0) {
+    throw new Error("ALLOWED_ORIGINS must be set in production");
+  }
+
   await app.register(cors, {
-    origin: env.ALLOWED_ORIGINS.length > 0 ? env.ALLOWED_ORIGINS : true,
+    origin: env.ALLOWED_ORIGINS.length > 0 ? env.ALLOWED_ORIGINS : isDev,
     credentials: true,
   });
 
