@@ -10,8 +10,10 @@ import { IAM_MFA_NOT_IMPLEMENTED } from "@afenda/contracts";
 import { verify, NobleCryptoPlugin, ScureBase32Plugin } from "otplib";
 import { createHash, randomBytes } from "node:crypto";
 import { hashChallengeToken } from "./auth-challenge-hash";
+import { createLogger } from "../infrastructure/logger";
 
 const IAM_MFA_INVALID = "IAM_MFA_INVALID" as const;
+const log = createLogger("auth-mfa");
 
 export type VerifyMfaChallengeResult =
   | { ok: true; principalId: string; email: string; portal: string; sessionGrant: string }
@@ -30,6 +32,7 @@ export async function verifyMfaChallenge(
   input: { mfaToken: string; code: string },
 ): Promise<VerifyMfaChallengeResult> {
   const tokenHash = hashChallengeToken(input.mfaToken);
+  const tokenHashPrefix = tokenHash.slice(0, 8);
 
   const [challenge] = await db
     .select({
@@ -51,23 +54,75 @@ export async function verifyMfaChallenge(
     .limit(1);
 
   if (!challenge || challenge.type !== "mfa") {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge?.id,
+        challengeType: challenge?.type,
+      },
+      "MFA challenge rejected: missing challenge or type mismatch",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
   if (challenge.revoked || challenge.consumedAt) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId: challenge.userId,
+        revoked: challenge.revoked,
+        consumedAt: challenge.consumedAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: revoked or already consumed",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
   if (challenge.expiresAt.getTime() <= Date.now()) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId: challenge.userId,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: expired",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
   if (challenge.attemptCount >= challenge.maxAttempts) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId: challenge.userId,
+        attemptCount: challenge.attemptCount,
+        maxAttempts: challenge.maxAttempts,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: max attempts reached",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
   const principalId = challenge.userId;
   if (!principalId) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        attemptCount: challenge.attemptCount,
+        maxAttempts: challenge.maxAttempts,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: missing principal id",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
@@ -78,6 +133,18 @@ export async function verifyMfaChallenge(
     .limit(1);
 
   if (!mfaRow?.totpSecret) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId,
+        attemptCount: challenge.attemptCount,
+        maxAttempts: challenge.maxAttempts,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: principal enrollment missing",
+    );
     return { ok: false, error: IAM_MFA_NOT_IMPLEMENTED };
   }
 
@@ -89,11 +156,25 @@ export async function verifyMfaChallenge(
     algorithm: "sha1" as const,
     digits: 6,
     period: 30,
-    epoch: Date.now(),
     epochTolerance: 1,
   });
 
   if (!valid.valid) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId,
+        attemptCount: challenge.attemptCount,
+        maxAttempts: challenge.maxAttempts,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+        codeLength: input.code.length,
+        verifyResultType: typeof valid,
+        verifyValid: typeof valid === "object" && valid ? valid.valid : null,
+      },
+      "MFA challenge rejected: invalid code",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
@@ -104,6 +185,18 @@ export async function verifyMfaChallenge(
     .limit(1);
 
   if (!principal?.email) {
+    log.warn(
+      {
+        tokenHashPrefix,
+        challengeId: challenge.id,
+        principalId,
+        attemptCount: challenge.attemptCount,
+        maxAttempts: challenge.maxAttempts,
+        expiresAt: challenge.expiresAt,
+        portal: challenge.portal,
+      },
+      "MFA challenge rejected: principal email missing",
+    );
     return { ok: false, error: IAM_MFA_INVALID };
   }
 
@@ -126,6 +219,19 @@ export async function verifyMfaChallenge(
       updatedAt: sql`now()`,
     })
     .where(eq(authChallenges.id, challenge.id));
+
+  log.info(
+    {
+      tokenHashPrefix,
+      challengeId: challenge.id,
+      principalId,
+      attemptCount: challenge.attemptCount,
+      maxAttempts: challenge.maxAttempts,
+      expiresAt: challenge.expiresAt,
+      portal,
+    },
+    "MFA challenge verified and session grant issued",
+  );
 
   return {
     ok: true,

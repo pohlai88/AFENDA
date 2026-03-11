@@ -134,6 +134,17 @@ export interface GeneratedListProps {
   virtualizationThreshold?: number;
   /** Max height of the virtualized scroll container (e.g. "70vh"). Default "70vh". */
   virtualizedMaxHeight?: string;
+  /** Show loading rows while data is being fetched. */
+  isLoading?: boolean;
+  /** Number of loading rows to render when isLoading is true. Default 8. */
+  loadingRowCount?: number;
+  /** Custom empty state copy/action for enterprise workflows. */
+  emptyState?: {
+    title?: string;
+    description?: string;
+    actionLabel?: string;
+    onAction?: () => void;
+  };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -190,6 +201,9 @@ export function GeneratedList({
   onRowActivate,
   virtualizationThreshold = 50,
   virtualizedMaxHeight = "70vh",
+  isLoading = false,
+  loadingRowCount = 8,
+  emptyState,
 }: GeneratedListProps) {
   // ── Render performance instrumentation ───────────────────────────
   const renderStart = useRef(performance.now());
@@ -443,6 +457,11 @@ export function GeneratedList({
 
   const colCount = columns.length + (hasRowActions ? 1 : 0) + (hasSelection ? 1 : 0);
   const gridCols = `repeat(${colCount}, minmax(0, 1fr))`;
+  const skeletonCols = Math.max(columns.length, 1);
+  const normalizedLoadingRows = Math.max(1, loadingRowCount);
+  const emptyTitle = emptyState?.title ?? "No records found";
+  const emptyDescription =
+    emptyState?.description ?? "Try adjusting filters or creating a new record.";
 
   // ── Render ───────────────────────────────────────────────────────
   return (
@@ -514,7 +533,29 @@ export function GeneratedList({
           </TableRow>
         </TableHeader>
 
-        {useVirtualization && data.length > 0 ? (
+        {isLoading ? (
+          <TableBody>
+            {Array.from({ length: normalizedLoadingRows }).map((_, rowIdx) => (
+              <TableRow key={`loading-${rowIdx}`}>
+                {hasSelection && (
+                  <TableCell className="pr-0">
+                    <Skeleton className="h-4 w-4 rounded" />
+                  </TableCell>
+                )}
+                {Array.from({ length: skeletonCols }).map((__, colIdx) => (
+                  <TableCell key={`loading-cell-${rowIdx}-${colIdx}`}>
+                    <Skeleton className="h-4 w-full max-w-[12rem]" />
+                  </TableCell>
+                ))}
+                {hasRowActions && (
+                  <TableCell className="text-right">
+                    <Skeleton className="ml-auto h-8 w-8 rounded" />
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        ) : useVirtualization && data.length > 0 ? (
           <TableBody>
             <TableRow>
               <TableCell colSpan={colCount} className="p-0 border-0">
@@ -610,9 +651,14 @@ export function GeneratedList({
                                       key={action.actionKey}
                                       variant={action.variant === "destructive" ? "destructive" : "default"}
                                       disabled={!action.allowed}
-                                      onSelect={() =>
-                                        handleRowAction(action.actionKey, record, action.confirm)
-                                      }
+                                      title={action.allowed ? action.label : action.reason ?? "Not permitted"}
+                                      onSelect={(e) => {
+                                        if (!action.allowed) {
+                                          e.preventDefault();
+                                          return;
+                                        }
+                                        handleRowAction(action.actionKey, record, action.confirm);
+                                      }}
                                     >
                                       {action.label}
                                     </DropdownMenuItem>
@@ -635,9 +681,17 @@ export function GeneratedList({
               <TableRow>
                 <TableCell
                   colSpan={colCount}
-                  className="h-24 text-center text-muted-foreground"
+                  className="h-24 text-center"
                 >
-                  No records found.
+                  <div className="mx-auto flex max-w-xl flex-col items-center gap-2 py-3">
+                    <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
+                    <p className="text-sm text-muted-foreground">{emptyDescription}</p>
+                    {emptyState?.actionLabel && emptyState.onAction && (
+                      <Button size="sm" variant="outline" onClick={emptyState.onAction}>
+                        {emptyState.actionLabel}
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -706,9 +760,14 @@ export function GeneratedList({
                                 key={action.actionKey}
                                 variant={action.variant === "destructive" ? "destructive" : "default"}
                                 disabled={!action.allowed}
-                                onSelect={() =>
-                                  handleRowAction(action.actionKey, record, action.confirm)
-                                }
+                                title={action.allowed ? action.label : action.reason ?? "Not permitted"}
+                                onSelect={(e) => {
+                                  if (!action.allowed) {
+                                    e.preventDefault();
+                                    return;
+                                  }
+                                  handleRowAction(action.actionKey, record, action.confirm);
+                                }}
                               >
                                 {action.label}
                               </DropdownMenuItem>

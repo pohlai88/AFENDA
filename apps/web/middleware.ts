@@ -20,6 +20,7 @@ export { proxy as middleware } from "./proxy";
 
 export const config = {
   matcher: [
+    "/afenda",
     "/app/:path*",
     "/portal/:path*",
     "/finance/:path*",

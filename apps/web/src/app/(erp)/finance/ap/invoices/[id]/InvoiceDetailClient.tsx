@@ -8,24 +8,14 @@
  */
 
 import { useCallback, useState } from "react";
-import { GeneratedForm, FlowStepper, ActionLauncher, formatMoney } from "@afenda/ui";
+import { useRouter } from "next/navigation";
+import { GeneratedForm, FlowStepper, ActionLauncher, formatMoney, toast } from "@afenda/ui";
 import type { CapabilityResult } from "@afenda/contracts";
-import type { InvoiceRow } from "@/lib/api-client";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
-  return fetch(`${API_BASE}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "x-org-id": "demo",
-      "x-dev-user-email": "admin@demo.afenda",
-      ...init?.headers,
-    },
-    cache: "no-store",
-  });
-}
+import {
+  fetchInvoice,
+  transitionInvoice,
+  type InvoiceRow,
+} from "@/lib/api-client";
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceRow;
@@ -36,14 +26,13 @@ export default function InvoiceDetailClient({
   invoice: initialInvoice,
   capabilities,
 }: InvoiceDetailClientProps) {
+  const router = useRouter();
   const [record, setRecord] = useState(initialInvoice);
   const [submitting, setSubmitting] = useState(false);
 
   const reloadInvoice = useCallback(async () => {
     try {
-      const res = await apiFetch(`/v1/invoices/${record.id}`);
-      if (!res.ok) return;
-      const body = await res.json();
+      const body = await fetchInvoice(record.id);
       setRecord(body.data);
     } catch {
       // Non-fatal — the stale record remains visible
@@ -54,49 +43,52 @@ export default function InvoiceDetailClient({
     async (values: Record<string, unknown>) => {
       setSubmitting(true);
       try {
-        const res = await apiFetch("/v1/commands/submit-invoice", {
-          method: "POST",
-          body: JSON.stringify(values),
+        await transitionInvoice({
+          transitionKey: "invoice.submit",
+          invoiceId: record.id,
         });
-        if (!res.ok) throw new Error(`API ${res.status}`);
         void reloadInvoice();
-      } catch (err) {
-        console.error("Submit failed:", err);
+      } catch {
+        toast.error("Submit failed");
       } finally {
         setSubmitting(false);
       }
     },
-    [reloadInvoice],
+    [record.id, reloadInvoice],
   );
 
   const handleFlowTransition = useCallback(
     async (transitionKey: string) => {
       setSubmitting(true);
       try {
-        const TRANSITION_COMMANDS: Record<string, { endpoint: string; method: string }> = {
-          submit: { endpoint: "/v1/commands/submit-invoice", method: "POST" },
-          approve: { endpoint: "/v1/commands/approve-invoice", method: "POST" },
-          reject: { endpoint: "/v1/commands/reject-invoice", method: "POST" },
-          void: { endpoint: "/v1/commands/void-invoice", method: "POST" },
-          post: { endpoint: "/v1/commands/post-to-gl", method: "POST" },
-          markPaid: { endpoint: "/v1/commands/mark-paid", method: "POST" },
-        };
+        const isSupportedTransition = [
+          "invoice.submit",
+          "invoice.approve",
+          "invoice.reject",
+          "invoice.void",
+          "invoice.post",
+          "invoice.markPaid",
+        ].includes(transitionKey);
 
-        const cmd = TRANSITION_COMMANDS[transitionKey];
-        if (!cmd) {
-          console.warn(`No command mapping for transition: ${transitionKey}`);
+        if (!isSupportedTransition) {
+          toast.error("Unsupported transition");
           return;
         }
 
-        const res = await apiFetch(cmd.endpoint, {
-          method: cmd.method,
-          body: JSON.stringify({ invoiceId: record.id }),
+        await transitionInvoice({
+          transitionKey: transitionKey as
+            | "invoice.submit"
+            | "invoice.approve"
+            | "invoice.reject"
+            | "invoice.void"
+            | "invoice.post"
+            | "invoice.markPaid",
+          invoiceId: record.id,
         });
-        if (!res.ok) throw new Error(`API ${res.status}`);
 
         void reloadInvoice();
-      } catch (err) {
-        console.error(`Transition ${transitionKey} failed:`, err);
+      } catch {
+        toast.error("Transition failed");
       } finally {
         setSubmitting(false);
       }
@@ -107,13 +99,22 @@ export default function InvoiceDetailClient({
   const handleAction = useCallback(
     (actionKey: string, route?: string) => {
       if (route) {
-        window.location.href = route;
+        router.push(route);
       } else {
         void handleFlowTransition(actionKey);
       }
     },
-    [handleFlowTransition],
+    [handleFlowTransition, router],
   );
+
+  const actionKeys = [
+    "invoice.submit",
+    "invoice.approve",
+    "invoice.reject",
+    "invoice.void",
+    "invoice.post",
+    "invoice.markPaid",
+  ] as const;
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
@@ -130,7 +131,7 @@ export default function InvoiceDetailClient({
 
         {/* ── Inline actions ─────────────────────────────────────────────── */}
         <div className="flex gap-2">
-          {["submit", "approve", "reject", "void", "post", "markPaid"].map(
+          {actionKeys.map(
             (actionKey) => (
               <ActionLauncher
                 key={actionKey}
@@ -138,7 +139,7 @@ export default function InvoiceDetailClient({
                 actionKey={actionKey}
                 capabilities={capabilities}
                 onAction={handleAction}
-                variant={actionKey === "reject" || actionKey === "void" ? "destructive" : "default"}
+                variant={actionKey === "invoice.reject" || actionKey === "invoice.void" ? "destructive" : "default"}
                 size="sm"
               />
             ),
@@ -161,7 +162,7 @@ export default function InvoiceDetailClient({
         record={record as unknown as Record<string, unknown>}
         onSubmit={handleSubmit}
         onCancel={() => {
-          window.location.href = "/finance/ap/invoices";
+          router.push("/finance/ap/invoices");
         }}
         submitting={submitting}
       />

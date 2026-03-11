@@ -45,8 +45,9 @@ export function InviteClientPage({
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
+      const redirectTo = state.redirectTo;
       const timer = setTimeout(() => {
-        router.push(state.redirectTo);
+        router.push(redirectTo);
       }, 800);
       return () => clearTimeout(timer);
     }

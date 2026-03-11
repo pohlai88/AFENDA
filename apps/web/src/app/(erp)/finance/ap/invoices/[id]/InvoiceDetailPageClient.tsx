@@ -6,6 +6,7 @@
  * Sets sidecar content so CrudSapRail Audit/Evidence actions open the sidecar.
  */
 import { useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { RecordWorkspace, toast, useSidecarContent } from "@afenda/ui";
 import type { CapabilityResult } from "@afenda/contracts";
 import type { InvoiceRow } from "@/lib/api-client";
@@ -23,6 +24,7 @@ export default function InvoiceDetailPageClient({
   capabilities,
   breadcrumbs,
 }: InvoiceDetailPageClientProps) {
+  const router = useRouter();
   const { setSidecarContent, clearSidecarContent } = useSidecarContent();
 
   useEffect(() => {
@@ -54,8 +56,8 @@ export default function InvoiceDetailPageClient({
     // Navigate to new invoice form with copied data as query/state
     const params = new URLSearchParams();
     params.set("clone", invoice.id);
-    window.location.href = `/finance/ap/invoices/new?${params.toString()}`;
-  }, [invoice.id]);
+    router.push(`/finance/ap/invoices/new?${params.toString()}`);
+  }, [invoice.id, router]);
 
   const handleShare = useCallback(() => {
     const url = `${window.location.origin}/finance/ap/invoices/${invoice.id}`;

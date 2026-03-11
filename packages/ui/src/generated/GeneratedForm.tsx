@@ -41,6 +41,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../components/sheet";
+import { Paperclip, ClipboardList, Clock3 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ export function GeneratedForm({
   });
 
   // Merge server-side errors into form state
-  useMemo(() => {
+  useEffect(() => {
     if (errors) {
       for (const [key, message] of Object.entries(errors)) {
         form.setError(key, { type: "server", message });
@@ -316,9 +317,9 @@ export function GeneratedForm({
                     : undefined
                 }
               >
-                {panel.panelType === "evidence" && "📎 "}
-                {panel.panelType === "audit" && "📋 "}
-                {panel.panelType === "timeline" && "🕐 "}
+                {panel.panelType === "evidence" && <Paperclip className="mr-1 h-4 w-4" aria-hidden />}
+                {panel.panelType === "audit" && <ClipboardList className="mr-1 h-4 w-4" aria-hidden />}
+                {panel.panelType === "timeline" && <Clock3 className="mr-1 h-4 w-4" aria-hidden />}
                 {panel.label}
               </Button>
             ))}

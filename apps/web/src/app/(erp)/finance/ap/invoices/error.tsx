@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@afenda/ui";
 
@@ -32,8 +33,8 @@ export default function Error({
         <Button onClick={() => reset()} variant="default">
           Try again
         </Button>
-        <Button onClick={() => (window.location.href = "/finance/ap/invoices")} variant="outline">
-          Go to invoices
+        <Button variant="outline" asChild>
+          <Link href="/finance/ap/invoices">Go to invoices</Link>
         </Button>
       </div>
     </div>

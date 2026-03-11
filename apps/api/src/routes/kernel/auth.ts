@@ -658,12 +658,31 @@ export async function authRoutes(app: FastifyInstance) {
     },
     async (req) => {
       const body = VerifyMfaChallengeCommandSchema.parse(req.body);
+      app.log.info(
+        {
+          correlationId: req.correlationId,
+          route: "/v1/auth/verify-mfa-challenge",
+          codeLength: body.code.length,
+          hasMfaToken: Boolean(body.mfaToken),
+        },
+        "Auth MFA verify challenge request",
+      );
+
       const result = await verifyMfaChallenge(app.db, {
         mfaToken: body.mfaToken,
         code: body.code,
       });
 
       if (!result.ok) {
+        app.log.warn(
+          {
+            correlationId: req.correlationId,
+            route: "/v1/auth/verify-mfa-challenge",
+            errorCode: result.error,
+          },
+          "Auth MFA verify challenge failed",
+        );
+
         return {
           ok: false as const,
           code: result.error,
@@ -671,6 +690,15 @@ export async function authRoutes(app: FastifyInstance) {
           correlationId: req.correlationId,
         };
       }
+
+      app.log.info(
+        {
+          correlationId: req.correlationId,
+          route: "/v1/auth/verify-mfa-challenge",
+          principalId: result.principalId,
+        },
+        "Auth MFA verify challenge succeeded",
+      );
 
       return {
         ok: true as const,

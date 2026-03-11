@@ -6,6 +6,7 @@
  * Left: list. Right: detail for selected record.
  */
 import { useCallback, useState } from "react";
+import Link from "next/link";
 import {
   SplitWorkspace,
   GeneratedList,
@@ -15,20 +16,7 @@ import {
 } from "@afenda/ui";
 import type { SortState, PaginationState } from "@afenda/ui";
 import type { CapabilityResult } from "@afenda/contracts";
-import type { InvoiceRow, InvoiceListResponse } from "@/lib/api-client";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-async function apiFetch(path: string): Promise<Response> {
-  return fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "x-org-id": "demo",
-      "x-dev-user-email": "admin@demo.afenda",
-    },
-    cache: "no-store",
-  });
-}
+import { fetchInvoices, type InvoiceRow } from "@/lib/api-client";
 
 interface InvoiceSplitClientProps {
   initialData: InvoiceRow[];
@@ -57,12 +45,7 @@ export default function InvoiceSplitClient({
   const selectedRecord = data.find((r) => r.id === selectedRecordIds[0]);
 
   const loadInvoices = useCallback(async (cursor?: string) => {
-    const query = new URLSearchParams();
-    if (cursor) query.set("cursor", cursor);
-    query.set("limit", "20");
-    const res = await apiFetch(`/v1/invoices${query.toString() ? `?${query}` : ""}`);
-    if (!res.ok) return;
-    const body: InvoiceListResponse = await res.json();
+    const body = await fetchInvoices({ cursor, limit: 20 });
     setData(body.data);
     setCurrentCursor(cursor);
     setPagination({
@@ -142,7 +125,7 @@ export default function InvoiceSplitClient({
         <dd>{selectedRecord.dueDate ?? "—"}</dd>
       </dl>
       <Button variant="outline" size="sm" asChild>
-        <a href={`/finance/ap/invoices/${selectedRecord.id}`}>Open full detail</a>
+        <Link href={`/finance/ap/invoices/${selectedRecord.id}`}>Open full detail</Link>
       </Button>
     </div>
   ) : null;

@@ -502,6 +502,66 @@ export async function createInvoice(command: {
   return res.json();
 }
 
+/** Execute an invoice workflow transition command. */
+export async function transitionInvoice(command: {
+  transitionKey:
+    | "invoice.submit"
+    | "invoice.approve"
+    | "invoice.reject"
+    | "invoice.void"
+    | "invoice.post"
+    | "invoice.markPaid";
+  invoiceId: string;
+}): Promise<void> {
+  const endpointByTransition: Record<typeof command.transitionKey, string> = {
+    "invoice.submit": "/v1/commands/submit-invoice",
+    "invoice.approve": "/v1/commands/approve-invoice",
+    "invoice.reject": "/v1/commands/reject-invoice",
+    "invoice.void": "/v1/commands/void-invoice",
+    "invoice.post": "/v1/commands/post-to-gl",
+    "invoice.markPaid": "/v1/commands/mark-paid",
+  };
+
+  const res = await apiFetch(endpointByTransition[command.transitionKey], {
+    method: "POST",
+    body: JSON.stringify({ invoiceId: command.invoiceId }),
+  });
+
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Invoice transition failed (${res.status})`);
+  }
+}
+
+/** Execute AP invoice bulk actions. */
+export async function bulkInvoiceAction(command: {
+  actionKey: "bulk-approve" | "bulk-reject" | "bulk-void";
+  invoiceIds: string[];
+  reason?: string;
+}): Promise<{ ok: number; failed: number }> {
+  const endpointByAction: Record<typeof command.actionKey, string> = {
+    "bulk-approve": "/v1/invoices/bulk-approve",
+    "bulk-reject": "/v1/invoices/bulk-reject",
+    "bulk-void": "/v1/invoices/bulk-void",
+  };
+
+  const res = await apiFetch(endpointByAction[command.actionKey], {
+    method: "POST",
+    body: JSON.stringify({
+      idempotencyKey: crypto.randomUUID(),
+      invoiceIds: command.invoiceIds,
+      ...(command.reason ? { reason: command.reason } : {}),
+    }),
+  });
+
+  const json = (await res.json().catch(() => null)) as { data?: { ok: number; failed: number } } | null;
+  if (!res.ok || !json?.data) {
+    return { ok: 0, failed: command.invoiceIds.length };
+  }
+
+  return { ok: json.data.ok, failed: json.data.failed };
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 import type { SettingsResponse, SettingKey } from "@afenda/contracts";

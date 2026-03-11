@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   GeneratedList,
   Button,
@@ -28,7 +29,11 @@ import {
 } from "@afenda/ui";
 import type { SortState, PaginationState, ActiveFilter } from "@afenda/ui";
 import type { CapabilityResult } from "@afenda/contracts";
-import type { InvoiceRow, InvoiceListResponse } from "@/lib/api-client";
+import {
+  fetchInvoices,
+  bulkInvoiceAction,
+  type InvoiceRow,
+} from "@/lib/api-client";
 import {
   getExportColumns,
   downloadCsv,
@@ -36,19 +41,6 @@ import {
   exportToPdf,
 } from "@/lib/export-utils";
 import { BulkActionConfirmDialog } from "@/components/BulkActionConfirmDialog";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-async function apiFetch(path: string): Promise<Response> {
-  return fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "x-org-id": "demo",
-      "x-dev-user-email": "admin@demo.afenda",
-    },
-    cache: "no-store",
-  });
-}
 
 interface InvoiceListClientProps {
   initialData: InvoiceRow[];
@@ -63,6 +55,7 @@ export default function InvoiceListClient({
   initialHasMore,
   capabilities,
 }: InvoiceListClientProps) {
+  const router = useRouter();
   const [data, setData] = useState<InvoiceRow[]>(initialData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,16 +98,12 @@ export default function InvoiceListClient({
       setError(null);
       const limit = overrideLimit ?? pageSize;
       try {
-        const query = new URLSearchParams();
-        if (cursor) query.set("cursor", cursor);
-        query.set("limit", String(limit));
         const statusFilter = activeFilters.find((f) => f.fieldKey === "status");
-        if (statusFilter) query.set("status", statusFilter.value);
-        const qs = query.toString();
-
-        const res = await apiFetch(`/v1/invoices${qs ? `?${qs}` : ""}`);
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const body: InvoiceListResponse = await res.json();
+        const body = await fetchInvoices({
+          cursor,
+          limit,
+          status: statusFilter?.value,
+        });
 
         setData(body.data);
         setCurrentCursor(cursor);
@@ -156,12 +145,12 @@ export default function InvoiceListClient({
     (actionKey: string, row: Record<string, unknown>) => {
       const id = row.id as string;
       if (actionKey === "view" || actionKey === "edit") {
-        window.location.href = `/finance/ap/invoices/${id}`;
+        router.push(`/finance/ap/invoices/${id}`);
         return;
       }
       // TODO: Implement additional row actions (duplicate, export, etc.)
     },
-    [],
+    [router],
   );
 
   if (error) {
@@ -227,8 +216,8 @@ export default function InvoiceListClient({
 
   const handleRowActivate = useCallback((record: Record<string, unknown>) => {
     const id = record.id as string;
-    if (id) window.location.href = `/finance/ap/invoices/${id}`;
-  }, []);
+    if (id) router.push(`/finance/ap/invoices/${id}`);
+  }, [router]);
 
   const handlePageSizeChange = useCallback(
     (value: string) => {
@@ -322,35 +311,20 @@ export default function InvoiceListClient({
       reason?: string,
     ): Promise<{ ok: number; failed: number }> => {
       const ids = records.map((r) => r.id as string).filter(Boolean);
-      const endpoints: Record<string, string> = {
-        "bulk-approve": "/v1/invoices/bulk-approve",
-        "bulk-reject": "/v1/invoices/bulk-reject",
-        "bulk-void": "/v1/invoices/bulk-void",
-      };
-      const endpoint = endpoints[actionKey];
-      if (!endpoint) return { ok: 0, failed: ids.length };
-
-      const body: Record<string, unknown> = {
-        idempotencyKey: crypto.randomUUID(),
-        invoiceIds: ids,
-      };
-      if (reason) body.reason = reason;
+      if (
+        actionKey !== "bulk-approve" &&
+        actionKey !== "bulk-reject" &&
+        actionKey !== "bulk-void"
+      ) {
+        return { ok: 0, failed: ids.length };
+      }
 
       try {
-        const res = await fetch(`${API_BASE}${endpoint}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-org-id": "demo",
-            "x-dev-user-email": "admin@demo.afenda",
-          },
-          body: JSON.stringify(body),
+        return bulkInvoiceAction({
+          actionKey,
+          invoiceIds: ids,
+          reason,
         });
-        const json = (await res.json()) as { data?: { ok: number; failed: number } };
-        if (res.ok && json.data) {
-          return { ok: json.data.ok, failed: json.data.failed };
-        }
-        return { ok: 0, failed: ids.length };
       } catch {
         return { ok: 0, failed: ids.length };
       }
@@ -432,6 +406,7 @@ export default function InvoiceListClient({
           entityKey="finance.ap_invoice"
           capabilities={capabilities}
           data={data as unknown as Record<string, unknown>[]}
+          isLoading={loading}
           sort={sort}
           pagination={pagination}
           filters={activeFilters}
@@ -446,6 +421,12 @@ export default function InvoiceListClient({
           visibleColumnKeys={effectiveVisibleKeys}
           keyboardNav
           onRowActivate={handleRowActivate}
+          emptyState={{
+            title: "No invoices match this view",
+            description: "Try a different filter or create a new invoice.",
+            actionLabel: "Create invoice",
+            onAction: () => router.push("/finance/ap/invoices/new"),
+          }}
         />
       </OperationalListWorkspace>
     </>
