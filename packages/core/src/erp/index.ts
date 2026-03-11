@@ -3,3 +3,4 @@
  */
 export * from "./finance/index";
 export * from "./purchasing/index";
+export * from "./hr/index";

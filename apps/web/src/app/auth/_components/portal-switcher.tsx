@@ -38,7 +38,7 @@ const SWITCHER_PANEL_CLASS =
 interface PortalSwitcherTriggerProps
   extends React.ComponentPropsWithoutRef<typeof Button> {
   label: string;
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 }
 
 const PortalSwitcherTrigger = React.forwardRef<
@@ -60,14 +60,14 @@ const PortalSwitcherTrigger = React.forwardRef<
       <span className="flex min-w-0 items-center gap-3">
         <Icon
           className="h-4 w-4 shrink-0 text-muted-foreground"
-          aria-hidden
+          aria-hidden={true}
         />
         <span className="truncate text-foreground">{label}</span>
       </span>
 
       <ChevronsUpDown
         className="h-4 w-4 shrink-0 text-muted-foreground/70"
-        aria-hidden
+        aria-hidden={true}
       />
     </Button>
   );

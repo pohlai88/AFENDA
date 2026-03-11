@@ -34,9 +34,9 @@ export function ResetPasswordClientPage({
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
-      const redirectTo = state.redirectTo;
+      const redirectPath = state.redirectTo;
       const timer = setTimeout(() => {
-        router.push(redirectTo);
+        router.push(redirectPath);
       }, 800);
       return () => clearTimeout(timer);
     }
