@@ -10,6 +10,18 @@ It is structured as:
 
 This follows the rollout shape already implied in your HRM charter and domain design docs.  
 
+## Implementation Note (2026-03-13)
+
+Use active AFENDA architecture paths for all new implementation:
+
+- `packages/contracts/src/erp/hr/`
+- `packages/db/src/schema/erp/hrm/`
+- `packages/core/src/erp/hr/`
+- `apps/api/src/routes/erp/hr/`
+- `apps/web/src/app/(erp)/hr/`
+
+Legacy path examples in this document (`packages/domain`, `apps/api/src/modules`) are conceptual only and should not be used for new files.
+
 ---
 
 # 1. AFENDA HRM Parent Domain Map

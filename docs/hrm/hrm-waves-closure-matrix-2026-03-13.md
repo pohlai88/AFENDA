@@ -10,31 +10,37 @@ All six HRM waves are closed for HR scope.
 ## Wave-by-wave status
 
 1. Wave 1
+
 - Status: DONE
 - File: `docs/hrm/hrm-wave1.scaffold.md`
 - Notes: Web delivery, seed data, test closure, and sign-off marked complete.
 
 2. Wave 2
+
 - Status: DONE
 - File: `docs/hrm/hrm-wave2.scaffold.md`
 - Notes: Repository parity and lifecycle route coverage complete.
 
 3. Wave 3
+
 - Status: DONE
 - File: `docs/hrm/hrm-wave3.scaffold.md`
 - Notes: Lifecycle and read-model hardening complete; stale open-items note removed.
 
 4. Wave 4
+
 - Status: DONE
 - File: `docs/hrm/hrm-wave4.scaffold.md`
 - Notes: Recruitment/offboarding chain complete; stale cross-wave blocker note normalized.
 
 5. Wave 5
+
 - Status: DONE
 - File: `docs/hrm/hrm-wave5.scaffold.md`
 - Notes: Write/read parity and Wave 5 invariants complete; no HRM blocking open items.
 
 6. Wave 6
+
 - Status: DONE (closure update)
 - File: `docs/hrm/hrm-wave6.scaffold.md`
 - Notes: Superseding closure section added; legacy scaffold content retained for traceability.
@@ -51,3 +57,16 @@ All six HRM waves are closed for HR scope.
 
 - No HRM Wave 1-6 implementation blockers remain.
 - Optional platform hardening (outside HRM wave scope) may still be run separately.
+
+## Continuation policy
+
+Use the same strict closure discipline for all next waves:
+
+1. Close all discovered gaps regardless of blocking status.
+2. Require implementation + tests + evidence before marking DONE.
+3. Carry forward non-blocking findings only as explicit remediation entries with validation commands.
+
+## Next execution docs
+
+- Wave 7 scaffold: `docs/hrm/hrm-wave7.scaffold.md`
+- Remaining roadmap: `docs/hrm/hrm-wave8-plus-roadmap.md`
