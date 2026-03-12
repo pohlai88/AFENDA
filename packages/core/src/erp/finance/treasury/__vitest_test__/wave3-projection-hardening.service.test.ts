@@ -15,6 +15,7 @@ const mockState = vi.hoisted(() => ({
   },
   activeTx: null as Record<string, unknown> | null,
   auditEntries: [] as Array<Record<string, unknown>>,
+  normalizeToBase: vi.fn(),
 }));
 
 vi.mock("@afenda/db", () => ({
@@ -40,6 +41,10 @@ vi.mock("../../../../kernel/governance/audit/audit", () => ({
     mockState.auditEntries.push(entry);
     return fn(mockState.activeTx ?? _db);
   }),
+}));
+
+vi.mock("../fx-normalization.service", () => ({
+  normalizeToBase: mockState.normalizeToBase,
 }));
 
 import {
@@ -118,14 +123,37 @@ function createDb(selectQueue: unknown[][]) {
 beforeEach(() => {
   mockState.activeTx = null;
   mockState.auditEntries.length = 0;
+  mockState.normalizeToBase.mockReset();
+  mockState.normalizeToBase.mockImplementation(
+    async (_db: unknown, params: { amountMinor: string; fromCurrencyCode: string; toCurrencyCode: string }) => ({
+      ok: true,
+      data: {
+        normalizedMinor: params.amountMinor,
+        fxRateSnapshotId: params.fromCurrencyCode === params.toCurrencyCode ? null : "fx-1",
+      },
+    }),
+  );
 });
 
 describe("Wave 3 projection hardening", () => {
-  it("fails cash snapshot when currencies require FX normalization", async () => {
-    const { db } = createDb([
+  it("normalizes mixed-currency cash snapshot feeds when FX exists", async () => {
+    const { db, tx } = createDb([
       [{ id: "ba-1", currencyCode: "EUR" }],
-      [],
+      [{
+        id: "feed-1",
+        sourceType: "ar_expected_receipt",
+        bankAccountId: null,
+        currencyCode: "EUR",
+        amountMinor: "10",
+        dueDate: "2026-03-12",
+        direction: "inflow",
+      }],
     ]);
+    mockState.activeTx = tx;
+    mockState.normalizeToBase.mockResolvedValueOnce({
+      ok: true,
+      data: { normalizedMinor: "11", fxRateSnapshotId: "fx-1" },
+    });
 
     const result = await requestCashPositionSnapshot(
       db as never,
@@ -140,19 +168,23 @@ describe("Wave 3 projection hardening", () => {
       },
     );
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.code).toBe("TREASURY_FX_NORMALIZATION_REQUIRED");
-    }
+    expect(result.ok).toBe(true);
   });
 
-  it("fails liquidity forecast when source feed has mixed currency", async () => {
+  it("returns not-found when mixed-currency forecast lacks FX rate coverage", async () => {
     const { db } = createDb([
       [{ id: "sc-1", assumptionSetVersion: "v1", assumptionsJson: {} }],
       [{ id: "snap-1", totalProjectedAvailableMinor: "0" }],
       [],
       [{ id: "feed-1", dueDate: "2026-03-12", direction: "inflow", amountMinor: "10", currencyCode: "EUR" }],
     ]);
+    mockState.normalizeToBase.mockResolvedValueOnce({
+      ok: false,
+      error: {
+        code: "TREASURY_FX_RATE_SNAPSHOT_NOT_FOUND",
+        message: "FX rate snapshot not found",
+      },
+    });
 
     const result = await requestLiquidityForecast(
       db as never,
@@ -173,7 +205,7 @@ describe("Wave 3 projection hardening", () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.code).toBe("TREASURY_FX_NORMALIZATION_REQUIRED");
+      expect(result.error.code).toBe("TREASURY_FX_RATE_SNAPSHOT_NOT_FOUND");
     }
   });
 

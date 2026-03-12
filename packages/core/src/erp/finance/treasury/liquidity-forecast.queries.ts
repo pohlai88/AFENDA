@@ -47,6 +47,10 @@ export interface LiquidityForecastBucketRow {
   bucketEndDate: string;
   expectedInflowsMinor: string;
   expectedOutflowsMinor: string;
+  nativeExpectedInflowsMinor: string;
+  nativeExpectedOutflowsMinor: string;
+  normalizedExpectedInflowsMinor: string;
+  normalizedExpectedOutflowsMinor: string;
   openingBalanceMinor: string;
   closingBalanceMinor: string;
   varianceMinor: string | null;

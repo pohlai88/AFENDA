@@ -41,6 +41,7 @@ import { handleTreasuryCashPositionEvent } from "./jobs/erp/finance/treasury/han
 import { handleTreasuryLiquidityForecastEvent } from "./jobs/erp/finance/treasury/handle-liquidity-forecast.js";
 import { handleTreasuryForecastVarianceEvent } from "./jobs/erp/finance/treasury/handle-forecast-variance.js";
 import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treasury/handle-liquidity-source-feed.js";
+import { handleTreasuryFxRateSnapshotEvent } from "./jobs/erp/finance/treasury/handle-fx-rate-snapshot.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -102,6 +103,7 @@ const taskList = {
   handle_treasury_liquidity_forecast_event: handleTreasuryLiquidityForecastEvent,
   handle_treasury_forecast_variance_event: handleTreasuryForecastVarianceEvent,
   handle_treasury_liquidity_source_feed_event: handleTreasuryLiquiditySourceFeedEvent,
+  handle_treasury_fx_rate_snapshot_event: handleTreasuryFxRateSnapshotEvent,
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
 } as const;

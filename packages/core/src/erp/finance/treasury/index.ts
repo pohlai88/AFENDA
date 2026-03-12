@@ -23,6 +23,9 @@ import * as rawLiquidityForecastService from "./liquidity-forecast.service";
 import * as rawLiquidityForecastQueries from "./liquidity-forecast.queries";
 import * as rawLiquiditySourceFeedService from "./liquidity-source-feed.service";
 import * as rawLiquiditySourceFeedQueries from "./liquidity-source-feed.queries";
+import * as rawFxNormalizationService from "./fx-normalization.service";
+import * as rawFxRateSnapshotService from "./fx-rate-snapshot.service";
+import * as rawFxRateSnapshotQueries from "./fx-rate-snapshot.queries";
 import * as rawLineageQueries from "./lineage.queries";
 import * as rawForecastVarianceService from "./forecast-variance.service";
 import * as rawForecastVarianceQueries from "./forecast-variance.queries";
@@ -132,6 +135,23 @@ export type {
 } from "./liquidity-source-feed.queries";
 
 export type {
+	FxNormalizationServiceError,
+	FxNormalizationServiceResult,
+	NormalizeToBaseParams,
+} from "./fx-normalization.service";
+
+export type {
+	FxRateSnapshotServiceError,
+	FxRateSnapshotServiceResult,
+	UpsertFxRateSnapshotParams,
+} from "./fx-rate-snapshot.service";
+
+export type {
+	FxRateSnapshotRow,
+	FxRateSnapshotListParams,
+} from "./fx-rate-snapshot.queries";
+
+export type {
 	CashPositionSnapshotLineageRow,
 	LiquidityForecastBucketLineageRow,
 } from "./lineage.queries";
@@ -165,6 +185,9 @@ const instrumented = instrumentService("treasury", {
 	...rawLiquidityForecastQueries,
 	...rawLiquiditySourceFeedService,
 	...rawLiquiditySourceFeedQueries,
+	...rawFxNormalizationService,
+	...rawFxRateSnapshotService,
+	...rawFxRateSnapshotQueries,
 	...rawLineageQueries,
 	...rawForecastVarianceService,
 	...rawForecastVarianceQueries,
@@ -221,6 +244,9 @@ export const {
 	listLiquidityForecastBuckets,
 	upsertLiquiditySourceFeed,
 	listLiquiditySourceFeeds,
+	normalizeToBase,
+	upsertFxRateSnapshot,
+	listFxRateSnapshots,
 	listCashPositionSnapshotLineage,
 	listLiquidityForecastBucketLineage,
 	// Wave 3.3 — Forecast Variance

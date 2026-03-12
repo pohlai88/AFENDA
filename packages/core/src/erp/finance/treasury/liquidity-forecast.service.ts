@@ -20,6 +20,7 @@ import type {
 } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
 import { buildLiquidityForecastBuckets } from "./calculators/liquidity-forecast";
+import { normalizeToBase } from "./fx-normalization.service";
 
 export type LiquidityForecastServiceError = {
   code: string;
@@ -71,6 +72,15 @@ function enumerateDailyBucketDates(startDate: string, endDate: string): Array<{ 
 
 function addMinor(a: string, b: string): string {
   return (BigInt(a) + BigInt(b)).toString();
+}
+
+interface NormalizedForecastFeedRow {
+  id: string;
+  dueDate: string;
+  direction: "inflow" | "outflow";
+  originalCurrencyCode: string;
+  normalizedAmountMinor: string;
+  fxRateSnapshotId: string | null;
 }
 
 export async function createLiquidityScenario(
@@ -291,28 +301,39 @@ export async function requestLiquidityForecast(
       ),
     );
 
-  if (feedRows.some((row) => row.currencyCode !== params.baseCurrencyCode)) {
-    return {
-      ok: false,
-      error: {
-        code: "TREASURY_FX_NORMALIZATION_REQUIRED",
-        message:
-          "Liquidity forecast requires FX normalization when source currencies differ from base currency",
-        meta: {
-          baseCurrencyCode: params.baseCurrencyCode,
-        },
-      },
-    };
+  const normalizedFeedRows: NormalizedForecastFeedRow[] = [];
+  for (const row of feedRows) {
+    const normalization = await normalizeToBase(db, {
+      orgId,
+      rateDate: row.dueDate,
+      fromCurrencyCode: row.currencyCode,
+      toCurrencyCode: params.baseCurrencyCode,
+      amountMinor: row.amountMinor,
+      sourceVersion: params.sourceVersion,
+    });
+
+    if (!normalization.ok) {
+      return { ok: false, error: normalization.error };
+    }
+
+    normalizedFeedRows.push({
+      id: row.id,
+      dueDate: row.dueDate,
+      direction: row.direction,
+      originalCurrencyCode: row.currencyCode,
+      normalizedAmountMinor: normalization.data.normalizedMinor,
+      fxRateSnapshotId: normalization.data.fxRateSnapshotId,
+    });
   }
 
   const feedTotalsByDate = new Map<string, { inflow: string; outflow: string }>();
   const feedSourceIdsByDate = new Map<string, string[]>();
-  for (const row of feedRows) {
+  for (const row of normalizedFeedRows) {
     const current = feedTotalsByDate.get(row.dueDate) ?? { inflow: "0", outflow: "0" };
     if (row.direction === "inflow") {
-      current.inflow = addMinor(current.inflow, row.amountMinor);
+      current.inflow = addMinor(current.inflow, row.normalizedAmountMinor);
     } else {
-      current.outflow = addMinor(current.outflow, row.amountMinor);
+      current.outflow = addMinor(current.outflow, row.normalizedAmountMinor);
     }
     feedTotalsByDate.set(row.dueDate, current);
 
@@ -321,7 +342,8 @@ export async function requestLiquidityForecast(
     feedSourceIdsByDate.set(row.dueDate, feedIds);
   }
 
-  const feedSourceIds = feedRows.map((row) => row.id);
+  const feedSourceIds = normalizedFeedRows.map((row) => row.id);
+  const fxNormalizedFeedCount = normalizedFeedRows.filter((row) => row.fxRateSnapshotId).length;
   const bucketSourceIdsByDate: Record<string, string[]> = {};
 
   const dateBuckets = enumerateDailyBucketDates(params.startDate, params.endDate);
@@ -350,6 +372,7 @@ export async function requestLiquidityForecast(
       sourceVersion: params.sourceVersion,
       sourceFeedCount: String(feedSourceIds.length),
       sourceFeedIds: feedSourceIds,
+      fxNormalizedFeedCount: String(fxNormalizedFeedCount),
       bucketSourceIdsByDate,
     },
   };
@@ -391,6 +414,10 @@ export async function requestLiquidityForecast(
           bucketEndDate: dateBuckets[idx]?.endDate ?? params.endDate,
           expectedInflowsMinor: bucket.expectedInflowsMinor,
           expectedOutflowsMinor: bucket.expectedOutflowsMinor,
+          nativeExpectedInflowsMinor: bucket.expectedInflowsMinor,
+          nativeExpectedOutflowsMinor: bucket.expectedOutflowsMinor,
+          normalizedExpectedInflowsMinor: bucket.expectedInflowsMinor,
+          normalizedExpectedOutflowsMinor: bucket.expectedOutflowsMinor,
           openingBalanceMinor: bucket.openingBalanceMinor,
           closingBalanceMinor: bucket.closingBalanceMinor,
           varianceMinor: null,
@@ -425,6 +452,7 @@ export async function requestLiquidityForecast(
         cashPositionSnapshotId: params.cashPositionSnapshotId,
         sourceLineage: {
           sourceFeedIds: feedSourceIds,
+          fxNormalizedFeedCount,
           bucketSourceIdsByDate,
         },
       },

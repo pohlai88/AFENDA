@@ -24,5 +24,7 @@ export * from "./reconciliation.calculator";
 export * from "./cash-position";
 // Sprint 3.2: liquidity forecast engine
 export * from "./liquidity-forecast";
+// Wave 3.1: FX normalization seam
+export * from "./fx-normalization";
 // Sprint 3.3: forecast variance backtesting
 export * from "./forecast-variance";

@@ -77,6 +77,8 @@ export const PermissionValues = [
   "treas.liquidity-forecast.manage",
   "treas.liquidity-source-feed.read",
   "treas.liquidity-source-feed.manage",
+  "treas.fx-rate.read",
+  "treas.fx-rate.manage",
   "treas.forecast-variance.read",
 
   // GL (General Ledger)
@@ -133,6 +135,8 @@ export const PermissionValues = [
   "treasury.payment.approve",
   "treasury.payment.release",
   "treasury.cash-position.read",
+  "treasury.fx-rate.read",
+  "treasury.fx-rate.manage",
 ] as const;
 
 export type Permission = (typeof PermissionValues)[number];

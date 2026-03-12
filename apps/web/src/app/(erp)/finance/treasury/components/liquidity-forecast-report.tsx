@@ -431,14 +431,21 @@ export function LiquidityForecastReport() {
                     <TableCell>{row.closingLiquidityMinor}</TableCell>
                     <TableCell className="max-w-[220px] truncate font-mono text-xs">{row.cashPositionSnapshotId}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant={selectedForecastId === row.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => void onViewBuckets(row.id)}
-                      >
-                        Buckets
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant={selectedForecastId === row.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => void onViewBuckets(row.id)}
+                        >
+                          Buckets
+                        </Button>
+                        <Button asChild type="button" variant="outline" size="sm">
+                          <Link href={`/finance/treasury/liquidity-forecast/${row.id}/lineage`}>
+                            Lineage
+                          </Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

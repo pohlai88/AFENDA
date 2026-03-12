@@ -1,46 +1,53 @@
-> Treasury Program Status (Updated: 2026-03-12)
+﻿> Treasury Program Status (Updated: 2026-03-12 | Audit + Dev: 2026-03-12)
 >
 > - Wave 1: Fully implemented
 > - Wave 2: Fully implemented
-> - Wave 3: In progress (Sprints 3.1, 3.2, 3.3 implemented + lineage persistence hardening)
+> - Wave 3: Functionally complete in repo; local migration verified; staging/production rollout pending
 
-## Wave 3 Current Status
+## Wave 3 Verified Status (Audit + Dev: 2026-03-12)
 
-- Sprint 3.1 (Cash Position Snapshot): Implemented
-- Sprint 3.2 (Liquidity Scenario + Forecast Baseline): Implemented
-- Sprint 3.3 (Forecast Variance / Backtesting): Implemented
-- Post 3.3 lineage hardening (persistent lineage tables + API query routes + web visibility): Implemented
-- Validation Status: Typechecks and full `pnpm check:all` gates passing at latest checkpoint
+| Layer | Status | Notes |
+|-------|--------|-------|
+| Contracts | COMPLETE | All entities + commands barrel-exported (incl. liquidity-lineage, forecast-variance, liquidity-source-feed) |
+| DB Schema | COMPLETE | All tables defined and exported in index.ts |
+| DB Migration | COMPLETE (file) | 0043_treasury_lineage.sql covers Wave 3 tables/enums |
+| Core Services | COMPLETE | snapshot, forecast, scenario, variance, and source-feed services implemented |
+| Core Queries | COMPLETE | Snapshot/forecast/lineage query functions implemented |
+| API Routes | COMPLETE | Wave 3.1/3.2/3.3 + lineage + source-feed routes registered |
+| Worker | COMPLETE | cash-position, liquidity-forecast, variance, source-feed handlers registered |
+| Web Pages | COMPLETE | cash-position, liquidity-forecast, variance, plus dedicated lineage drill-down pages |
+| Web Components | COMPLETE | CashPositionDashboard, LiquidityForecastReport, LineageTable |
+| Web Actions | COMPLETE | lineage action wrappers added for snapshot + forecast routes |
+| Unit Tests | COMPLETE | dedicated tests added: cash-position-snapshot, liquidity-forecast, forecast-variance, liquidity-source-feed |
+| Lineage Query Tests | COMPLETE | `lineage.queries.test.ts` added |
+| Validation | COMPLETE (repo + local DB) | targeted treasury tests pass, `@afenda/core` + `@afenda/web` typecheck pass, and local Docker Postgres migration verified |
+| Local migration | COMPLETE | `pnpm db:migrate` applied successfully against local Docker Postgres (`afenda_dev`) and Wave 3 tables verified |
+| Migration applied to env | UNVERIFIED | staging/production application of 0043 still needs execution/confirmation |
 
-## Wave 3 Remaining
+## Wave 3 Newly Completed In This Dev Pass
 
-- Add and apply DB migration for newly introduced lineage tables across environments
-- Add explicit integration tests for lineage read endpoints and lineage table writes
+- Added `cash-position-snapshot.service.test.ts`
+- Added `liquidity-forecast.service.test.ts`
+- Added `forecast-variance.service.test.ts`
+- Added `liquidity-source-feed.service.test.ts`
+- Added `lineage.queries.test.ts`
+- Added `apps/web/src/app/(erp)/finance/treasury/components/lineage-table.tsx`
+- Added `apps/web/src/app/(erp)/finance/treasury/cash-position/[id]/lineage/page.tsx`
+- Added `apps/web/src/app/(erp)/finance/treasury/liquidity-forecast/[id]/lineage/page.tsx`
+- Added lineage action wrappers in `apps/web/src/app/(erp)/finance/treasury/actions.ts`
+- Added lineage links from snapshot/forecast list rows to dedicated lineage pages
+- Applied `pnpm db:migrate` successfully to local Docker Postgres (`afenda_dev`)
+- Verified local Wave 3 tables: `cash_position_snapshot`, `cash_position_snapshot_line`, `cash_position_snapshot_lineage`, `liquidity_forecast`, `liquidity_forecast_bucket`, `liquidity_forecast_bucket_lineage`, `liquidity_scenario`, `liquidity_source_feed`, `forecast_variance`
 
-## Wave 3 Recently Completed (Post 3.3)
+## Wave 3 Remaining Backlog
 
-- AP due-payments projection feed into treasury liquidity inputs
-- AR expected-receipts projection feed into treasury liquidity inputs
-- Liquidity source feed upsert/query path wired across contracts/db/core/api/worker/web actions
-- FX normalization seam added for snapshot/forecast (mixed-currency inputs now fail fast with explicit error)
-- Snapshot/forecast lineage hardening with source-row IDs in audit/outbox metadata
-- Persistent lineage entities/tables/queries added (`cash_position_snapshot_lineage`, `liquidity_forecast_bucket_lineage`)
-- Snapshot/forecast service write paths now persist lineage rows
-- Treasury API lineage endpoints added (`/treasury/cash-position-snapshots/:id/lineage`, `/treasury/liquidity-forecasts/:id/lineage`)
-- Treasury web UI now surfaces snapshot/forecast lineage views
-- Expanded Wave 3 test coverage for projection hardening, reproducibility, and FX seam behavior
+### R3 - Migration Environment Application (HIGH - production readiness)
 
-Absolutely. Below is the **Wave 3 full drop-in scaffold** for AFENDA Treasury, aligned to your Wave 3 manifest and delivery intent: **Sprint 3.1 cash position snapshot** and **Sprint 3.2 liquidity forecast baseline**. This follows your Treasury multi-wave plan, including the exact file classes you listed for Wave 3. 
+- Run `pnpm db:migrate` to apply `0043_treasury_lineage.sql` on staging and production
+- Verify Wave 3 tables/enums exist in target databases
+- Update `docs/production-readiness.md` with migration rollout completion
 
-This Wave 3 is where Treasury starts becoming a **truth engine for liquidity**, not just a payments admin surface. It should answer:
-
-* what cash do we have now
-* what cash is committed but not yet settled
-* what inflows/outflows are expected
-* what assumptions produced the forecast
-* whether the same inputs reproduce the same output
-
-That matches your stated Wave 3 outcome and exit criteria: snapshot reproducibility, org/currency rollups, forecast traceability, and deterministic outputs. 
+Local development migration is complete. Remaining scope is staging/production rollout only.
 
 ---
 

@@ -18,3 +18,4 @@ export * from "./handle-cash-position";
 export * from "./handle-liquidity-forecast";
 export * from "./handle-forecast-variance";
 export * from "./handle-liquidity-source-feed";
+export * from "./handle-fx-rate-snapshot";

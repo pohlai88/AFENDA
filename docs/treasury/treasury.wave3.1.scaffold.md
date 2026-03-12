@@ -1,3 +1,37 @@
+> Wave 3.1 Status (Updated: 2026-03-12)
+>
+> - Wave 1 implementation: COMPLETE
+> - Wave 2 implementation: COMPLETE
+> - Wave 3 implementation: COMPLETE
+> - Liquidity source feed: COMPLETE in repo
+> - Forecast variance/backtesting: COMPLETE in repo
+> - FX rate snapshot seam: COMPLETE in repo and migrated locally
+> - Snapshot FX integration: COMPLETE in repo
+> - Forecast FX integration: COMPLETE in repo
+> - FX snapshot read/write workflows: COMPLETE (core + API + web)
+> - Dual native/base amount persistence: COMPLETE in repo and migrated locally
+> - Validation: COMPLETE (treasury targeted tests + `@afenda/core`, `@afenda/api`, `@afenda/web` typecheck)
+> - Wave 3.1 closure state: CODE COMPLETE
+
+## Verified Wave 3.1 Status
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Contracts | COMPLETE | `fx-rate-snapshot.entity.ts`, liquidity source feed, and forecast variance contracts are present and exported |
+| DB schema | COMPLETE | `fx_rate_snapshot`, liquidity source feed, and forecast variance tables exist in schema |
+| Local migration | COMPLETE | `0044_treasury_fx_rate_snapshot.sql` applied successfully to local Docker Postgres |
+| Core FX service | COMPLETE | `normalizeToBase` resolves same-currency passthrough, FX lookup, and not-found errors |
+| Cash snapshot flow | COMPLETE | Mixed-currency liquidity feeds now normalize into base currency totals instead of fail-fast rejection |
+| Forecast flow | COMPLETE | Mixed-currency liquidity feeds now normalize into base currency bucket totals instead of fail-fast rejection |
+| FX snapshot workflows | COMPLETE | Upsert/list service + API routes + web admin page (`/finance/treasury/fx-rates`) are implemented |
+| Variance flow | COMPLETE | Forecast variance service, worker hooks, queries, and UI already existed before this pass |
+| Test coverage | COMPLETE | Treasury targeted suite covers FX seam, snapshot integration, forecast integration, lineage, and hardening regressions |
+
+## Remaining Wave 3.1 Backlog
+
+1. Apply `0044_treasury_fx_rate_snapshot.sql` to staging and production when those environments are ready.
+2. Apply `0045_treasury_dual_amount_persistence.sql` to staging and production when those environments are ready.
+
 Good. Then the right next move is **Wave 3 hardening pack**, not Wave 4 yet.
 
 Your scaffold says Wave 3 must deliver **cash position snapshots integrated with AP/AR flows** and **forecast outputs traceable to assumptions and input version**. 

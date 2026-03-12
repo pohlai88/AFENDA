@@ -178,7 +178,7 @@ export default async function TreasuryPage() {
           </Card>
         </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Reconciliation</CardTitle>
@@ -252,6 +252,25 @@ export default async function TreasuryPage() {
                 <Button asChild className="w-full" variant="outline">
                   <Link href="/finance/treasury/liquidity-forecast">
                     View Liquidity Forecast
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">FX Snapshots</CardTitle>
+                <CardDescription>
+                  Maintain currency conversion rates used by Wave 3.1 normalization.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Seed or update FX rates by date, pair, and source version.
+                </p>
+                <Button asChild className="w-full" variant="outline">
+                  <Link href="/finance/treasury/fx-rates">
+                    Manage FX Snapshots
                   </Link>
                 </Button>
               </CardContent>

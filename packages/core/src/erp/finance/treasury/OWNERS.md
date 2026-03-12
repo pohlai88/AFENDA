@@ -25,6 +25,9 @@ Pillar: `erp` | Domain: `finance/treasury`
 | `liquidity-forecast.queries.ts` | `listLiquidityScenarios`, `listLiquidityForecasts`, `getLiquidityForecastById`, `listLiquidityForecastBuckets` |
 | `liquidity-source-feed.service.ts` | `upsertLiquiditySourceFeed` |
 | `liquidity-source-feed.queries.ts` | `listLiquiditySourceFeeds` |
+| `fx-normalization.service.ts` | `normalizeToBase` |
+| `fx-rate-snapshot.service.ts` | `upsertFxRateSnapshot` |
+| `fx-rate-snapshot.queries.ts` | `listFxRateSnapshots` |
 | `lineage.queries.ts` | `listCashPositionSnapshotLineage`, `listLiquidityForecastBucketLineage` |
 | `forecast-variance.service.ts` | `recordForecastVariance` |
 | `forecast-variance.queries.ts` | `listForecastVarianceByForecastId`, `getForecastVarianceById` |

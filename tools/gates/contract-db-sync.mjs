@@ -461,6 +461,14 @@ const SYNC_PAIRS = [
     excludeFromDb: [],
   },
   {
+    dbFile: "packages/db/src/schema/erp/finance/treasury/fx-rate-snapshot.ts",
+    dbTable: "fx_rate_snapshot",
+    contractFile: "packages/contracts/src/erp/finance/treasury/fx-rate-snapshot.entity.ts",
+    contractSchema: "FxRateSnapshotSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
     dbFile: "packages/db/src/schema/erp/finance/treasury/liquidity-lineage.ts",
     dbTable: "cash_position_snapshot_lineage",
     contractFile: "packages/contracts/src/erp/finance/treasury/liquidity-lineage.entity.ts",

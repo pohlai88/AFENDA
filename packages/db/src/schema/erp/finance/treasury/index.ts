@@ -11,6 +11,7 @@ export * from "./cash-position-snapshot";
 export * from "./liquidity-scenario";
 export * from "./liquidity-forecast";
 export * from "./liquidity-source-feed";
+export * from "./fx-rate-snapshot";
 export * from "./liquidity-lineage";
 export * from "./forecast-variance";
 

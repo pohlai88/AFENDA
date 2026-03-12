@@ -60,6 +60,7 @@ import {
   LiquiditySourceFeedStatusValues,
   LiquiditySourceDirectionValues,
   UpsertLiquiditySourceFeedCommandSchema,
+  UpsertFxRateSnapshotCommandSchema,
   // Wave 3.3 — Forecast Variance
   RecordForecastVarianceCommandSchema,
 } from "@afenda/contracts";
@@ -114,6 +115,8 @@ import {
   listLiquidityForecastBucketLineage,
   upsertLiquiditySourceFeed,
   listLiquiditySourceFeeds,
+  upsertFxRateSnapshot,
+  listFxRateSnapshots,
   // Wave 3.3 — Forecast Variance
   recordForecastVariance,
   listForecastVarianceByForecastId,
@@ -1686,8 +1689,11 @@ export async function treasuryRoutes(app: FastifyInstance) {
     snapshotId: z.string().uuid(),
     bankAccountId: z.string().uuid().nullable(),
     currencyCode: z.string(),
+    nativeCurrencyCode: z.string(),
     bucketType: z.enum(CashPositionBucketTypeValues),
     amountMinor: z.string(),
+    nativeAmountMinor: z.string(),
+    normalizedAmountMinor: z.string(),
     sourceType: z.enum(CashPositionSourceTypeValues),
     sourceId: z.string().uuid().nullable(),
     lineDescription: z.string().nullable(),
@@ -1973,6 +1979,10 @@ export async function treasuryRoutes(app: FastifyInstance) {
     bucketEndDate: z.string(),
     expectedInflowsMinor: z.string(),
     expectedOutflowsMinor: z.string(),
+    nativeExpectedInflowsMinor: z.string(),
+    nativeExpectedOutflowsMinor: z.string(),
+    normalizedExpectedInflowsMinor: z.string(),
+    normalizedExpectedOutflowsMinor: z.string(),
     openingBalanceMinor: z.string(),
     closingBalanceMinor: z.string(),
     varianceMinor: z.string().nullable(),
@@ -1985,6 +1995,19 @@ export async function treasuryRoutes(app: FastifyInstance) {
     liquidityForecastId: z.string().uuid(),
     bucketId: z.string().uuid(),
     liquiditySourceFeedId: z.string().uuid(),
+    createdAt: z.string().datetime(),
+  });
+
+  const FxRateSnapshotRowSchema = z.object({
+    id: z.string().uuid(),
+    orgId: z.string().uuid(),
+    rateDate: z.string().date(),
+    fromCurrencyCode: z.string(),
+    toCurrencyCode: z.string(),
+    rateScaled: z.string(),
+    scale: z.number().int().positive(),
+    providerCode: z.string(),
+    sourceVersion: z.string(),
     createdAt: z.string().datetime(),
   });
 
@@ -2008,6 +2031,14 @@ export async function treasuryRoutes(app: FastifyInstance) {
       status: row.status as (typeof LiquidityForecastStatusValues)[number],
       createdAt: toIso(row.createdAt),
       updatedAt: toIso(row.updatedAt),
+    };
+  }
+
+  function toFxRateSnapshotResponse(row: any) {
+    const toIso = (d: Date | string | null) => !d ? null : (d instanceof Date ? d.toISOString() : d);
+    return {
+      ...row,
+      createdAt: toIso(row.createdAt),
     };
   }
 
@@ -2220,6 +2251,78 @@ export async function treasuryRoutes(app: FastifyInstance) {
       const rows = await listLiquiditySourceFeeds(app.db, orgId as OrgId, req.query as any);
       return {
         data: { data: rows.map(toLiquiditySourceFeedResponse) },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  // POST /commands/upsert-fx-rate-snapshot
+  server.post(
+    "/commands/upsert-fx-rate-snapshot",
+    {
+      schema: {
+        description: "Upsert FX rate snapshot used for treasury base-currency normalization.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: UpsertFxRateSnapshotCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          401: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const ctx: OrgScopedContext = { activeContext: { orgId: orgId as OrgId } };
+      const result = await upsertFxRateSnapshot(
+        app.db,
+        ctx,
+        { principalId: auth.principalId as PrincipalId },
+        req.correlationId as CorrelationId,
+        req.body as any,
+      );
+
+      if (!result.ok) {
+        return reply.status(422).send({ error: result.error, correlationId: req.correlationId });
+      }
+
+      return { data: result.data, correlationId: req.correlationId };
+    },
+  );
+
+  // GET /treasury/fx-rate-snapshots
+  server.get(
+    "/treasury/fx-rate-snapshots",
+    {
+      schema: {
+        description: "List FX rate snapshots for treasury normalization.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: z.object({
+          rateDate: z.string().date().optional(),
+          fromCurrencyCode: z.string().length(3).optional(),
+          toCurrencyCode: z.string().length(3).optional(),
+          sourceVersion: z.string().optional(),
+        }),
+        response: {
+          200: makeSuccessSchema(z.object({ data: z.array(FxRateSnapshotRowSchema) })),
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const rows = await listFxRateSnapshots(app.db, orgId as OrgId, req.query as any);
+      return {
+        data: { data: rows.map(toFxRateSnapshotResponse) },
         correlationId: req.correlationId,
       };
     },

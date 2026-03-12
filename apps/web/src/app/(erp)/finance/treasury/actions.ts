@@ -22,8 +22,11 @@ import {
 	fetchTreasuryLiquidityForecast,
 	fetchTreasuryForecastVariance,
 	fetchTreasuryForecastVarianceByForecast,
+	fetchTreasuryCashPositionSnapshotLineage,
 	fetchTreasuryLiquidityForecastBuckets,
+	fetchTreasuryLiquidityForecastLineage,
 	fetchTreasuryLiquidityForecasts,
+	fetchTreasuryFxRateSnapshots,
 	fetchTreasuryLiquiditySourceFeeds,
 	fetchTreasuryLiquidityScenarios,
 	fetchTreasuryPaymentBatches,
@@ -39,6 +42,7 @@ import {
 	requestTreasuryLiquidityForecast,
 	upsertTreasuryLiquiditySourceFeed,
 	recordTreasuryForecastVariance,
+	upsertTreasuryFxRateSnapshot,
 	rejectTreasuryPaymentInstruction,
 	releaseTreasuryPaymentBatch,
 	requestTreasuryPaymentBatchRelease,
@@ -182,6 +186,10 @@ export async function listTreasuryCashPositionSnapshotLinesAction(snapshotId: st
 	return fetchTreasuryCashPositionSnapshotLines(snapshotId);
 }
 
+export async function listTreasuryCashPositionSnapshotLineageAction(snapshotId: string) {
+	return fetchTreasuryCashPositionSnapshotLineage(snapshotId);
+}
+
 export async function requestTreasuryCashPositionSnapshotAction(
 	command: Parameters<typeof requestTreasuryCashPositionSnapshot>[0],
 ) {
@@ -218,6 +226,10 @@ export async function listTreasuryLiquidityForecastBucketsAction(forecastId: str
 	return fetchTreasuryLiquidityForecastBuckets(forecastId);
 }
 
+export async function listTreasuryLiquidityForecastLineageAction(forecastId: string) {
+	return fetchTreasuryLiquidityForecastLineage(forecastId);
+}
+
 export async function requestTreasuryLiquidityForecastAction(
 	command: Parameters<typeof requestTreasuryLiquidityForecast>[0],
 ) {
@@ -234,6 +246,18 @@ export async function listTreasuryLiquiditySourceFeedsAction(
 	params?: Parameters<typeof fetchTreasuryLiquiditySourceFeeds>[0],
 ) {
 	return fetchTreasuryLiquiditySourceFeeds(params);
+}
+
+export async function upsertTreasuryFxRateSnapshotAction(
+	command: Parameters<typeof upsertTreasuryFxRateSnapshot>[0],
+) {
+	return upsertTreasuryFxRateSnapshot(command);
+}
+
+export async function listTreasuryFxRateSnapshotsAction(
+	params?: Parameters<typeof fetchTreasuryFxRateSnapshots>[0],
+) {
+	return fetchTreasuryFxRateSnapshots(params);
 }
 
 export async function recordTreasuryForecastVarianceAction(

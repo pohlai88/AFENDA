@@ -27,6 +27,8 @@ export * from "./liquidity-forecast.entity.js";
 export * from "./liquidity-forecast.commands.js";
 export * from "./liquidity-source-feed.entity.js";
 export * from "./liquidity-source-feed.commands.js";
+export * from "./fx-rate-snapshot.entity.js";
+export * from "./fx-rate-snapshot.commands.js";
 export * from "./liquidity-lineage.entity.js";
 export * from "./forecast-variance.entity.js";
 export * from "./forecast-variance.commands.js";

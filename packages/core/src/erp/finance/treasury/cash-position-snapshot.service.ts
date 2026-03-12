@@ -19,9 +19,22 @@ import type {
 } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
 import { computeProjectedAvailable } from "./calculators/cash-position";
+import { normalizeToBase } from "./fx-normalization.service";
 
 function sumMinor(values: string[]): string {
   return values.reduce((acc, value) => (BigInt(acc) + BigInt(value)).toString(), "0");
+}
+
+interface NormalizedSnapshotFeed {
+  id: string;
+  sourceType: "ap_due_payment" | "ar_expected_receipt" | "manual_adjustment";
+  bankAccountId: string | null;
+  originalCurrencyCode: string;
+  originalAmountMinor: string;
+  normalizedAmountMinor: string;
+  dueDate: string;
+  direction: "inflow" | "outflow";
+  fxRateSnapshotId: string | null;
 }
 
 export type CashPositionSnapshotServiceError = {
@@ -74,38 +87,51 @@ export async function requestCashPositionSnapshot(
       ),
     );
 
-  const hasCurrencyMismatch =
-    activeAccounts.some((account) => account.currencyCode !== params.baseCurrencyCode) ||
-    feeds.some((feed) => feed.currencyCode !== params.baseCurrencyCode);
+  const normalizedFeeds: NormalizedSnapshotFeed[] = [];
+  for (const feed of feeds) {
+    const normalization = await normalizeToBase(db, {
+      orgId,
+      rateDate: params.snapshotDate,
+      fromCurrencyCode: feed.currencyCode,
+      toCurrencyCode: params.baseCurrencyCode,
+      amountMinor: feed.amountMinor,
+      sourceVersion: params.sourceVersion,
+    });
 
-  if (hasCurrencyMismatch) {
-    return {
-      ok: false,
-      error: {
-        code: "TREASURY_FX_NORMALIZATION_REQUIRED",
-        message:
-          "Cash position snapshot requires FX normalization when source currencies differ from base currency",
-        meta: {
-          baseCurrencyCode: params.baseCurrencyCode,
-        },
-      },
-    };
+    if (!normalization.ok) {
+      return { ok: false, error: normalization.error };
+    }
+
+    normalizedFeeds.push({
+      id: feed.id,
+      sourceType: feed.sourceType,
+      bankAccountId: feed.bankAccountId,
+      originalCurrencyCode: feed.currencyCode,
+      originalAmountMinor: feed.amountMinor,
+      normalizedAmountMinor: normalization.data.normalizedMinor,
+      dueDate: feed.dueDate,
+      direction: feed.direction,
+      fxRateSnapshotId: normalization.data.fxRateSnapshotId,
+    });
   }
 
   const totalBookBalanceMinor = "0";
   const totalAvailableBalanceMinor = "0";
   const totalPendingInflowMinor = sumMinor(
-    feeds.filter((f) => f.direction === "inflow").map((f) => f.amountMinor),
+    normalizedFeeds.filter((feed) => feed.direction === "inflow").map((feed) => feed.normalizedAmountMinor),
   );
   const totalPendingOutflowMinor = sumMinor(
-    feeds.filter((f) => f.direction === "outflow").map((f) => f.amountMinor),
+    normalizedFeeds
+      .filter((feed) => feed.direction === "outflow")
+      .map((feed) => feed.normalizedAmountMinor),
   );
   const totalProjectedAvailableMinor = computeProjectedAvailable({
     availableBalanceMinor: totalAvailableBalanceMinor,
     pendingInflowMinor: totalPendingInflowMinor,
     pendingOutflowMinor: totalPendingOutflowMinor,
   });
-  const feedSourceIds = feeds.map((feed) => feed.id);
+  const feedSourceIds = normalizedFeeds.map((feed) => feed.id);
+  const fxNormalizedFeedCount = normalizedFeeds.filter((feed) => feed.fxRateSnapshotId).length;
 
   const auditEntry = {
     actorPrincipalId: policyCtx.principalId,
@@ -119,8 +145,9 @@ export async function requestCashPositionSnapshot(
       baseCurrencyCode: params.baseCurrencyCode,
       sourceVersion: params.sourceVersion,
       activeAccountCount: String(activeAccounts.length),
-      liquidityFeedCount: String(feeds.length),
+      liquidityFeedCount: String(normalizedFeeds.length),
       liquidityFeedSourceIds: feedSourceIds,
+      fxNormalizedFeedCount: String(fxNormalizedFeedCount),
     },
   };
 
@@ -153,8 +180,11 @@ export async function requestCashPositionSnapshot(
           snapshotId: snapshot.id,
           bankAccountId: account.id,
           currencyCode: account.currencyCode,
+          nativeCurrencyCode: account.currencyCode,
           bucketType: "available_balance" as const,
           amountMinor: "0",
+          nativeAmountMinor: "0",
+          normalizedAmountMinor: "0",
           sourceType: "manual_adjustment" as const,
           sourceId: null,
           lineDescription: "Wave 3 baseline placeholder balance",
@@ -162,24 +192,30 @@ export async function requestCashPositionSnapshot(
       );
     }
 
-    if (feeds.length > 0) {
+    if (normalizedFeeds.length > 0) {
       const feedLines: Array<{
         orgId: string;
         snapshotId: string;
         bankAccountId: string | null;
         currencyCode: string;
+        nativeCurrencyCode: string;
         bucketType: CashPositionBucketType;
         amountMinor: string;
+        nativeAmountMinor: string;
+        normalizedAmountMinor: string;
         sourceType: CashPositionSourceType;
         sourceId: string;
         lineDescription: string;
-      }> = feeds.map((feed) => ({
+      }> = normalizedFeeds.map((feed) => ({
         orgId: orgId as string,
         snapshotId: snapshot.id,
         bankAccountId: feed.bankAccountId,
-        currencyCode: feed.currencyCode,
+        currencyCode: params.baseCurrencyCode,
+        nativeCurrencyCode: feed.originalCurrencyCode,
         bucketType: feed.direction === "inflow" ? "pending_inflow" : "pending_outflow",
-        amountMinor: feed.amountMinor,
+        amountMinor: feed.normalizedAmountMinor,
+        nativeAmountMinor: feed.originalAmountMinor,
+        normalizedAmountMinor: feed.normalizedAmountMinor,
         sourceType:
           feed.sourceType === "ap_due_payment"
             ? "ap_projection"
@@ -187,7 +223,7 @@ export async function requestCashPositionSnapshot(
               ? "ar_projection"
               : "manual_adjustment",
         sourceId: feed.id,
-        lineDescription: `${feed.sourceType}:${feed.dueDate}:${feed.id}`,
+        lineDescription: `${feed.sourceType}:${feed.dueDate}:${feed.id}:${feed.originalCurrencyCode}`,
       }));
 
       const insertedFeedLines = await tx
@@ -224,7 +260,8 @@ export async function requestCashPositionSnapshot(
         baseCurrencyCode: params.baseCurrencyCode,
         sourceLineage: {
           liquidityFeedSourceIds: feedSourceIds,
-          liquidityFeedCount: feeds.length,
+            liquidityFeedCount: normalizedFeeds.length,
+            fxNormalizedFeedCount,
         },
       },
     });

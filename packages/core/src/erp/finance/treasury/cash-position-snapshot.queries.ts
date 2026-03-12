@@ -26,8 +26,11 @@ export interface CashPositionSnapshotLineRow {
   snapshotId: string;
   bankAccountId: string | null;
   currencyCode: string;
+  nativeCurrencyCode: string;
   bucketType: string;
   amountMinor: string;
+  nativeAmountMinor: string;
+  normalizedAmountMinor: string;
   sourceType: string;
   sourceId: string | null;
   lineDescription: string | null;

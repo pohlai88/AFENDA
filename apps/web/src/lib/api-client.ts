@@ -1400,6 +1400,7 @@ export interface TreasuryCashPositionSnapshotLineRow {
   snapshotId: string;
   bankAccountId: string | null;
   currencyCode: string;
+  nativeCurrencyCode: string;
   bucketType:
     | "book_balance"
     | "available_balance"
@@ -1407,6 +1408,8 @@ export interface TreasuryCashPositionSnapshotLineRow {
     | "pending_outflow"
     | "projected_available_balance";
   amountMinor: string;
+  nativeAmountMinor: string;
+  normalizedAmountMinor: string;
   sourceType:
     | "bank_statement"
     | "payment_instruction"
@@ -1532,6 +1535,10 @@ export interface TreasuryLiquidityForecastBucketRow {
   bucketEndDate: string;
   expectedInflowsMinor: string;
   expectedOutflowsMinor: string;
+  nativeExpectedInflowsMinor: string;
+  nativeExpectedOutflowsMinor: string;
+  normalizedExpectedInflowsMinor: string;
+  normalizedExpectedOutflowsMinor: string;
   openingBalanceMinor: string;
   closingBalanceMinor: string;
   varianceMinor: string | null;
@@ -1562,6 +1569,19 @@ export interface TreasuryLiquiditySourceFeedRow {
   status: "open" | "consumed" | "cancelled";
   createdAt: string;
   updatedAt: string;
+}
+
+export interface TreasuryFxRateSnapshotRow {
+  id: string;
+  orgId: string;
+  rateDate: string;
+  fromCurrencyCode: string;
+  toCurrencyCode: string;
+  rateScaled: string;
+  scale: number;
+  providerCode: string;
+  sourceVersion: string;
+  createdAt: string;
 }
 
 export async function createTreasuryLiquidityScenario(command: {
@@ -1658,6 +1678,44 @@ export async function fetchTreasuryLiquiditySourceFeeds(params?: {
   const qs = query.toString();
   const res = await apiFetch(`/v1/treasury/liquidity-source-feeds${qs ? `?${qs}` : ""}`);
   if (!res.ok) throw new Error(`Liquidity source feeds API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function upsertTreasuryFxRateSnapshot(command: {
+  rateDate: string;
+  fromCurrencyCode: string;
+  toCurrencyCode: string;
+  rateScaled: string;
+  scale: number;
+  providerCode: string;
+  sourceVersion: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/upsert-fx-rate-snapshot", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Upsert FX rate snapshot failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchTreasuryFxRateSnapshots(params?: {
+  rateDate?: string;
+  fromCurrencyCode?: string;
+  toCurrencyCode?: string;
+  sourceVersion?: string;
+}): Promise<{ data: TreasuryFxRateSnapshotRow[] }> {
+  const query = new URLSearchParams();
+  if (params?.rateDate) query.set("rateDate", params.rateDate);
+  if (params?.fromCurrencyCode) query.set("fromCurrencyCode", params.fromCurrencyCode);
+  if (params?.toCurrencyCode) query.set("toCurrencyCode", params.toCurrencyCode);
+  if (params?.sourceVersion) query.set("sourceVersion", params.sourceVersion);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/fx-rate-snapshots${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`FX rate snapshots API error ${res.status}: ${await res.text()}`);
   const json = await res.json();
   return json.data;
 }

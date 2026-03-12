@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Button,
   Card,
@@ -190,14 +191,19 @@ export function CashPositionDashboard() {
                       {new Date(row.createdAt).toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant={selectedSnapshotId === row.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => void onViewLineage(row.id)}
-                      >
-                        Lineage
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant={selectedSnapshotId === row.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => void onViewLineage(row.id)}
+                        >
+                          Inline
+                        </Button>
+                        <Button asChild type="button" variant="outline" size="sm">
+                          <Link href={`/finance/treasury/cash-position/${row.id}/lineage`}>Lineage</Link>
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

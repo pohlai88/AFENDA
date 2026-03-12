@@ -131,6 +131,7 @@ export const AuditActionValues = [
   "treasury.liquidity-scenario.activated",
   "treasury.liquidity-forecast.calculated",
   "treasury.liquidity-source-feed.upserted",
+  "treasury.fx-rate-snapshot.upserted",
   "treasury.forecast-variance.recorded",
 ] as const;
 
@@ -179,6 +180,7 @@ export const AuditEntityTypeValues = [
   "liquidity_scenario",
   "liquidity_forecast",
   "liquidity_source_feed",
+  "fx_rate_snapshot",
   "forecast_variance",
 ] as const;
 
