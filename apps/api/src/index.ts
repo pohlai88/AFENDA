@@ -31,6 +31,7 @@ import { evidenceRoutes } from "./routes/kernel/evidence.js";
 import { iamRoutes } from "./routes/kernel/identity.js";
 import { invoiceRoutes } from "./routes/erp/finance/ap.js";
 import { glRoutes } from "./routes/erp/finance/gl.js";
+import { treasuryRoutes } from "./routes/erp/finance/treasury.js";
 import { auditRoutes } from "./routes/kernel/audit.js";
 import { capabilitiesRoutes } from "./routes/kernel/capabilities.js";
 import { supplierRoutes } from "./routes/erp/supplier.js";
@@ -290,6 +291,7 @@ export async function buildApp() {
   await app.register(iamRoutes, { prefix: "/v1" });
   await app.register(invoiceRoutes, { prefix: "/v1" });
   await app.register(glRoutes, { prefix: "/v1" });
+  await app.register(treasuryRoutes, { prefix: "/v1" });
   await app.register(auditRoutes, { prefix: "/v1" });
   await app.register(capabilitiesRoutes, { prefix: "/v1" });
   await app.register(supplierRoutes, { prefix: "/v1" });

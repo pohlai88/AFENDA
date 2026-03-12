@@ -78,6 +78,16 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "AP.WHT_CERTIFICATE_SUBMITTED":
       await helpers.addJob("handle_wht_certificate_event", payload);
       break;
+    case "TREAS.BANK_ACCOUNT_CREATED":
+    case "TREAS.BANK_ACCOUNT_UPDATED":
+    case "TREAS.BANK_ACCOUNT_ACTIVATED":
+    case "TREAS.BANK_ACCOUNT_DEACTIVATED":
+      await helpers.addJob("handle_treasury_bank_account_event", payload);
+      break;
+    case "TREAS.BANK_STATEMENT_INGESTED":
+    case "TREAS.BANK_STATEMENT_FAILED":
+      await helpers.addJob("handle_treasury_bank_statement_event", payload);
+      break;
     case "GL.JOURNAL_POSTED":
       await helpers.addJob("handle_journal_posted", payload);
       break;

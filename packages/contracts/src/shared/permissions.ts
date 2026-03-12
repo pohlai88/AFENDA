@@ -54,6 +54,31 @@ export const PermissionValues = [
   "ap.payment-run-item.update",
   "ap.payment-run-item.remove",
 
+  // Treasury
+  "treas.bank-account.read",
+  "treas.bank-account.create",
+  "treas.bank-account.update",
+  "treas.bank-account.activate",
+  "treas.bank-account.deactivate",
+  "treas.bank-statement.read",
+  "treas.bank-statement.ingest",
+  "treas.reconciliation.read",
+  "treas.reconciliation.manage",
+  "treas.payment-batch.read",
+  "treas.payment-batch.create",
+  "treas.payment-batch.approve",
+  "treas.payment-batch.release",
+  "treas.payment-batch.cancel",
+  "treas.payment-instruction.read",
+  "treas.payment-instruction.manage",
+  "treas.payment-instruction.approve",
+  "treas.cash-position.read",
+  "treas.liquidity-forecast.read",
+  "treas.liquidity-forecast.manage",
+  "treas.liquidity-source-feed.read",
+  "treas.liquidity-source-feed.manage",
+  "treas.forecast-variance.read",
+
   // GL (General Ledger)
   "gl.account.read",
   "gl.journal.post",
@@ -96,6 +121,18 @@ export const PermissionValues = [
   // Custom Fields (definition management — kernel/governance)
   "admin.custom-fields.read",
   "admin.custom-fields.write",
+
+  // Treasury
+  "treasury.bank-account.read",
+  "treasury.bank-account.write",
+  "treasury.bank-statement.read",
+  "treasury.bank-statement.ingest",
+  "treasury.reconciliation.read",
+  "treasury.reconciliation.write",
+  "treasury.payment.read",
+  "treasury.payment.approve",
+  "treasury.payment.release",
+  "treasury.cash-position.read",
 ] as const;
 
 export type Permission = (typeof PermissionValues)[number];
@@ -111,4 +148,5 @@ export const PERMISSION_SCOPES = {
   doc: PermissionValues.filter((p) => p.startsWith("doc.")),
   audit: PermissionValues.filter((p) => p.startsWith("audit.")),
   admin: PermissionValues.filter((p) => p.startsWith("admin.")),
+  treasury: PermissionValues.filter((p) => p.startsWith("treasury.")),
 } as const;

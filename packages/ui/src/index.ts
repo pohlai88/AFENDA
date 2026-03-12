@@ -5,6 +5,7 @@ export const UI_VERSION = "0.0.0";
 
 // ── Money formatting (locale-aware display) ───────────────────────────────────
 export { formatMoney } from "./money";
+export { minorToMajorDecimalString } from "./money";
 
 // ── Shared utilities ─────────────────────────────────────────────────────────
 export { cn } from "./lib/utils";

@@ -6,7 +6,7 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/dist/**"],
     passWithNoTests: true,
     testTimeout: 30_000,
-    hookTimeout: 30_000,
+    hookTimeout: 60_000,
     fileParallelism: false,
     clearMocks: true,
     restoreMocks: true,

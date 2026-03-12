@@ -448,11 +448,28 @@ export async function authRoutes(app: FastifyInstance) {
       },
     },
     async (req, reply) => {
-      const ctx = requireAuth(req, reply);
-      if (!ctx) return;
+      if (!req.ctx) {
+        return reply.status(401).send({
+          error: {
+            code: "SHARED_UNAUTHORIZED",
+            message: "Authentication required",
+          },
+          correlationId: req.correlationId,
+        });
+      }
 
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
+      if (!req.orgId) {
+        return reply.status(400).send({
+          error: {
+            code: "IAM_ORG_NOT_FOUND",
+            message: "Organization could not be resolved from request context",
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      const ctx = req.ctx;
+      const orgId = req.orgId;
 
       const body = RequestPortalInvitationCommandSchema.parse(req.body);
       const invitation = await requestPortalInvitation(app.db, {

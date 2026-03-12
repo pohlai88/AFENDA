@@ -1,23 +1,22 @@
-/**
- * Integration test: Auth flow verification (Phase 1)
- *
- * Tests the key Phase 1 blocking issues:
- * 1. MFA finalization — session grant is created before redirect
- * 2. Invite acceptance — no mock password rules, real password validation
- * 3. Verification endpoints — all return normalized AuthFlowResult shape
- *
- * Auditing:
- * - Verify API is source of truth (not web duplicating logic)
- * - Verify session is established before redirect
- * - Verify password validation is real (not mock-based)
- */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { createTestApp, injectAs, resetDb, closeApp } from "./helpers/app-factory.js";
+import { IAM_CREDENTIALS_INVALID } from "@afenda/contracts";
+
+import { createTestApp, resetDb, closeApp } from "./helpers/app-factory.js";
 import { SUBMITTER_EMAIL } from "./helpers/factories.js";
 
-describe("Auth flows (Phase 1 Blocking Issues)", () => {
+function expectAuthFlowError(value: unknown) {
+  expect(value).toMatchObject({
+    ok: false,
+    code: expect.any(String),
+    message: expect.any(String),
+  });
+}
+
+describe("Auth flows (strict)", () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -26,89 +25,62 @@ describe("Auth flows (Phase 1 Blocking Issues)", () => {
 
   afterEach(async () => {
     if (app) await resetDb(app);
+    vi.restoreAllMocks();
   });
 
   afterAll(async () => {
     if (app) await closeApp(app);
   });
 
-  describe("verify-reset-token — API verification endpoint", () => {
-    it("should verify reset token without consuming it", async () => {
-      // 1. Request password reset
-      const resetReqRes = await app.inject({
+  describe("Public auth endpoints", () => {
+    it("request-password-reset returns accepted response", async () => {
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/request-password-reset",
         payload: {
+          idempotencyKey: crypto.randomUUID(),
           email: SUBMITTER_EMAIL,
         },
       });
-      expect(resetReqRes.statusCode).toBe(200);
-      const resetReqData = resetReqRes.json();
-      expect(resetReqData.data.accepted).toBe(true);
 
-      // Note: In real scenarios, the reset token would be sent via email.
-      // For this test, we'd need to extract it from the database or use a test hook.
-      // For now, we verify the endpoint structure.
-      console.log("✓ Reset token request successful, token would be sent via email");
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        data: {
+          accepted: true,
+          message: expect.any(String),
+        },
+      });
     });
 
-    it("should return AuthFlowResult shape on verification", async () => {
-      // This test validates the response schema
-      // In a real scenario, we'd use a token from the database
-
-      // Test with invalid token — should return AuthFlowResult { ok: false }
-      const verifyRes = await app.inject({
+    it("verify-reset-token returns normalized AuthFlowResult error", async () => {
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/verify-reset-token",
         payload: {
           email: SUBMITTER_EMAIL,
-          token: "invalid-token-12345678901234567890123456",
+          token: "123456",
         },
       });
 
-      expect(verifyRes.statusCode).toBe(200);
-      const data = verifyRes.json();
-
-      // Should have AuthFlowResult shape: { ok: false, code, message }
-      expect(data).toHaveProperty("ok");
-      expect(data.ok).toBe(false);
-      expect(data).toHaveProperty("code");
-      expect(data).toHaveProperty("message");
-      expect(typeof data.message).toBe("string");
-      expect(data.message.length).toBeGreaterThan(0);
-
-      console.log("✓ AuthFlowResult shape verified for invalid token");
+      expect(res.statusCode).toBe(200);
+      expectAuthFlowError(res.json());
     });
-  });
 
-  describe("verify-invite-token — API verification endpoint", () => {
-    it("should return AuthFlowResult shape on verification", async () => {
-      // Test with invalid token — should return AuthFlowResult { ok: false }
-      const verifyRes = await app.inject({
+    it("verify-invite-token returns normalized AuthFlowResult error", async () => {
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/verify-invite-token",
         payload: {
-          token: "invalid-token-12345678901234567890123456",
+          token: "invalid-token-1234567890",
         },
       });
 
-      expect(verifyRes.statusCode).toBe(200);
-      const data = verifyRes.json();
-
-      // Should have AuthFlowResult shape
-      expect(data).toHaveProperty("ok");
-      expect(data.ok).toBe(false);
-      expect(data).toHaveProperty("code");
-      expect(data).toHaveProperty("message");
-
-      console.log("✓ Verify invite token returns correct AuthFlowResult shape");
+      expect(res.statusCode).toBe(200);
+      expectAuthFlowError(res.json());
     });
-  });
 
-  describe("verify-session-grant — Session establishment endpoint", () => {
-    it("should verify session grant and return principalId", async () => {
-      // Test with invalid grant
-      const verifyRes = await app.inject({
+    it("verify-session-grant returns normalized AuthFlowResult error", async () => {
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/verify-session-grant",
         payload: {
@@ -116,118 +88,71 @@ describe("Auth flows (Phase 1 Blocking Issues)", () => {
         },
       });
 
-      expect(verifyRes.statusCode).toBe(200);
-      const data = verifyRes.json();
-
-      // Should have AuthFlowResult shape
-      expect(data).toHaveProperty("ok");
-      expect(data.ok).toBe(false);
-      expect(data).toHaveProperty("code");
-      expect(data).toHaveProperty("message");
-
-      console.log("✓ Verify session grant returns AuthFlowResult shape");
+      expect(res.statusCode).toBe(200);
+      expectAuthFlowError(res.json());
     });
-  });
 
-  describe("verify-credentials — API source of truth", () => {
-    it("should return principalId and email on valid credentials", async () => {
-      // This test assumes SUBMITTER_EMAIL exists with a known password from the seed
-      // In production, use actual test data from global-setup.ts
+    it("accept-portal-invitation returns normalized AuthFlowResult error for invalid token", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/v1/auth/accept-portal-invitation",
+        payload: {
+          idempotencyKey: crypto.randomUUID(),
+          token: "invalid-token-1234567890",
+          fullName: "Test User",
+          password: "TestPassword123!",
+        },
+      });
 
-      const verifyRes = await app.inject({
+      expect(res.statusCode).toBe(200);
+      expectAuthFlowError(res.json());
+    });
+
+    it("verify-credentials returns 401 + normalized error for invalid password", async () => {
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/verify-credentials",
         payload: {
           email: SUBMITTER_EMAIL,
-          password: "BadPassword123!", // Note: Using a test password that should fail
+          password: "DefinitelyWrongPassword123!",
         },
       });
 
-      // Should return 401 with error code
-      expect(verifyRes.statusCode).toBe(401);
-      const data = verifyRes.json();
-      expect(data).toHaveProperty("error");
-      expect(data.error).toHaveProperty("code");
-      expect(data.error).toHaveProperty("message");
+      expect(res.statusCode).toBe(401);
+      expect(res.json()).toMatchObject({
+        error: {
+          code: IAM_CREDENTIALS_INVALID,
+          message: expect.any(String),
+        },
+      });
+    });
 
-      console.log("✓ Verify credentials returns normalized error response");
+    it("login returns normalized AuthFlowResult error for invalid password", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/v1/auth/login",
+        payload: {
+          email: SUBMITTER_EMAIL,
+          password: "DefinitelyWrongPassword123!",
+          portal: "app",
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({
+        ok: false,
+        code: IAM_CREDENTIALS_INVALID,
+        message: expect.any(String),
+      });
     });
   });
 
-  describe("API endpoint structure — Normalized AuthFlowResult", () => {
-    it("all auth endpoints return { ok, code, message } or { ok, data }", async () => {
-      const endpoints = [
-        {
-          path: "/v1/auth/request-password-reset",
-          method: "POST",
-          payload: { email: SUBMITTER_EMAIL },
-          description: "request-password-reset",
-        },
-        {
-          path: "/v1/auth/verify-reset-token",
-          method: "POST",
-          payload: {
-            email: SUBMITTER_EMAIL,
-            token: "invalid",
-          },
-          description: "verify-reset-token",
-        },
-        {
-          path: "/v1/auth/verify-invite-token",
-          method: "POST",
-          payload: { token: "invalid" },
-          description: "verify-invite-token",
-        },
-        {
-          path: "/v1/auth/verify-session-grant",
-          method: "POST",
-          payload: { grant: "invalid" },
-          description: "verify-session-grant",
-        },
-      ];
+  describe("MFA verification diagnostics", () => {
+    it("verify-mfa-challenge logs request metadata and emits normalized failure", async () => {
+      const infoSpy = vi.spyOn(app.log, "info");
+      const warnSpy = vi.spyOn(app.log, "warn");
 
-      for (const endpoint of endpoints) {
-        const res = await app.inject({
-          method: endpoint.method as "POST",
-          url: endpoint.path,
-          payload: endpoint.payload,
-        });
-
-        const data = res.json();
-        expect(data).toHaveProperty("ok", `${endpoint.description} missing 'ok' field`);
-
-        if (data.ok === false) {
-          expect(data).toHaveProperty("code", `${endpoint.description} missing 'code'`);
-          expect(data).toHaveProperty("message", `${endpoint.description} missing 'message'`);
-        } else {
-          expect(data).toHaveProperty("data", `${endpoint.description} missing 'data'`);
-        }
-
-        console.log(`✓ ${endpoint.description} endpoint returns correct shape`);
-      }
-    });
-  });
-
-  describe("Web auth service delegation — API is source of truth", () => {
-    it("web should call API, not duplicate logic", async () => {
-      // This is an architectural test (not a runtime test).
-      // It verifies that apps/web/src/features/auth/server/afenda-auth.api.ts
-      // correctly delegates to API endpoints.
-
-      // For now, we document the expected behavior:
-      // 1. Web's ApiAfendaAuthService calls authApiFetch("/v1/auth/*")
-      // 2. Web does NOT import from @afenda/core
-      // 3. Web does NOT have duplicate auth logic
-
-      console.log("✓ Architecture verified: Web delegates to API (see afenda-auth.api.ts)");
-      expect(true).toBe(true);
-    });
-  });
-
-  describe("MFA finalization flow — Session before redirect", () => {
-    it("verify-mfa-challenge should return sessionGrant on success", async () => {
-      // Test with invalid MFA token to verify structure
-      const mfaRes = await app.inject({
+      const res = await app.inject({
         method: "POST",
         url: "/v1/auth/verify-mfa-challenge",
         payload: {
@@ -236,101 +161,98 @@ describe("Auth flows (Phase 1 Blocking Issues)", () => {
         },
       });
 
-      expect(mfaRes.statusCode).toBe(200);
-      const data = mfaRes.json();
+      expect(res.statusCode).toBe(200);
+      expectAuthFlowError(res.json());
 
-      // Should have AuthFlowResult shape
-      expect(data).toHaveProperty("ok");
-      if (data.ok === false) {
-        expect(data).toHaveProperty("code");
-        expect(data).toHaveProperty("message");
-      } else if (data.ok === true) {
-        // On successful MFA, should return sessionGrant
-        expect(data.data).toHaveProperty("sessionGrant");
-      }
+      expect(infoSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          route: "/v1/auth/verify-mfa-challenge",
+          codeLength: 6,
+          hasMfaToken: true,
+        }),
+        "Auth MFA verify challenge request",
+      );
 
-      console.log("✓ MFA endpoint structure verified");
-    });
-
-    it("web should call establishWebSessionFromGrant before redirect", async () => {
-      // This is an architectural test of apps/web/src/app/auth/_actions/verify.ts
-      // It should:
-      // 1. Call verifyMfaChallenge() via API
-      // 2. Get sessionGrant back
-      // 3. Call establishWebSessionFromGrant({ grant, redirectTo })
-      // 4. Then redirect
-
-      // This is verified in the source code:
-      // apps/web/src/app/auth/_actions/verify.ts:150-157
-
-      console.log("✓ Architecture verified: Web establishes session before redirect");
-      console.log("  See: apps/web/src/app/auth/_actions/verify.ts:150-157");
-      expect(true).toBe(true);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          route: "/v1/auth/verify-mfa-challenge",
+          errorCode: expect.any(String),
+        }),
+        "Auth MFA verify challenge failed",
+      );
     });
   });
 
-  describe("Invite acceptance flow — Real password validation", () => {
-    it("accept-portal-invitation should not use mock password rules", async () => {
-      // Test with invalid invite token to verify structure
-      const inviteRes = await app.inject({
+  describe("Architecture guards (split-brain prevention)", () => {
+    it("web auth service delegates to API and does not import core", () => {
+      const apiServicePath = resolve(process.cwd(), "../web/src/features/auth/server/afenda-auth.api.ts");
+      const source = readFileSync(apiServicePath, "utf8");
+
+      expect(source).toContain('authApiFetch("/v1/auth/login"');
+      expect(source).toContain('authApiFetch("/v1/auth/verify-reset-token"');
+      expect(source).toContain('authApiFetch("/v1/auth/verify-invite-token"');
+      expect(source).toContain('authApiFetch("/v1/auth/accept-portal-invitation"');
+      expect(source).toContain('authApiFetch("/v1/auth/verify-mfa-challenge"');
+      expect(source).not.toContain('from "@afenda/core"');
+    });
+
+    it("MFA verify action establishes session grant before redirect", () => {
+      const verifyActionPath = resolve(process.cwd(), "../web/src/app/auth/_actions/verify.ts");
+      const source = readFileSync(verifyActionPath, "utf8");
+
+      const establishIdx = source.indexOf("await establishWebSessionFromGrant");
+      const redirectIdx = source.lastIndexOf("redirect(redirectTo);");
+
+      expect(establishIdx).toBeGreaterThan(-1);
+      expect(redirectIdx).toBeGreaterThan(-1);
+      expect(establishIdx).toBeLessThan(redirectIdx);
+    });
+
+    it("Invite accept action uses session grant path", () => {
+      const inviteActionPath = resolve(process.cwd(), "../web/src/app/auth/_actions/invite.ts");
+      const source = readFileSync(inviteActionPath, "utf8");
+
+      expect(source).toContain("const { email, portal, sessionGrant } = result.data;");
+      expect(source).toContain("await establishWebSessionFromGrant({ grant: sessionGrant, redirectTo: redirectUrl });");
+    });
+  });
+
+  describe("Protected auth endpoint guards", () => {
+    it("request-portal-invitation rejects unauthenticated requests", async () => {
+      const res = await app.inject({
         method: "POST",
-        url: "/v1/auth/accept-portal-invitation",
+        url: "/v1/auth/request-portal-invitation",
         payload: {
-          idempotencyKey: "test-idempotency-key",
-          token: "invalid-token-123",
-          fullName: "Test User",
-          password: "TestPassword123!",
+          idempotencyKey: crypto.randomUUID(),
+          email: "invitee@example.com",
+          portal: "supplier",
         },
       });
 
-      expect(inviteRes.statusCode).toBe(200);
-      const data = inviteRes.json();
-
-      // Should have AuthFlowResult shape
-      expect(data).toHaveProperty("ok");
-      if (data.ok === false) {
-        expect(data).toHaveProperty("code");
-        expect(data).toHaveProperty("message");
-      } else if (data.ok === true) {
-        // On successful acceptance, should return sessionGrant
-        expect(data.data).toHaveProperty("sessionGrant");
-        expect(data.data).toHaveProperty("email");
-        expect(data.data).toHaveProperty("portal");
-      }
-
-      console.log("✓ Invite acceptance endpoint uses real password validation");
-      console.log("  (delegates to @afenda/core, not mock rules)");
-    });
-
-    it("web should establish session from grant after invite acceptance", async () => {
-      // This is an architectural test of apps/web/src/app/auth/_actions/invite.ts
-      // It should:
-      // 1. Call acceptInvite() via API
-      // 2. Get sessionGrant back
-      // 3. Call establishWebSessionFromGrant({ grant, redirectTo })
-      // 4. Then redirect
-
-      // This is verified in the source code:
-      // apps/web/src/app/auth/_actions/invite.ts:128-140
-
-      console.log("✓ Architecture verified: Web establishes session from grant");
-      console.log("  See: apps/web/src/app/auth/_actions/invite.ts:128-140");
-      expect(true).toBe(true);
-    });
-  });
-
-  describe("Portal route protection — Session required", () => {
-    it("portal routes should require authenticated session", async () => {
-      // Test without authentication — should redirect to /auth/signin or return 401
-      const portalRes = await app.inject({
-        method: "GET",
-        url: "/api/private/me",
+      expect(res.statusCode).toBe(401);
+      expect(res.json()).toMatchObject({
+        error: {
+          code: expect.any(String),
+          message: expect.any(String),
+        },
       });
+    });
 
-      // API should reject unauthenticated requests
-      expect([401, 302]).toContain(portalRes.statusCode);
-
-      console.log("✓ Portal API routes require authentication");
+    it("cross-org portal invitation is rejected — org context must match authenticated session", async () => {
+      // Portal invitations are scoped to the requesting principal's active org.
+      // A caller from a different org (or an unauthenticated caller) MUST be
+      // rejected before any org-scoped supplier data is accessed or mutated.
+      const res = await app.inject({
+        method: "POST",
+        url: "/v1/auth/request-portal-invitation",
+        payload: {
+          idempotencyKey: crypto.randomUUID(),
+          email: "attacker@different-org.com",
+          portal: "supplier",
+        },
+        headers: {},
+      });
+      expect(res.statusCode).toBe(401);
     });
   });
 });

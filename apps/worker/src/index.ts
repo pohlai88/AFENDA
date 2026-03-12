@@ -33,6 +33,14 @@ import { handlePaymentRunItemEvent } from "./jobs/erp/finance/ap/handle-payment-
 import { handlePaymentTermsEvent } from "./jobs/erp/finance/ap/handle-payment-terms.js";
 import { handlePrepaymentEvent } from "./jobs/erp/finance/ap/handle-prepayment.js";
 import { handleWhtCertificateEvent } from "./jobs/erp/finance/ap/handle-wht-certificate.js";
+import { handleTreasuryBankAccountEvent } from "./jobs/erp/finance/treasury/handle-bank-account.js";
+import { handleTreasuryBankStatementEvent } from "./jobs/erp/finance/treasury/handle-bank-statement.js";
+import { handleTreasuryReconciliationEvent } from "./jobs/erp/finance/treasury/handle-reconciliation.js";
+import { handleTreasuryPaymentEvent } from "./jobs/erp/finance/treasury/handle-payment.js";
+import { handleTreasuryCashPositionEvent } from "./jobs/erp/finance/treasury/handle-cash-position.js";
+import { handleTreasuryLiquidityForecastEvent } from "./jobs/erp/finance/treasury/handle-liquidity-forecast.js";
+import { handleTreasuryForecastVarianceEvent } from "./jobs/erp/finance/treasury/handle-forecast-variance.js";
+import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treasury/handle-liquidity-source-feed.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -86,6 +94,14 @@ const taskList = {
   handle_payment_terms_event: handlePaymentTermsEvent,
   handle_prepayment_event: handlePrepaymentEvent,
   handle_wht_certificate_event: handleWhtCertificateEvent,
+  handle_treasury_bank_account_event: handleTreasuryBankAccountEvent,
+  handle_treasury_bank_statement_event: handleTreasuryBankStatementEvent,
+  handle_treasury_reconciliation_event: handleTreasuryReconciliationEvent,
+  handle_treasury_payment_event: handleTreasuryPaymentEvent,
+  handle_treasury_cash_position_event: handleTreasuryCashPositionEvent,
+  handle_treasury_liquidity_forecast_event: handleTreasuryLiquidityForecastEvent,
+  handle_treasury_forecast_variance_event: handleTreasuryForecastVarianceEvent,
+  handle_treasury_liquidity_source_feed_event: handleTreasuryLiquiditySourceFeedEvent,
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
 } as const;

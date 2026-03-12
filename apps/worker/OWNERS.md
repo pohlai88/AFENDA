@@ -34,6 +34,10 @@ outbox events via PostgreSQL `LISTEN/NOTIFY`.
 | `erp/finance/ap/handle-invoice-paid.ts` | `invoice.paid` | Reconciliation trigger (stub) |
 | `erp/finance/gl/handle-journal-posted.ts` | `gl.journal_posted` | Updates projection tables |
 | `erp/finance/gl/handle-journal-reversed.ts` | `gl.journal_reversed` | Updates projection tables |
+| `erp/finance/treasury/handle-cash-position-snapshot-requested.ts` | `treasury.cash_position_snapshot.requested` | Materializes cash position snapshot lines |
+| `erp/finance/treasury/handle-liquidity-forecast-requested.ts` | `treasury.liquidity_forecast.requested` | Builds forecast buckets from scenarios and source feeds |
+| `erp/finance/treasury/handle-forecast-variance-recorded.ts` | `treasury.forecast_variance.recorded` | Emits downstream signal for variance analytics |
+| `erp/finance/treasury/handle-liquidity-source-feed.ts` | `treasury.liquidity_source_feed.upserted` | Processes liquidity source feed upsert side effects |
 
 ### Stub job directories (no handlers yet)
 

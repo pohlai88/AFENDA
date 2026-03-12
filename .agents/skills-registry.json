@@ -1,6 +1,6 @@
 {
   "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
-  "generatedAt": "2026-03-07T05:44:33.881Z",
+  "generatedAt": "2026-03-11T16:01:54.342Z",
   "skills": [
     {
       "name": "accessibility",
@@ -281,6 +281,15 @@
       "description": "NextAuth.js (Auth.js v5) — session management, OAuth providers, security best practices",
       "path": "skills/nextauth-authentication",
       "source": "mindrally/skills@nextauth-authentication",
+      "installed": true
+    },
+    {
+      "name": "nextauth-dev-implementation-debugging",
+      "category": "auth",
+      "priority": "high",
+      "description": "Auth.js implementation + debugging playbook — strict testing, route protection, session diagnostics",
+      "path": "skills/nextauth-dev-implementation-debugging",
+      "source": "local",
       "installed": true
     },
     {

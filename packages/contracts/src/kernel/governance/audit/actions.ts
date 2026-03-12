@@ -106,6 +106,32 @@ export const AuditActionValues = [
   "custom-fields.deactivated",
   "custom-fields.deleted",
   "custom-fields.values.updated",
+  // Treasury
+  "treasury.bank-account.created",
+  "treasury.bank-account.updated",
+  "treasury.bank-account.activated",
+  "treasury.bank-account.deactivated",
+  "treasury.bank-statement.ingested",
+  "treasury.reconciliation-session.opened",
+  "treasury.reconciliation-session.matched",
+  "treasury.reconciliation-session.closed",
+  "treasury.payment-batch.created",
+  "treasury.payment-batch.approved",
+  "treasury.payment-batch.released",
+  "treasury.payment-batch.request-release",
+  "treasury.reconciliation-session.match-added",
+  "treasury.reconciliation-session.match-removed",
+  "treasury.payment-instruction.created",
+  "treasury.payment-instruction.submitted",
+  "treasury.payment-instruction.approved",
+  "treasury.payment-instruction.rejected",
+  "treasury.cash-position.snapshot-requested",
+  "treasury.cash-position.snapshot-superseded",
+  "treasury.liquidity-scenario.created",
+  "treasury.liquidity-scenario.activated",
+  "treasury.liquidity-forecast.calculated",
+  "treasury.liquidity-source-feed.upserted",
+  "treasury.forecast-variance.recorded",
 ] as const;
 
 export type AuditAction = (typeof AuditActionValues)[number];
@@ -141,6 +167,19 @@ export const AuditEntityTypeValues = [
   "setting",
   "custom_field_def",
   "custom_field_value",
+  // Treasury
+  "bank_account",
+  "bank_statement",
+  "bank_statement_line",
+  "reconciliation_session",
+  "treasury_payment_batch",
+  "treasury_payment_instruction",
+  "cash_position_snapshot",
+  "reconciliation_match",
+  "liquidity_scenario",
+  "liquidity_forecast",
+  "liquidity_source_feed",
+  "forecast_variance",
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];

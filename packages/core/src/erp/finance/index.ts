@@ -5,3 +5,5 @@ export * from "./money/index";
 export * from "./sod";
 export * from "./ap/index";
 export * from "./gl/index";
+export * from "./treasury/index";
+

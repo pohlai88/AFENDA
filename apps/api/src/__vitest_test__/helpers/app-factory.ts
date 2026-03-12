@@ -66,6 +66,18 @@ export async function resetDb(app: FastifyInstance) {
   // TRUNCATE in dependency order — children first
   await app.db.execute(/* sql */ `
     TRUNCATE
+      forecast_variance,
+      liquidity_forecast_bucket_lineage,
+      liquidity_forecast_bucket,
+      liquidity_forecast,
+      liquidity_scenario,
+      cash_position_snapshot_lineage,
+      cash_position_snapshot_line,
+      cash_position_snapshot,
+      liquidity_source_feed,
+      bank_statement_line,
+      bank_statement,
+      bank_account,
       journal_line,
       journal_entry,
       ap_hold,

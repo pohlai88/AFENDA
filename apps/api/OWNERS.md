@@ -49,6 +49,7 @@ Organized by ADR-0005 pillar structure under `routes/`.
 |---|---|
 | `src/routes/erp/finance/ap.ts` | Invoice commands + queries |
 | `src/routes/erp/finance/gl.ts` | GL commands + queries (journal entries, accounts, trial balance) |
+| `src/routes/erp/finance/treasury.ts` | Treasury commands + queries (banking, reconciliation, cash position, liquidity forecast, variance, source feed) |
 | `src/routes/erp/supplier.ts` | Supplier CRUD |
 | `src/routes/kernel/audit.ts` | Audit log queries |
 | `src/routes/kernel/capabilities.ts` | `GET /v1/capabilities/:entityKey` — RBAC capability check |

@@ -3,8 +3,8 @@
 
 Quick reference guide to agent resources in this workspace.
 
-**Generated:** 2026-03-07  
-**Total Skills:** 45
+**Generated:** 2026-03-11  
+**Total Skills:** 46
 
 ---
 
@@ -21,7 +21,7 @@ Quick reference guide to agent resources in this workspace.
 | **Testing** | [react-testing-patterns](#react-testing-patterns), [vitest](#vitest) |
 | **Tools & Meta** | [create-rule](#create-rule), [find-skills](#find-skills), [typescript-advanced-types](#typescript-advanced-types) |
 | **Security (ClawSec)** | [claw-release](#claw-release), [clawsec-clawhub-checker](#clawsec-clawhub-checker), [clawsec-feed](#clawsec-feed), [clawsec-suite](#clawsec-suite), [clawtributor](#clawtributor), [openclaw-audit-watchdog](#openclaw-audit-watchdog), [prompt-agent](#prompt-agent), [soul-guardian](#soul-guardian) |
-| **Authentication (Better Auth)** | [better-auth-best-practices](#better-auth-best-practices), [organization-best-practices](#organization-best-practices), [email-and-password-best-practices](#email-and-password-best-practices), [better-auth-security-best-practices](#better-auth-security-best-practices), [two-factor-authentication-best-practices](#two-factor-authentication-best-practices), [nextauth-authentication](#nextauth-authentication) |
+| **Authentication (Better Auth)** | [better-auth-best-practices](#better-auth-best-practices), [organization-best-practices](#organization-best-practices), [email-and-password-best-practices](#email-and-password-best-practices), [better-auth-security-best-practices](#better-auth-security-best-practices), [two-factor-authentication-best-practices](#two-factor-authentication-best-practices), [nextauth-authentication](#nextauth-authentication), [nextauth-dev-implementation-debugging](#nextauth-dev-implementation-debugging) |
 
 ---
 
@@ -101,6 +101,7 @@ Quick reference guide to agent resources in this workspace.
 - **better-auth-security-best-practices** – Better Auth security — rate limiting, CSRF, session management, trusted origins
 - **two-factor-authentication-best-practices** – Better Auth 2FA — TOTP, backup codes, enforcement, recovery flows
 - **nextauth-authentication** – NextAuth.js (Auth.js v5) — session management, OAuth providers, security best practices
+- **nextauth-dev-implementation-debugging** – Auth.js implementation + debugging playbook — strict testing, route protection, session diagnostics
 
 ---
 

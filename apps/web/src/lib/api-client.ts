@@ -274,6 +274,246 @@ export async function fetchWhtCertificates(params?: {
   return res.json();
 }
 
+// ── Treasury: Bank Accounts ─────────────────────────────────────────────────
+
+export interface TreasuryBankAccountRow {
+  id: string;
+  orgId: string;
+  accountName: string;
+  bankName: string;
+  accountNumber: string;
+  currencyCode: string;
+  bankIdentifierCode: string | null;
+  externalBankRef: string | null;
+  status: "active" | "inactive" | "suspended";
+  isPrimary: boolean;
+  activatedAt: string | null;
+  deactivatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryBankAccountListResponse {
+  data: TreasuryBankAccountRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}
+
+export async function fetchTreasuryBankAccounts(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: "active" | "inactive" | "suspended";
+}): Promise<TreasuryBankAccountListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+
+  const res = await apiFetch(`/v1/treasury/bank-accounts${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Treasury bank accounts API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createTreasuryBankAccount(command: {
+  accountName: string;
+  bankName: string;
+  accountNumber: string;
+  currencyCode: string;
+  bankIdentifierCode?: string;
+  externalBankRef?: string;
+  isPrimary?: boolean;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-bank-account", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create bank account failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateTreasuryBankAccount(command: {
+  id: string;
+  accountName?: string;
+  bankName?: string;
+  accountNumber?: string;
+  currencyCode?: string;
+  bankIdentifierCode?: string | null;
+  externalBankRef?: string | null;
+  isPrimary?: boolean;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/update-bank-account", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update bank account failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function activateTreasuryBankAccount(id: string): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/activate-bank-account", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), id }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Activate bank account failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function deactivateTreasuryBankAccount(id: string): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/deactivate-bank-account", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), id }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Deactivate bank account failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Treasury: Bank Statements ──────────────────────────────────────────────────
+
+export interface TreasuryBankStatementRow {
+  id: string;
+  orgId: string;
+  bankAccountId: string;
+  sourceRef: string;
+  statementDate: string;
+  openingBalance: string;
+  closingBalance: string;
+  currencyCode: string;
+  status: "pending" | "processing" | "processed" | "failed";
+  lineCount: number;
+  failureReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryBankStatementLineRow {
+  id: string;
+  orgId: string;
+  statementId: string;
+  lineNumber: number;
+  transactionDate: string;
+  valueDate: string;
+  amount: string;
+  direction: "inflow" | "outflow";
+  description: string;
+  reference: string | null;
+  status: "unmatched" | "matched" | "excluded";
+  createdAt: string;
+}
+
+export interface TreasuryBankStatementListResponse {
+  data: TreasuryBankStatementRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}
+
+export interface TreasuryBankStatementLineListResponse {
+  data: TreasuryBankStatementLineRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}
+
+export async function fetchTreasuryBankStatements(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: "pending" | "processing" | "processed" | "failed";
+  bankAccountId?: string;
+}): Promise<TreasuryBankStatementListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  if (params?.bankAccountId) query.set("bankAccountId", params.bankAccountId);
+  const qs = query.toString();
+
+  const res = await apiFetch(`/v1/treasury/bank-statements${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Treasury bank statements API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchTreasuryBankStatement(id: string): Promise<ApiSuccess<TreasuryBankStatementRow>> {
+  const res = await apiFetch(`/v1/treasury/bank-statements/${id}`);
+  if (!res.ok) throw new Error(`Treasury bank statement API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchTreasuryBankStatementLines(
+  statementId: string,
+  params?: {
+    cursor?: string;
+    limit?: number;
+  },
+): Promise<TreasuryBankStatementLineListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+
+  const res = await apiFetch(
+    `/v1/treasury/bank-statements/${statementId}/lines${qs ? `?${qs}` : ""}`,
+  );
+  if (!res.ok) throw new Error(`Treasury bank statement lines API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function ingestTreasuryBankStatement(command: {
+  bankAccountId: string;
+  sourceRef: string;
+  statementDate: string;
+  openingBalance: string;
+  closingBalance: string;
+  currencyCode: string;
+  lines: Array<{
+    lineNumber: number;
+    transactionDate: string;
+    valueDate?: string | null;
+    amount: string;
+    direction: "inflow" | "outflow";
+    description: string;
+    reference?: string;
+  }>;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/ingest-bank-statement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Ingest bank statement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function markTreasuryBankStatementFailed(command: {
+  statementId: string;
+  failureReason: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/mark-statement-failed", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Mark statement failed failed (${res.status})`);
+  }
+  return res.json();
+}
+
 /** Create a new payment run (DRAFT status). */
 export async function createPaymentRun(command: {
   description?: string;
@@ -851,6 +1091,669 @@ export async function updateNumberingConfig(
 }
 
 // ── Audit ────────────────────────────────────────────────────────────────────
+
+// ── Treasury Wave 2: Reconciliation Sessions ─────────────────────────────────
+
+export interface TreasuryReconciliationSessionRow {
+  id: string;
+  orgId: string;
+  bankAccountId: string;
+  bankStatementId: string;
+  status: "open" | "matching" | "closed" | "voided";
+  toleranceMinor: string;
+  closedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryReconciliationMatchRow {
+  id: string;
+  orgId: string;
+  reconciliationSessionId: string;
+  statementLineId: string;
+  targetType: string;
+  targetId: string;
+  matchedAmountMinor: string;
+  status: "matched" | "unmatched";
+  matchedAt: string;
+  unmatchedAt: string | null;
+  createdAt: string;
+}
+
+export async function fetchTreasuryReconciliationSessions(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{ data: TreasuryReconciliationSessionRow[]; cursor: string | null; hasMore: boolean }> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/reconciliation-sessions${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Reconciliation sessions API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryReconciliationSession(
+  id: string,
+): Promise<ApiSuccess<TreasuryReconciliationSessionRow>> {
+  const res = await apiFetch(`/v1/treasury/reconciliation-sessions/${id}`);
+  if (!res.ok) throw new Error(`Reconciliation session API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchTreasuryReconciliationMatches(
+  sessionId: string,
+): Promise<{ data: TreasuryReconciliationMatchRow[] }> {
+  const res = await apiFetch(`/v1/treasury/reconciliation-sessions/${sessionId}/matches`);
+  if (!res.ok) throw new Error(`Reconciliation matches API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function openTreasuryReconciliationSession(command: {
+  bankAccountId: string;
+  bankStatementId: string;
+  toleranceMinor?: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/open-reconciliation-session", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Open reconciliation session failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function closeReconciliationSession(
+  reconciliationSessionId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/close-reconciliation-session", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), reconciliationSessionId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Close reconciliation session failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Treasury Wave 2: Payment Instructions ────────────────────────────────────
+
+export interface TreasuryPaymentInstructionRow {
+  id: string;
+  orgId: string;
+  sourceBankAccountId: string;
+  beneficiaryName: string;
+  beneficiaryAccountNumber: string;
+  beneficiaryBankCode: string | null;
+  amountMinor: string;
+  currencyCode: string;
+  paymentMethod: "bank_transfer" | "internal_transfer" | "check" | "direct_debit" | "manual";
+  reference: string | null;
+  requestedExecutionDate: string;
+  status: "pending" | "processing" | "approved" | "rejected" | "cancelled";
+  createdByPrincipalId: string | null;
+  submittedAt: string | null;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchTreasuryPaymentInstructions(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{ data: TreasuryPaymentInstructionRow[]; cursor: string | null; hasMore: boolean }> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/payment-instructions${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Payment instructions API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryPaymentInstruction(
+  id: string,
+): Promise<ApiSuccess<TreasuryPaymentInstructionRow>> {
+  const res = await apiFetch(`/v1/treasury/payment-instructions/${id}`);
+  if (!res.ok) throw new Error(`Payment instruction API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createTreasuryPaymentInstruction(command: {
+  sourceBankAccountId: string;
+  beneficiaryName: string;
+  beneficiaryAccountNumber: string;
+  beneficiaryBankCode?: string;
+  amountMinor: string;
+  currencyCode: string;
+  paymentMethod: "bank_transfer" | "internal_transfer" | "check" | "direct_debit" | "manual";
+  reference?: string;
+  requestedExecutionDate: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-payment-instruction", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create payment instruction failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function submitTreasuryPaymentInstruction(
+  paymentInstructionId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/submit-payment-instruction", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), paymentInstructionId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Submit payment instruction failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function approveTreasuryPaymentInstruction(
+  paymentInstructionId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/approve-payment-instruction", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), paymentInstructionId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Approve payment instruction failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function rejectTreasuryPaymentInstruction(
+  paymentInstructionId: string,
+  rejectionReason: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/reject-payment-instruction", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), paymentInstructionId, rejectionReason }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Reject payment instruction failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Treasury Wave 2: Payment Batches ─────────────────────────────────────────
+
+export interface TreasuryPaymentBatchRow {
+  id: string;
+  orgId: string;
+  sourceBankAccountId: string;
+  description: string | null;
+  status: "draft" | "pending_approval" | "approved" | "released" | "failed" | "cancelled";
+  totalAmountMinor: string;
+  itemCount: number;
+  requestedReleaseAt: string | null;
+  approvedAt: string | null;
+  releasedAt: string | null;
+  failedAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchTreasuryPaymentBatches(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{ data: TreasuryPaymentBatchRow[]; cursor: string | null; hasMore: boolean }> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/payment-batches${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Payment batches API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function createTreasuryPaymentBatch(command: {
+  sourceBankAccountId: string;
+  description?: string;
+  paymentInstructionIds: string[];
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-payment-batch", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create payment batch failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function requestTreasuryPaymentBatchRelease(
+  batchId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/request-payment-batch-release", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), batchId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Request payment batch release failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function releaseTreasuryPaymentBatch(
+  batchId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/release-payment-batch", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), batchId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Release payment batch failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Treasury Wave 3: Cash Position Snapshot ─────────────────────────────────
+
+export interface TreasuryCashPositionSnapshotRow {
+  id: string;
+  orgId: string;
+  snapshotDate: string;
+  asOfAt: string;
+  baseCurrencyCode: string;
+  status: "draft" | "calculated" | "superseded";
+  sourceVersion: string;
+  totalBookBalanceMinor: string;
+  totalAvailableBalanceMinor: string;
+  totalPendingInflowMinor: string;
+  totalPendingOutflowMinor: string;
+  totalProjectedAvailableMinor: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryCashPositionSnapshotLineRow {
+  id: string;
+  orgId: string;
+  snapshotId: string;
+  bankAccountId: string | null;
+  currencyCode: string;
+  bucketType:
+    | "book_balance"
+    | "available_balance"
+    | "pending_inflow"
+    | "pending_outflow"
+    | "projected_available_balance";
+  amountMinor: string;
+  sourceType:
+    | "bank_statement"
+    | "payment_instruction"
+    | "manual_adjustment"
+    | "ap_projection"
+    | "ar_projection";
+  sourceId: string | null;
+  lineDescription: string | null;
+  createdAt: string;
+}
+
+export interface TreasuryCashPositionSnapshotLineageRow {
+  id: string;
+  orgId: string;
+  snapshotId: string;
+  snapshotLineId: string;
+  liquiditySourceFeedId: string;
+  createdAt: string;
+}
+
+export async function fetchTreasuryCashPositionSnapshots(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{ data: TreasuryCashPositionSnapshotRow[]; cursor: string | null; hasMore: boolean }> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/cash-position-snapshots${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Cash position snapshots API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryCashPositionSnapshot(
+  id: string,
+): Promise<ApiSuccess<TreasuryCashPositionSnapshotRow>> {
+  const res = await apiFetch(`/v1/treasury/cash-position-snapshots/${id}`);
+  if (!res.ok) throw new Error(`Cash position snapshot API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchTreasuryCashPositionSnapshotLines(
+  snapshotId: string,
+): Promise<{ data: TreasuryCashPositionSnapshotLineRow[] }> {
+  const res = await apiFetch(`/v1/treasury/cash-position-snapshots/${snapshotId}/lines`);
+  if (!res.ok) throw new Error(`Cash position lines API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryCashPositionSnapshotLineage(
+  snapshotId: string,
+): Promise<{ data: TreasuryCashPositionSnapshotLineageRow[] }> {
+  const res = await apiFetch(`/v1/treasury/cash-position-snapshots/${snapshotId}/lineage`);
+  if (!res.ok) throw new Error(`Cash position lineage API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function requestTreasuryCashPositionSnapshot(command: {
+  snapshotDate: string;
+  asOfAt: string;
+  baseCurrencyCode: string;
+  sourceVersion: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/request-cash-position-snapshot", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Request cash position snapshot failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Treasury Wave 3.2: Liquidity Forecast ──────────────────────────────────
+
+export interface TreasuryLiquidityScenarioRow {
+  id: string;
+  orgId: string;
+  code: string;
+  name: string;
+  scenarioType: "base_case" | "optimistic" | "stress" | "custom";
+  status: "draft" | "active" | "inactive";
+  horizonDays: number;
+  assumptionSetVersion: string;
+  assumptionsJson: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryLiquidityForecastRow {
+  id: string;
+  orgId: string;
+  liquidityScenarioId: string;
+  cashPositionSnapshotId: string;
+  forecastDate: string;
+  startDate: string;
+  endDate: string;
+  bucketGranularity: "daily" | "weekly";
+  baseCurrencyCode: string;
+  status: "draft" | "calculated" | "superseded";
+  sourceVersion: string;
+  assumptionSetVersion: string;
+  openingLiquidityMinor: string;
+  closingLiquidityMinor: string;
+  totalExpectedInflowsMinor: string;
+  totalExpectedOutflowsMinor: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TreasuryLiquidityForecastBucketRow {
+  id: string;
+  orgId: string;
+  liquidityForecastId: string;
+  bucketIndex: number;
+  bucketStartDate: string;
+  bucketEndDate: string;
+  expectedInflowsMinor: string;
+  expectedOutflowsMinor: string;
+  openingBalanceMinor: string;
+  closingBalanceMinor: string;
+  varianceMinor: string | null;
+  createdAt: string;
+}
+
+export interface TreasuryLiquidityForecastBucketLineageRow {
+  id: string;
+  orgId: string;
+  liquidityForecastId: string;
+  bucketId: string;
+  liquiditySourceFeedId: string;
+  createdAt: string;
+}
+
+export interface TreasuryLiquiditySourceFeedRow {
+  id: string;
+  orgId: string;
+  sourceType: "ap_due_payment" | "ar_expected_receipt" | "manual_adjustment";
+  sourceId: string;
+  sourceDocumentNumber: string | null;
+  bankAccountId: string | null;
+  currencyCode: string;
+  amountMinor: string;
+  dueDate: string;
+  direction: "inflow" | "outflow";
+  confidenceScore: number | null;
+  status: "open" | "consumed" | "cancelled";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function createTreasuryLiquidityScenario(command: {
+  code: string;
+  name: string;
+  scenarioType: "base_case" | "optimistic" | "stress" | "custom";
+  horizonDays: number;
+  assumptionSetVersion: string;
+  assumptionsJson: Record<string, unknown>;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-liquidity-scenario", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create liquidity scenario failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function activateTreasuryLiquidityScenario(
+  liquidityScenarioId: string,
+): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/activate-liquidity-scenario", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), liquidityScenarioId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Activate liquidity scenario failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchTreasuryLiquidityScenarios(): Promise<{ data: TreasuryLiquidityScenarioRow[] }> {
+  const res = await apiFetch("/v1/treasury/liquidity-scenarios");
+  if (!res.ok) throw new Error(`Liquidity scenarios API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function requestTreasuryLiquidityForecast(command: {
+  liquidityScenarioId: string;
+  cashPositionSnapshotId: string;
+  forecastDate: string;
+  startDate: string;
+  endDate: string;
+  bucketGranularity: "daily" | "weekly";
+  baseCurrencyCode: string;
+  sourceVersion: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/request-liquidity-forecast", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Request liquidity forecast failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function upsertTreasuryLiquiditySourceFeed(command: {
+  sourceType: "ap_due_payment" | "ar_expected_receipt" | "manual_adjustment";
+  sourceId: string;
+  sourceDocumentNumber?: string | null;
+  bankAccountId?: string | null;
+  currencyCode: string;
+  amountMinor: string;
+  dueDate: string;
+  direction: "inflow" | "outflow";
+  confidenceScore?: number | null;
+  status?: "open" | "consumed" | "cancelled";
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/upsert-liquidity-source-feed", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Upsert liquidity source feed failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchTreasuryLiquiditySourceFeeds(params?: {
+  status?: "open" | "consumed" | "cancelled";
+  dueDateLte?: string;
+}): Promise<{ data: TreasuryLiquiditySourceFeedRow[] }> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.dueDateLte) query.set("dueDateLte", params.dueDateLte);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/liquidity-source-feeds${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Liquidity source feeds API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryLiquidityForecasts(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: "draft" | "calculated" | "superseded";
+}): Promise<{ data: TreasuryLiquidityForecastRow[]; cursor: string | null; hasMore: boolean }> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/liquidity-forecasts${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Liquidity forecasts API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryLiquidityForecast(
+  id: string,
+): Promise<ApiSuccess<TreasuryLiquidityForecastRow>> {
+  const res = await apiFetch(`/v1/treasury/liquidity-forecasts/${id}`);
+  if (!res.ok) throw new Error(`Liquidity forecast API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchTreasuryLiquidityForecastBuckets(
+  forecastId: string,
+): Promise<{ data: TreasuryLiquidityForecastBucketRow[] }> {
+  const res = await apiFetch(`/v1/treasury/liquidity-forecasts/${forecastId}/buckets`);
+  if (!res.ok) throw new Error(`Liquidity forecast buckets API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryLiquidityForecastLineage(
+  forecastId: string,
+): Promise<{ data: TreasuryLiquidityForecastBucketLineageRow[] }> {
+  const res = await apiFetch(`/v1/treasury/liquidity-forecasts/${forecastId}/lineage`);
+  if (!res.ok) throw new Error(`Liquidity forecast lineage API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export interface TreasuryForecastVarianceRow {
+  id: string;
+  orgId: string;
+  liquidityForecastId: string;
+  bucketId: string;
+  actualInflowsMinor: string;
+  actualOutflowsMinor: string;
+  actualClosingBalanceMinor: string;
+  inflowVarianceMinor: string;
+  outflowVarianceMinor: string;
+  closingBalanceVarianceMinor: string;
+  measuredAt: string;
+  createdAt: string;
+}
+
+export async function recordTreasuryForecastVariance(command: {
+  liquidityForecastId: string;
+  bucketId: string;
+  actualInflowsMinor: string;
+  actualOutflowsMinor: string;
+  actualClosingBalanceMinor: string;
+  measuredAt: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/record-forecast-variance", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Record forecast variance failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchTreasuryForecastVarianceByForecast(
+  liquidityForecastId: string,
+): Promise<{ data: TreasuryForecastVarianceRow[] }> {
+  const res = await apiFetch(`/v1/treasury/liquidity-forecasts/${liquidityForecastId}/variance`);
+  if (!res.ok) throw new Error(`Forecast variance API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+export async function fetchTreasuryForecastVariance(
+  id: string,
+): Promise<ApiSuccess<TreasuryForecastVarianceRow>> {
+  const res = await apiFetch(`/v1/treasury/forecast-variance/${id}`);
+  if (!res.ok) throw new Error(`Forecast variance API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
 
 export interface AuditLogRow {
   id: string;
