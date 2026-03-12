@@ -184,7 +184,8 @@ Done when:
 
 ### Known open items
 
-- Optional hardening: run API finance integration invariants with DB available to exercise `journal-balance` and `idempotency` in full.
+- No Wave 5 HRM blocking open items remain.
+- Optional platform hardening (outside HRM wave scope): run API finance integration invariants with DB available to exercise `journal-balance` and `idempotency` in full.
 
 ---
 

@@ -1,3 +1,48 @@
+## Wave Status: DONE
+
+---
+
+# Wave 6 Closure Update (2026-03-13)
+
+This section supersedes the original Wave 6 scaffold below.
+
+## Scope
+
+Wave 6 was intended to close read-model, organization visibility, and invariant coverage gaps.
+
+## Current status
+
+- Functional status: DONE
+- Quality status: DONE (HR scope)
+- Program dependency status: No blocking gaps remain inside HR Wave 1-6 scope.
+
+## Validated evidence
+
+- Organization lifecycle command routes are present:
+  - `apps/api/src/routes/erp/hr/assign-position.ts`
+  - `apps/api/src/routes/erp/hr/close-position.ts`
+- Read/query routes are present:
+  - `apps/api/src/routes/erp/hr/list-requisitions.ts`
+  - `apps/api/src/routes/erp/hr/get-application.ts`
+  - `apps/api/src/routes/erp/hr/list-pending-onboarding.ts`
+  - `apps/api/src/routes/erp/hr/get-org-tree.ts`
+- Core query/services are present in active architecture paths:
+  - `packages/core/src/erp/hr/recruitment/queries/list-requisitions.query.ts`
+  - `packages/core/src/erp/hr/recruitment/queries/get-application.query.ts`
+  - `packages/core/src/erp/hr/onboarding/queries/list-pending-onboarding.query.ts`
+  - `packages/core/src/erp/hr/organization/queries/get-org-tree.query.ts`
+  - `packages/core/src/erp/hr/organization/services/assign-position.service.ts`
+  - `packages/core/src/erp/hr/organization/services/close-position.service.ts`
+- Wave 6 organization invariants test coverage added:
+  - `packages/core/src/erp/hr/organization/__vitest_test__/position-lifecycle.service.test.ts`
+
+## Remaining
+
+- No remaining implementation gaps for Wave 6 scope.
+- Legacy scaffold content below references old architecture (`packages/domain`, `apps/api/src/modules`) and is retained for traceability only.
+
+---
+
 Below is the **next Phase 1 scaffold batch** focused on **read models, org visibility, and invariant test coverage**:
 
 1. `list-requisitions.query.ts`

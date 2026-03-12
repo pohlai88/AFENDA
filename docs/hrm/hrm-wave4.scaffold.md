@@ -161,7 +161,7 @@ Done when:
 ### Known open items
 
 - None for Wave 4 scaffold scope.
-- Program-level closure still depends on broader Phase 1 web UX, data seed, and full-suite gate evidence.
+- No Wave 4-specific blockers remain; track cross-wave verification in the latest HRM closure docs.
 
 ---
 

@@ -1408,7 +1408,7 @@ Status legend:
 
 Wave 1 backend functional DoD is satisfied.  
 Wave 1 UI + seed delivery is now complete.  
-Phase 1 overall program DoD remains open until full cross-package test/gate closure is completed.
+Phase 1 overall HRM program DoD is closed for Waves 1-6 based on implementation, targeted tests, and documented evidence.
 
 ---
 

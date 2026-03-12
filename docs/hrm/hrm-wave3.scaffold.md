@@ -116,7 +116,8 @@ Coverage mapping:
 
 ### Known open items
 
-- Program-level closure still depends on Wave 1 remaining work (Web HR delivery, seeders, and full suite test closure).
+- No Wave 3 blocking open items remain.
+- Program-level sign-off should reference the latest consolidated HRM closure matrix.
 
 ---
 
