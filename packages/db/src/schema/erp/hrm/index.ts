@@ -4,3 +4,5 @@ export * from "./hrm-employment";
 export * from "./hrm-organization";
 export * from "./hrm-recruitment";
 export * from "./hrm-onboarding";
+export * from "./hrm-attendance";
+export * from "./hrm-leave";

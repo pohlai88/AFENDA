@@ -12,4 +12,8 @@ export const hrmQueryKeys = {
   onboardingChecklist: (planId: string) => ["hrm", "onboarding", "checklist", planId] as const,
   pendingOnboarding: ["hrm", "onboarding", "pending"] as const,
   separationCase: (caseId: string) => ["hrm", "onboarding", "separation-case", caseId] as const,
+  attendanceRecords: ["hrm", "attendance", "records"] as const,
+  rosterAssignments: ["hrm", "attendance", "roster"] as const,
+  leaveRequests: ["hrm", "leave", "requests"] as const,
+  leaveBalances: ["hrm", "leave", "balances"] as const,
 };

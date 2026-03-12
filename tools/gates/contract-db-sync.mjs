@@ -241,6 +241,40 @@ const SYNC_PAIRS = [
     excludeFromDb: [],
   },
 
+  // ─── HRM ─────────────────────────────────────────────────────────────
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-attendance.ts",
+    dbTable: "hrm_attendance_records",
+    contractFile: "packages/contracts/src/erp/hr/attendance.entity.ts",
+    contractSchema: "HrmAttendanceRecordSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-leave.ts",
+    dbTable: "hrm_leave_types",
+    contractFile: "packages/contracts/src/erp/hr/leave.entity.ts",
+    contractSchema: "HrmLeaveTypeSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-leave.ts",
+    dbTable: "hrm_leave_balances",
+    contractFile: "packages/contracts/src/erp/hr/leave.entity.ts",
+    contractSchema: "HrmLeaveBalanceSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-leave.ts",
+    dbTable: "hrm_leave_requests",
+    contractFile: "packages/contracts/src/erp/hr/leave.entity.ts",
+    contractSchema: "HrmLeaveRequestSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "status", "createdAt", "updatedAt"],
+  },
+
   // ─── IAM ─────────────────────────────────────────────────────────────
   {
     dbFile: "packages/db/src/schema/kernel/identity.ts",

@@ -9,7 +9,7 @@ Wave 7 focus:
 
 This wave starts Phase 2 operations after Waves 1-6 closure.
 
-## Wave Status: TODO
+## Wave Status: IN PROGRESS
 
 ---
 
@@ -51,7 +51,7 @@ Completion rule: a remaining item is only complete when implementation + tests +
 
 ## W7-R1. Contracts and schema foundation
 
-Status: TODO
+Status: IN PROGRESS
 
 Deliverables:
 
@@ -77,7 +77,7 @@ Done when:
 
 ## W7-R2. Core services and API routes
 
-Status: TODO
+Status: IN PROGRESS
 
 Deliverables:
 
@@ -127,7 +127,7 @@ Done when:
 
 ## W7-R4. Validation and closure
 
-Status: TODO
+Status: IN PROGRESS
 
 Deliverables:
 
@@ -156,21 +156,40 @@ Done when:
 
 ## Current delivery status
 
-- Wave 7 is not started; this document is the active scaffold and tracker.
-- Waves 1-6 are already closed for HR scope.
+- Wave 7 implementation is in progress across contracts, DB schema, core services, and API routes.
+- Attendance and leave foundations are scaffolded and exported in active barrels.
+- Attendance and leave read-model queries are implemented and exposed through GET routes.
+- Roster assignment command flow is implemented with overlap guard and targeted invariant tests.
+- Leave balances read-model query and GET route are implemented.
+- Local Docker Postgres has Wave 7 attendance/leave tables applied for development.
+- Waves 1-6 remain closed for HR scope.
 
 ## Known open items
 
-- Wave 7 backlog not yet implemented.
-- Payroll-input readiness from attendance/leave is pending this wave.
+- ESS/MSS UI surfaces for attendance and leave are not started.
+- End-to-end attendance and leave integration checks are still pending.
+
+## Delta progress (this increment)
+
+- Added leave-balance recalculation command schema in contracts.
+- Added `recalculate-leave-balance` service and API route.
+- Added leave-balance recalculation invariants test coverage.
+- Revalidated `pnpm check:contract-db-sync` with 0 violations.
+
+## Newly added evidence (this increment)
+
+- `packages/contracts/src/erp/hr/leave.commands.ts`
+- `packages/core/src/erp/hr/leave/services/recalculate-leave-balance.service.ts`
+- `packages/core/src/erp/hr/leave/__vitest_test__/recalculate-leave-balance.service.test.ts`
+- `apps/api/src/routes/erp/hr/recalculate-leave-balance.ts`
 
 ---
 
 # Next exact batch to build
 
-1. Contracts + schema files for attendance/leave.
-2. Core service skeletons + route registrations.
-3. First invariant tests for leave approval and roster overlap.
+1. Implement Wave 7 ESS/MSS attendance and leave route surfaces.
+2. Add page loading/error/empty states for each new HR route.
+3. Add API-client integration checks for attendance and leave flows.
 
 Exit rule:
 

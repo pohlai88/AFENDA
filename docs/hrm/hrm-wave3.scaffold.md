@@ -1208,16 +1208,16 @@ export async function registerHrmRoutes(app: FastifyInstance) {
 
 Wave 3 scoped implementation is now functionally complete for:
 
-* terminate + rehire lifecycle command path
-* employee profile/list read models with enrichment
-* route coverage for lifecycle + profile/list endpoints
-* targeted tests for lifecycle guards and read-model behavior
+- terminate + rehire lifecycle command path
+- employee profile/list read models with enrichment
+- route coverage for lifecycle + profile/list endpoints
+- targeted tests for lifecycle guards and read-model behavior
 
 Remaining items are now program-level (outside this wave's narrow scope):
 
-* Wave 1 web HR delivery
-* Seed data implementation
-* Full-suite and cross-wave invariant test closure
+- Wave 1 web HR delivery
+- Seed data implementation
+- Full-suite and cross-wave invariant test closure
 
 ---
 

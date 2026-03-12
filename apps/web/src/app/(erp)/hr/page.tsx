@@ -39,6 +39,23 @@ const groups = [
       { label: "Exit Clearance", href: "/hr/onboarding/exit-clearance" },
     ],
   },
+  {
+    title: "Attendance",
+    href: "/hr/attendance/records",
+    links: [
+      { label: "Attendance Records", href: "/hr/attendance/records" },
+      { label: "Roster Assignments", href: "/hr/attendance/roster" },
+    ],
+  },
+  {
+    title: "Leave",
+    href: "/hr/leave/requests",
+    links: [
+      { label: "My Leave Requests", href: "/hr/leave/requests" },
+      { label: "Leave Approvals", href: "/hr/leave/approvals" },
+      { label: "Leave Balances", href: "/hr/leave/balances" },
+    ],
+  },
 ];
 
 export default function HrmHomePage() {
@@ -62,7 +79,7 @@ export default function HrmHomePage() {
       <div className="mb-6 space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Human Resources</h1>
         <p className="text-sm text-muted-foreground">
-          Workforce truth-first workspace for people, organization, recruitment, and onboarding/offboarding.
+          Workforce truth-first workspace for people, organization, recruitment, onboarding/offboarding, attendance, and leave.
         </p>
       </div>
 

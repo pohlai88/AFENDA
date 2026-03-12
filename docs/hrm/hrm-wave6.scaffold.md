@@ -54,7 +54,7 @@ Below is the **next Phase 1 scaffold batch** focused on **read models, org visib
 7. read/query route files
 8. Phase 1 invariant test scaffold
 
-This is the right next step because your Phase 1 foundation is already mutation-rich; now AFENDA needs **review surfaces and control gates** to keep workforce truth coherent. That fits the charter’s release gates and invariants.  
+This is the right next step because your Phase 1 foundation is already mutation-rich; now AFENDA needs **review surfaces and control gates** to keep workforce truth coherent. That fits the charter’s release gates and invariants.
 
 ---
 

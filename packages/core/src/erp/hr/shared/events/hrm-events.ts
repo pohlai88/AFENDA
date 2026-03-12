@@ -23,6 +23,11 @@ export const HRM_EVENTS = {
   SEPARATION_STARTED: "hrm.separation.started",
   EXIT_ITEM_CLEARED: "hrm.exit-item.cleared",
   SEPARATION_FINALIZED: "hrm.separation.finalized",
+  ATTENDANCE_RECORDED: "hrm.attendance.recorded",
+  ROSTER_ASSIGNMENT_CREATED: "hrm.roster-assignment.created",
+  LEAVE_REQUEST_CREATED: "hrm.leave.request.created",
+  LEAVE_REQUEST_REVIEWED: "hrm.leave.request.reviewed",
+  LEAVE_BALANCE_RECALCULATED: "hrm.leave.balance.recalculated",
 } as const;
 
 export type HrmEventName = (typeof HRM_EVENTS)[keyof typeof HRM_EVENTS];

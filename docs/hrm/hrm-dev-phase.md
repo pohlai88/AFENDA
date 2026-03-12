@@ -8,7 +8,7 @@ It is structured as:
 4. **dependency order**
 5. **what to build first in code**
 
-This follows the rollout shape already implied in your HRM charter and domain design docs.  
+This follows the rollout shape already implied in your HRM charter and domain design docs.
 
 ## Implementation Note (2026-03-13)
 
@@ -132,7 +132,7 @@ HRM
     └── Labor Cost Projections
 ```
 
-That overall structure is consistent with the HRM full chapter and one-page charter.  
+That overall structure is consistent with the HRM full chapter and one-page charter.
 
 ---
 
@@ -171,7 +171,7 @@ hrm-organization.ts
 - idempotency key for commands
 ```
 
-This matches your release contract: schema-is-truth, command/query split, withAudit, outbox, strict multi-tenant isolation. 
+This matches your release contract: schema-is-truth, command/query split, withAudit, outbox, strict multi-tenant isolation.
 
 ---
 
@@ -192,10 +192,10 @@ onboarding-offboarding
 
 Because every later HR action depends on:
 
-* who the worker is
-* what employment they hold
-* where they sit in the org
-* whether they are active / transferred / terminated
+- who the worker is
+- what employment they hold
+- where they sit in the org
+- whether they are active / transferred / terminated
 
 ### Tables
 
@@ -227,7 +227,7 @@ hrm_separation_cases
 hrm_exit_clearance_items
 ```
 
-These entities are directly reflected in the uploaded schema plan. 
+These entities are directly reflected in the uploaded schema plan.
 
 ---
 
@@ -262,12 +262,12 @@ hrm_leave_requests
 
 Now AFENDA can support:
 
-* daily attendance truth
-* leave approval
-* manager approvals
-* time-based payroll inputs
+- daily attendance truth
+- leave approval
+- manager approvals
+- time-based payroll inputs
 
-This is also listed as essential first-rollout spine in the charter. 
+This is also listed as essential first-rollout spine in the charter.
 
 ---
 
@@ -313,14 +313,14 @@ hrm_payroll_exceptions
 
 Because payroll is only correct if these are already governed:
 
-* active employment
-* effective assignment
-* pay group mapping
-* leave and attendance inputs
-* approval chain
-* legal entity and cost center
+- active employment
+- effective assignment
+- pay group mapping
+- leave and attendance inputs
+- approval chain
+- legal entity and cost center
 
-Your domain chapter explicitly treats payroll as the most financially sensitive HR sub-module. 
+Your domain chapter explicitly treats payroll as the most financially sensitive HR sub-module.
 
 ---
 
@@ -469,7 +469,7 @@ packages/db/src/schema/hrm/
   index.ts
 ```
 
-That file layout is aligned with the uploaded design recommendation. 
+That file layout is aligned with the uploaded design recommendation.
 
 ## Domain services
 
@@ -569,7 +569,7 @@ claims
 health & safety
 ```
 
-This is basically the same as your charter’s R1–R5 release motion, just made more implementation-ready. 
+This is basically the same as your charter’s R1–R5 release motion, just made more implementation-ready.
 
 ---
 
@@ -597,11 +597,11 @@ hrm_payroll_gl_postings
 
 That is enough to create:
 
-* workforce truth
-* org truth
-* operational inputs
-* payroll result truth
-* finance handoff
+- workforce truth
+- org truth
+- operational inputs
+- payroll result truth
+- finance handoff
 
 ---
 
@@ -626,9 +626,9 @@ That gives you a stable base before any payroll work starts.
 
 Next, I can turn this into a **real AFENDA repo scaffold** with exact file paths, like:
 
-* `packages/db/src/schema/hrm/_shared.ts`
-* `packages/domain/src/hrm/core/services/hire-employee.service.ts`
-* `apps/api/src/modules/hrm/core-hr/routes/create-employee.ts`
-* `apps/web/src/features/hrm/people/...`
+- `packages/db/src/schema/hrm/_shared.ts`
+- `packages/domain/src/hrm/core/services/hire-employee.service.ts`
+- `apps/api/src/modules/hrm/core-hr/routes/create-employee.ts`
+- `apps/web/src/features/hrm/people/...`
 
 and lay it out as **Phase 1 implementation scaffold**.

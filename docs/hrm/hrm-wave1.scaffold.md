@@ -2,12 +2,12 @@ Below is the **AFENDA HRM Phase 1 implementation scaffold**.
 
 This is the **first serious delivery wave**:
 
-* Core HR
-* Organizational Management
-* Recruitment
-* Onboarding / Offboarding
+- Core HR
+- Organizational Management
+- Recruitment
+- Onboarding / Offboarding
 
-It matches the HRM charter’s **R1 foundation spine** and keeps Payroll out until workforce truth is stable. 
+It matches the HRM charter’s **R1 foundation spine** and keeps Payroll out until workforce truth is stable.
 
 ## Wave Status: DONE
 
@@ -490,15 +490,15 @@ apps/web/src/app/(erp)/hr/
 
 This file defines:
 
-* enums
-* base org columns
-* effective date columns
-* approval columns
-* metadata json
-* money helper
-* common indexes
+- enums
+- base org columns
+- effective date columns
+- approval columns
+- metadata json
+- money helper
+- common indexes
 
-Your uploaded schema scaffold already uses this pattern. 
+Your uploaded schema scaffold already uses this pattern.
 
 ### Must contain
 
@@ -536,13 +536,13 @@ hrm_employee_profiles
 
 ### Purpose
 
-* canonical human identity
-* employee profile layer
-* personal identities
-* emergency contacts
-* employee code
+- canonical human identity
+- employee profile layer
+- personal identities
+- emergency contacts
+- employee code
 
-This follows the uploaded architecture and schema plan. 
+This follows the uploaded architecture and schema plan.
 
 ---
 
@@ -559,10 +559,10 @@ hrm_employment_status_history
 
 ### Purpose
 
-* employment truth
-* contracts
-* effective-dated org assignment
-* append-only lifecycle transitions
+- employment truth
+- contracts
+- effective-dated org assignment
+- append-only lifecycle transitions
 
 ### Must-have invariant
 
@@ -584,11 +584,11 @@ hrm_position_assignments
 
 ### Purpose
 
-* org hierarchy
-* job architecture
-* grade structure
-* budgeted positions
-* employee-to-position assignment
+- org hierarchy
+- job architecture
+- grade structure
+- budgeted positions
+- employee-to-position assignment
 
 ---
 
@@ -607,9 +607,9 @@ hrm_offers
 
 ### Purpose
 
-* requisition-to-offer pipeline
-* hiring evidence
-* candidate lifecycle
+- requisition-to-offer pipeline
+- hiring evidence
+- candidate lifecycle
 
 ---
 
@@ -627,10 +627,10 @@ hrm_exit_clearance_items
 
 ### Purpose
 
-* joiner process
-* mover/leaver control
-* probation evidence
-* exit clearance
+- joiner process
+- mover/leaver control
+- probation evidence
+- exit clearance
 
 ---
 
@@ -687,7 +687,7 @@ Every command service must:
 7. return deterministic result
 ```
 
-This exactly matches the HRM charter architecture contract. 
+This exactly matches the HRM charter architecture contract.
 
 ---
 
@@ -732,12 +732,12 @@ This is the most important Phase 1 command.
 
 ### Responsibilities
 
-* create employee profile
-* create employment record
-* create initial work assignment
-* optionally create employment contract
-* optionally create onboarding plan
-* emit `hrm.employee.hired`
+- create employee profile
+- create employment record
+- create initial work assignment
+- optionally create employment contract
+- optionally create onboarding plan
+- emit `hrm.employee.hired`
 
 ### Input
 
@@ -798,10 +798,10 @@ type HireEmployeeOutput = {
 
 ### Responsibilities
 
-* close old work assignment
-* create new effective-dated assignment
-* validate no overlap
-* emit `hrm.employee.transferred`
+- close old work assignment
+- create new effective-dated assignment
+- validate no overlap
+- emit `hrm.employee.transferred`
 
 ### Input
 
@@ -828,11 +828,11 @@ type TransferEmployeeInput = {
 
 ### Responsibilities
 
-* validate state transition
-* create employment status history
-* update employment status
-* start separation case
-* emit `hrm.employee.terminated`
+- validate state transition
+- create employment status history
+- update employment status
+- start separation case
+- emit `hrm.employee.terminated`
 
 ---
 
@@ -840,10 +840,10 @@ type TransferEmployeeInput = {
 
 ### Responsibilities
 
-* create new employment record for existing employee profile
-* preserve historical previous employment
-* create new assignment
-* emit `hrm.employee.rehired`
+- create new employment record for existing employee profile
+- preserve historical previous employment
+- create new assignment
+- emit `hrm.employee.rehired`
 
 ---
 
@@ -851,28 +851,28 @@ type TransferEmployeeInput = {
 
 ## `create-org-unit.service.ts`
 
-* create org unit
-* validate parent org unit
-* support hierarchy
+- create org unit
+- validate parent org unit
+- support hierarchy
 
 ## `create-job.service.ts`
 
-* create job architecture record
+- create job architecture record
 
 ## `create-grade.service.ts`
 
-* create job grade and salary band anchor
+- create job grade and salary band anchor
 
 ## `create-position.service.ts`
 
-* create budgeted position
-* link to org/job/grade/cost center
+- create budgeted position
+- link to org/job/grade/cost center
 
 ## `assign-position.service.ts`
 
-* assign employment to position
-* enforce headcount limit
-* update position assignment history
+- assign employment to position
+- enforce headcount limit
+- update position assignment history
 
 ---
 
@@ -880,40 +880,40 @@ type TransferEmployeeInput = {
 
 ## `create-requisition.service.ts`
 
-* create manpower request
-* optionally tie to position
-* approval status starts as draft/submitted
+- create manpower request
+- optionally tie to position
+- approval status starts as draft/submitted
 
 ## `approve-requisition.service.ts`
 
-* validate approver
-* record approval
-* emit requisition approved event
+- validate approver
+- record approval
+- emit requisition approved event
 
 ## `create-candidate.service.ts`
 
-* create candidate profile
+- create candidate profile
 
 ## `submit-application.service.ts`
 
-* link candidate to requisition
+- link candidate to requisition
 
 ## `schedule-interview.service.ts`
 
-* create interview schedule
+- create interview schedule
 
 ## `submit-interview-feedback.service.ts`
 
-* record interviewer evaluation
+- record interviewer evaluation
 
 ## `issue-offer.service.ts`
 
-* create offer record
+- create offer record
 
 ## `accept-offer.service.ts`
 
-* mark offer accepted
-* prepare onboarding handoff
+- mark offer accepted
+- prepare onboarding handoff
 
 ---
 
@@ -921,36 +921,36 @@ type TransferEmployeeInput = {
 
 ## `start-onboarding.service.ts`
 
-* create onboarding plan
-* generate onboarding tasks
-* assign owners
-* emit onboarding started event
+- create onboarding plan
+- generate onboarding tasks
+- assign owners
+- emit onboarding started event
 
 ## `complete-onboarding-task.service.ts`
 
-* mark one task complete
-* append audit trail
+- mark one task complete
+- append audit trail
 
 ## `record-probation-review.service.ts`
 
-* store review outcome
-* support confirm/extend/fail
+- store review outcome
+- support confirm/extend/fail
 
 ## `start-separation.service.ts`
 
-* open separation case
-* generate exit checklist
-* emit separation started event
+- open separation case
+- generate exit checklist
+- emit separation started event
 
 ## `clear-exit-item.service.ts`
 
-* mark exit item cleared
+- mark exit item cleared
 
 ## `finalize-separation.service.ts`
 
-* validate all required clearance items
-* close employment
-* emit separation finalized event
+- validate all required clearance items
+- close employment
+- emit separation finalized event
 
 ---
 
@@ -1217,12 +1217,12 @@ For AFENDA, do not build consumer-HR style playful UI.
 
 Use:
 
-* dense enterprise tables
-* right-side detail panels
-* timeline cards for lifecycle truth
-* approval ribbons
-* audit/evidence sections
-* org-aware breadcrumbs
+- dense enterprise tables
+- right-side detail panels
+- timeline cards for lifecycle truth
+- approval ribbons
+- audit/evidence sections
+- org-aware breadcrumbs
 
 That fits your institutional terminal direction.
 
@@ -1264,27 +1264,27 @@ sample separation checklists
 
 ## Unit tests
 
-* effective date validation
-* employment state transitions
-* position headcount control
-* requisition approval rules
-* onboarding completion rules
-* separation finalization rules
+- effective date validation
+- employment state transitions
+- position headcount control
+- requisition approval rules
+- onboarding completion rules
+- separation finalization rules
 
 ## Integration tests
 
-* hire employee end-to-end
-* transfer employee end-to-end
-* create requisition to accepted offer
-* accepted offer to onboarding plan
-* termination to separation case
+- hire employee end-to-end
+- transfer employee end-to-end
+- create requisition to accepted offer
+- accepted offer to onboarding plan
+- termination to separation case
 
 ## Contract tests
 
-* route input validation
-* deterministic error codes
-* outbox emitted
-* audit written
+- route input validation
+- deterministic error codes
+- outbox emitted
+- audit written
 
 ## Invariant tests
 
@@ -1299,7 +1299,7 @@ offer cannot be accepted twice
 separation cannot finalize with uncleared mandatory items
 ```
 
-These align with the charter invariants: lifecycle integrity, effective-date integrity, approval integrity, compliance integrity. 
+These align with the charter invariants: lifecycle integrity, effective-date integrity, approval integrity, compliance integrity.
 
 ---
 
@@ -1377,25 +1377,25 @@ Status legend:
 ## Functional DoD status (backend)
 
 1. `DONE` create a person  
-  Evidence: `packages/core/src/erp/hr/core/services/create-person.service.ts`, `apps/api/src/routes/erp/hr/create-person.ts`
+   Evidence: `packages/core/src/erp/hr/core/services/create-person.service.ts`, `apps/api/src/routes/erp/hr/create-person.ts`
 2. `DONE` hire into employment  
-  Evidence: `packages/core/src/erp/hr/core/services/hire-employee.service.ts`, `apps/api/src/routes/erp/hr/hire-employee.ts`
+   Evidence: `packages/core/src/erp/hr/core/services/hire-employee.service.ts`, `apps/api/src/routes/erp/hr/hire-employee.ts`
 3. `DONE` assign to org/job/position  
-  Evidence: `packages/core/src/erp/hr/organization/services/assign-position.service.ts`, `apps/api/src/routes/erp/hr/assign-position.ts`
+   Evidence: `packages/core/src/erp/hr/organization/services/assign-position.service.ts`, `apps/api/src/routes/erp/hr/assign-position.ts`
 4. `DONE` transfer employment with effective dating  
-  Evidence: `packages/core/src/erp/hr/core/services/transfer-employee.service.ts`, `apps/api/src/routes/erp/hr/transfer-employee.ts`
+   Evidence: `packages/core/src/erp/hr/core/services/transfer-employee.service.ts`, `apps/api/src/routes/erp/hr/transfer-employee.ts`
 5. `DONE` terminate and rehire correctly  
-  Evidence: `packages/core/src/erp/hr/core/services/terminate-employment.service.ts`, `packages/core/src/erp/hr/core/services/rehire-employee.service.ts`, `apps/api/src/routes/erp/hr/terminate-employment.ts`, `apps/api/src/routes/erp/hr/rehire-employee.ts`
+   Evidence: `packages/core/src/erp/hr/core/services/terminate-employment.service.ts`, `packages/core/src/erp/hr/core/services/rehire-employee.service.ts`, `apps/api/src/routes/erp/hr/terminate-employment.ts`, `apps/api/src/routes/erp/hr/rehire-employee.ts`
 6. `DONE` create and approve requisitions  
-  Evidence: `packages/core/src/erp/hr/recruitment/services/create-requisition.service.ts`, `packages/core/src/erp/hr/recruitment/services/approve-requisition.service.ts`, `apps/api/src/routes/erp/hr/create-requisition.ts`, `apps/api/src/routes/erp/hr/approve-requisition.ts`
+   Evidence: `packages/core/src/erp/hr/recruitment/services/create-requisition.service.ts`, `packages/core/src/erp/hr/recruitment/services/approve-requisition.service.ts`, `apps/api/src/routes/erp/hr/create-requisition.ts`, `apps/api/src/routes/erp/hr/approve-requisition.ts`
 7. `DONE` manage candidate pipeline to offer  
-  Evidence: `packages/core/src/erp/hr/recruitment/queries/get-candidate-pipeline.query.ts`, `packages/core/src/erp/hr/recruitment/services/issue-offer.service.ts`, `packages/core/src/erp/hr/recruitment/services/accept-offer.service.ts`, `apps/api/src/routes/erp/hr/get-candidate-pipeline.ts`, `apps/api/src/routes/erp/hr/issue-offer.ts`, `apps/api/src/routes/erp/hr/accept-offer.ts`
+   Evidence: `packages/core/src/erp/hr/recruitment/queries/get-candidate-pipeline.query.ts`, `packages/core/src/erp/hr/recruitment/services/issue-offer.service.ts`, `packages/core/src/erp/hr/recruitment/services/accept-offer.service.ts`, `apps/api/src/routes/erp/hr/get-candidate-pipeline.ts`, `apps/api/src/routes/erp/hr/issue-offer.ts`, `apps/api/src/routes/erp/hr/accept-offer.ts`
 8. `DONE` start onboarding from accepted offer  
-  Evidence: `packages/core/src/erp/hr/onboarding/services/start-onboarding.service.ts`, `apps/api/src/routes/erp/hr/start-onboarding.ts`
+   Evidence: `packages/core/src/erp/hr/onboarding/services/start-onboarding.service.ts`, `apps/api/src/routes/erp/hr/start-onboarding.ts`
 9. `DONE` start separation and track exit clearance  
-  Evidence: `packages/core/src/erp/hr/onboarding/services/start-separation.service.ts`, `packages/core/src/erp/hr/onboarding/services/clear-exit-item.service.ts`, `packages/core/src/erp/hr/onboarding/services/finalize-separation.service.ts`, `apps/api/src/routes/erp/hr/start-separation.ts`, `apps/api/src/routes/erp/hr/clear-exit-item.ts`, `apps/api/src/routes/erp/hr/finalize-separation.ts`
+   Evidence: `packages/core/src/erp/hr/onboarding/services/start-separation.service.ts`, `packages/core/src/erp/hr/onboarding/services/clear-exit-item.service.ts`, `packages/core/src/erp/hr/onboarding/services/finalize-separation.service.ts`, `apps/api/src/routes/erp/hr/start-separation.ts`, `apps/api/src/routes/erp/hr/clear-exit-item.ts`, `apps/api/src/routes/erp/hr/finalize-separation.ts`
 10. `DONE` audit + outbox every state-changing command (Wave 1 services pattern)  
-   Evidence: `packages/core/src/erp/hr/core/services/create-person.service.ts`, `packages/core/src/erp/hr/core/services/hire-employee.service.ts`, `packages/core/src/erp/hr/recruitment/services/submit-application.service.ts`, `packages/core/src/erp/hr/onboarding/services/start-separation.service.ts`
+    Evidence: `packages/core/src/erp/hr/core/services/create-person.service.ts`, `packages/core/src/erp/hr/core/services/hire-employee.service.ts`, `packages/core/src/erp/hr/recruitment/services/submit-application.service.ts`, `packages/core/src/erp/hr/onboarding/services/start-separation.service.ts`
 
 ## Delivery closure DoD status (program-level)
 
