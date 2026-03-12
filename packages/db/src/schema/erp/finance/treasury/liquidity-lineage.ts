@@ -47,12 +47,14 @@ export const liquidityForecastBucketLineage = pgTable(
     liquiditySourceFeedId: uuid("liquidity_source_feed_id")
       .notNull()
       .references(() => liquiditySourceFeed.id, { onDelete: "cascade" }),
+    fxRateSnapshotId: uuid("fx_rate_snapshot_id"),
     createdAt: tsz("created_at").defaultNow().notNull(),
   },
   (t) => [
     unique("liquidity_forecast_bucket_lineage_bucket_feed_uidx").on(t.bucketId, t.liquiditySourceFeedId),
     index("liquidity_forecast_bucket_lineage_org_forecast_idx").on(t.orgId, t.liquidityForecastId),
     index("liquidity_forecast_bucket_lineage_org_feed_idx").on(t.orgId, t.liquiditySourceFeedId),
+    index("liquidity_forecast_bucket_lineage_fx_idx").on(t.fxRateSnapshotId),
     rlsOrg,
   ],
 );

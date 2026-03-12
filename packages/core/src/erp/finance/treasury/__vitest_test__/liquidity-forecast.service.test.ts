@@ -304,4 +304,131 @@ describe("liquidity-forecast service", () => {
       expect(result.error.code).toBe("TREASURY_LIQUIDITY_SCENARIO_NOT_FOUND");
     }
   });
-});
+  it("buckets heterogeneous feed dates into separate daily buckets", async () => {
+    const { db, tx, inserted } = createDb([
+      [{ id: "sc-1", assumptionSetVersion: "v1", assumptionsJson: { assumedDailyInflowsMinor: "0", assumedDailyOutflowsMinor: "0" } }],
+      [{ id: "snap-1", totalProjectedAvailableMinor: "1000" }],
+      [],
+      [
+        { id: "feed-1", dueDate: "2026-03-12", direction: "inflow", amountMinor: "100", currencyCode: "USD" },
+        { id: "feed-2", dueDate: "2026-03-13", direction: "inflow", amountMinor: "200", currencyCode: "USD" },
+        { id: "feed-3", dueDate: "2026-03-14", direction: "outflow", amountMinor: "50", currencyCode: "USD" },
+      ],
+    ]);
+    mockState.activeTx = tx;
+
+    const result = await requestLiquidityForecast(
+      db as never,
+      { activeContext: { orgId: "org-1" } } as never,
+      { principalId: "principal-1" } as never,
+      "corr-hetero" as never,
+      {
+        liquidityScenarioId: "sc-1" as never,
+        cashPositionSnapshotId: "snap-1",
+        forecastDate: "2026-03-12",
+        startDate: "2026-03-12",
+        endDate: "2026-03-14",
+        bucketGranularity: "daily",
+        baseCurrencyCode: "USD",
+        sourceVersion: "v3",
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const bucketInsert = inserted.find((x) => x.table === mockState.tableRefs.liquidityForecastBucket);
+    expect(bucketInsert).toBeDefined();
+    const buckets = bucketInsert?.values as Array<{ bucketStartDate: string; expectedInflowsMinor: string; expectedOutflowsMinor: string }>;
+    expect(buckets.length).toBe(3);
+    expect(buckets[0]?.expectedInflowsMinor).toBe("100"); // 2026-03-12
+    expect(buckets[1]?.expectedInflowsMinor).toBe("200"); // 2026-03-13
+    expect(buckets[2]?.expectedOutflowsMinor).toBe("50"); // 2026-03-14
+  });
+
+  it("preserves FX rate snapshot IDs in bucket lineage for multi-currency forecasts", async () => {
+    const { db, tx, inserted } = createDb([
+      [{ id: "sc-1", assumptionSetVersion: "v1", assumptionsJson: { assumedDailyInflowsMinor: "0", assumedDailyOutflowsMinor: "0" } }],
+      [{ id: "snap-1", totalProjectedAvailableMinor: "1000" }],
+      [],
+      [
+        { id: "feed-1", dueDate: "2026-03-12", direction: "inflow", amountMinor: "100", currencyCode: "EUR" },
+        { id: "feed-2", dueDate: "2026-03-12", direction: "outflow", amountMinor: "50", currencyCode: "GBP" },
+      ],
+    ]);
+    mockState.activeTx = tx;
+    let callIdx = 0;
+    mockState.normalizeToBase.mockImplementation(async (_db: unknown, params: { fromCurrencyCode: string }) => {
+      const fxIds: Record<string, string> = { EUR: "fx-eur-usd", GBP: "fx-gbp-usd" };
+      return {
+        ok: true,
+        data: {
+          normalizedMinor: params.fromCurrencyCode === "EUR" ? "110" : "63",
+          fxRateSnapshotId: fxIds[params.fromCurrencyCode] ?? null,
+        },
+      };
+    });
+
+    const result = await requestLiquidityForecast(
+      db as never,
+      { activeContext: { orgId: "org-1" } } as never,
+      { principalId: "principal-1" } as never,
+      "corr-fx-lineage" as never,
+      {
+        liquidityScenarioId: "sc-1" as never,
+        cashPositionSnapshotId: "snap-1",
+        forecastDate: "2026-03-12",
+        startDate: "2026-03-12",
+        endDate: "2026-03-12",
+        bucketGranularity: "daily",
+        baseCurrencyCode: "USD",
+        sourceVersion: "v4",
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const lineageInsert = inserted.find((x) => x.table === mockState.tableRefs.liquidityForecastBucketLineage);
+    expect(lineageInsert).toBeDefined();
+    const lineageRows = lineageInsert?.values as Array<{ liquiditySourceFeedId: string; fxRateSnapshotId?: string }>;
+    expect(lineageRows.length).toBe(2);
+    const eurRow = lineageRows.find((row) => row.liquiditySourceFeedId === "feed-1");
+    const gbpRow = lineageRows.find((row) => row.liquiditySourceFeedId === "feed-2");
+    expect(eurRow?.fxRateSnapshotId).toBe("fx-eur-usd");
+    expect(gbpRow?.fxRateSnapshotId).toBe("fx-gbp-usd");
+  });
+
+  it("creates independent bucket lineage records per-feed to preserve FX provenance", async () => {
+    const { db, tx, inserted } = createDb([
+      [{ id: "sc-1", assumptionSetVersion: "v1", assumptionsJson: { assumedDailyInflowsMinor: "0", assumedDailyOutflowsMinor: "0" } }],
+      [{ id: "snap-1", totalProjectedAvailableMinor: "1000" }],
+      [],
+      [
+        { id: "feed-1", dueDate: "2026-03-12", direction: "inflow", amountMinor: "100", currencyCode: "USD" },
+        { id: "feed-2", dueDate: "2026-03-12", direction: "inflow", amountMinor: "200", currencyCode: "USD" },
+      ],
+    ]);
+    mockState.activeTx = tx;
+
+    const result = await requestLiquidityForecast(
+      db as never,
+      { activeContext: { orgId: "org-1" } } as never,
+      { principalId: "principal-1" } as never,
+      "corr-feed-lineage" as never,
+      {
+        liquidityScenarioId: "sc-1" as never,
+        cashPositionSnapshotId: "snap-1",
+        forecastDate: "2026-03-12",
+        startDate: "2026-03-12",
+        endDate: "2026-03-12",
+        bucketGranularity: "daily",
+        baseCurrencyCode: "USD",
+        sourceVersion: "v5",
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const lineageInsert = inserted.find((x) => x.table === mockState.tableRefs.liquidityForecastBucketLineage);
+    expect(lineageInsert).toBeDefined();
+    const lineageRows = lineageInsert?.values as Array<{ liquiditySourceFeedId: string }>;
+    expect(lineageRows.length).toBe(2);
+    expect(lineageRows.some((row) => row.liquiditySourceFeedId === "feed-1")).toBe(true);
+    expect(lineageRows.some((row) => row.liquiditySourceFeedId === "feed-2")).toBe(true);
+  });});

@@ -4,6 +4,7 @@ import { UtcDateTimeSchema } from "../../../shared/datetime.js";
 import { CashPositionSnapshotIdSchema, CashPositionSnapshotLineIdSchema } from "./cash-position-snapshot.entity.js";
 import { LiquidityForecastIdSchema, LiquidityForecastBucketIdSchema } from "./liquidity-forecast.entity.js";
 import { LiquiditySourceFeedIdSchema } from "./liquidity-source-feed.entity.js";
+import { FxRateSnapshotIdSchema } from "./fx-rate-snapshot.entity.js";
 
 export const CashPositionSnapshotLineageIdSchema = brandedUuid("CashPositionSnapshotLineageId");
 export type CashPositionSnapshotLineageId = z.infer<typeof CashPositionSnapshotLineageIdSchema>;
@@ -27,6 +28,7 @@ export const LiquidityForecastBucketLineageSchema = z.object({
   liquidityForecastId: LiquidityForecastIdSchema,
   bucketId: LiquidityForecastBucketIdSchema,
   liquiditySourceFeedId: LiquiditySourceFeedIdSchema,
+  fxRateSnapshotId: FxRateSnapshotIdSchema.nullable(),
   createdAt: UtcDateTimeSchema,
 });
 export type LiquidityForecastBucketLineage = z.infer<typeof LiquidityForecastBucketLineageSchema>;

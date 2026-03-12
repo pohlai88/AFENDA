@@ -430,12 +430,16 @@ export async function requestLiquidityForecast(
       });
 
     const lineageRows = insertedBuckets.flatMap((bucket) =>
-      (bucketSourceIdsByDate[bucket.bucketStartDate] ?? []).map((liquiditySourceFeedId) => ({
-        orgId: orgId as string,
-        liquidityForecastId: row.id,
-        bucketId: bucket.id,
-        liquiditySourceFeedId,
-      })),
+      (bucketSourceIdsByDate[bucket.bucketStartDate] ?? []).map((liquiditySourceFeedId) => {
+        const feedRow = normalizedFeedRows.find((f) => f.id === liquiditySourceFeedId);
+        return {
+          orgId: orgId as string,
+          liquidityForecastId: row.id,
+          bucketId: bucket.id,
+          liquiditySourceFeedId,
+          fxRateSnapshotId: feedRow?.fxRateSnapshotId ?? null,
+        };
+      }),
     );
 
     if (lineageRows.length > 0) {
