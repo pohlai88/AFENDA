@@ -6,7 +6,7 @@ import type {
   DeactivateInternalBankAccountCommand,
   InternalBankAccountEntity,
 } from "@afenda/contracts";
-import { treasuryInternalBankAccountTable } from "@afenda/db";
+import { outboxEvent, treasuryInternalBankAccountTable } from "@afenda/db";
 
 export interface InternalBankAccountServiceDeps {
   db: any;
@@ -28,7 +28,7 @@ export class InternalBankAccountService {
    * Create a new internal bank account in draft state
    */
   async createInternalBankAccount(
-    cmd: CreateInternalBankAccountCommand
+    cmd: CreateInternalBankAccountCommand,
   ): Promise<ServiceResult<InternalBankAccountEntity>> {
     try {
       // Check if code already exists in org
@@ -38,8 +38,8 @@ export class InternalBankAccountService {
         .where(
           and(
             eq(treasuryInternalBankAccountTable.orgId, cmd.orgId),
-            eq(treasuryInternalBankAccountTable.code, cmd.code)
-          )
+            eq(treasuryInternalBankAccountTable.code, cmd.code),
+          ),
         )
         .limit(1);
 
@@ -75,20 +75,30 @@ export class InternalBankAccountService {
         updatedAt: now,
       };
 
-      await this.deps.db
-        .insert(treasuryInternalBankAccountTable)
-        .values(account);
+      await this.deps.db.insert(treasuryInternalBankAccountTable).values(account);
+
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERNAL_BANK_ACCOUNT_CREATED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          internalBankAccountId: id,
+          code: cmd.code,
+          legalEntityId: cmd.legalEntityId,
+        },
+      });
 
       this.deps.logger.info(
         { accountId: id, orgId: cmd.orgId, code: cmd.code },
-        "Internal bank account created"
+        "Internal bank account created",
       );
 
       return { ok: true, data: account };
     } catch (err) {
       this.deps.logger.error(
         { error: err, orgId: cmd.orgId },
-        "Failed to create internal bank account"
+        "Failed to create internal bank account",
       );
       return {
         ok: false,
@@ -101,7 +111,7 @@ export class InternalBankAccountService {
    * Activate an internal bank account
    */
   async activateInternalBankAccount(
-    cmd: ActivateInternalBankAccountCommand
+    cmd: ActivateInternalBankAccountCommand,
   ): Promise<ServiceResult<InternalBankAccountEntity>> {
     try {
       const existing = await this.deps.db
@@ -110,8 +120,8 @@ export class InternalBankAccountService {
         .where(
           and(
             eq(treasuryInternalBankAccountTable.id, cmd.internalBankAccountId),
-            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId)
-          )
+            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -149,18 +159,28 @@ export class InternalBankAccountService {
         })
         .where(eq(treasuryInternalBankAccountTable.id, cmd.internalBankAccountId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERNAL_BANK_ACCOUNT_ACTIVATED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          internalBankAccountId: cmd.internalBankAccountId,
+        },
+      });
+
       const updated = { ...account, status: "active", activatedAt: now, updatedAt: now };
 
       this.deps.logger.info(
         { accountId: cmd.internalBankAccountId, orgId: cmd.orgId },
-        "Internal bank account activated"
+        "Internal bank account activated",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, accountId: cmd.internalBankAccountId },
-        "Failed to activate internal bank account"
+        "Failed to activate internal bank account",
       );
       return {
         ok: false,
@@ -173,7 +193,7 @@ export class InternalBankAccountService {
    * Deactivate an internal bank account
    */
   async deactivateInternalBankAccount(
-    cmd: DeactivateInternalBankAccountCommand
+    cmd: DeactivateInternalBankAccountCommand,
   ): Promise<ServiceResult<InternalBankAccountEntity>> {
     try {
       const existing = await this.deps.db
@@ -182,8 +202,8 @@ export class InternalBankAccountService {
         .where(
           and(
             eq(treasuryInternalBankAccountTable.id, cmd.internalBankAccountId),
-            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId)
-          )
+            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -221,18 +241,29 @@ export class InternalBankAccountService {
         })
         .where(eq(treasuryInternalBankAccountTable.id, cmd.internalBankAccountId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERNAL_BANK_ACCOUNT_DEACTIVATED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          internalBankAccountId: cmd.internalBankAccountId,
+          reason: cmd.reason,
+        },
+      });
+
       const updated = { ...account, status: "inactive", deactivatedAt: now, updatedAt: now };
 
       this.deps.logger.info(
         { accountId: cmd.internalBankAccountId, orgId: cmd.orgId, reason: cmd.reason },
-        "Internal bank account deactivated"
+        "Internal bank account deactivated",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, accountId: cmd.internalBankAccountId },
-        "Failed to deactivate internal bank account"
+        "Failed to deactivate internal bank account",
       );
       return {
         ok: false,

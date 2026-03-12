@@ -168,8 +168,8 @@ export const ErrorCodeValues = [
   "IAM_ORG_NOT_FOUND",
   "IAM_PRINCIPAL_NOT_FOUND",
   "IAM_INSUFFICIENT_PERMISSIONS",
-  "IAM_CREDENTIALS_INVALID",       // wrong email or password at sign-in
-  "IAM_PASSWORD_CHANGE_INVALID",   // wrong current password when changing
+  "IAM_CREDENTIALS_INVALID", // wrong email or password at sign-in
+  "IAM_PASSWORD_CHANGE_INVALID", // wrong current password when changing
   "IAM_EMAIL_ALREADY_REGISTERED",
   "IAM_RESET_TOKEN_INVALID",
   "IAM_RESET_TOKEN_EXPIRED",
@@ -177,11 +177,11 @@ export const ErrorCodeValues = [
   "IAM_PORTAL_INVITATION_REQUIRED",
   "IAM_PORTAL_INVITATION_INVALID",
   "IAM_PORTAL_INVITATION_EXPIRED",
-  "IAM_ACCOUNT_LOCKED",            // too many failed login attempts
-  "IAM_MFA_INVALID",               // invalid or expired MFA verification code
-  "IAM_MFA_NOT_IMPLEMENTED",       // MFA verification not yet available via API
-  "IAM_SESSION_GRANT_INVALID",     // session grant invalid or already used
-  "IAM_SESSION_GRANT_EXPIRED",     // session grant expired
+  "IAM_ACCOUNT_LOCKED", // too many failed login attempts
+  "IAM_MFA_INVALID", // invalid or expired MFA verification code
+  "IAM_MFA_NOT_IMPLEMENTED", // MFA verification not yet available via API
+  "IAM_SESSION_GRANT_INVALID", // session grant invalid or already used
+  "IAM_SESSION_GRANT_EXPIRED", // session grant expired
 
   // CFG — settings / configuration
   "CFG_SETTING_INVALID_VALUE",
@@ -190,9 +190,9 @@ export const ErrorCodeValues = [
   // "CFG_SETTING_NOT_FOUND",
 
   // CFG — custom fields (Phase 3)
-  "CFG_CUSTOM_FIELD_KEY_IMMUTABLE",   // attempted api_key change on PATCH
-  "CFG_CUSTOM_FIELD_NOT_FOUND",       // definition not found for this org
-  "CFG_CUSTOM_FIELD_INVALID_VALUE",   // value fails data_type validation
+  "CFG_CUSTOM_FIELD_KEY_IMMUTABLE", // attempted api_key change on PATCH
+  "CFG_CUSTOM_FIELD_NOT_FOUND", // definition not found for this org
+  "CFG_CUSTOM_FIELD_INVALID_VALUE", // value fails data_type validation
   "CFG_CUSTOM_FIELD_ENTITY_TYPE_UNKNOWN", // entity_type not in controlled vocabulary
 
   // TRY — Treasury
@@ -224,6 +224,33 @@ export const ErrorCodeValues = [
   "TREASURY_INTERCOMPANY_TRANSFER_UNBALANCED",
   "TREASURY_INTERCOMPANY_TRANSFER_ILLEGAL_TRANSITION",
   "TREASURY_INTERCOMPANY_TRANSFER_SOD_VIOLATION",
+
+  // TREASURY — Wave 4.2 Netting + Internal Interest
+  "TREASURY_NETTING_SESSION_NOT_FOUND",
+  "TREASURY_NETTING_SESSION_NUMBER_EXISTS",
+  "TREASURY_NETTING_SESSION_ILLEGAL_TRANSITION",
+  "TREASURY_NETTING_SESSION_UNBALANCED",
+  "TREASURY_NETTING_SOURCE_TRANSFER_NOT_FOUND",
+  "TREASURY_NETTING_SOURCE_TRANSFER_NOT_SETTLED",
+  "TREASURY_NETTING_SESSION_CURRENCY_MISMATCH",
+  "TREASURY_INTERNAL_INTEREST_RATE_NOT_FOUND",
+  "TREASURY_INTERNAL_INTEREST_RATE_CODE_EXISTS",
+
+  // TREASURY — Wave 5.1 FX Management + Revaluation
+  "TREAS_FX_EXPOSURE_INVALID_CURRENCY_PAIR",
+  "TREAS_FX_EXPOSURE_NOT_FOUND",
+  "TREAS_FX_EXPOSURE_CANNOT_CLOSE",
+  "TREAS_HEDGE_ALREADY_ACTIVE",
+  "TREAS_HEDGE_DESIGNATION_NOT_FOUND",
+  "TREAS_HEDGE_INVALID_STATUS_TRANSITION",
+  "TREAS_REVALUATION_EVENT_NOT_FOUND",
+  "TREAS_REVALUATION_INVALID_STATUS_TRANSITION",
+  "TREAS_REVALUATION_INVALID_DELTA",
+  // TREASURY — Wave 6.2 Connectors + Market Data
+  "TREASURY_BANK_CONNECTOR_NOT_FOUND",
+  "TREASURY_BANK_CONNECTOR_CODE_EXISTS",
+  "TREASURY_MARKET_DATA_FEED_NOT_FOUND",
+  "TREASURY_MARKET_DATA_FEED_CODE_EXISTS",
 ] as const;
 
 // Named exports for IAM error codes (used by core, api)

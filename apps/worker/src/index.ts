@@ -44,6 +44,17 @@ import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treas
 import { handleTreasuryFxRateSnapshotEvent } from "./jobs/erp/finance/treasury/handle-fx-rate-snapshot.js";
 import { handleTreasuryApDuePaymentProjectionEvent } from "./jobs/erp/finance/treasury/handle-ap-due-payment-projection.js";
 import { handleTreasuryArExpectedReceiptProjectionEvent } from "./jobs/erp/finance/treasury/handle-ar-expected-receipt-projection.js";
+import { handleTreasuryInternalBankAccountEvent } from "./jobs/erp/finance/treasury/handle-internal-bank-account.js";
+import { handleTreasuryIntercompanyTransferEvent } from "./jobs/erp/finance/treasury/handle-intercompany-transfer.js";
+import { handleIntercompanyTransferSettled } from "./jobs/erp/finance/treasury/handle-intercompany-transfer-settled.js";
+import { handleTreasuryNettingSessionClosedEvent } from "./jobs/erp/finance/treasury/handle-netting-session-closed.js";
+import { handleTreasuryInternalInterestRateEvent } from "./jobs/erp/finance/treasury/handle-internal-interest-rate.js";
+import { handleTreasuryFxRiskEvent } from "./jobs/erp/finance/treasury/handle-fx-risk.js";
+import { handleTreasuryRevaluationEvent } from "./jobs/erp/finance/treasury/handle-revaluation.js";
+import { handleTreasuryLimitBreached } from "./jobs/erp/finance/treasury/handle-treasury-limit-breached.js";
+import { handleBankConnectorSyncRequested } from "./jobs/erp/finance/treasury/handle-bank-connector-sync-requested.js";
+import { handleMarketDataRefreshRequested } from "./jobs/erp/finance/treasury/handle-market-data-refresh-requested.js";
+import { handleTreasuryPostingRequested } from "./jobs/erp/finance/treasury/handle-treasury-posting-requested.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -108,7 +119,24 @@ const taskList = {
   handle_treasury_fx_rate_snapshot_event: handleTreasuryFxRateSnapshotEvent,
   // Wave 3.5 — AP/AR → Treasury Bridge
   handle_treasury_ap_due_payment_projection_event: handleTreasuryApDuePaymentProjectionEvent,
-  handle_treasury_ar_expected_receipt_projection_event: handleTreasuryArExpectedReceiptProjectionEvent,
+  handle_treasury_ar_expected_receipt_projection_event:
+    handleTreasuryArExpectedReceiptProjectionEvent,
+  // Wave 4.1 — In-house Banking + Intercompany Transfers
+  handle_treasury_internal_bank_account_event: handleTreasuryInternalBankAccountEvent,
+  handle_treasury_intercompany_transfer_event: handleTreasuryIntercompanyTransferEvent,
+  handle_treasury_intercompany_transfer_settled_event: handleIntercompanyTransferSettled,
+  handle_treasury_netting_session_closed_event: handleTreasuryNettingSessionClosedEvent,
+  handle_treasury_internal_interest_rate_event: handleTreasuryInternalInterestRateEvent,
+  // Wave 5.1 — FX Management + Revaluation
+  handle_treasury_fx_risk_event: handleTreasuryFxRiskEvent,
+  handle_treasury_revaluation_event: handleTreasuryRevaluationEvent,
+  // Wave 6.1 — Treasury Policy + Limits
+  handle_treasury_limit_breached_event: handleTreasuryLimitBreached,
+  // Wave 6.2 — Integrations + Market Data
+  handle_bank_connector_sync_requested: handleBankConnectorSyncRequested,
+  handle_market_data_refresh_requested: handleMarketDataRefreshRequested,
+  // Wave 5.2 — Treasury Accounting Bridge
+  handle_treasury_posting_requested: handleTreasuryPostingRequested,
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
 } as const;

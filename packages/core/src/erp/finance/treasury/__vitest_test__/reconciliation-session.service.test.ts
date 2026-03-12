@@ -8,7 +8,13 @@
  *  - blocks removing a non-existent match
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { OrgId, PrincipalId, CorrelationId, ReconciliationSessionId, ReconciliationMatchId } from "@afenda/contracts";
+import type {
+  OrgId,
+  PrincipalId,
+  CorrelationId,
+  ReconciliationSessionId,
+  ReconciliationMatchId,
+} from "@afenda/contracts";
 
 // ── Mock DB setup ─────────────────────────────────────────────────────────────
 
@@ -63,7 +69,10 @@ vi.mock("drizzle-orm", async (importOriginal) => {
     ...actual,
     eq: vi.fn((_col: unknown, _val: unknown) => ({})),
     and: vi.fn((..._args: unknown[]) => ({})),
-    sql: Object.assign(vi.fn(() => ({})), { raw: vi.fn(() => ({})) }),
+    sql: Object.assign(
+      vi.fn(() => ({})),
+      { raw: vi.fn(() => ({})) },
+    ),
   };
 });
 
@@ -90,11 +99,20 @@ const CTX = { activeContext: { orgId: ORG_ID } };
 const POLICY_CTX = { principalId: PRINCIPAL_A };
 
 beforeEach(() => {
-  vi.clearAllMocks();
-  // Default: empty result for select queries
-  mockSelectWhere.mockResolvedValue([]);
+  vi.resetAllMocks();
+
+  // Rebuild default mock graph so each test starts from identical state.
   mockInsertReturning.mockResolvedValue([{ id: SESSION_ID }]);
+  mockInsertValues.mockReturnValue({ returning: mockInsertReturning });
+  mockInsert.mockReturnValue({ values: mockInsertValues });
+
   mockUpdateWhere.mockResolvedValue([]);
+  mockUpdateSet.mockReturnValue({ where: mockUpdateWhere });
+  mockUpdate.mockReturnValue({ set: mockUpdateSet });
+
+  mockSelectWhere.mockResolvedValue([]);
+  mockSelectFrom.mockReturnValue({ where: mockSelectWhere });
+  mockSelect.mockReturnValue({ from: mockSelectFrom });
 });
 
 // ── openReconciliationSession ─────────────────────────────────────────────────

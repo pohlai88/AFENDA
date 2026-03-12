@@ -2,8 +2,20 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Label } from "@afenda/ui";
-import { createOrganizationAction, type CreateOrganizationResult } from "@/app/auth/_actions/create-organization";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@afenda/ui";
+import {
+  createOrganizationAction,
+  type CreateOrganizationResult,
+} from "@/app/auth/_actions/create-organization";
 import { Building2 } from "lucide-react";
 
 const INITIAL_STATE: CreateOrganizationResult = { ok: false, error: "" };
@@ -23,15 +35,13 @@ export function CreateOrganizationClient() {
 
   return (
     <section>
-      <h2 className="mb-0.5 text-sm font-semibold text-foreground">
-        Create organization
-      </h2>
+      <h2 className="mb-0.5 text-sm font-semibold text-foreground">Create organization</h2>
       <p className="mb-4 text-xs text-muted-foreground">
         Add a new organization. You will be able to switch to it from the workspace selector.
       </p>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <Building2 className="h-4 w-4" />
             New organization
           </CardTitle>
@@ -73,7 +83,7 @@ export function CreateOrganizationClient() {
               <p className="text-sm text-destructive">{state.error}</p>
             )}
             {state?.ok && (
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <p className="text-sm text-primary">
                 Organization created successfully.
                 {state.data?.name && ` "${state.data.name}"`}
               </p>

@@ -88,6 +88,30 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "TREAS.BANK_STATEMENT_FAILED":
       await helpers.addJob("handle_treasury_bank_statement_event", payload);
       break;
+    case "TREAS.RECONCILIATION_SESSION_OPENED":
+    case "TREAS.RECONCILIATION_MATCH_ADDED":
+    case "TREAS.RECONCILIATION_MATCH_REMOVED":
+    case "TREAS.RECONCILIATION_SESSION_CLOSED":
+      await helpers.addJob("handle_treasury_reconciliation_event", payload);
+      break;
+    case "TREAS.PAYMENT_INSTRUCTION_CREATED":
+    case "TREAS.PAYMENT_INSTRUCTION_SUBMITTED":
+    case "TREAS.PAYMENT_INSTRUCTION_APPROVED":
+    case "TREAS.PAYMENT_INSTRUCTION_REJECTED":
+    case "TREAS.PAYMENT_BATCH_CREATED":
+    case "TREAS.PAYMENT_BATCH_RELEASE_REQUESTED":
+    case "TREAS.PAYMENT_BATCH_RELEASED":
+      await helpers.addJob("handle_treasury_payment_event", payload);
+      break;
+    case "TREAS.CASH_POSITION_SNAPSHOT_REQUESTED":
+    case "TREAS.CASH_POSITION_SNAPSHOT_SUPERSEDED":
+      await helpers.addJob("handle_treasury_cash_position_event", payload);
+      break;
+    case "TREAS.LIQUIDITY_SCENARIO_CREATED":
+    case "TREAS.LIQUIDITY_SCENARIO_ACTIVATED":
+    case "TREAS.LIQUIDITY_FORECAST_CALCULATED":
+      await helpers.addJob("handle_treasury_liquidity_forecast_event", payload);
+      break;
     case "TREAS.LIQUIDITY_SOURCE_FEED_UPSERTED":
       await helpers.addJob("handle_treasury_liquidity_source_feed_event", payload);
       break;
@@ -102,6 +126,68 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
       break;
     case "TREAS.AR_EXPECTED_RECEIPT_PROJECTION_UPSERTED":
       await helpers.addJob("handle_treasury_ar_expected_receipt_projection_event", payload);
+      break;
+    case "TREAS.INTERNAL_BANK_ACCOUNT_CREATED":
+    case "TREAS.INTERNAL_BANK_ACCOUNT_ACTIVATED":
+    case "TREAS.INTERNAL_BANK_ACCOUNT_DEACTIVATED":
+      await helpers.addJob("handle_treasury_internal_bank_account_event", payload);
+      break;
+    case "TREAS.INTERCOMPANY_TRANSFER_CREATED":
+    case "TREAS.INTERCOMPANY_TRANSFER_SUBMITTED":
+    case "TREAS.INTERCOMPANY_TRANSFER_APPROVED":
+    case "TREAS.INTERCOMPANY_TRANSFER_REJECTED":
+      await helpers.addJob("handle_treasury_intercompany_transfer_event", payload);
+      break;
+    case "TREAS.INTERCOMPANY_TRANSFER_SETTLED":
+      await helpers.addJob("handle_treasury_intercompany_transfer_settled_event", payload);
+      break;
+    case "TREAS.NETTING_SESSION_CREATED":
+    case "TREAS.NETTING_SESSION_ITEMS_ADDED":
+    case "TREAS.NETTING_SESSION_CLOSED":
+    case "TREAS.NETTING_SESSION_SETTLED":
+      await helpers.addJob("handle_treasury_netting_session_closed_event", payload);
+      break;
+    case "TREAS.INTERNAL_INTEREST_RATE_CREATED":
+    case "TREAS.INTERNAL_INTEREST_RATE_ACTIVATED":
+      await helpers.addJob("handle_treasury_internal_interest_rate_event", payload);
+      break;
+    case "TREAS.FX_EXPOSURE_CREATED":
+    case "TREAS.FX_EXPOSURE_CLOSED":
+    case "TREAS.HEDGE_DESIGNATION_CREATED":
+    case "TREAS.HEDGE_DESIGNATION_STATUS_UPDATED":
+      await helpers.addJob("handle_treasury_fx_risk_event", payload);
+      break;
+    case "TREAS.REVALUATION_EVENT_CREATED":
+    case "TREAS.REVALUATION_EVENT_STATUS_UPDATED":
+      await helpers.addJob("handle_treasury_revaluation_event", payload);
+      break;
+    // Wave 6.1 — Treasury Policy + Limits
+    case "TREAS.POLICY_CREATED":
+    case "TREAS.POLICY_ACTIVATED":
+    case "TREAS.LIMIT_CREATED":
+    case "TREAS.LIMIT_ACTIVATED":
+      // Audit + outbox suffice for lifecycle events; no async fan-out needed
+      break;
+    case "TREAS.LIMIT_BREACHED":
+      await helpers.addJob("handle_treasury_limit_breached_event", payload);
+      break;
+    // Wave 6.2 — Bank Connector Abstraction + Market Data Feed
+    case "TREAS.BANK_CONNECTOR_CREATED":
+    case "TREAS.BANK_CONNECTOR_ACTIVATED":
+      // Lifecycle events — audit + outbox suffice; no async fan-out needed
+      break;
+    case "TREAS.BANK_CONNECTOR_SYNC_REQUESTED":
+      await helpers.addJob("handle_bank_connector_sync_requested", payload);
+      break;
+    case "TREAS.MARKET_DATA_FEED_CREATED":
+    case "TREAS.MARKET_DATA_FEED_ACTIVATED":
+      // Lifecycle events — audit + outbox suffice; no async fan-out needed
+      break;
+    case "TREAS.MARKET_DATA_REFRESH_REQUESTED":
+      await helpers.addJob("handle_market_data_refresh_requested", payload);
+      break;
+    case "TREAS.TREASURY_POSTING_REQUESTED":
+      await helpers.addJob("handle_treasury_posting_requested", payload);
       break;
     case "GL.JOURNAL_POSTED":
       await helpers.addJob("handle_journal_posted", payload);

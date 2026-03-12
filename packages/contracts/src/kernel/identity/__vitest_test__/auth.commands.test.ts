@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  RequestPasswordResetCommandSchema,
-  ResetPasswordCommandSchema,
-} from "../auth.commands";
+import { RequestPasswordResetCommandSchema, ResetPasswordCommandSchema } from "../auth.commands";
 
 describe("auth.commands password reset validation", () => {
   it("accepts request-password-reset with explicit delivery", () => {
@@ -19,7 +16,7 @@ describe("auth.commands password reset validation", () => {
     const parsed = ResetPasswordCommandSchema.parse({
       idempotencyKey: "123e4567-e89b-12d3-a456-426614174000",
       token: "a".repeat(32),
-      newPassword: "P@ssword123",
+      newPassword: "P@ssword1234",
     });
 
     expect(parsed.token).toHaveLength(32);
@@ -30,7 +27,7 @@ describe("auth.commands password reset validation", () => {
       idempotencyKey: "123e4567-e89b-12d3-a456-426614174000",
       token: "123456",
       email: "user@example.com",
-      newPassword: "P@ssword123",
+      newPassword: "P@ssword1234",
     });
 
     expect(parsed.token).toBe("123456");
@@ -41,7 +38,7 @@ describe("auth.commands password reset validation", () => {
     const result = ResetPasswordCommandSchema.safeParse({
       idempotencyKey: "123e4567-e89b-12d3-a456-426614174000",
       token: "123456",
-      newPassword: "P@ssword123",
+      newPassword: "P@ssword1234",
     });
 
     expect(result.success).toBe(false);
@@ -52,7 +49,7 @@ describe("auth.commands password reset validation", () => {
       idempotencyKey: "123e4567-e89b-12d3-a456-426614174000",
       token: "abc123xyz",
       email: "user@example.com",
-      newPassword: "P@ssword123",
+      newPassword: "P@ssword1234",
     });
 
     expect(result.success).toBe(false);

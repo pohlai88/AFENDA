@@ -70,17 +70,15 @@ describe("IntercompanyTransferService", () => {
     vi.spyOn(mockDb, "select").mockReturnValue(mockSelectChain);
 
     mockSelectChain.where = vi.fn().mockImplementation((condition) => ({
-      limit: vi
-        .fn()
-        .mockResolvedValue([
-          {
-            id: accountId1,
-            orgId: "550e8400-e29b-41d4-a716-446655440000",
-            legalEntityId: fromLegalEntityId,
-            status: "active",
-            currencyCode: "USD",
-          },
-        ]),
+      limit: vi.fn().mockResolvedValue([
+        {
+          id: accountId1,
+          orgId: "550e8400-e29b-41d4-a716-446655440000",
+          legalEntityId: fromLegalEntityId,
+          status: "active",
+          currencyCode: "USD",
+        },
+      ]),
     }));
 
     const cmd: CreateIntercompanyTransferCommand = {
@@ -113,5 +111,43 @@ describe("IntercompanyTransferService", () => {
     // This is verified by assertBalancedTransfer calculator
     // Which is tested separately in the calculator tests
     expect(true).toBe(true);
+  });
+
+  it("enforces maker-checker separation on approval", async () => {
+    const makerUserId = "550e8400-e29b-41d4-a716-446655440100";
+    const transferId = "550e8400-e29b-41d4-a716-446655440101";
+
+    const selectMock = vi.fn().mockReturnThis();
+    const fromMock = vi.fn().mockReturnThis();
+    const whereMock = vi.fn().mockReturnThis();
+    const limitMock = vi.fn().mockResolvedValue([
+      {
+        id: transferId,
+        orgId: "550e8400-e29b-41d4-a716-446655440000",
+        status: "pending_approval",
+        makerUserId,
+      },
+    ]);
+
+    mockDb.select = selectMock;
+    mockDb.from = fromMock;
+    mockDb.where = whereMock;
+    mockDb.limit = limitMock;
+    selectMock.mockReturnValue({ from: fromMock });
+    fromMock.mockReturnValue({ where: whereMock });
+    whereMock.mockReturnValue({ limit: limitMock });
+
+    const result = await service.approveIntercompanyTransfer({
+      orgId: "550e8400-e29b-41d4-a716-446655440000",
+      actorUserId: makerUserId,
+      correlationId: "corr-maker-checker",
+      idempotencyKey: "idem-maker-checker",
+      intercompanyTransferId: transferId,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("TREASURY_INTERCOMPANY_TRANSFER_SOD_VIOLATION");
+    }
   });
 });

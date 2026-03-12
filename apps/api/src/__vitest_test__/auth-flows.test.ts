@@ -185,7 +185,10 @@ describe("Auth flows (strict)", () => {
 
   describe("Architecture guards (split-brain prevention)", () => {
     it("web auth service delegates to API and does not import core", () => {
-      const apiServicePath = resolve(process.cwd(), "../web/src/features/auth/server/afenda-auth.api.ts");
+      const apiServicePath = resolve(
+        process.cwd(),
+        "../web/src/features/auth/server/afenda-auth.api.ts",
+      );
       const source = readFileSync(apiServicePath, "utf8");
 
       expect(source).toContain('authApiFetch("/v1/auth/login"');
@@ -200,7 +203,7 @@ describe("Auth flows (strict)", () => {
       const verifyActionPath = resolve(process.cwd(), "../web/src/app/auth/_actions/verify.ts");
       const source = readFileSync(verifyActionPath, "utf8");
 
-      const establishIdx = source.indexOf("await establishWebSessionFromGrant");
+      const establishIdx = source.indexOf("const consumeResult = await consumeAuthChallenge");
       const redirectIdx = source.lastIndexOf("redirect(redirectTo);");
 
       expect(establishIdx).toBeGreaterThan(-1);
@@ -212,8 +215,8 @@ describe("Auth flows (strict)", () => {
       const inviteActionPath = resolve(process.cwd(), "../web/src/app/auth/_actions/invite.ts");
       const source = readFileSync(inviteActionPath, "utf8");
 
-      expect(source).toContain("const { email, portal, sessionGrant } = result.data;");
-      expect(source).toContain("await establishWebSessionFromGrant({ grant: sessionGrant, redirectTo: redirectUrl });");
+      expect(source).toContain("const { email, portal } = result.data;");
+      expect(source).toContain('await signIn("credentials"');
     });
   });
 

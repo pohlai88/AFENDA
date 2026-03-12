@@ -1,23 +1,36 @@
 Yes — here is the **Wave 4.2 full drop-in scaffold** for AFENDA Treasury:
 
+## Status (Updated 2026-03-12)
+
+- Wave: `4.2`
+- Delivery status: `Completed`
+- Implementation status: `Completed`
+- Active scope: `netting sessions + internal interest policies + settlement bridge-ready events`
+- Current slice: `contracts/db/core/api/worker/web complete + cross-cutting registries + deterministic verification tests`
+
 * **netting session entities**
 * **internal interest calculation services**
 * **settlement posting integration seam to treasury accounting**
 
-That is exactly the Wave 4.2 vertical slice in your treasury delivery scaffold, and the exit criteria are also explicit: **netting outputs must reconcile with source obligations** and **interest computation must be deterministic and tested**. 
+Completion notes:
+- Added Wave 4.2 registry coverage for error codes, permissions, and audit actions.
+- Added deterministic calculator and net-position reconciliation test coverage for Wave 4.2 exit criteria.
+- Worker outbox routing/handlers now cover all Wave 4.2 emitted event types.
+
+That is exactly the Wave 4.2 vertical slice in your treasury delivery scaffold, and the exit criteria are also explicit: **netting outputs must reconcile with source obligations** and **interest computation must be deterministic and tested**.
 
 This also matches the file manifest in your uploaded scaffold for Sprint 4.2:
 
-* `netting-session.entity.ts`
-* `netting-session.commands.ts`
-* `internal-interest-rate.entity.ts`
-* `internal-interest-rate.commands.ts`
-* `netting-session.table.ts`
-* `internal-interest-rate.table.ts`
-* `netting-session.service.ts`
-* `netting-session.queries.ts`
-* `calculators/internal-interest.ts`
-* test, worker, netting page, and settlement view. 
+- `netting-session.entity.ts`
+- `netting-session.commands.ts`
+- `internal-interest-rate.entity.ts`
+- `internal-interest-rate.commands.ts`
+- `netting-session.table.ts`
+- `internal-interest-rate.table.ts`
+- `netting-session.service.ts`
+- `netting-session.queries.ts`
+- `calculators/internal-interest.ts`
+- test, worker, netting page, and settlement view.
 
 ---
 
@@ -31,11 +44,11 @@ A controlled clearing cycle across multiple intercompany obligations.
 
 It owns:
 
-* included transfer obligations
-* participants
-* net result by legal entity
-* session lifecycle
-* close / settlement readiness
+- included transfer obligations
+- participants
+- net result by legal entity
+- session lifecycle
+- close / settlement readiness
 
 ## Internal interest rate
 
@@ -43,24 +56,24 @@ A deterministic policy object for charging internal borrowing/lending.
 
 It owns:
 
-* effective rate
-* calculation basis
-* day count convention
-* legal entity or currency scope
-* activation lifecycle
+- effective rate
+- calculation basis
+- day count convention
+- legal entity or currency scope
+- activation lifecycle
 
 ## Internal interest calculation
 
 A deterministic calculation service that:
 
-* takes principal
-* applies rate + day count
-* produces reproducible accrued interest
+- takes principal
+- applies rate + day count
+- produces reproducible accrued interest
 
 ## Settlement posting integration seam
 
 Do **not** do GL posting in Wave 4.2.
-Instead, emit bridge-ready events for Wave 5.2 treasury accounting bridge, because your scaffold explicitly places posting bridge and accounting policy mapping in Wave 5.2. 
+Instead, emit bridge-ready events for Wave 5.2 treasury accounting bridge, because your scaffold explicitly places posting bridge and accounting policy mapping in Wave 5.2.
 
 ---
 
@@ -68,42 +81,42 @@ Instead, emit bridge-ready events for Wave 5.2 treasury accounting bridge, becau
 
 ## Create
 
-* `packages/contracts/src/erp/finance/treasury/netting-session.entity.ts`
+- `packages/contracts/src/erp/finance/treasury/netting-session.entity.ts`
 
-* `packages/contracts/src/erp/finance/treasury/netting-session.commands.ts`
+- `packages/contracts/src/erp/finance/treasury/netting-session.commands.ts`
 
-* `packages/contracts/src/erp/finance/treasury/internal-interest-rate.entity.ts`
+- `packages/contracts/src/erp/finance/treasury/internal-interest-rate.entity.ts`
 
-* `packages/contracts/src/erp/finance/treasury/internal-interest-rate.commands.ts`
+- `packages/contracts/src/erp/finance/treasury/internal-interest-rate.commands.ts`
 
-* `packages/db/src/schema/erp/finance/treasury/netting-session.table.ts`
+- `packages/db/src/schema/erp/finance/treasury/netting-session.table.ts`
 
-* `packages/db/src/schema/erp/finance/treasury/internal-interest-rate.table.ts`
+- `packages/db/src/schema/erp/finance/treasury/internal-interest-rate.table.ts`
 
-* `packages/core/src/erp/finance/treasury/netting-session.service.ts`
+- `packages/core/src/erp/finance/treasury/netting-session.service.ts`
 
-* `packages/core/src/erp/finance/treasury/netting-session.queries.ts`
+- `packages/core/src/erp/finance/treasury/netting-session.queries.ts`
 
-* `packages/core/src/erp/finance/treasury/calculators/internal-interest.ts`
+- `packages/core/src/erp/finance/treasury/calculators/internal-interest.ts`
 
-* `packages/core/src/erp/finance/treasury/__vitest_test__/netting-session.service.test.ts`
+- `packages/core/src/erp/finance/treasury/__vitest_test__/netting-session.service.test.ts`
 
-* `apps/worker/src/jobs/erp/finance/treasury/handle-netting-session-closed.ts`
+- `apps/worker/src/jobs/erp/finance/treasury/handle-netting-session-closed.ts`
 
-* `apps/web/src/app/(erp)/finance/treasury/netting/page.tsx`
+- `apps/web/src/app/(erp)/finance/treasury/netting/page.tsx`
 
-* `apps/web/src/app/(erp)/finance/treasury/components/netting-settlement-view.tsx`
+- `apps/web/src/app/(erp)/finance/treasury/components/netting-settlement-view.tsx`
 
 ## Update
 
-* `packages/contracts/src/erp/finance/treasury/index.ts`
-* `packages/db/src/schema/erp/finance/treasury/index.ts`
-* `packages/core/src/erp/finance/treasury/calculators/index.ts`
-* `packages/core/src/erp/finance/treasury/index.ts`
-* `apps/api/src/routes/erp/finance/treasury.ts`
-* `apps/worker/src/jobs/erp/finance/treasury/index.ts`
-* `tools/gates/contract-db-sync.mjs`
-* `packages/db/drizzle/<timestamp>_treasury_netting_interest.sql` 
+- `packages/contracts/src/erp/finance/treasury/index.ts`
+- `packages/db/src/schema/erp/finance/treasury/index.ts`
+- `packages/core/src/erp/finance/treasury/calculators/index.ts`
+- `packages/core/src/erp/finance/treasury/index.ts`
+- `apps/api/src/routes/erp/finance/treasury.ts`
+- `apps/worker/src/jobs/erp/finance/treasury/index.ts`
+- `tools/gates/contract-db-sync.mjs`
+- `packages/db/drizzle/<timestamp>_treasury_netting_interest.sql`
 
 ---
 
@@ -1475,16 +1488,16 @@ treasury.internal-interest-rate.activated
 
 This scaffold satisfies the Wave 4.2 intent from your uploaded plan:
 
-* netting session entities
-* internal interest calculation services
-* settlement posting integration seam to treasury accounting 
+- netting session entities
+- internal interest calculation services
+- settlement posting integration seam to treasury accounting
 
 And it directly targets the exit criteria:
 
-* netting outputs reconcile with source obligations
-* interest computation is deterministic and tested 
+- netting outputs reconcile with source obligations
+- interest computation is deterministic and tested
 
-The file set also matches the Sprint 4.2 manifest in your uploaded scaffold. 
+The file set also matches the Sprint 4.2 manifest in your uploaded scaffold.
 
 ---
 
@@ -1492,13 +1505,13 @@ The file set also matches the Sprint 4.2 manifest in your uploaded scaffold.
 
 Before Wave 5, I would add:
 
-* netting participant summary projection table
-* interest accrual run entity
-* settlement evidence bundle for netting close
-* source-link from netting outputs to Wave 5.2 treasury accounting bridge
+- netting participant summary projection table
+- interest accrual run entity
+- settlement evidence bundle for netting close
+- source-link from netting outputs to Wave 5.2 treasury accounting bridge
 
 That keeps Wave 4.2 operationally complete without prematurely embedding accounting logic.
 
 # 17. Next scaffold after this
 
-After Wave 4.2, the next scaffold is **Wave 5.1 — FX exposure and hedge baseline**, which is exactly what your uploaded manifest says comes next. 
+After Wave 4.2, the next scaffold is **Wave 5.1 — FX exposure and hedge baseline**, which is exactly what your uploaded manifest says comes next.

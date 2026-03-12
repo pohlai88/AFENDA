@@ -27,15 +27,14 @@ export function SendVerificationEmailClient() {
 
   return (
     <section>
-      <h2 className="mb-0.5 text-sm font-semibold text-foreground">
-        Email verification
-      </h2>
+      <h2 className="mb-0.5 text-sm font-semibold text-foreground">Email verification</h2>
       <p className="mb-4 text-xs text-muted-foreground">
-        Send a verification link to your account email. Use this if you need to verify or re-verify your address.
+        Send a verification link to your account email. Use this if you need to verify or re-verify
+        your address.
       </p>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <Mail className="h-4 w-4" />
             Send verification email
           </CardTitle>
@@ -45,9 +44,7 @@ export function SendVerificationEmailClient() {
         </CardHeader>
         <CardContent className="space-y-3">
           {message && (
-            <p
-              className={`text-sm ${status === "success" ? "text-green-600 dark:text-green-400" : "text-destructive"}`}
-            >
+            <p className={`text-sm ${status === "success" ? "text-primary" : "text-destructive"}`}>
               {message}
             </p>
           )}

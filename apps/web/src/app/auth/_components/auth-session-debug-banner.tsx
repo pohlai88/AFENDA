@@ -35,7 +35,7 @@ export function AuthSessionDebugBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-left font-mono text-xs text-amber-900 dark:text-amber-200"
+      className="rounded-md border border-border bg-muted px-3 py-2 text-left font-mono text-xs text-foreground"
     >
       <div className="font-semibold">Session debug (dev)</div>
       <div className="mt-1">
@@ -44,13 +44,9 @@ export function AuthSessionDebugBanner() {
       </div>
       <div>AFENDA session: {payload.hasAfendaSession ? "yes" : "no"}</div>
       {payload.neonError && (
-        <div className="mt-1 text-red-600 dark:text-red-400">
-          Neon error: {payload.neonError}
-        </div>
+        <div className="mt-1 text-destructive">Neon error: {payload.neonError}</div>
       )}
-      {payload.hint && (
-        <div className="mt-1 text-muted-foreground">{payload.hint}</div>
-      )}
+      {payload.hint && <div className="mt-1 text-muted-foreground">{payload.hint}</div>}
     </div>
   );
 }

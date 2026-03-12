@@ -16,14 +16,16 @@ export class IntercompanyTransferQueries {
   /**
    * Get an intercompany transfer by ID
    */
-  async getById(
-    orgrId: string,
-    transferId: string
-  ): Promise<IntercompanyTransferEntity | null> {
+  async getById(orgId: string, transferId: string): Promise<IntercompanyTransferEntity | null> {
     const result = await this.deps.db
       .select()
       .from(treasuryIntercompanyTransferTable)
-      .where(eq(treasuryIntercompanyTransferTable.id, transferId))
+      .where(
+        and(
+          eq(treasuryIntercompanyTransferTable.orgId, orgId),
+          eq(treasuryIntercompanyTransferTable.id, transferId),
+        ),
+      )
       .limit(1);
 
     return result.length > 0 ? result[0] : null;
@@ -45,7 +47,7 @@ export class IntercompanyTransferQueries {
    */
   async listByStatus(
     orgId: string,
-    status: IntercompanyTransferEntity["status"]
+    status: IntercompanyTransferEntity["status"],
   ): Promise<IntercompanyTransferEntity[]> {
     return this.deps.db
       .select()
@@ -53,8 +55,8 @@ export class IntercompanyTransferQueries {
       .where(
         and(
           eq(treasuryIntercompanyTransferTable.orgId, orgId),
-          eq(treasuryIntercompanyTransferTable.status, status)
-        )
+          eq(treasuryIntercompanyTransferTable.status, status),
+        ),
       )
       .orderBy(desc(treasuryIntercompanyTransferTable.createdAt));
   }
@@ -67,8 +69,10 @@ export class IntercompanyTransferQueries {
       .select()
       .from(treasuryIntercompanyTransferTable)
       .where(
-        eq(treasuryIntercompanyTransferTable.orgId, orgId),
-        eq(treasuryIntercompanyTransferTable.status, "pending_approval")
+        and(
+          eq(treasuryIntercompanyTransferTable.orgId, orgId),
+          eq(treasuryIntercompanyTransferTable.status, "pending_approval"),
+        ),
       )
       .orderBy(desc(treasuryIntercompanyTransferTable.createdAt));
   }
@@ -78,14 +82,16 @@ export class IntercompanyTransferQueries {
    */
   async findByTransferNumber(
     orgId: string,
-    transferNumber: string
+    transferNumber: string,
   ): Promise<IntercompanyTransferEntity | null> {
     const result = await this.deps.db
       .select()
       .from(treasuryIntercompanyTransferTable)
       .where(
-        eq(treasuryIntercompanyTransferTable.orgId, orgId),
-        eq(treasuryIntercompanyTransferTable.transferNumber, transferNumber)
+        and(
+          eq(treasuryIntercompanyTransferTable.orgId, orgId),
+          eq(treasuryIntercompanyTransferTable.transferNumber, transferNumber),
+        ),
       )
       .limit(1);
 

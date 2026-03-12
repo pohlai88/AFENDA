@@ -1,14 +1,8 @@
 /**
- * Graphile Worker job handler: Treasury intercompany transfer settled
- *
- * Fired when an intercompany transfer moves to settled state.
- * Responsible for downstream side effects:
- * - Notification dispatch
- * - Settlement confirmation logging
- * - Bridge readiness signaling to Wave 5.2 accounting
+ * Graphile Worker job handler: Treasury intercompany transfer settled.
  */
 
-import type { Logger } from "pino";
+import type { Task } from "graphile-worker";
 
 export interface IntercompanyTransferSettledPayload {
   transferId: string;
@@ -30,70 +24,53 @@ export interface IntercompanyTransferSettledPayload {
   correlationId: string;
 }
 
-export interface JobContext {
-  logger: Logger;
-  [key: string]: any;
-}
+export const handleIntercompanyTransferSettled: Task = async (payload, helpers) => {
+  const event = payload as {
+    type: string;
+    orgId: string;
+    correlationId: string;
+    payload: IntercompanyTransferSettledPayload;
+  };
 
-/**
- * Handle intercompany transfer settled event
- * Entry point for Graphile Worker
- */
-export async function handleIntercompanyTransferSettled(
-  ctx: JobContext,
-  payload: IntercompanyTransferSettledPayload
-): Promise<{ ok: true }> {
-  const logger = ctx.logger.child({
-    correlationId: payload.correlationId,
-    transferId: payload.transferId,
-    transferNumber: payload.transferNumber,
-  });
+  const data = event.payload;
+  const logMeta = {
+    correlationId: event.correlationId,
+    transferId: data.transferId,
+    transferNumber: data.transferNumber,
+  };
 
-  logger.info(
-    {
-      fromEntity: payload.fromLegalEntityId,
-      toEntity: payload.toLegalEntityId,
-      amount: payload.transferAmountMinor,
-      currency: payload.currencyCode,
-    },
-    "Processing intercompany transfer settlement"
+  helpers.logger.info(
+    `processing intercompany transfer settlement: transferId=${data.transferId} correlationId=${event.correlationId}`,
   );
 
   try {
     // Step 1: Log settlement completion
-    logger.info(
-      {
-        debitLeg: payload.debitLegAmountMinor,
-        creditLeg: payload.creditLegAmountMinor,
-      },
-      "Transfer settlement verified - balanced legs confirmed"
+    helpers.logger.info(
+      `transfer settlement verified: transferId=${data.transferId} debitLeg=${data.debitLegAmountMinor} creditLeg=${data.creditLegAmountMinor}`,
     );
 
     // Step 2: Signal readiness to accounting bridge (Wave 5.2)
     // This will be consumed by Wave 5.2 to create GL postings
     // For now, we just acknowledge the event
-    logger.info(
-      {
-        bridge: "wave-5-2-accounting",
-        event: "intercompany-transfer-settled",
-      },
-      "Bridge-ready event signal: awaiting Wave 5.2 accounting transformation"
+    helpers.logger.info(
+      `bridge-ready settlement signal emitted: transferId=${data.transferId} bridge=wave-5-2-accounting`,
     );
 
     // Step 3: Optional: Send notifications to stakeholders
     // This would be added in a notification service call
-    logger.info(
-      {
-        recipients: [payload.fromLegalEntityId, payload.toLegalEntityId],
-      },
-      "Settlement notification eligibility confirmed"
+    helpers.logger.info(
+      `settlement notification eligibility confirmed: transferId=${data.transferId} fromEntity=${data.fromLegalEntityId} toEntity=${data.toLegalEntityId}`,
     );
 
-    logger.info({ settledAt: payload.settledAt }, "Intercompany transfer settlement complete");
+    helpers.logger.info(
+      `intercompany transfer settlement complete: transferId=${data.transferId} settledAt=${data.settledAt}`,
+    );
 
-    return { ok: true };
+    return;
   } catch (err) {
-    logger.error({ error: err }, "Failed to handle intercompany transfer settlement");
+    helpers.logger.error(
+      `failed to handle intercompany transfer settlement: transferId=${data.transferId} correlationId=${event.correlationId}`,
+    );
     throw err;
   }
-}
+};

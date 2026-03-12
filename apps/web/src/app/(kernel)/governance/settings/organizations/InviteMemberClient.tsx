@@ -51,15 +51,13 @@ export function InviteMemberClient() {
 
   return (
     <section>
-      <h2 className="mb-0.5 text-sm font-semibold text-foreground">
-        Invite member
-      </h2>
+      <h2 className="mb-0.5 text-sm font-semibold text-foreground">Invite member</h2>
       <p className="mb-4 text-xs text-muted-foreground">
         Invite someone to an organization by email. They will receive an invitation link.
       </p>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
             <UserPlus className="h-4 w-4" />
             Invite to organization
           </CardTitle>
@@ -94,7 +92,9 @@ export function InviteMemberClient() {
                   </SelectTrigger>
                   <SelectContent>
                     {organizations
-                      .filter((org): org is OrganizationListItem & { id: string } => Boolean(org.id))
+                      .filter((org): org is OrganizationListItem & { id: string } =>
+                        Boolean(org.id),
+                      )
                       .map((org) => (
                         <SelectItem key={org.id} value={org.id}>
                           {org.name ?? org.slug ?? org.id}
@@ -128,11 +128,7 @@ export function InviteMemberClient() {
               {state && !state.ok && state.error && (
                 <p className="text-sm text-destructive">{state.error}</p>
               )}
-              {state?.ok && (
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  Invitation sent successfully.
-                </p>
-              )}
+              {state?.ok && <p className="text-sm text-primary">Invitation sent successfully.</p>}
               <Button type="submit" size="sm" disabled={isPending || !selectedOrgId}>
                 {isPending ? "Sending…" : "Send invitation"}
               </Button>

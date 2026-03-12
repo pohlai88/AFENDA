@@ -8,7 +8,11 @@ import type {
   SubmitIntercompanyTransferCommand,
   IntercompanyTransferEntity,
 } from "@afenda/contracts";
-import { treasuryInternalBankAccountTable, treasuryIntercompanyTransferTable } from "@afenda/db";
+import {
+  outboxEvent,
+  treasuryInternalBankAccountTable,
+  treasuryIntercompanyTransferTable,
+} from "@afenda/db";
 import {
   assertBalancedTransfer,
   calculateBalancedLegs,
@@ -34,7 +38,7 @@ export class IntercompanyTransferService {
    * Create an intercompany transfer in draft state
    */
   async createIntercompanyTransfer(
-    cmd: CreateIntercompanyTransferCommand
+    cmd: CreateIntercompanyTransferCommand,
   ): Promise<ServiceResult<IntercompanyTransferEntity>> {
     try {
       // Check if from and to legal entities are the same
@@ -55,8 +59,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryInternalBankAccountTable.id, cmd.fromInternalBankAccountId),
-            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId)
-          )
+            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -76,8 +80,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryInternalBankAccountTable.id, cmd.toInternalBankAccountId),
-            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId)
-          )
+            eq(treasuryInternalBankAccountTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -161,8 +165,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId),
-            eq(treasuryIntercompanyTransferTable.transferNumber, cmd.transferNumber)
-          )
+            eq(treasuryIntercompanyTransferTable.transferNumber, cmd.transferNumber),
+          ),
         )
         .limit(1);
 
@@ -209,20 +213,33 @@ export class IntercompanyTransferService {
         updatedAt: now,
       };
 
-      await this.deps.db
-        .insert(treasuryIntercompanyTransferTable)
-        .values(transfer);
+      await this.deps.db.insert(treasuryIntercompanyTransferTable).values(transfer);
+
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERCOMPANY_TRANSFER_CREATED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          intercompanyTransferId: id,
+          transferNumber: cmd.transferNumber,
+          fromLegalEntityId: cmd.fromLegalEntityId,
+          toLegalEntityId: cmd.toLegalEntityId,
+          amountMinor: cmd.transferAmountMinor,
+          currencyCode: cmd.currencyCode,
+        },
+      });
 
       this.deps.logger.info(
         { transferId: id, transferNumber: cmd.transferNumber, orgId: cmd.orgId },
-        "Intercompany transfer created"
+        "Intercompany transfer created",
       );
 
       return { ok: true, data: transfer };
     } catch (err) {
       this.deps.logger.error(
         { error: err, orgId: cmd.orgId },
-        "Failed to create intercompany transfer"
+        "Failed to create intercompany transfer",
       );
       return {
         ok: false,
@@ -235,7 +252,7 @@ export class IntercompanyTransferService {
    * Submit an intercompany transfer for approval
    */
   async submitIntercompanyTransfer(
-    cmd: SubmitIntercompanyTransferCommand
+    cmd: SubmitIntercompanyTransferCommand,
   ): Promise<ServiceResult<IntercompanyTransferEntity>> {
     try {
       const existing = await this.deps.db
@@ -244,8 +261,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId),
-            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId)
-          )
+            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -282,18 +299,28 @@ export class IntercompanyTransferService {
         })
         .where(eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERCOMPANY_TRANSFER_SUBMITTED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          intercompanyTransferId: cmd.intercompanyTransferId,
+        },
+      });
+
       const updated = { ...transfer, status: "pending_approval", updatedAt: now };
 
       this.deps.logger.info(
         { transferId: cmd.intercompanyTransferId, orgId: cmd.orgId },
-        "Intercompany transfer submitted for approval"
+        "Intercompany transfer submitted for approval",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, transferId: cmd.intercompanyTransferId },
-        "Failed to submit intercompany transfer"
+        "Failed to submit intercompany transfer",
       );
       return {
         ok: false,
@@ -306,7 +333,7 @@ export class IntercompanyTransferService {
    * Approve an intercompany transfer
    */
   async approveIntercompanyTransfer(
-    cmd: ApproveIntercompanyTransferCommand
+    cmd: ApproveIntercompanyTransferCommand,
   ): Promise<ServiceResult<IntercompanyTransferEntity>> {
     try {
       const existing = await this.deps.db
@@ -315,8 +342,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId),
-            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId)
-          )
+            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -342,6 +369,16 @@ export class IntercompanyTransferService {
         };
       }
 
+      if (transfer.makerUserId === cmd.actorUserId) {
+        return {
+          ok: false,
+          error: {
+            code: "TREASURY_INTERCOMPANY_TRANSFER_SOD_VIOLATION",
+            message: "Maker-checker violation",
+          },
+        };
+      }
+
       // gate:allow-js-date Contract response timestamps mirror write time for returned entity shape.
       const now = new Date().toISOString();
 
@@ -355,6 +392,17 @@ export class IntercompanyTransferService {
         })
         .where(eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERCOMPANY_TRANSFER_APPROVED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          intercompanyTransferId: cmd.intercompanyTransferId,
+          checkerUserId: cmd.actorUserId,
+        },
+      });
+
       const updated = {
         ...transfer,
         status: "approved",
@@ -365,14 +413,14 @@ export class IntercompanyTransferService {
 
       this.deps.logger.info(
         { transferId: cmd.intercompanyTransferId, orgId: cmd.orgId },
-        "Intercompany transfer approved"
+        "Intercompany transfer approved",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, transferId: cmd.intercompanyTransferId },
-        "Failed to approve intercompany transfer"
+        "Failed to approve intercompany transfer",
       );
       return {
         ok: false,
@@ -385,7 +433,7 @@ export class IntercompanyTransferService {
    * Reject an intercompany transfer
    */
   async rejectIntercompanyTransfer(
-    cmd: RejectIntercompanyTransferCommand
+    cmd: RejectIntercompanyTransferCommand,
   ): Promise<ServiceResult<IntercompanyTransferEntity>> {
     try {
       const existing = await this.deps.db
@@ -394,8 +442,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId),
-            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId)
-          )
+            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -435,6 +483,18 @@ export class IntercompanyTransferService {
         })
         .where(eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERCOMPANY_TRANSFER_REJECTED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          intercompanyTransferId: cmd.intercompanyTransferId,
+          checkerUserId: cmd.actorUserId,
+          reason: cmd.reason,
+        },
+      });
+
       const updated = {
         ...transfer,
         status: "rejected",
@@ -446,14 +506,14 @@ export class IntercompanyTransferService {
 
       this.deps.logger.info(
         { transferId: cmd.intercompanyTransferId, orgId: cmd.orgId, reason: cmd.reason },
-        "Intercompany transfer rejected"
+        "Intercompany transfer rejected",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, transferId: cmd.intercompanyTransferId },
-        "Failed to reject intercompany transfer"
+        "Failed to reject intercompany transfer",
       );
       return {
         ok: false,
@@ -466,7 +526,7 @@ export class IntercompanyTransferService {
    * Settle an intercompany transfer
    */
   async settleIntercompanyTransfer(
-    cmd: SettleIntercompanyTransferCommand
+    cmd: SettleIntercompanyTransferCommand,
   ): Promise<ServiceResult<IntercompanyTransferEntity>> {
     try {
       const existing = await this.deps.db
@@ -475,8 +535,8 @@ export class IntercompanyTransferService {
         .where(
           and(
             eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId),
-            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId)
-          )
+            eq(treasuryIntercompanyTransferTable.orgId, cmd.orgId),
+          ),
         )
         .limit(1);
 
@@ -531,6 +591,29 @@ export class IntercompanyTransferService {
         })
         .where(eq(treasuryIntercompanyTransferTable.id, cmd.intercompanyTransferId));
 
+      await this.deps.db.insert(outboxEvent).values({
+        orgId: cmd.orgId,
+        type: "TREAS.INTERCOMPANY_TRANSFER_SETTLED",
+        version: "1",
+        correlationId: cmd.correlationId,
+        payload: {
+          intercompanyTransferId: cmd.intercompanyTransferId,
+          transferNumber: transfer.transferNumber,
+          fromLegalEntityId: transfer.fromLegalEntityId,
+          toLegalEntityId: transfer.toLegalEntityId,
+          fromInternalBankAccountId: transfer.fromInternalBankAccountId,
+          toInternalBankAccountId: transfer.toInternalBankAccountId,
+          purpose: transfer.purpose,
+          currencyCode: transfer.currencyCode,
+          transferAmountMinor: transfer.transferAmountMinor,
+          debitLegAmountMinor: transfer.debitLegAmountMinor,
+          creditLegAmountMinor: transfer.creditLegAmountMinor,
+          requestedExecutionDate: transfer.requestedExecutionDate,
+          settledAt: now,
+          sourceVersion: transfer.sourceVersion,
+        },
+      });
+
       const updated = {
         ...transfer,
         status: "settled",
@@ -540,14 +623,14 @@ export class IntercompanyTransferService {
 
       this.deps.logger.info(
         { transferId: cmd.intercompanyTransferId, orgId: cmd.orgId },
-        "Intercompany transfer settled"
+        "Intercompany transfer settled",
       );
 
       return { ok: true, data: updated };
     } catch (err) {
       this.deps.logger.error(
         { error: err, transferId: cmd.intercompanyTransferId },
-        "Failed to settle intercompany transfer"
+        "Failed to settle intercompany transfer",
       );
       return {
         ok: false,

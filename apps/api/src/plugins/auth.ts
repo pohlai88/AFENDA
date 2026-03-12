@@ -17,8 +17,8 @@
  * Routes that require authentication check `req.ctx` and return 401 when absent.
  */
 
-import type { FastifyPluginAsync } from "fastify";
 import { resolvePrincipalContext } from "@afenda/core";
+import fp from "fastify-plugin";
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const DEV_HEADER = "x-dev-user-email";
@@ -65,7 +65,7 @@ function extractEmailFromPayload(payload: Record<string, unknown>): string | nul
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
-export const authPlugin: FastifyPluginAsync = async (app) => {
+export const authPlugin = fp(async (app: any) => {
   app.decorateRequest("ctx", undefined);
   const jwksUrl = resolveJwksUrl();
   const jwks = jwksUrl ? createRemoteJWKSet(new URL(jwksUrl)) : null;
@@ -73,7 +73,7 @@ export const authPlugin: FastifyPluginAsync = async (app) => {
   // onRequest fires after correlationId + orgSlug hooks (which are registered
   // before this plugin in index.ts). So req.correlationId and req.orgSlug are
   // already populated when this hook runs.
-  app.addHook("onRequest", async (req) => {
+  app.addHook("onRequest", async (req: any) => {
     // Skip infra endpoints — no user context needed
     if (req.url === "/healthz" || req.url === "/readyz") return;
 
@@ -143,4 +143,4 @@ export const authPlugin: FastifyPluginAsync = async (app) => {
       );
     }
   });
-};
+}) as any;

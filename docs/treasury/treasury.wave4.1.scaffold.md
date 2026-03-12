@@ -1,65 +1,73 @@
 Below is the **Wave 4.1 full drop-in scaffold** for AFENDA Treasury:
 
+## Status (Updated 2026-03-12)
+
+- Wave: `4.1`
+- Delivery status: `Completed`
+- Implementation status: `Implemented across contracts/db/core/api/worker/web`
+- Quality status: `All gates green (22/22) after remediation`
+- Notes: `Outbox routing, maker-checker controls, and settlement event handling are wired end-to-end`
+
 * **internal bank account structures**
 * **intercompany transfer lifecycle**
 * **balancing controls**
 * **internal settlement events**
 
-That matches your Wave 4.1 manifest and exit criteria: every transfer must have balanced debit/credit legs, and intercompany org controls and approvals must be enforced. 
+That matches your Wave 4.1 manifest and exit criteria: every transfer must have balanced debit/credit legs, and intercompany org controls and approvals must be enforced.
 
 This should be treated as **operational truth first**.
-Do **not** force GL posting here yet. Wave 4.1 should emit bridge-ready treasury events so Wave 5.2 can own the accounting bridge cleanly. Your scaffold explicitly places treasury accounting bridge later in Wave 5.2. 
+Do **not** force GL posting here yet. Wave 4.1 should emit bridge-ready treasury events so Wave 5.2 can own the accounting bridge cleanly. Your scaffold explicitly places treasury accounting bridge later in Wave 5.2.
 
 ---
 
 # 1. Target file set
 
-Your uploaded scaffold’s Wave 4.1 manifest calls for these create/update classes under the AFENDA pattern. 
+Your uploaded scaffold’s Wave 4.1 manifest calls for these create/update classes under the AFENDA pattern.
 
 ## Create
 
-* `packages/contracts/src/erp/finance/treasury/internal-bank-account.entity.ts`
+- `packages/contracts/src/erp/finance/treasury/internal-bank-account.entity.ts`
 
-* `packages/contracts/src/erp/finance/treasury/internal-bank-account.commands.ts`
+- `packages/contracts/src/erp/finance/treasury/internal-bank-account.commands.ts`
 
-* `packages/contracts/src/erp/finance/treasury/intercompany-transfer.entity.ts`
+- `packages/contracts/src/erp/finance/treasury/intercompany-transfer.entity.ts`
 
-* `packages/contracts/src/erp/finance/treasury/intercompany-transfer.commands.ts`
+- `packages/contracts/src/erp/finance/treasury/intercompany-transfer.commands.ts`
 
-* `packages/db/src/schema/erp/finance/treasury/internal-bank-account.table.ts`
+- `packages/db/src/schema/erp/finance/treasury/internal-bank-account.table.ts`
 
-* `packages/db/src/schema/erp/finance/treasury/intercompany-transfer.table.ts`
+- `packages/db/src/schema/erp/finance/treasury/intercompany-transfer.table.ts`
 
-* `packages/core/src/erp/finance/treasury/internal-bank-account.service.ts`
+- `packages/core/src/erp/finance/treasury/internal-bank-account.service.ts`
 
-* `packages/core/src/erp/finance/treasury/internal-bank-account.queries.ts`
+- `packages/core/src/erp/finance/treasury/internal-bank-account.queries.ts`
 
-* `packages/core/src/erp/finance/treasury/intercompany-transfer.service.ts`
+- `packages/core/src/erp/finance/treasury/intercompany-transfer.service.ts`
 
-* `packages/core/src/erp/finance/treasury/intercompany-transfer.queries.ts`
+- `packages/core/src/erp/finance/treasury/intercompany-transfer.queries.ts`
 
-* `packages/core/src/erp/finance/treasury/calculators/intercompany-balancing.ts`
+- `packages/core/src/erp/finance/treasury/calculators/intercompany-balancing.ts`
 
-* `packages/core/src/erp/finance/treasury/__vitest_test__/internal-bank-account.service.test.ts`
+- `packages/core/src/erp/finance/treasury/__vitest_test__/internal-bank-account.service.test.ts`
 
-* `packages/core/src/erp/finance/treasury/__vitest_test__/intercompany-transfer.service.test.ts`
+- `packages/core/src/erp/finance/treasury/__vitest_test__/intercompany-transfer.service.test.ts`
 
-* `apps/worker/src/jobs/erp/finance/treasury/handle-intercompany-transfer-settled.ts`
+- `apps/worker/src/jobs/erp/finance/treasury/handle-intercompany-transfer-settled.ts`
 
-* `apps/web/src/app/(erp)/finance/treasury/inhouse-bank/page.tsx`
+- `apps/web/src/app/(erp)/finance/treasury/inhouse-bank/page.tsx`
 
-* `apps/web/src/app/(erp)/finance/treasury/components/intercompany-transfer-board.tsx`
+- `apps/web/src/app/(erp)/finance/treasury/components/intercompany-transfer-board.tsx`
 
 ## Update
 
-* `packages/contracts/src/erp/finance/treasury/index.ts`
-* `packages/db/src/schema/erp/finance/treasury/index.ts`
-* `packages/core/src/erp/finance/treasury/calculators/index.ts`
-* `packages/core/src/erp/finance/treasury/index.ts`
-* `apps/api/src/routes/erp/finance/treasury.ts`
-* `apps/worker/src/jobs/erp/finance/treasury/index.ts`
-* `tools/gates/contract-db-sync.mjs`
-* `packages/db/drizzle/<timestamp>_treasury_inhouse_bank_transfer.sql` 
+- `packages/contracts/src/erp/finance/treasury/index.ts`
+- `packages/db/src/schema/erp/finance/treasury/index.ts`
+- `packages/core/src/erp/finance/treasury/calculators/index.ts`
+- `packages/core/src/erp/finance/treasury/index.ts`
+- `apps/api/src/routes/erp/finance/treasury.ts`
+- `apps/worker/src/jobs/erp/finance/treasury/index.ts`
+- `tools/gates/contract-db-sync.mjs`
+- `packages/db/drizzle/<timestamp>_treasury_inhouse_bank_transfer.sql`
 
 ---
 
@@ -72,11 +80,11 @@ This is a **treasury-managed internal liquidity node**.
 It is not an external bank account.
 It is an internal treasury account tied to:
 
-* org
-* legal entity
-* currency
-* account role
-* lifecycle state
+- org
+- legal entity
+- currency
+- account role
+- lifecycle state
 
 ## Intercompany transfer
 
@@ -84,19 +92,19 @@ This is an **internal movement of value** between internal treasury accounts.
 
 It must preserve:
 
-* from / to entity
-* from / to internal account
-* amount + currency
-* balanced legs
-* approval evidence
-* settlement evidence
-* outbox events for downstream accounting bridge
+- from / to entity
+- from / to internal account
+- amount + currency
+- balanced legs
+- approval evidence
+- settlement evidence
+- outbox events for downstream accounting bridge
 
 So Wave 4.1 gives AFENDA:
 
-* in-house banking structure
-* internal liquidity movement truth
-* bridge-ready transfer evidence
+- in-house banking structure
+- internal liquidity movement truth
+- bridge-ready transfer evidence
 
 ---
 
@@ -1619,15 +1627,15 @@ treasury.intercompany-transfer.settled
 
 This Wave 4.1 scaffold satisfies the functional intent in your manifest:
 
-* internal treasury account structures
-* intercompany transfer lifecycle
-* balancing controls
-* internal settlement events 
+- internal treasury account structures
+- intercompany transfer lifecycle
+- balancing controls
+- internal settlement events
 
 And it directly enforces the exit criteria:
 
-* balanced debit and credit legs
-* intercompany approval and control boundaries 
+- balanced debit and credit legs
+- intercompany approval and control boundaries
 
 ---
 
@@ -1635,11 +1643,11 @@ And it directly enforces the exit criteria:
 
 The next hardening pass for this Wave 4.1 pack should be:
 
-* add transfer settlement evidence entity
-* add internal account balance snapshots
-* add legal-entity policy approval matrix
-* add source-link to Wave 5 treasury accounting bridge
-* add optional FX seam if transfer across currencies is ever allowed later
+- add transfer settlement evidence entity
+- add internal account balance snapshots
+- add legal-entity policy approval matrix
+- add source-link to Wave 5 treasury accounting bridge
+- add optional FX seam if transfer across currencies is ever allowed later
 
 But for now, I would keep Wave 4.1 **single-currency per transfer**.
 That is the correct clean first cut.
@@ -1654,18 +1662,18 @@ After you drop this in, the next scaffold is:
 
 That should add:
 
-* `netting-session.entity.ts`
-* `netting-session.commands.ts`
-* `internal-interest-rate.entity.ts`
-* `internal-interest-rate.commands.ts`
-* `netting-session.table.ts`
-* `internal-interest-rate.table.ts`
-* `netting-session.service.ts`
-* `netting-session.queries.ts`
-* `calculators/internal-interest.ts`
-* `handle-netting-session-closed.ts`
-* `netting/page.tsx`
+- `netting-session.entity.ts`
+- `netting-session.commands.ts`
+- `internal-interest-rate.entity.ts`
+- `internal-interest-rate.commands.ts`
+- `netting-session.table.ts`
+- `internal-interest-rate.table.ts`
+- `netting-session.service.ts`
+- `netting-session.queries.ts`
+- `calculators/internal-interest.ts`
+- `handle-netting-session-closed.ts`
+- `netting/page.tsx`
 
-That matches your Wave 4.2 manifest. 
+That matches your Wave 4.2 manifest.
 
 I’d do Wave 4.2 next.

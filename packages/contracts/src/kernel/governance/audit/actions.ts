@@ -144,6 +144,27 @@ export const AuditActionValues = [
   "treasury.intercompany-transfer.approved",
   "treasury.intercompany-transfer.rejected",
   "treasury.intercompany-transfer.settled",
+  // Treasury — Wave 4.2 Netting + Internal Interest
+  "treasury.netting-session.create",
+  "treasury.netting-session.add-items",
+  "treasury.netting-session.close",
+  "treasury.netting-session.settle",
+  "treasury.internal-interest-rate.create",
+  "treasury.internal-interest-rate.activate",
+  // Treasury — Wave 5.1 FX Management + Revaluation
+  "treasury.fx-exposure.created",
+  "treasury.fx-exposure.closed",
+  "treasury.hedge-designation.created",
+  "treasury.hedge-designation.status-updated",
+  "treasury.revaluation-event.created",
+  "treasury.revaluation-event.status-updated",
+  // Treasury — Wave 6.2 Connectors + Market Data
+  "treasury.bank-connector.created",
+  "treasury.bank-connector.activated",
+  "treasury.bank-connector.sync-requested",
+  "treasury.market-data-feed.created",
+  "treasury.market-data-feed.activated",
+  "treasury.market-data-feed.refresh-requested",
 ] as const;
 
 export type AuditAction = (typeof AuditActionValues)[number];
@@ -197,6 +218,13 @@ export const AuditEntityTypeValues = [
   "forecast_variance",
   "internal_bank_account",
   "intercompany_transfer",
+  "fx_exposure",
+  "hedge_designation",
+  "revaluation_event",
+  "bank_connector",
+  "bank_connector_execution",
+  "market_data_feed",
+  "market_data_observation",
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];

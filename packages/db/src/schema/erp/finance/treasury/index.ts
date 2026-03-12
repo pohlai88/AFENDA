@@ -20,4 +20,19 @@ export * from "./forecast-variance";
 // Wave 4.1 — In-house Banking + Intercompany Transfers
 export * from "./internal-bank-account.table";
 export * from "./intercompany-transfer.table";
-
+// Wave 4.2 — Netting + Internal Interest
+export * from "./netting-session.table";
+export * from "./internal-interest-rate.table";
+// Wave 4.3 — FX Management + Revaluation
+export * from "./fx-exposure.table";
+export * from "./hedge-designation.table";
+export * from "./revaluation-event.table";
+// Wave 5.2 — Treasury Accounting Bridge
+export * from "./treasury-accounting-policy.table";
+export * from "./treasury-posting-bridge.table";
+// Wave 6.1 — Treasury Policy + Limits
+export * from "./treasury-policy.table";
+export * from "./treasury-limit.table";
+// Wave 6.2 — Connectors + Market Data
+export * from "./bank-connector.table";
+export * from "./market-data-feed.table";

@@ -152,6 +152,26 @@ export const PermissionValues = [
   "erp.finance.treasury.intercompany-transfer.read",
   "erp.finance.treasury.intercompany-transfer.manage",
   "erp.finance.treasury.intercompany-transfer.settle",
+
+  // Treasury — Wave 4.2 Netting + Internal Interest
+  "erp.finance.treasury.netting-session.read",
+  "erp.finance.treasury.netting-session.manage",
+  "erp.finance.treasury.netting-session.settle",
+  "erp.finance.treasury.internal-interest-rate.read",
+  "erp.finance.treasury.internal-interest-rate.manage",
+
+  // Treasury — Wave 5.1 FX Management + Revaluation
+  "erp.finance.treasury.fx-exposure.read",
+  "erp.finance.treasury.fx-exposure.manage",
+  "erp.finance.treasury.hedge-designation.read",
+  "erp.finance.treasury.hedge-designation.manage",
+  "erp.finance.treasury.revaluation-event.read",
+  "erp.finance.treasury.revaluation-event.manage",
+  // Treasury — Wave 6.2 Connectors + Market Data
+  "erp.finance.treasury.bank-connector.read",
+  "erp.finance.treasury.bank-connector.manage",
+  "erp.finance.treasury.market-data-feed.read",
+  "erp.finance.treasury.market-data-feed.manage",
 ] as const;
 
 export type Permission = (typeof PermissionValues)[number];

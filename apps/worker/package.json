@@ -15,6 +15,7 @@
     "@afenda/contracts": "workspace:*",
     "@afenda/core": "workspace:*",
     "@afenda/db": "workspace:*",
+    "drizzle-orm": "catalog:",
     "dotenv": "catalog:",
     "graphile-worker": "catalog:",
     "pino": "catalog:",

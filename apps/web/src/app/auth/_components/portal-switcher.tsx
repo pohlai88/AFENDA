@@ -20,6 +20,7 @@ import {
 } from "@afenda/ui";
 
 import type { PortalType } from "@afenda/contracts";
+import { useAuthRenderMetric } from "@/lib/auth-render-metrics";
 import { getPortal } from "../_lib/portal-registry";
 import { buildPortalSignInRedirect } from "../_lib/portal-routing";
 import { PortalSwitcherList } from "./portal-switcher-list";
@@ -35,8 +36,7 @@ interface PortalSwitcherProps {
 const SWITCHER_PANEL_CLASS =
   "h-[26rem] w-[22rem] overflow-hidden rounded-2xl border border-border/70 bg-popover p-0 shadow-xl";
 
-interface PortalSwitcherTriggerProps
-  extends React.ComponentPropsWithoutRef<typeof Button> {
+interface PortalSwitcherTriggerProps extends React.ComponentPropsWithoutRef<typeof Button> {
   label: string;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 }
@@ -53,22 +53,16 @@ const PortalSwitcherTrigger = React.forwardRef<
       className={cn(
         "h-11 w-full justify-between rounded-xl border border-border/70 bg-background px-4 text-sm font-medium shadow-sm",
         "hover:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        className
+        className,
       )}
       {...props}
     >
       <span className="flex min-w-0 items-center gap-3">
-        <Icon
-          className="h-4 w-4 shrink-0 text-muted-foreground"
-          aria-hidden={true}
-        />
+        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden={true} />
         <span className="truncate text-foreground">{label}</span>
       </span>
 
-      <ChevronsUpDown
-        className="h-4 w-4 shrink-0 text-muted-foreground/70"
-        aria-hidden={true}
-      />
+      <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground/70" aria-hidden={true} />
     </Button>
   );
 });
@@ -98,11 +92,7 @@ function PortalSwitcherCommand({
           No portal found.
         </CommandEmpty>
 
-        <PortalSwitcherList
-          value={value}
-          onSelect={onSelect}
-          showShortcuts={showShortcuts}
-        />
+        <PortalSwitcherList value={value} onSelect={onSelect} showShortcuts={showShortcuts} />
       </CommandList>
     </Command>
   );
@@ -117,11 +107,14 @@ export function PortalSwitcher({
 }: PortalSwitcherProps) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
 
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  useAuthRenderMetric("PortalSwitcher", {
+    value,
+    mobile,
+    open,
+    showShortcuts,
+    hasOnSelect: Boolean(onSelect),
+  });
 
   const currentPortal = getPortal(value);
   const CurrentIcon = currentPortal.icon;
@@ -137,15 +130,11 @@ export function PortalSwitcher({
 
       router.push(buildPortalSignInRedirect(portal));
     },
-    [onSelect, router]
+    [onSelect, router],
   );
 
   const command = (
-    <PortalSwitcherCommand
-      value={value}
-      showShortcuts={showShortcuts}
-      onSelect={handleSelect}
-    />
+    <PortalSwitcherCommand value={value} showShortcuts={showShortcuts} onSelect={handleSelect} />
   );
 
   if (mobile) {
@@ -163,18 +152,6 @@ export function PortalSwitcher({
           {command}
         </DialogContent>
       </Dialog>
-    );
-  }
-
-  if (!mounted) {
-    return (
-      <PortalSwitcherTrigger
-        label={currentPortal.label}
-        icon={CurrentIcon}
-        className={className}
-        aria-expanded={false}
-        disabled
-      />
     );
   }
 

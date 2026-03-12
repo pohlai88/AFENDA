@@ -15,8 +15,8 @@
  *   3. onError: `releaseIdempotency()` deletes the pending row so retries work.
  */
 
-import type { FastifyPluginAsync } from "fastify";
 import { IdempotencyKeyHeader, type OrgId, type IdempotencyKey } from "@afenda/contracts";
+import fp from "fastify-plugin";
 import {
   beginIdempotency,
   markDoneIdempotency,
@@ -47,9 +47,9 @@ interface IdempotencyMeta {
   requestHash: string;
 }
 
-export const idempotencyPlugin: FastifyPluginAsync = async (app) => {
+export const idempotencyPlugin = fp(async (app: any) => {
   // ── preHandler: claim idempotency key ──────────────────────────────────────
-  app.addHook("preHandler", async (req, reply) => {
+  app.addHook("preHandler", async (req: any, reply: any) => {
     const key =
       (req.headers[IdempotencyKeyHeader] as string | undefined) ??
       ((req.body as Record<string, unknown> | null)?.["idempotencyKey"] as string | undefined);
@@ -121,7 +121,7 @@ export const idempotencyPlugin: FastifyPluginAsync = async (app) => {
   });
 
   // ── onSend: store result for successful requests ───────────────────────────
-  app.addHook("onSend", async (req, reply, payload) => {
+  app.addHook("onSend", async (req: any, reply: any, payload: any) => {
     const meta = (req as any).__idempotency as IdempotencyMeta | undefined;
 
     if (!meta || reply.statusCode >= 400) return payload;
@@ -143,7 +143,7 @@ export const idempotencyPlugin: FastifyPluginAsync = async (app) => {
   });
 
   // ── onError: release pending key so client can retry ───────────────────────
-  app.addHook("onError", async (req) => {
+  app.addHook("onError", async (req: any) => {
     const meta = (req as any).__idempotency as IdempotencyMeta | undefined;
 
     if (!meta) return;
@@ -159,4 +159,4 @@ export const idempotencyPlugin: FastifyPluginAsync = async (app) => {
       app.log.warn({ err }, "Failed to release idempotency key (non-fatal)");
     }
   });
-};
+}) as any;

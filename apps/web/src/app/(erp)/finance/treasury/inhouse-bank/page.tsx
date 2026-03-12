@@ -1,8 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@afenda/ui";
 import { Suspense } from "react";
-import { IntercompanyTransferBoard, IntercompanyTransferBoardSkeleton } from "../components/intercompany-transfer-board";
-
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
+import {
+  IntercompanyTransferBoard,
+  IntercompanyTransferBoardSkeleton,
+} from "../components/intercompany-transfer-board";
+import {
+  fetchTreasuryIntercompanyTransfers,
+  fetchTreasuryInternalBankAccounts,
+} from "@/lib/api-client";
 
 interface InternalBankAccount {
   id: string;
@@ -26,62 +31,6 @@ interface IntercompanyTransfer {
 }
 
 /**
- * Fetch internal bank accounts
- */
-async function getInternalAccounts(orgId: string): Promise<InternalBankAccount[]> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/v1/treasury/internal-bank-accounts?orgId=${orgId}`,
-      {
-        cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${process.env.API_TOKEN || ""}`,
-        },
-      }
-    );
-
-    if (!res.ok) {
-      console.error("Failed to fetch internal accounts", res.status);
-      return [];
-    }
-
-    const data = await res.json();
-    return data.data ?? [];
-  } catch (err) {
-    console.error("Error fetching internal accounts:", err);
-    return [];
-  }
-}
-
-/**
- * Fetch intercompany transfers
- */
-async function getTransfers(orgId: string): Promise<IntercompanyTransfer[]> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/v1/treasury/intercompany-transfers?orgId=${orgId}`,
-      {
-        cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${process.env.API_TOKEN || ""}`,
-        },
-      }
-    );
-
-    if (!res.ok) {
-      console.error("Failed to fetch transfers", res.status);
-      return [];
-    }
-
-    const data = await res.json();
-    return data.data ?? [];
-  } catch (err) {
-    console.error("Error fetching transfers:", err);
-    return [];
-  }
-}
-
-/**
  * In-House Banking Dashboard
  * Displays internal bank accounts and intercompany transfers
  */
@@ -90,12 +39,11 @@ export default async function InHouseBankPage({
 }: {
   searchParams: Promise<{ orgId?: string }>;
 }) {
-  const params = await searchParams;
-  const orgId = params.orgId || "unknown";
+  await searchParams;
 
   const [accounts, transfers] = await Promise.all([
-    getInternalAccounts(orgId),
-    getTransfers(orgId),
+    fetchTreasuryInternalBankAccounts(),
+    fetchTreasuryIntercompanyTransfers(),
   ]);
 
   const accountStatusColors: Record<string, string> = {
@@ -118,14 +66,14 @@ export default async function InHouseBankPage({
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">In-House Banking</h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="mt-2 text-muted-foreground">
           Manage internal treasury accounts and intercompany transfers
         </p>
       </div>
 
       {/* Internal Bank Accounts Section */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Internal Bank Accounts</h2>
+        <h2 className="mb-4 text-2xl font-bold">Internal Bank Accounts</h2>
         {accounts.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
@@ -140,10 +88,10 @@ export default async function InHouseBankPage({
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-base">{account.code}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">{account.accountName}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{account.accountName}</p>
                     </div>
                     <span
-                      className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap ${accountStatusColors[account.status]}`}
+                      className={`rounded px-2 py-1 text-xs font-medium whitespace-nowrap ${accountStatusColors[account.status]}`}
                     >
                       {account.status}
                     </span>
@@ -160,7 +108,7 @@ export default async function InHouseBankPage({
                       <span className="font-medium">{account.currencyCode}</span>
                     </div>
                     {account.isPrimaryFundingAccount && (
-                      <div className="pt-2 border-t">
+                      <div className="border-t pt-2">
                         <span className="rounded bg-secondary px-2 py-1 text-xs text-secondary-foreground">
                           Primary Funding Account
                         </span>
@@ -176,7 +124,7 @@ export default async function InHouseBankPage({
 
       {/* Intercompany Transfers Section */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Intercompany Transfers</h2>
+        <h2 className="mb-4 text-2xl font-bold">Intercompany Transfers</h2>
         <Suspense fallback={<IntercompanyTransferBoardSkeleton />}>
           <IntercompanyTransferBoard transfers={transfers} />
         </Suspense>

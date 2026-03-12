@@ -69,6 +69,7 @@ describe("InternalBankAccountService", () => {
       expect(result.data.code).toBe("ACCOUNT001");
       expect(result.data.accountName).toBe("Operating Account");
     }
+    expect(insertMock).toHaveBeenCalledTimes(2);
   });
 
   it("prevents creating account with duplicate code in same org", async () => {
@@ -92,6 +93,7 @@ describe("InternalBankAccountService", () => {
       accountName: "Another Account",
       accountType: "operating",
       currencyCode: "USD",
+      isPrimaryFundingAccount: false,
     };
 
     const result = await service.createInternalBankAccount(cmd);

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { Button, Input, Label, Separator } from "@afenda/ui";
+import { useAuthRenderMetric } from "@/lib/auth-render-metrics";
 
 import { signInAction } from "../_actions/signin";
 import { AuthCard } from "../_components/auth-card";
@@ -15,10 +16,7 @@ import { AuthPageShell } from "../_components/auth-page-shell";
 import { AuthSessionDebugBanner } from "../_components/auth-session-debug-banner";
 import { AuthSubmitButton } from "../_components/auth-submit-button";
 import { PortalSwitcher } from "../_components/portal-switcher";
-import {
-  getOrganizationSignInDescription,
-  getOrganizationSignInTitle,
-} from "../_lib/auth-copy";
+import { getOrganizationSignInDescription, getOrganizationSignInTitle } from "../_lib/auth-copy";
 import type { AuthActionState } from "../_lib/auth-state";
 import { INITIAL_AUTH_ACTION_STATE } from "../_lib/auth-state";
 
@@ -28,12 +26,16 @@ interface SignInPageClientProps {
 }
 
 export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientProps) {
-  const [state, formAction] = useActionState(
-    signInAction,
-    INITIAL_AUTH_ACTION_STATE,
-  );
+  const [state, formAction] = useActionState(signInAction, INITIAL_AUTH_ACTION_STATE);
 
-  const messageState = state.message ? state : noticeState ?? null;
+  useAuthRenderMetric("SignInPageClient", {
+    hasCallbackUrl: Boolean(callbackUrl),
+    hasNoticeState: Boolean(noticeState),
+    hasStateMessage: Boolean(state.message),
+    isSuccessState: Boolean(state.ok),
+  });
+
+  const messageState = state.message ? state : (noticeState ?? null);
 
   return (
     <AuthPageShell portal="app" journey="signin">
@@ -41,7 +43,11 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
       <AuthHeader
         backHref="/"
         backLabel="Back to home"
-        actionHref={callbackUrl ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signup"}
+        actionHref={
+          callbackUrl
+            ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+            : "/auth/signup"
+        }
         actionLabel="Create account"
       />
 
@@ -56,73 +62,68 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
       >
         <div className="space-y-6">
           <form action={formAction} className="space-y-4">
-          <AuthHiddenField name="callbackUrl" value={callbackUrl ?? ""} />
+            <AuthHiddenField name="callbackUrl" value={callbackUrl ?? ""} />
 
-          <AuthFormMessage
-            state={messageState}
-            primaryHref="/auth/forgot-password"
-            primaryLabel={state.ok ? "Continue to sign in" : "Forgot password?"}
-            secondaryHref="/auth/signup"
-            secondaryLabel={state.ok ? "Create another workspace" : "Create account"}
-          />
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="name@company.com"
-              autoComplete="email"
-              aria-invalid={!!state.fieldErrors?.email?.length}
+            <AuthFormMessage
+              state={messageState}
+              primaryHref="/auth/forgot-password"
+              primaryLabel={state.ok ? "Continue to sign in" : "Forgot password?"}
+              secondaryHref="/auth/signup"
+              secondaryLabel={state.ok ? "Create another workspace" : "Create account"}
             />
-            {state.fieldErrors?.email?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.email[0]}
-              </p>
-            ) : null}
-          </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-              >
-                Forgot password?
-              </Link>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="name@company.com"
+                autoComplete="email"
+                aria-invalid={!!state.fieldErrors?.email?.length}
+              />
+              {state.fieldErrors?.email?.[0] ? (
+                <p className="text-sm text-destructive">{state.fieldErrors.email[0]}</p>
+              ) : null}
             </div>
 
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={!!state.fieldErrors?.password?.length}
-            />
-            {state.fieldErrors?.password?.[0] ? (
-              <p className="text-sm text-destructive">
-                {state.fieldErrors.password[0]}
-              </p>
-            ) : null}
-          </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
 
-          <AuthSubmitButton>Sign in</AuthSubmitButton>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={!!state.fieldErrors?.password?.length}
+              />
+              {state.fieldErrors?.password?.[0] ? (
+                <p className="text-sm text-destructive">{state.fieldErrors.password[0]}</p>
+              ) : null}
+            </div>
 
-          <Link
-            href={callbackUrl ? `/auth/signin-with-code?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin-with-code"}
-            className="w-full"
-          >
-            <Button
-              type="button"
-              variant="outline"
+            <AuthSubmitButton>Sign in</AuthSubmitButton>
+
+            <Link
+              href={
+                callbackUrl
+                  ? `/auth/signin-with-code?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                  : "/auth/signin-with-code"
+              }
               className="w-full"
             >
-              Sign in with a code
-            </Button>
-          </Link>
-
+              <Button type="button" variant="outline" className="w-full">
+                Sign in with a code
+              </Button>
+            </Link>
           </form>
 
           <AuthOAuthButtons callbackUrl={callbackUrl} />
@@ -132,7 +133,11 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
       <AuthFooter>
         Don&apos;t have an account?{" "}
         <Link
-          href={callbackUrl ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signup"}
+          href={
+            callbackUrl
+              ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`
+              : "/auth/signup"
+          }
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Sign up

@@ -37,271 +37,333 @@ import * as rawInternalBankAccountService from "./internal-bank-account.service"
 import * as rawInternalBankAccountQueries from "./internal-bank-account.queries";
 import * as rawIntercompanyTransferService from "./intercompany-transfer.service";
 import * as rawIntercompanyTransferQueries from "./intercompany-transfer.queries";
+import * as rawNettingSessionService from "./netting-session.service";
+import * as rawNettingSessionQueries from "./netting-session.queries";
+import * as rawInternalInterestRateService from "./internal-interest-rate.service";
+import * as rawFxExposureService from "./fx-exposure.service";
+import * as rawFxExposureQueries from "./fx-exposure.queries";
+import * as rawHedgeDesignationService from "./hedge-designation.service";
+import * as rawHedgeDesignationQueries from "./hedge-designation.queries";
+import * as rawRevaluationEventService from "./revaluation-event.service";
+import * as rawRevaluationEventQueries from "./revaluation-event.queries";
 
 export type {
-	BankAccountServiceError,
-	BankAccountServiceResult,
-	CreateBankAccountParams,
-	UpdateBankAccountParams,
-	TransitionBankAccountParams,
+  BankAccountServiceError,
+  BankAccountServiceResult,
+  CreateBankAccountParams,
+  UpdateBankAccountParams,
+  TransitionBankAccountParams,
 } from "./bank-account.service";
 
 export type { BankAccountRow, BankAccountListParams } from "./bank-account.queries";
 
-export type { BankStatementServiceError, BankStatementServiceResult } from "./bank-statement.service";
+export type {
+  BankStatementServiceError,
+  BankStatementServiceResult,
+} from "./bank-statement.service";
 
 export type {
-	BankStatementRow,
-	BankStatementLineRow,
-	BankStatementListParams,
+  BankStatementRow,
+  BankStatementLineRow,
+  BankStatementListParams,
 } from "./bank-statement.queries";
 
 // Wave 2 — Reconciliation
 export type {
-	ReconciliationSessionServiceError,
-	ReconciliationSessionServiceResult,
-	OpenReconciliationSessionParams,
-	AddReconciliationMatchParams,
-	RemoveReconciliationMatchParams,
-	CloseReconciliationSessionParams,
+  ReconciliationSessionServiceError,
+  ReconciliationSessionServiceResult,
+  OpenReconciliationSessionParams,
+  AddReconciliationMatchParams,
+  RemoveReconciliationMatchParams,
+  CloseReconciliationSessionParams,
 } from "./reconciliation-session.service";
 
 export type {
-	ReconciliationSessionRow,
-	ReconciliationMatchRow,
-	ReconciliationSessionListParams,
+  ReconciliationSessionRow,
+  ReconciliationMatchRow,
+  ReconciliationSessionListParams,
 } from "./reconciliation-session.queries";
 
 // Wave 2 — Payment Instructions
 export type {
-	PaymentInstructionServiceError,
-	PaymentInstructionServiceResult,
-	CreatePaymentInstructionParams,
-	SubmitPaymentInstructionParams,
-	ApprovePaymentInstructionParams,
-	RejectPaymentInstructionParams,
+  PaymentInstructionServiceError,
+  PaymentInstructionServiceResult,
+  CreatePaymentInstructionParams,
+  SubmitPaymentInstructionParams,
+  ApprovePaymentInstructionParams,
+  RejectPaymentInstructionParams,
 } from "./treasury-payment-instruction.service";
 
 export type {
-	PaymentInstructionRow,
-	PaymentInstructionListParams,
+  PaymentInstructionRow,
+  PaymentInstructionListParams,
 } from "./treasury-payment-instruction.queries";
 
 // Wave 2 — Payment Batches
 export type {
-	PaymentBatchServiceError,
-	PaymentBatchServiceResult,
-	CreatePaymentBatchParams,
-	RequestPaymentBatchReleaseParams,
-	ReleasePaymentBatchParams,
+  PaymentBatchServiceError,
+  PaymentBatchServiceResult,
+  CreatePaymentBatchParams,
+  RequestPaymentBatchReleaseParams,
+  ReleasePaymentBatchParams,
 } from "./treasury-payment-batch.service";
 
 export type {
-	PaymentBatchRow,
-	PaymentBatchItemRow,
-	PaymentBatchListParams,
+  PaymentBatchRow,
+  PaymentBatchItemRow,
+  PaymentBatchListParams,
 } from "./treasury-payment-batch.queries";
 
 // Wave 3 — Cash Position Snapshot
 export type {
-	CashPositionSnapshotServiceError,
-	CashPositionSnapshotServiceResult,
-	RequestCashPositionSnapshotParams,
+  CashPositionSnapshotServiceError,
+  CashPositionSnapshotServiceResult,
+  RequestCashPositionSnapshotParams,
 } from "./cash-position-snapshot.service";
 
 export type {
-	CashPositionSnapshotRow,
-	CashPositionSnapshotLineRow,
-	CashPositionSnapshotListParams,
+  CashPositionSnapshotRow,
+  CashPositionSnapshotLineRow,
+  CashPositionSnapshotListParams,
 } from "./cash-position-snapshot.queries";
 
 // Wave 3 — Liquidity Forecast
 export type {
-	LiquidityForecastServiceError,
-	LiquidityForecastServiceResult,
-	CreateLiquidityScenarioParams,
-	ActivateLiquidityScenarioParams,
-	RequestLiquidityForecastParams,
+  LiquidityForecastServiceError,
+  LiquidityForecastServiceResult,
+  CreateLiquidityScenarioParams,
+  ActivateLiquidityScenarioParams,
+  RequestLiquidityForecastParams,
 } from "./liquidity-forecast.service";
 
 export type {
-	LiquidityScenarioRow,
-	LiquidityForecastRow,
-	LiquidityForecastBucketRow,
-	LiquidityForecastListParams,
+  LiquidityScenarioRow,
+  LiquidityForecastRow,
+  LiquidityForecastBucketRow,
+  LiquidityForecastListParams,
 } from "./liquidity-forecast.queries";
 
 export type {
-	LiquiditySourceFeedServiceError,
-	LiquiditySourceFeedServiceResult,
-	UpsertLiquiditySourceFeedParams,
+  LiquiditySourceFeedServiceError,
+  LiquiditySourceFeedServiceResult,
+  UpsertLiquiditySourceFeedParams,
 } from "./liquidity-source-feed.service";
 
 export type {
-	LiquiditySourceFeedRow,
-	LiquiditySourceFeedListParams,
+  LiquiditySourceFeedRow,
+  LiquiditySourceFeedListParams,
 } from "./liquidity-source-feed.queries";
 
 export type {
-	FxNormalizationServiceError,
-	FxNormalizationServiceResult,
-	NormalizeToBaseParams,
+  FxNormalizationServiceError,
+  FxNormalizationServiceResult,
+  NormalizeToBaseParams,
 } from "./fx-normalization.service";
 
 export type {
-	FxRateSnapshotServiceError,
-	FxRateSnapshotServiceResult,
-	UpsertFxRateSnapshotParams,
+  FxRateSnapshotServiceError,
+  FxRateSnapshotServiceResult,
+  UpsertFxRateSnapshotParams,
 } from "./fx-rate-snapshot.service";
 
-export type {
-	FxRateSnapshotRow,
-	FxRateSnapshotListParams,
-} from "./fx-rate-snapshot.queries";
+export type { FxRateSnapshotRow, FxRateSnapshotListParams } from "./fx-rate-snapshot.queries";
 
 export type {
-	CashPositionSnapshotLineageRow,
-	LiquidityForecastBucketLineageRow,
+  CashPositionSnapshotLineageRow,
+  LiquidityForecastBucketLineageRow,
 } from "./lineage.queries";
 
 // Wave 3.3 — Forecast Variance
 export type {
-	ForecastVarianceServiceError,
-	ForecastVarianceServiceResult,
-	RecordForecastVarianceParams,
+  ForecastVarianceServiceError,
+  ForecastVarianceServiceResult,
+  RecordForecastVarianceParams,
 } from "./forecast-variance.service";
 
 export type { ForecastVarianceRow } from "./forecast-variance.queries";
 
 // Wave 3.5 — AP/AR → Treasury Bridge
 export type {
-	ApDuePaymentProjectionServiceError,
-	ApDuePaymentProjectionServiceResult,
-	UpsertApDuePaymentProjectionParams,
+  ApDuePaymentProjectionServiceError,
+  ApDuePaymentProjectionServiceResult,
+  UpsertApDuePaymentProjectionParams,
 } from "./ap-due-payment-projection.service";
 
 export type {
-	ApDuePaymentProjectionRow,
-	ApDuePaymentProjectionListParams,
+  ApDuePaymentProjectionRow,
+  ApDuePaymentProjectionListParams,
 } from "./ap-due-payment-projection.queries";
 
 export type {
-	ArExpectedReceiptProjectionServiceError,
-	ArExpectedReceiptProjectionServiceResult,
-	UpsertArExpectedReceiptProjectionParams,
+  ArExpectedReceiptProjectionServiceError,
+  ArExpectedReceiptProjectionServiceResult,
+  UpsertArExpectedReceiptProjectionParams,
 } from "./ar-expected-receipt-projection.service";
 
 export type {
-	ArExpectedReceiptProjectionRow,
-	ArExpectedReceiptProjectionListParams,
+  ArExpectedReceiptProjectionRow,
+  ArExpectedReceiptProjectionListParams,
 } from "./ar-expected-receipt-projection.queries";
+
+// Wave 5.1 — FX Management + Revaluation
+export type { FxExposureServiceError, FxExposureServiceResult } from "./fx-exposure.service";
+export type { FxExposureRow, ListFxExposuresParams } from "./fx-exposure.queries";
+
+export type {
+  HedgeDesignationServiceError,
+  HedgeDesignationServiceResult,
+} from "./hedge-designation.service";
+export type { HedgeDesignationRow, ListHedgeDesignationsParams } from "./hedge-designation.queries";
+
+export type {
+  RevaluationEventServiceError,
+  RevaluationEventServiceResult,
+} from "./revaluation-event.service";
+export type { RevaluationEventRow, ListRevaluationEventsParams } from "./revaluation-event.queries";
+
+// Wave 5.2 — Treasury Accounting Bridge
+export { TreasuryAccountingBridgeService } from "./treasury-accounting-bridge.service";
+export { TreasuryAccountingBridgeQueries } from "./treasury-accounting-bridge.queries";
+
+// Wave 6.1 — Treasury Policy + Limits
+export { TreasuryPolicyService } from "./treasury-policy.service";
+export { TreasuryPolicyQueries } from "./treasury-policy.queries";
+// Wave 6.2 — Integrations + Market Data
+export { BankConnectorService } from "./bank-connector.service";
+export { BankConnectorQueries } from "./bank-connector.queries";
 
 // Wave 4.1 — In-house Banking + Intercompany Transfers
 export { InternalBankAccountService } from "./internal-bank-account.service";
 export { InternalBankAccountQueries } from "./internal-bank-account.queries";
 export { IntercompanyTransferService } from "./intercompany-transfer.service";
 export { IntercompanyTransferQueries } from "./intercompany-transfer.queries";
+// Wave 4.2 — Netting + Internal Interest
+export { NettingSessionService } from "./netting-session.service";
+export { NettingSessionQueries } from "./netting-session.queries";
+export { InternalInterestRateService } from "./internal-interest-rate.service";
 
 // Calculators (pure functions)
 export * from "./calculators/index";
 
 const instrumented = instrumentService("treasury", {
-	...rawBankAccountService,
-	...rawBankAccountQueries,
-	...rawBankStatementService,
-	...rawBankStatementQueries,
-	...rawReconciliationSessionService,
-	...rawReconciliationSessionQueries,
-	...rawPaymentInstructionService,
-	...rawPaymentInstructionQueries,
-	...rawPaymentBatchService,
-	...rawPaymentBatchQueries,
-	...rawCashPositionSnapshotService,
-	...rawCashPositionSnapshotQueries,
-	...rawLiquidityForecastService,
-	...rawLiquidityForecastQueries,
-	...rawLiquiditySourceFeedService,
-	...rawLiquiditySourceFeedQueries,
-	...rawFxNormalizationService,
-	...rawFxRateSnapshotService,
-	...rawFxRateSnapshotQueries,
-	...rawLineageQueries,
-	...rawForecastVarianceService,
-	...rawForecastVarianceQueries,
-	...rawApDuePaymentProjectionService,
-	...rawApDuePaymentProjectionQueries,
-	...rawArExpectedReceiptProjectionService,
-	...rawArExpectedReceiptProjectionQueries,
-	...rawInternalBankAccountService,
-	...rawInternalBankAccountQueries,
-	...rawIntercompanyTransferService,
-	...rawIntercompanyTransferQueries,
+  ...rawBankAccountService,
+  ...rawBankAccountQueries,
+  ...rawBankStatementService,
+  ...rawBankStatementQueries,
+  ...rawReconciliationSessionService,
+  ...rawReconciliationSessionQueries,
+  ...rawPaymentInstructionService,
+  ...rawPaymentInstructionQueries,
+  ...rawPaymentBatchService,
+  ...rawPaymentBatchQueries,
+  ...rawCashPositionSnapshotService,
+  ...rawCashPositionSnapshotQueries,
+  ...rawLiquidityForecastService,
+  ...rawLiquidityForecastQueries,
+  ...rawLiquiditySourceFeedService,
+  ...rawLiquiditySourceFeedQueries,
+  ...rawFxNormalizationService,
+  ...rawFxRateSnapshotService,
+  ...rawFxRateSnapshotQueries,
+  ...rawLineageQueries,
+  ...rawForecastVarianceService,
+  ...rawForecastVarianceQueries,
+  ...rawApDuePaymentProjectionService,
+  ...rawApDuePaymentProjectionQueries,
+  ...rawArExpectedReceiptProjectionService,
+  ...rawArExpectedReceiptProjectionQueries,
+  ...rawInternalBankAccountService,
+  ...rawInternalBankAccountQueries,
+  ...rawIntercompanyTransferService,
+  ...rawIntercompanyTransferQueries,
+  ...rawNettingSessionService,
+  ...rawNettingSessionQueries,
+  ...rawInternalInterestRateService,
+  ...rawFxExposureService,
+  ...rawFxExposureQueries,
+  ...rawHedgeDesignationService,
+  ...rawHedgeDesignationQueries,
+  ...rawRevaluationEventService,
+  ...rawRevaluationEventQueries,
 });
 
 export const {
-	createBankAccount,
-	updateBankAccount,
-	activateBankAccount,
-	deactivateBankAccount,
-	listBankAccounts,
-	getBankAccountById,
-	ingestBankStatement,
-	markStatementFailed,
-	listBankStatements,
-	getBankStatementById,
-	listBankStatementLines,
-	// Wave 2 — Reconciliation
-	openReconciliationSession,
-	addReconciliationMatch,
-	removeReconciliationMatch,
-	closeReconciliationSession,
-	listReconciliationSessions,
-	getReconciliationSessionById,
-	listReconciliationMatches,
-	// Wave 2 — Payment Instructions
-	createPaymentInstruction,
-	submitPaymentInstruction,
-	approvePaymentInstruction,
-	rejectPaymentInstruction,
-	listPaymentInstructions,
-	getPaymentInstructionById,
-	getPaymentInstructionsByIds,
-	// Wave 2 — Payment Batches
-	createPaymentBatch,
-	requestPaymentBatchRelease,
-	releasePaymentBatch,
-	listPaymentBatches,
-	getPaymentBatchById,
-	listPaymentBatchItems,
-	// Wave 3 — Cash Position Snapshot
-	requestCashPositionSnapshot,
-	supersedeCashPositionSnapshot,
-	listCashPositionSnapshots,
-	getCashPositionSnapshotById,
-	listCashPositionSnapshotLines,
-	// Wave 3 — Liquidity Forecast
-	createLiquidityScenario,
-	activateLiquidityScenario,
-	requestLiquidityForecast,
-	listLiquidityScenarios,
-	listLiquidityForecasts,
-	getLiquidityForecastById,
-	listLiquidityForecastBuckets,
-	upsertLiquiditySourceFeed,
-	listLiquiditySourceFeeds,
-	normalizeToBase,
-	upsertFxRateSnapshot,
-	listFxRateSnapshots,
-	listCashPositionSnapshotLineage,
-	listLiquidityForecastBucketLineage,
-	// Wave 3.3 — Forecast Variance
-	recordForecastVariance,
-	listForecastVarianceByForecastId,
-	getForecastVarianceById,
-	// Wave 3.5 — AP/AR → Treasury Bridge
-	upsertApDuePaymentProjection,
-	listApDuePaymentProjections,
-	upsertArExpectedReceiptProjection,
-	listArExpectedReceiptProjections,
+  createBankAccount,
+  updateBankAccount,
+  activateBankAccount,
+  deactivateBankAccount,
+  listBankAccounts,
+  getBankAccountById,
+  ingestBankStatement,
+  markStatementFailed,
+  listBankStatements,
+  getBankStatementById,
+  listBankStatementLines,
+  // Wave 2 — Reconciliation
+  openReconciliationSession,
+  addReconciliationMatch,
+  removeReconciliationMatch,
+  closeReconciliationSession,
+  listReconciliationSessions,
+  getReconciliationSessionById,
+  listReconciliationMatches,
+  // Wave 2 — Payment Instructions
+  createPaymentInstruction,
+  submitPaymentInstruction,
+  approvePaymentInstruction,
+  rejectPaymentInstruction,
+  listPaymentInstructions,
+  getPaymentInstructionById,
+  getPaymentInstructionsByIds,
+  // Wave 2 — Payment Batches
+  createPaymentBatch,
+  requestPaymentBatchRelease,
+  releasePaymentBatch,
+  listPaymentBatches,
+  getPaymentBatchById,
+  listPaymentBatchItems,
+  // Wave 3 — Cash Position Snapshot
+  requestCashPositionSnapshot,
+  supersedeCashPositionSnapshot,
+  listCashPositionSnapshots,
+  getCashPositionSnapshotById,
+  listCashPositionSnapshotLines,
+  // Wave 3 — Liquidity Forecast
+  createLiquidityScenario,
+  activateLiquidityScenario,
+  requestLiquidityForecast,
+  listLiquidityScenarios,
+  listLiquidityForecasts,
+  getLiquidityForecastById,
+  listLiquidityForecastBuckets,
+  upsertLiquiditySourceFeed,
+  listLiquiditySourceFeeds,
+  normalizeToBase,
+  upsertFxRateSnapshot,
+  listFxRateSnapshots,
+  listCashPositionSnapshotLineage,
+  listLiquidityForecastBucketLineage,
+  // Wave 3.3 — Forecast Variance
+  recordForecastVariance,
+  listForecastVarianceByForecastId,
+  getForecastVarianceById,
+  // Wave 3.5 — AP/AR → Treasury Bridge
+  upsertApDuePaymentProjection,
+  listApDuePaymentProjections,
+  upsertArExpectedReceiptProjection,
+  listArExpectedReceiptProjections,
+  // Wave 5.1 — FX Management + Revaluation
+  createFxExposure,
+  closeFxExposure,
+  getFxExposureById,
+  listFxExposures,
+  createHedgeDesignation,
+  updateHedgeDesignationStatus,
+  getHedgeDesignationById,
+  listHedgeDesignations,
+  createRevaluationEvent,
+  updateRevaluationEventStatus,
+  getRevaluationEventById,
+  listRevaluationEvents,
+  listRevaluationEventsByFxExposure,
 } = instrumented;
-
