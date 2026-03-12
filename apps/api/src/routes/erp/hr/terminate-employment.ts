@@ -14,13 +14,14 @@ const TerminateEmploymentBodySchema = z.object({
   terminationDate: z.string(),
   terminationReasonCode: z.string().min(1).max(50),
   comment: z.string().max(1000).optional(),
+  startSeparationCase: z.boolean().optional(),
 });
 
 const TerminateEmploymentResponseSchema = makeSuccessSchema(
   z.object({
     employmentId: z.string().uuid(),
-    previousStatus: z.string(),
-    currentStatus: z.string(),
+    terminatedAt: z.string(),
+    separationCaseId: z.string().uuid().optional(),
   }),
 );
 

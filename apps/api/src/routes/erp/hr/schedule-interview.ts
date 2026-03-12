@@ -4,8 +4,8 @@ import { z } from "zod";
 import { scheduleInterview } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
-const BodySchema = z.object({ applicationId: z.string().uuid(), interviewType: z.string().min(1).max(50), scheduledAt: z.string().optional(), interviewerEmployeeId: z.string().uuid().optional(), status: z.string().max(50).optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ interviewId: z.string().uuid() }));
+const BodySchema = z.object({ applicationId: z.string().uuid(), interviewType: z.string().min(1).max(50), scheduledAt: z.string(), locationOrLink: z.string().max(500).optional(), interviewerEmployeeId: z.string().uuid().optional(), status: z.string().max(50).optional() });
+const ResponseSchema = makeSuccessSchema(z.object({ interviewId: z.string().uuid(), applicationId: z.string().uuid(), status: z.string() }));
 
 export async function hrScheduleInterviewRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

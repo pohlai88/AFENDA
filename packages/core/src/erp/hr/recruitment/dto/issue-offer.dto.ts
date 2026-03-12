@@ -1,13 +1,14 @@
 export interface IssueOfferInput {
   applicationId: string;
   offerNumber?: string;
-  offeredOn?: string;
-  offerExpiryDate?: string;
-  offeredCompensation?: string;
-  offerStatus?: string;
+  offeredPositionId?: string;
+  proposedStartDate?: string;
+  baseSalaryAmount?: string;
+  currencyCode?: string;
 }
 
 export interface IssueOfferOutput {
   offerId: string;
   offerNumber: string;
+  offerStatus: string;
 }

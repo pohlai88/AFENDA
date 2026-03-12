@@ -1,0 +1,15 @@
+export const hrmQueryKeys = {
+  employees: ["hrm", "employees"] as const,
+  employeeDetail: (employeeId: string) => ["hrm", "employees", employeeId] as const,
+  employmentTimeline: (employmentId: string) => ["hrm", "employment-timeline", employmentId] as const,
+  orgTree: ["hrm", "organization", "tree"] as const,
+  positions: ["hrm", "organization", "positions"] as const,
+  positionDetail: (positionId: string) => ["hrm", "organization", "positions", positionId] as const,
+  requisitions: ["hrm", "recruitment", "requisitions"] as const,
+  requisitionDetail: (requisitionId: string) => ["hrm", "recruitment", "requisitions", requisitionId] as const,
+  candidatePipeline: (candidateId: string) => ["hrm", "recruitment", "candidate-pipeline", candidateId] as const,
+  applicationDetail: (applicationId: string) => ["hrm", "recruitment", "applications", applicationId] as const,
+  onboardingChecklist: (planId: string) => ["hrm", "onboarding", "checklist", planId] as const,
+  pendingOnboarding: ["hrm", "onboarding", "pending"] as const,
+  separationCase: (caseId: string) => ["hrm", "onboarding", "separation-case", caseId] as const,
+};

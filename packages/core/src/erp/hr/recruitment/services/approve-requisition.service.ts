@@ -26,6 +26,12 @@ export async function approveRequisition(
 
   try {
     const data = await db.transaction(async (tx) => {
+      const [clock] = await tx
+        .select({ approvedAt: sql<string>`now()::text` })
+        .from(hrmJobRequisitions)
+        .where(and(eq(hrmJobRequisitions.orgId, orgId), eq(hrmJobRequisitions.id, input.requisitionId)));
+      const approvedAt = clock?.approvedAt ?? "";
+
       await tx
         .update(hrmJobRequisitions)
         .set({
@@ -38,8 +44,10 @@ export async function approveRequisition(
 
       const payload = {
         requisitionId: input.requisitionId,
+        status: "approved",
+        approvedAt,
         previousStatus: requisition.status,
-        currentStatus: "approved",
+        comment: input.comment ?? null,
       };
 
       await tx.insert(auditLog).values({

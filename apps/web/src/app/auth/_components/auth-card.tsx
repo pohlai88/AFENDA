@@ -19,7 +19,7 @@ export function AuthCard({
   children,
 }: AuthCardProps) {
   return (
-    <Card className="w-full rounded-2xl border border-border-interactive bg-surface-225 dark:bg-surface-225 shadow-md">
+    <Card className="w-full rounded-2xl border border-border-interactive bg-surface-225 shadow-md">
       <CardHeader className="space-y-2 px-6 pt-6 sm:px-8 sm:pt-8">
         <CardTitle className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {title}

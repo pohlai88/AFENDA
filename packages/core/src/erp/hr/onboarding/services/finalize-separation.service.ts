@@ -21,8 +21,8 @@ export async function finalizeSeparation(
 
   try {
     const data = await db.transaction(async (tx) => {
-      await tx.update(hrmSeparationCases).set({ caseStatus: "closed", closedAt: input.closedAt ? sql`${input.closedAt}::date` : sql`now()::date`, updatedAt: sql`now()` }).where(and(eq(hrmSeparationCases.orgId, orgId), eq(hrmSeparationCases.id, input.separationCaseId)));
-      const payload = { separationCaseId: input.separationCaseId, previousStatus: separationCase.caseStatus, currentStatus: "closed" };
+      await tx.update(hrmSeparationCases).set({ caseStatus: "closed", closedAt: sql`now()::date`, updatedAt: sql`now()` }).where(and(eq(hrmSeparationCases.orgId, orgId), eq(hrmSeparationCases.id, input.separationCaseId)));
+      const payload = { separationCaseId: input.separationCaseId, status: "closed", previousStatus: separationCase.caseStatus };
       await tx.insert(auditLog).values({ orgId, actorPrincipalId: actorPrincipalId ?? null, action: HRM_EVENTS.SEPARATION_FINALIZED, entityType: "hrm_separation_case", entityId: input.separationCaseId, correlationId, details: payload });
       await tx.insert(outboxEvent).values({ orgId, type: "HRM.SEPARATION_FINALIZED", version: "1", correlationId, payload });
       return payload;

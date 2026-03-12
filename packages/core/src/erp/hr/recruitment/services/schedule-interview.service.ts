@@ -27,6 +27,9 @@ export async function scheduleInterview(
   if (!input.interviewType) {
     return err(HRM_ERROR_CODES.INVALID_INPUT, "interviewType is required");
   }
+  if (!input.scheduledAt) {
+    return err(HRM_ERROR_CODES.INVALID_INPUT, "scheduledAt is required");
+  }
 
   try {
     const data = await db.transaction(async (tx) => {
@@ -36,15 +39,21 @@ export async function scheduleInterview(
           orgId,
           applicationId: input.applicationId,
           interviewType: input.interviewType,
-          scheduledAt: input.scheduledAt ? sql`${input.scheduledAt}::date` : undefined,
+          scheduledAt: sql`${input.scheduledAt}::date`,
           interviewerEmployeeId: input.interviewerEmployeeId,
           status: input.status ?? "scheduled",
         })
-        .returning({ id: hrmInterviews.id });
+        .returning({ id: hrmInterviews.id, applicationId: hrmInterviews.applicationId, status: hrmInterviews.status });
 
       if (!row) {
         throw new Error("Failed to insert interview");
       }
+
+      const payload = {
+        interviewId: row.id,
+        applicationId: row.applicationId,
+        status: row.status,
+      };
 
       await tx.insert(auditLog).values({
         orgId,
@@ -53,17 +62,17 @@ export async function scheduleInterview(
         entityType: "hrm_interview",
         entityId: row.id,
         correlationId,
-        details: { interviewId: row.id, applicationId: input.applicationId },
+        details: payload,
       });
       await tx.insert(outboxEvent).values({
         orgId,
         type: "HRM.INTERVIEW_SCHEDULED",
         version: "1",
         correlationId,
-        payload: { interviewId: row.id, applicationId: input.applicationId },
+        payload,
       });
 
-      return { interviewId: row.id };
+      return payload;
     });
 
     return ok(data);

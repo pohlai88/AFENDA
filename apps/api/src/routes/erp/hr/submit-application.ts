@@ -4,8 +4,21 @@ import { z } from "zod";
 import { submitApplication } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
-const BodySchema = z.object({ candidateId: z.string().uuid(), requisitionId: z.string().uuid(), applicationStage: z.string().max(50).optional(), appliedAt: z.string().optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ applicationId: z.string().uuid() }));
+const BodySchema = z.object({
+  candidateId: z.string().uuid(),
+  requisitionId: z.string().uuid(),
+  applicationDate: z.string(),
+  stageCode: z.string().max(50).optional(),
+  ownerUserId: z.string().uuid().optional(),
+});
+const ResponseSchema = makeSuccessSchema(
+  z.object({
+    applicationId: z.string().uuid(),
+    candidateId: z.string().uuid(),
+    requisitionId: z.string().uuid(),
+    stageCode: z.string(),
+  }),
+);
 
 export async function hrSubmitApplicationRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

@@ -48,12 +48,19 @@ export async function issueOffer(
           orgId,
           applicationId: input.applicationId,
           offerNumber,
-          offeredOn: input.offeredOn ? sql`${input.offeredOn}::date` : sql`now()::date`,
-          offerExpiryDate: input.offerExpiryDate ? sql`${input.offerExpiryDate}::date` : undefined,
-          offeredCompensation: input.offeredCompensation,
-          offerStatus: input.offerStatus ?? "issued",
+          offeredOn: sql`now()::date`,
+          offerExpiryDate: input.proposedStartDate ? sql`${input.proposedStartDate}::date` : undefined,
+          offeredCompensation:
+            input.baseSalaryAmount && input.currencyCode
+              ? `${input.baseSalaryAmount} ${input.currencyCode}`
+              : input.baseSalaryAmount,
+          offerStatus: "issued",
         })
-        .returning({ id: hrmOffers.id, offerNumber: hrmOffers.offerNumber });
+        .returning({
+          id: hrmOffers.id,
+          offerNumber: hrmOffers.offerNumber,
+          offerStatus: hrmOffers.offerStatus,
+        });
 
       if (!row) {
         throw new Error("Failed to insert offer");
@@ -66,17 +73,33 @@ export async function issueOffer(
         entityType: "hrm_offer",
         entityId: row.id,
         correlationId,
-        details: { offerId: row.id, offerNumber: row.offerNumber, applicationId: input.applicationId },
+        details: {
+          offerId: row.id,
+          offerNumber: row.offerNumber,
+          offerStatus: row.offerStatus,
+          applicationId: input.applicationId,
+          offeredPositionId: input.offeredPositionId ?? null,
+        },
       });
       await tx.insert(outboxEvent).values({
         orgId,
         type: "HRM.OFFER_ISSUED",
         version: "1",
         correlationId,
-        payload: { offerId: row.id, offerNumber: row.offerNumber, applicationId: input.applicationId },
+        payload: {
+          offerId: row.id,
+          offerNumber: row.offerNumber,
+          offerStatus: row.offerStatus,
+          applicationId: input.applicationId,
+          offeredPositionId: input.offeredPositionId ?? null,
+        },
       });
 
-      return { offerId: row.id, offerNumber: row.offerNumber };
+      return {
+        offerId: row.id,
+        offerNumber: row.offerNumber,
+        offerStatus: row.offerStatus,
+      };
     });
 
     return ok(data);

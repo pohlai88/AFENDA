@@ -25,6 +25,30 @@ export interface EmploymentTimelineItem {
 
 export interface EmploymentTimelineView {
   employmentId: string;
+  events: Array<
+    | {
+        type: "status";
+        changedAt: string;
+        oldStatus: string | null;
+        newStatus: string;
+        reasonCode: string | null;
+        comment: string | null;
+      }
+    | {
+        type: "assignment";
+        workAssignmentId: string;
+        effectiveFrom: string;
+        effectiveTo: string | null;
+        legalEntityId: string;
+        departmentId: string | null;
+        positionId: string | null;
+        jobId: string | null;
+        gradeId: string | null;
+        managerEmployeeId: string | null;
+        assignmentStatus: string;
+        changeReason: string | null;
+      }
+  >;
   employeeId: string;
   employmentNumber: string;
   employmentStatus: string;
@@ -94,7 +118,7 @@ export async function getEmploymentTimeline(
   const items: EmploymentTimelineItem[] = [
     {
       kind: "employment" as const,
-      occurredAt: employment.startDate ?? employment.hireDate ?? new Date(0).toISOString(),
+      occurredAt: employment.startDate ?? employment.hireDate ?? "1970-01-01T00:00:00.000Z",
       title: "Employment started",
       status: employment.employmentStatus,
       reasonCode: null,
@@ -142,8 +166,39 @@ export async function getEmploymentTimeline(
     })),
   ].sort((left, right) => left.occurredAt.localeCompare(right.occurredAt));
 
+  const statusEvents = statusHistory.map((row) => ({
+    type: "status" as const,
+    changedAt: row.changedAt,
+    oldStatus: row.oldStatus ?? null,
+    newStatus: row.newStatus,
+    reasonCode: row.reasonCode ?? null,
+    comment: null,
+  }));
+
+  const assignmentEvents = assignments.map((row) => ({
+    type: "assignment" as const,
+    workAssignmentId: row.workAssignmentId,
+    effectiveFrom: row.effectiveFrom.toISOString(),
+    effectiveTo: row.effectiveTo ? row.effectiveTo.toISOString() : null,
+    legalEntityId: row.legalEntityId,
+    departmentId: row.departmentId ?? null,
+    positionId: row.positionId ?? null,
+    jobId: row.jobId ?? null,
+    gradeId: row.gradeId ?? null,
+    managerEmployeeId: row.managerEmployeeId ?? null,
+    assignmentStatus: row.assignmentStatus,
+    changeReason: row.changeReason ?? null,
+  }));
+
+  const events = [...statusEvents, ...assignmentEvents].sort((a, b) => {
+    const aDate = "changedAt" in a ? a.changedAt : a.effectiveFrom;
+    const bDate = "changedAt" in b ? b.changedAt : b.effectiveFrom;
+    return String(aDate).localeCompare(String(bDate));
+  });
+
   return {
     employmentId: employment.employmentId,
+    events,
     employeeId: employment.employeeId,
     employmentNumber: employment.employmentNumber,
     employmentStatus: employment.employmentStatus,

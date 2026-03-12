@@ -1,9 +1,10 @@
 export interface ApproveRequisitionInput {
   requisitionId: string;
+  comment?: string;
 }
 
 export interface ApproveRequisitionOutput {
   requisitionId: string;
-  previousStatus: string;
-  currentStatus: string;
+  status: string;
+  approvedAt: string;
 }

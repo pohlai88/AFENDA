@@ -3,6 +3,7 @@ import type { DbClient } from "@afenda/db";
 import {
   auditLog,
   hrmEmployeeProfiles,
+  hrmEmploymentContracts,
   hrmEmploymentRecords,
   hrmEmploymentStatusHistory,
   hrmWorkAssignments,
@@ -138,6 +139,7 @@ export class RehireEmployeeService {
           employeeId: input.employeeId,
           employmentId: employment.id,
           workAssignmentId: assignment.id,
+          contractId: undefined,
         };
 
         await this.deps.auditService.record({
@@ -167,6 +169,7 @@ export class RehireEmployeeService {
           employeeId: input.employeeId,
           employmentId: employment.id,
           workAssignmentId: assignment.id,
+          contractId: undefined,
         });
       });
     } catch (error) {
@@ -179,6 +182,10 @@ export class RehireEmployeeService {
 
 function buildEmploymentNumber(): string {
   return `EMR-${randomUUID().slice(0, 8).toUpperCase()}`;
+}
+
+function buildContractNumber(): string {
+  return `CTR-${randomUUID().slice(0, 8).toUpperCase()}`;
 }
 
 export async function rehireEmployee(
@@ -273,6 +280,24 @@ export async function rehireEmployee(
         throw new Error("Failed to insert work assignment");
       }
 
+      let contractId: string | undefined;
+      if (input.contract) {
+        const [contract] = await tx
+          .insert(hrmEmploymentContracts)
+          .values({
+            orgId,
+            employmentId: employment.id,
+            contractNumber: input.contract.contractNumber ?? buildContractNumber(),
+            contractType: input.contract.contractType,
+            contractStartDate: input.contract.contractStartDate,
+            contractEndDate: input.contract.contractEndDate,
+            documentFileId: input.contract.documentFileId,
+          })
+          .returning({ id: hrmEmploymentContracts.id });
+
+        contractId = contract?.id;
+      }
+
       await tx
         .update(hrmEmployeeProfiles)
         .set({
@@ -298,6 +323,7 @@ export async function rehireEmployee(
         employeeId: input.employeeId,
         employmentId: employment.id,
         workAssignmentId: assignment.id,
+        contractId,
       };
 
       await tx.insert(auditLog).values({
@@ -322,6 +348,7 @@ export async function rehireEmployee(
         employeeId: input.employeeId,
         employmentId: employment.id,
         workAssignmentId: assignment.id,
+        contractId,
       };
     });
 

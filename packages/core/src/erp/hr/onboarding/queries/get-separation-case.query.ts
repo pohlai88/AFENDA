@@ -3,6 +3,10 @@ import { hrmExitClearanceItems, hrmSeparationCases } from "@afenda/db";
 import { and, eq } from "drizzle-orm";
 
 export interface SeparationCaseItem {
+  exitClearanceItemId: string;
+  clearanceType: string;
+  ownerDepartment: string | null;
+  status: string;
   itemId: string;
   itemCode: string | null;
   itemLabel: string;
@@ -13,6 +17,12 @@ export interface SeparationCaseItem {
 }
 
 export interface SeparationCaseView {
+  caseNumber: string;
+  lastWorkingDate: string;
+  noticeGivenAt: string | null;
+  reasonCode: string | null;
+  status: string;
+  clearanceItems: SeparationCaseItem[];
   separationCaseId: string;
   employmentId: string;
   caseStatus: string;
@@ -64,6 +74,13 @@ export async function getSeparationCase(
     );
 
   return {
+    caseNumber: separationCase.separationCaseId,
+    lastWorkingDate: separationCase.targetLastWorkingDate
+      ? String(separationCase.targetLastWorkingDate)
+      : "",
+    noticeGivenAt: separationCase.initiatedAt ? String(separationCase.initiatedAt) : null,
+    reasonCode: null,
+    status: separationCase.caseStatus,
     separationCaseId: separationCase.separationCaseId,
     employmentId: separationCase.employmentId,
     caseStatus: separationCase.caseStatus,
@@ -73,8 +90,27 @@ export async function getSeparationCase(
       ? String(separationCase.targetLastWorkingDate)
       : null,
     closedAt: separationCase.closedAt ? String(separationCase.closedAt) : null,
-    items: items.map((item) => ({
+    items: items.map((item) => {
+      const normalized = {
+        ...item,
+        itemCode: item.itemCode ?? null,
+        ownerEmployeeId: item.ownerEmployeeId ?? null,
+        clearedAt: item.clearedAt ? String(item.clearedAt) : null,
+      };
+      return {
+        ...normalized,
+        exitClearanceItemId: normalized.itemId,
+        clearanceType: normalized.itemCode ?? normalized.itemLabel,
+        ownerDepartment: null,
+        status: normalized.clearanceStatus,
+      };
+    }),
+    clearanceItems: items.map((item) => ({
       ...item,
+      exitClearanceItemId: item.itemId,
+      clearanceType: item.itemCode ?? item.itemLabel,
+      ownerDepartment: null,
+      status: item.clearanceStatus,
       itemCode: item.itemCode ?? null,
       ownerEmployeeId: item.ownerEmployeeId ?? null,
       clearedAt: item.clearedAt ? String(item.clearedAt) : null,

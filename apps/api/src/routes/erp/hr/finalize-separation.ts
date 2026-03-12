@@ -5,8 +5,8 @@ import { finalizeSeparation } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
 const ParamsSchema = z.object({ caseId: z.string().uuid() });
-const BodySchema = z.object({ closedAt: z.string().optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ separationCaseId: z.string().uuid(), previousStatus: z.string(), currentStatus: z.string() }));
+const BodySchema = z.object({});
+const ResponseSchema = makeSuccessSchema(z.object({ separationCaseId: z.string().uuid(), status: z.string() }));
 
 export async function hrFinalizeSeparationRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

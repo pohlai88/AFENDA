@@ -13,6 +13,10 @@ export async function acceptOffer(
   correlationId: string,
   input: AcceptOfferInput,
 ): Promise<HrmResult<AcceptOfferOutput>> {
+  if (!input.acceptedAt) {
+    return err(HRM_ERROR_CODES.INVALID_INPUT, "acceptedAt is required", { offerId: input.offerId });
+  }
+
   const [offer] = await db
     .select({ id: hrmOffers.id, offerStatus: hrmOffers.offerStatus })
     .from(hrmOffers)
@@ -22,21 +26,29 @@ export async function acceptOffer(
     return err(HRM_ERROR_CODES.OFFER_NOT_FOUND, "Offer not found", { offerId: input.offerId });
   }
 
+  if (offer.offerStatus === "accepted") {
+    return err(HRM_ERROR_CODES.CONFLICT, "Offer has already been accepted", {
+      offerId: input.offerId,
+    });
+  }
+
   try {
     const data = await db.transaction(async (tx) => {
       await tx
         .update(hrmOffers)
         .set({
           offerStatus: "accepted",
-          acceptedAt: input.acceptedAt ? sql`${input.acceptedAt}::date` : sql`now()::date`,
+          acceptedAt: sql`${input.acceptedAt}::date`,
           updatedAt: sql`now()`,
         })
         .where(and(eq(hrmOffers.orgId, orgId), eq(hrmOffers.id, input.offerId)));
 
       const payload = {
         offerId: input.offerId,
+        offerStatus: "accepted",
+        acceptedAt: input.acceptedAt,
+        onboardingPlanId: undefined as string | undefined,
         previousStatus: offer.offerStatus,
-        currentStatus: "accepted",
       };
 
       await tx.insert(auditLog).values({

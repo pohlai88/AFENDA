@@ -2,7 +2,9 @@ import type { DbClient } from "@afenda/db";
 import {
   hrmEmployeeProfiles,
   hrmEmploymentRecords,
+  hrmOrgUnits,
   hrmPersons,
+  hrmPositions,
   hrmWorkAssignments,
 } from "@afenda/db";
 import { and, eq } from "drizzle-orm";
@@ -26,10 +28,14 @@ export interface EmployeeProfileView {
   terminationDate: string | null;
   workAssignmentId: string | null;
   departmentId: string | null;
+  departmentName: string | null;
   positionId: string | null;
+  positionTitle: string | null;
   jobId: string | null;
   gradeId: string | null;
   managerEmployeeId: string | null;
+  managerEmployeeCode: string | null;
+  managerDisplayName: string | null;
 }
 
 export interface GetEmployeeProfileQuery {
@@ -64,7 +70,9 @@ export async function getEmployeeProfile(
       terminationDate: hrmEmploymentRecords.terminationDate,
       workAssignmentId: hrmWorkAssignments.id,
       departmentId: hrmWorkAssignments.departmentId,
+      departmentName: hrmOrgUnits.orgUnitName,
       positionId: hrmWorkAssignments.positionId,
+      positionTitle: hrmPositions.positionTitle,
       jobId: hrmWorkAssignments.jobId,
       gradeId: hrmWorkAssignments.gradeId,
       managerEmployeeId: hrmWorkAssignments.managerEmployeeId,
@@ -86,11 +94,57 @@ export async function getEmployeeProfile(
         eq(hrmWorkAssignments.isCurrent, true),
       ),
     )
+    .leftJoin(
+      hrmOrgUnits,
+      and(
+        eq(hrmOrgUnits.orgId, hrmWorkAssignments.orgId),
+        eq(hrmOrgUnits.id, hrmWorkAssignments.departmentId),
+      ),
+    )
+    .leftJoin(
+      hrmPositions,
+      and(
+        eq(hrmPositions.orgId, hrmWorkAssignments.orgId),
+        eq(hrmPositions.id, hrmWorkAssignments.positionId),
+      ),
+    )
     .where(and(eq(hrmEmployeeProfiles.orgId, orgId), eq(hrmEmployeeProfiles.id, employeeId)));
 
   const row = rows[0];
   if (!row) {
     return null;
+  }
+
+  let managerEmployeeCode: string | null = null;
+  let managerDisplayName: string | null = null;
+
+  if (row.managerEmployeeId) {
+    const managerRows = await db
+      .select({
+        managerEmployeeCode: hrmEmployeeProfiles.employeeCode,
+        managerDisplayName: hrmPersons.displayName,
+        managerLegalName: hrmPersons.legalName,
+      })
+      .from(hrmEmployeeProfiles)
+      .innerJoin(
+        hrmPersons,
+        and(
+          eq(hrmPersons.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmPersons.id, hrmEmployeeProfiles.personId),
+        ),
+      )
+      .where(
+        and(
+          eq(hrmEmployeeProfiles.orgId, orgId),
+          eq(hrmEmployeeProfiles.id, row.managerEmployeeId),
+        ),
+      );
+
+    const manager = managerRows[0];
+    if (manager) {
+      managerEmployeeCode = manager.managerEmployeeCode;
+      managerDisplayName = manager.managerDisplayName ?? manager.managerLegalName;
+    }
   }
 
   return {
@@ -112,9 +166,13 @@ export async function getEmployeeProfile(
     terminationDate: row.terminationDate ?? null,
     workAssignmentId: row.workAssignmentId ?? null,
     departmentId: row.departmentId ?? null,
+    departmentName: row.departmentName ?? null,
     positionId: row.positionId ?? null,
+    positionTitle: row.positionTitle ?? null,
     jobId: row.jobId ?? null,
     gradeId: row.gradeId ?? null,
     managerEmployeeId: row.managerEmployeeId ?? null,
+    managerEmployeeCode,
+    managerDisplayName,
   };
 }

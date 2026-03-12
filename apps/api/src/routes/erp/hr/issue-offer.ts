@@ -4,8 +4,17 @@ import { z } from "zod";
 import { issueOffer } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
-const BodySchema = z.object({ applicationId: z.string().uuid(), offerNumber: z.string().min(1).max(50).optional(), offeredOn: z.string().optional(), offerExpiryDate: z.string().optional(), offeredCompensation: z.string().optional(), offerStatus: z.string().max(50).optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ offerId: z.string().uuid(), offerNumber: z.string() }));
+const BodySchema = z.object({
+  applicationId: z.string().uuid(),
+  offerNumber: z.string().min(1).max(50).optional(),
+  offeredPositionId: z.string().uuid().optional(),
+  proposedStartDate: z.string().optional(),
+  baseSalaryAmount: z.string().optional(),
+  currencyCode: z.string().max(3).optional(),
+});
+const ResponseSchema = makeSuccessSchema(
+  z.object({ offerId: z.string().uuid(), offerNumber: z.string(), offerStatus: z.string() }),
+);
 
 export async function hrIssueOfferRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

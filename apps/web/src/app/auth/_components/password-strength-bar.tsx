@@ -29,20 +29,20 @@ export function PasswordStrengthBar({ password }: PasswordStrengthBarProps) {
 
   if (strength < 30) {
     level = "weak";
-    bgColor = "bg-red-500";
-    textColor = "text-red-600 dark:text-red-400";
+    bgColor = "bg-destructive";
+    textColor = "text-destructive";
   } else if (strength < 60) {
     level = "fair";
-    bgColor = "bg-orange-500";
-    textColor = "text-orange-600 dark:text-orange-400";
+    bgColor = "bg-warning";
+    textColor = "text-warning";
   } else if (strength < 80) {
     level = "good";
-    bgColor = "bg-yellow-500";
-    textColor = "text-yellow-600 dark:text-yellow-400";
+    bgColor = "bg-warning";
+    textColor = "text-warning";
   } else {
     level = "strong";
-    bgColor = "bg-emerald-500";
-    textColor = "text-emerald-600 dark:text-emerald-400";
+    bgColor = "bg-primary";
+    textColor = "text-primary";
   }
 
   return (

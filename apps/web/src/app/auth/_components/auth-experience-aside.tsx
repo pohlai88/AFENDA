@@ -162,7 +162,7 @@ export function AuthExperienceAside({
         </p>
       </div>
 
-      <Card className="border border-border-interactive bg-surface-300 dark:bg-surface-300 shadow-lg">
+      <Card className="border border-border-interactive bg-surface-300 shadow-lg">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold tracking-tight sm:text-lg">
             {content.cardTitle}
@@ -176,7 +176,7 @@ export function AuthExperienceAside({
             return (
               <div key={point.title}>
                 <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border-interactive bg-surface-250 dark:bg-surface-250">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border-interactive bg-surface-250">
                     <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                   </div>
 

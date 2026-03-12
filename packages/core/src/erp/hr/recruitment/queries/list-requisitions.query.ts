@@ -17,6 +17,7 @@ export interface RequisitionListItem {
 
 export interface ListRequisitionsInput {
   orgId: string;
+  requisitionId?: string;
   status?: string;
   limit?: number;
   offset?: number;
@@ -36,6 +37,10 @@ export async function listRequisitions(
   const limit = Math.min(input.limit ?? 25, 100);
   const offset = Math.max(input.offset ?? 0, 0);
   const filters = [eq(hrmJobRequisitions.orgId, input.orgId)];
+
+  if (input.requisitionId) {
+    filters.push(eq(hrmJobRequisitions.id, input.requisitionId));
+  }
 
   if (input.status) {
     filters.push(sql`${hrmJobRequisitions.status} = ${input.status}`);

@@ -4,6 +4,7 @@ import {
   hrmEmployeeProfiles,
   hrmEmploymentRecords,
   hrmEmploymentStatusHistory,
+  hrmSeparationCases,
   hrmWorkAssignments,
   outboxEvent,
 } from "@afenda/db";
@@ -88,6 +89,8 @@ export async function terminateEmployment(
     }
 
     const data = await db.transaction(async (tx) => {
+      let separationCaseId: string | undefined;
+
       await tx.insert(hrmEmploymentStatusHistory).values({
         orgId,
         employmentId: input.employmentId,
@@ -132,12 +135,27 @@ export async function terminateEmployment(
         })
         .where(and(eq(hrmEmployeeProfiles.orgId, orgId), eq(hrmEmployeeProfiles.id, employment.employeeId)));
 
+      if (input.startSeparationCase) {
+        const [separationCase] = await tx
+          .insert(hrmSeparationCases)
+          .values({
+            orgId,
+            employmentId: input.employmentId,
+            caseStatus: "open",
+            separationType: "termination",
+            initiatedAt: sql`${input.terminationDate}::date`,
+            targetLastWorkingDate: sql`${input.terminationDate}::date`,
+          })
+          .returning({ id: hrmSeparationCases.id });
+
+        separationCaseId = separationCase?.id;
+      }
+
       const payload = {
         employmentId: input.employmentId,
-        previousStatus: employment.status,
-        currentStatus: "terminated",
-        terminationDate: input.terminationDate,
+        terminatedAt: input.terminationDate,
         terminationReasonCode: input.terminationReasonCode,
+        separationCaseId,
       };
 
       await tx.insert(auditLog).values({
@@ -160,8 +178,8 @@ export async function terminateEmployment(
 
       return {
         employmentId: input.employmentId,
-        previousStatus: employment.status,
-        currentStatus: "terminated",
+        terminatedAt: input.terminationDate,
+        separationCaseId,
       };
     });
 

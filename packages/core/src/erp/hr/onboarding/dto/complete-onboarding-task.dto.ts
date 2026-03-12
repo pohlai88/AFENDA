@@ -1,10 +1,10 @@
 export interface CompleteOnboardingTaskInput {
-  taskId: string;
-  completedAt?: string;
+  onboardingTaskId: string;
+  completedAt: string;
 }
 
 export interface CompleteOnboardingTaskOutput {
-  taskId: string;
-  previousStatus: string;
-  currentStatus: string;
+  onboardingTaskId: string;
+  status: string;
+  completedAt: string;
 }

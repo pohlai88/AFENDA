@@ -13,14 +13,14 @@ export async function clearExitItem(
   correlationId: string,
   input: ClearExitItemInput,
 ): Promise<HrmResult<ClearExitItemOutput>> {
-  const [item] = await db.select({ id: hrmExitClearanceItems.id, clearanceStatus: hrmExitClearanceItems.clearanceStatus }).from(hrmExitClearanceItems).where(and(eq(hrmExitClearanceItems.orgId, orgId), eq(hrmExitClearanceItems.id, input.itemId)));
-  if (!item) return err(HRM_ERROR_CODES.EXIT_CLEARANCE_ITEM_NOT_FOUND, "Exit clearance item not found", { itemId: input.itemId });
+  const [item] = await db.select({ id: hrmExitClearanceItems.id, clearanceStatus: hrmExitClearanceItems.clearanceStatus }).from(hrmExitClearanceItems).where(and(eq(hrmExitClearanceItems.orgId, orgId), eq(hrmExitClearanceItems.id, input.exitClearanceItemId)));
+  if (!item) return err(HRM_ERROR_CODES.EXIT_CLEARANCE_ITEM_NOT_FOUND, "Exit clearance item not found", { exitClearanceItemId: input.exitClearanceItemId });
 
   try {
     const data = await db.transaction(async (tx) => {
-      await tx.update(hrmExitClearanceItems).set({ clearanceStatus: "cleared", clearedAt: input.clearedAt ? sql`${input.clearedAt}::date` : sql`now()::date`, updatedAt: sql`now()` }).where(and(eq(hrmExitClearanceItems.orgId, orgId), eq(hrmExitClearanceItems.id, input.itemId)));
-      const payload = { itemId: input.itemId, previousStatus: item.clearanceStatus, currentStatus: "cleared" };
-      await tx.insert(auditLog).values({ orgId, actorPrincipalId: actorPrincipalId ?? null, action: HRM_EVENTS.EXIT_ITEM_CLEARED, entityType: "hrm_exit_clearance_item", entityId: input.itemId, correlationId, details: payload });
+      await tx.update(hrmExitClearanceItems).set({ clearanceStatus: "cleared", clearedAt: sql`${input.clearedAt}::date`, updatedAt: sql`now()` }).where(and(eq(hrmExitClearanceItems.orgId, orgId), eq(hrmExitClearanceItems.id, input.exitClearanceItemId)));
+      const payload = { exitClearanceItemId: input.exitClearanceItemId, status: "cleared", clearedAt: input.clearedAt, previousStatus: item.clearanceStatus };
+      await tx.insert(auditLog).values({ orgId, actorPrincipalId: actorPrincipalId ?? null, action: HRM_EVENTS.EXIT_ITEM_CLEARED, entityType: "hrm_exit_clearance_item", entityId: input.exitClearanceItemId, correlationId, details: payload });
       await tx.insert(outboxEvent).values({ orgId, type: "HRM.EXIT_ITEM_CLEARED", version: "1", correlationId, payload });
       return payload;
     });

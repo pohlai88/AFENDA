@@ -3,10 +3,11 @@ export interface TerminateEmploymentInput {
   terminationDate: string;
   terminationReasonCode: string;
   comment?: string;
+  startSeparationCase?: boolean;
 }
 
 export interface TerminateEmploymentOutput {
   employmentId: string;
-  previousStatus: string;
-  currentStatus: string;
+  terminatedAt: string;
+  separationCaseId?: string;
 }

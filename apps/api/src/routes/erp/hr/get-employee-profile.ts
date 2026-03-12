@@ -33,10 +33,14 @@ const EmployeeProfileResponseSchema = makeSuccessSchema(
     terminationDate: z.string().nullable(),
     workAssignmentId: z.string().uuid().nullable(),
     departmentId: z.string().uuid().nullable(),
+    departmentName: z.string().nullable(),
     positionId: z.string().uuid().nullable(),
+    positionTitle: z.string().nullable(),
     jobId: z.string().uuid().nullable(),
     gradeId: z.string().uuid().nullable(),
     managerEmployeeId: z.string().uuid().nullable(),
+    managerEmployeeCode: z.string().nullable(),
+    managerDisplayName: z.string().nullable(),
   }),
 );
 

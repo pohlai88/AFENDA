@@ -90,6 +90,27 @@ export const hrmEmploymentStatusHistory = pgTable(
   }),
 );
 
+export const hrmEmploymentContracts = pgTable(
+  "hrm_employment_contracts",
+  {
+    ...orgColumns,
+    employmentId: uuid("employment_id").notNull().references(() => hrmEmploymentRecords.id),
+    contractNumber: varchar("contract_number", { length: 80 }).notNull(),
+    contractType: varchar("contract_type", { length: 50 }).notNull(),
+    contractStartDate: date("contract_start_date").notNull(),
+    contractEndDate: date("contract_end_date"),
+    documentFileId: uuid("document_file_id"),
+    ...metadataColumns,
+  },
+  (t) => ({
+    contractNumberUq: uniqueIndex("hrm_employment_contracts_org_number_uq").on(
+      t.orgId,
+      t.contractNumber,
+    ),
+    employmentIdx: index("hrm_employment_contracts_employment_idx").on(t.orgId, t.employmentId),
+  }),
+);
+
 export const hrmEmploymentRecordsRelations = relations(hrmEmploymentRecords, ({ one, many }) => ({
   employee: one(hrmEmployeeProfiles, {
     fields: [hrmEmploymentRecords.employeeId],
@@ -97,4 +118,5 @@ export const hrmEmploymentRecordsRelations = relations(hrmEmploymentRecords, ({ 
   }),
   assignments: many(hrmWorkAssignments),
   statusHistory: many(hrmEmploymentStatusHistory),
+  contracts: many(hrmEmploymentContracts),
 }));

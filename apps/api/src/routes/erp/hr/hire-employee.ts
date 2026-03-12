@@ -18,6 +18,15 @@ const HireEmployeeBodySchema = z.object({
   hireDate: z.string(),
   startDate: z.string(),
   probationEndDate: z.string().optional(),
+  contract: z
+    .object({
+      contractNumber: z.string().max(80).optional(),
+      contractType: z.string().max(50),
+      contractStartDate: z.string(),
+      contractEndDate: z.string().optional(),
+      documentFileId: z.string().uuid().optional(),
+    })
+    .optional(),
 });
 
 const HireEmployeeResponseSchema = makeSuccessSchema(

@@ -5,7 +5,7 @@ import { approveRequisition } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
 const ParamsSchema = z.object({ requisitionId: z.string().uuid() });
-const ResponseSchema = makeSuccessSchema(z.object({ requisitionId: z.string().uuid(), previousStatus: z.string(), currentStatus: z.string() }));
+const ResponseSchema = makeSuccessSchema(z.object({ requisitionId: z.string().uuid(), status: z.string(), approvedAt: z.string() }));
 
 export async function hrApproveRequisitionRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

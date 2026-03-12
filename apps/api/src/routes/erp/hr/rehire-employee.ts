@@ -31,6 +31,15 @@ const RehireEmployeeBodySchema = z.object({
   employmentClass: z.string().max(50).optional(),
   fteRatio: z.string().max(20).optional(),
   changeReason: z.string().max(120).optional(),
+  contract: z
+    .object({
+      contractNumber: z.string().max(80).optional(),
+      contractType: z.string().max(50),
+      contractStartDate: z.string(),
+      contractEndDate: z.string().optional(),
+      documentFileId: z.string().uuid().optional(),
+    })
+    .optional(),
 });
 
 const RehireEmployeeResponseSchema = makeSuccessSchema(
@@ -38,6 +47,7 @@ const RehireEmployeeResponseSchema = makeSuccessSchema(
     employeeId: z.string().uuid(),
     employmentId: z.string().uuid(),
     workAssignmentId: z.string().uuid(),
+    contractId: z.string().uuid().optional(),
   }),
 );
 

@@ -16,6 +16,32 @@ const EmploymentTimelineParamsSchema = z.object({
 const EmploymentTimelineResponseSchema = makeSuccessSchema(
   z.object({
     employmentId: z.string().uuid(),
+    events: z.array(
+      z.union([
+        z.object({
+          type: z.literal("status"),
+          changedAt: z.string(),
+          oldStatus: z.string().nullable(),
+          newStatus: z.string(),
+          reasonCode: z.string().nullable(),
+          comment: z.string().nullable(),
+        }),
+        z.object({
+          type: z.literal("assignment"),
+          workAssignmentId: z.string().uuid(),
+          effectiveFrom: z.string(),
+          effectiveTo: z.string().nullable(),
+          legalEntityId: z.string().uuid(),
+          departmentId: z.string().uuid().nullable(),
+          positionId: z.string().uuid().nullable(),
+          jobId: z.string().uuid().nullable(),
+          gradeId: z.string().uuid().nullable(),
+          managerEmployeeId: z.string().uuid().nullable(),
+          assignmentStatus: z.string(),
+          changeReason: z.string().nullable(),
+        }),
+      ]),
+    ),
     employeeId: z.string().uuid(),
     employmentNumber: z.string(),
     employmentStatus: z.string(),

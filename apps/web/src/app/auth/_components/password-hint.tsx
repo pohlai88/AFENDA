@@ -48,11 +48,7 @@ export function PasswordHint({ password }: PasswordHintProps) {
         {requirements.map((req, idx) => (
           <li
             key={idx}
-            className={`flex items-center gap-2 text-xs ${
-              req.satisfied
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-muted-foreground"
-            }`}
+            className={`flex items-center gap-2 text-xs ${req.satisfied ? "text-primary" : "text-muted-foreground"}`}
           >
             {req.satisfied ? (
               <Check className="h-3 w-3 flex-shrink-0" />
@@ -64,7 +60,7 @@ export function PasswordHint({ password }: PasswordHintProps) {
         ))}
       </ul>
       {allSatisfied && (
-        <div className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+        <div className="mt-2 text-xs font-medium text-primary">
           ✓ Password is strong
         </div>
       )}

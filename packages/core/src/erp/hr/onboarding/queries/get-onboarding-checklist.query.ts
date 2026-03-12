@@ -3,6 +3,11 @@ import { hrmOnboardingPlans, hrmOnboardingTasks } from "@afenda/db";
 import { and, eq } from "drizzle-orm";
 
 export interface OnboardingChecklistTask {
+  onboardingTaskId: string;
+  taskName: string;
+  taskOwnerType: string | null;
+  assignedTo: string | null;
+  status: string;
   taskId: string;
   taskCode: string | null;
   taskTitle: string;
@@ -14,6 +19,7 @@ export interface OnboardingChecklistTask {
 }
 
 export interface OnboardingChecklist {
+  status: string;
   onboardingPlanId: string;
   employmentId: string;
   planStatus: string;
@@ -64,6 +70,7 @@ export async function getOnboardingChecklist(
     );
 
   return {
+    status: plan.planStatus,
     onboardingPlanId: plan.onboardingPlanId,
     employmentId: plan.employmentId,
     planStatus: plan.planStatus,
@@ -72,6 +79,11 @@ export async function getOnboardingChecklist(
     completedAt: plan.completedAt ? String(plan.completedAt) : null,
     tasks: tasks.map((task) => ({
       ...task,
+      onboardingTaskId: task.taskId,
+      taskName: task.taskTitle,
+      taskOwnerType: task.ownerEmployeeId ? "employee" : null,
+      assignedTo: task.ownerEmployeeId ?? null,
+      status: task.taskStatus,
       taskCode: task.taskCode ?? null,
       ownerEmployeeId: task.ownerEmployeeId ?? null,
       dueDate: task.dueDate ? String(task.dueDate) : null,

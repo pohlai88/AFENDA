@@ -1,21 +1,124 @@
-Good. Here is the **next drop-in batch** for AFENDA HRM Phase 1:
+Below is the **AFENDA HRM Phase 1 - Wave 2 implementation scaffold and closure tracker**.
+
+Wave 2 focus:
 
 1. repository interfaces + Drizzle-style implementations
-2. `create-person.service.ts`
-3. `transfer-employee.service.ts`
-4. `apps/api/src/routes/erp/hr/create-person.ts`
-5. `apps/api/src/routes/erp/hr/transfer-employee.ts`
+2. create-person + transfer-employee command path
+3. terminate + rehire + employee profile/list read path
+4. API route wiring for core lifecycle routes
 
-This keeps building the **Workforce Truth Engine** in the right order.
+This follows the same status/evidence style used in Wave 1.
+
+## Wave Status: DONE
 
 ---
 
-# 1) `packages/core/src/erp/hr/core/repositories/person.repository.ts`
+# Wave Metadata
+
+- Wave ID: `Wave 2`
+- Scope: `Core HR repository + lifecycle command/read completion`
+- Document role: `Scaffold + closure tracker`
+- Last updated: `2026-03-12`
+
+---
+
+# Remaining (Follow-up)
+
+Use this as the active closure tracker for Wave 2.
+
+Completion rule: a remaining item is only complete when implementation + tests + evidence are all present.
+
+## W2-R1. Repository implementation parity
+
+Status: `DONE`
+
+Deliverables:
+
+- Add concrete Drizzle implementations for core HR repositories.
+- Ensure repository interfaces and implementations compile with current schema exports.
+- Export implementations from `packages/core/src/erp/hr/index.ts`.
+
+Evidence:
+
+- `packages/core/src/erp/hr/core/repositories/drizzle-person.repository.ts`
+- `packages/core/src/erp/hr/core/repositories/drizzle-employee-profile.repository.ts`
+- `packages/core/src/erp/hr/core/repositories/drizzle-employment.repository.ts`
+- `packages/core/src/erp/hr/core/repositories/drizzle-work-assignment.repository.ts`
+- `packages/core/src/erp/hr/index.ts`
+
+## W2-R2. Lifecycle command/read route coverage
+
+Status: `DONE`
+
+Deliverables:
+
+- Ensure create/transfer/terminate/rehire command services and profile/list queries are present.
+- Ensure API routes for create/transfer/terminate/rehire/list/profile are present and registered.
+
+Evidence:
+
+- Core services and queries under `packages/core/src/erp/hr/core/services/` and `packages/core/src/erp/hr/core/queries/`
+- API routes under `apps/api/src/routes/erp/hr/`
+- Route registration in `apps/api/src/index.ts`
+
+## W2-R3. Validation and handoff
+
+Status: `DONE`
+
+Deliverables:
+
+- Core and API typecheck must pass after Wave 2 changes.
+- Supporting HR package typechecks must pass.
+- Wave 2 doc reflects current completion and handoff readiness.
+
+Evidence:
+
+- `pnpm --filter @afenda/core typecheck` passed.
+- `pnpm --filter @afenda/api typecheck` passed on 2026-03-12.
+- `pnpm --filter @afenda/web typecheck` passed on 2026-03-12.
+- `pnpm --filter @afenda/db typecheck` passed on 2026-03-12.
+
+Done when:
+
+- Typecheck evidence for impacted packages is green and linked in this doc.
+
+---
+
+# 0. Status Update (2026-03-12)
+
+## Current delivery status
+
+- Wave 2 functional implementation is in place and compiles cleanly.
+- Wave 2 validation and handoff closure is complete for HR scope.
+
+## Evidence snapshot
+
+### New Wave 2 implementation evidence
+
+- Repository interfaces exist under `packages/core/src/erp/hr/core/repositories/`.
+- Drizzle repository implementations exist for person, employee-profile, employment, and work-assignment.
+- `create-person` and `transfer-employee` services and routes are implemented.
+- `terminate-employment`, `rehire-employee`, `get-employee-profile`, and `list-employees` command/query/route path is present.
+
+### Build evidence
+
+- `pnpm --filter @afenda/core typecheck` completed with exit code `0`.
+- `pnpm --filter @afenda/api typecheck` completed with exit code `0` on 2026-03-12.
+- `pnpm --filter @afenda/web typecheck` completed with exit code `0` on 2026-03-12.
+- `pnpm --filter @afenda/db typecheck` completed with exit code `0` on 2026-03-12.
+
+### Known open items
+
+- No open items remain for Wave 2 scope.
+
+---
+
+# 1. `packages/core/src/erp/hr/core/repositories/person.repository.ts`
 
 ```ts
 export interface PersonRecord {
   id: string;
-  tenantId: string;
+  orgId: string;
   personCode: string;
   legalName: string;
   preferredName: string | null;
@@ -33,7 +136,7 @@ export interface PersonRecord {
 }
 
 export interface CreatePersonParams {
-  tenantId: string;
+  orgId: string;
   actorUserId: string;
   personCode: string;
   legalName: string;
@@ -54,13 +157,13 @@ export interface CreatePersonParams {
 export interface PersonRepository {
   findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personId: string;
   }): Promise<PersonRecord | null>;
 
   findByPersonCode(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personCode: string;
   }): Promise<PersonRecord | null>;
 
@@ -73,12 +176,12 @@ export interface PersonRepository {
 
 ---
 
-# 2) `packages/core/src/erp/hr/core/repositories/employee-profile.repository.ts`
+# 2. `packages/core/src/erp/hr/core/repositories/employee-profile.repository.ts`
 
 ```ts
 export interface EmployeeProfileRecord {
   id: string;
-  tenantId: string;
+  orgId: string;
   personId: string;
   employeeCode: string;
   workerType: "employee" | "contractor" | "intern" | "director";
@@ -90,19 +193,19 @@ export interface EmployeeProfileRecord {
 export interface EmployeeProfileRepository {
   findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
   }): Promise<EmployeeProfileRecord | null>;
 
   findByPersonId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personId: string;
   }): Promise<EmployeeProfileRecord | null>;
 
   insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     personId: string;
     employeeCode: string;
@@ -112,7 +215,7 @@ export interface EmployeeProfileRepository {
 
   updatePrimaryEmploymentId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
     primaryEmploymentId: string;
   }): Promise<void>;
@@ -121,12 +224,12 @@ export interface EmployeeProfileRepository {
 
 ---
 
-# 3) `packages/core/src/erp/hr/core/repositories/employment.repository.ts`
+# 3. `packages/core/src/erp/hr/core/repositories/employment.repository.ts`
 
 ```ts
 export interface EmploymentRecord {
   id: string;
-  tenantId: string;
+  orgId: string;
   employeeId: string;
   legalEntityId: string;
   employmentNumber: string;
@@ -145,19 +248,19 @@ export interface EmploymentRecord {
 export interface EmploymentRepository {
   findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
   }): Promise<EmploymentRecord | null>;
 
   existsActiveEmploymentForEmployee(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
   }): Promise<boolean>;
 
   insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employeeId: string;
     legalEntityId: string;
@@ -170,7 +273,7 @@ export interface EmploymentRepository {
 
   updateStatus(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     employmentStatus: string;
     terminationDate?: string;
@@ -180,7 +283,7 @@ export interface EmploymentRepository {
 
   insertStatusHistory(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employmentId: string;
     oldStatus: string | null;
@@ -194,12 +297,12 @@ export interface EmploymentRepository {
 
 ---
 
-# 4) `packages/core/src/erp/hr/core/repositories/work-assignment.repository.ts`
+# 4. `packages/core/src/erp/hr/core/repositories/work-assignment.repository.ts`
 
 ```ts
 export interface WorkAssignmentRecord {
   id: string;
-  tenantId: string;
+  orgId: string;
   employmentId: string;
   legalEntityId: string;
   businessUnitId: string | null;
@@ -223,13 +326,13 @@ export interface WorkAssignmentRecord {
 export interface WorkAssignmentRepository {
   findCurrentByEmploymentId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
   }): Promise<WorkAssignmentRecord | null>;
 
   findOverlappingAssignments(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     effectiveFrom: string;
     effectiveTo?: string | null;
@@ -237,7 +340,7 @@ export interface WorkAssignmentRepository {
 
   insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employmentId: string;
     legalEntityId: string;
@@ -259,7 +362,7 @@ export interface WorkAssignmentRepository {
 
   closeCurrentAssignment(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     effectiveTo: string;
     actorUserId: string;
@@ -269,7 +372,7 @@ export interface WorkAssignmentRepository {
 
 ---
 
-# 5) `packages/core/src/erp/hr/core/repositories/drizzle-person.repository.ts`
+# 5. `packages/core/src/erp/hr/core/repositories/drizzle-person.repository.ts`
 
 ```ts
 import { and, eq } from "drizzle-orm";
@@ -296,7 +399,7 @@ type DbExecutor = {
 function mapPerson(row: any): PersonRecord {
   return {
     id: row.id,
-    tenantId: row.tenantId,
+    orgId: row.orgId,
     personCode: row.personCode,
     legalName: row.legalName,
     preferredName: row.preferredName ?? null,
@@ -323,13 +426,13 @@ export class DrizzlePersonRepository implements PersonRepository {
 
   async findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personId: string;
   }): Promise<PersonRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmPersons.findFirst({
-      where: and(eq(hrmPersons.tenantId, args.tenantId), eq(hrmPersons.id, args.personId)),
+      where: and(eq(hrmPersons.orgId, args.orgId), eq(hrmPersons.id, args.personId)),
     });
 
     return row ? mapPerson(row) : null;
@@ -337,14 +440,14 @@ export class DrizzlePersonRepository implements PersonRepository {
 
   async findByPersonCode(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personCode: string;
   }): Promise<PersonRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmPersons.findFirst({
       where: and(
-        eq(hrmPersons.tenantId, args.tenantId),
+        eq(hrmPersons.orgId, args.orgId),
         eq(hrmPersons.personCode, args.personCode),
       ),
     });
@@ -362,7 +465,7 @@ export class DrizzlePersonRepository implements PersonRepository {
     const [row] = await db
       .insert(hrmPersons)
       .values({
-        tenantId: p.tenantId,
+        orgId: p.orgId,
         createdBy: p.actorUserId,
         updatedBy: p.actorUserId,
         personCode: p.personCode,
@@ -389,7 +492,7 @@ export class DrizzlePersonRepository implements PersonRepository {
 
 ---
 
-# 6) `packages/core/src/erp/hr/core/repositories/drizzle-employee-profile.repository.ts`
+# 6. `packages/core/src/erp/hr/core/repositories/drizzle-employee-profile.repository.ts`
 
 ```ts
 import { and, eq } from "drizzle-orm";
@@ -420,7 +523,7 @@ type DbExecutor = {
 function mapEmployeeProfile(row: any): EmployeeProfileRecord {
   return {
     id: row.id,
-    tenantId: row.tenantId,
+    orgId: row.orgId,
     personId: row.personId,
     employeeCode: row.employeeCode,
     workerType: row.workerType,
@@ -439,14 +542,14 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
 
   async findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
   }): Promise<EmployeeProfileRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmEmployeeProfiles.findFirst({
       where: and(
-        eq(hrmEmployeeProfiles.tenantId, args.tenantId),
+        eq(hrmEmployeeProfiles.orgId, args.orgId),
         eq(hrmEmployeeProfiles.id, args.employeeId),
       ),
     });
@@ -456,14 +559,14 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
 
   async findByPersonId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     personId: string;
   }): Promise<EmployeeProfileRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmEmployeeProfiles.findFirst({
       where: and(
-        eq(hrmEmployeeProfiles.tenantId, args.tenantId),
+        eq(hrmEmployeeProfiles.orgId, args.orgId),
         eq(hrmEmployeeProfiles.personId, args.personId),
       ),
     });
@@ -473,7 +576,7 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
 
   async insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     personId: string;
     employeeCode: string;
@@ -485,7 +588,7 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
     const [row] = await db
       .insert(hrmEmployeeProfiles)
       .values({
-        tenantId: args.tenantId,
+        orgId: args.orgId,
         createdBy: args.actorUserId,
         updatedBy: args.actorUserId,
         personId: args.personId,
@@ -501,7 +604,7 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
 
   async updatePrimaryEmploymentId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
     primaryEmploymentId: string;
   }): Promise<void> {
@@ -514,7 +617,7 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
       })
       .where(
         and(
-          eq(hrmEmployeeProfiles.tenantId, args.tenantId),
+          eq(hrmEmployeeProfiles.orgId, args.orgId),
           eq(hrmEmployeeProfiles.id, args.employeeId),
         ),
       );
@@ -524,7 +627,7 @@ export class DrizzleEmployeeProfileRepository implements EmployeeProfileReposito
 
 ---
 
-# 7) `packages/core/src/erp/hr/core/repositories/drizzle-employment.repository.ts`
+# 7. `packages/core/src/erp/hr/core/repositories/drizzle-employment.repository.ts`
 
 ```ts
 import { and, eq, inArray } from "drizzle-orm";
@@ -559,7 +662,7 @@ type DbExecutor = {
 function mapEmployment(row: any): EmploymentRecord {
   return {
     id: row.id,
-    tenantId: row.tenantId,
+    orgId: row.orgId,
     employeeId: row.employeeId,
     legalEntityId: row.legalEntityId,
     employmentNumber: row.employmentNumber,
@@ -585,14 +688,14 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
   async findById(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
   }): Promise<EmploymentRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmEmploymentRecords.findFirst({
       where: and(
-        eq(hrmEmploymentRecords.tenantId, args.tenantId),
+        eq(hrmEmploymentRecords.orgId, args.orgId),
         eq(hrmEmploymentRecords.id, args.employmentId),
       ),
     });
@@ -602,14 +705,14 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
   async existsActiveEmploymentForEmployee(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employeeId: string;
   }): Promise<boolean> {
     const db = this.getExecutor(args.tx);
 
     const rows = await db.query.hrmEmploymentRecords.findMany({
       where: and(
-        eq(hrmEmploymentRecords.tenantId, args.tenantId),
+        eq(hrmEmploymentRecords.orgId, args.orgId),
         eq(hrmEmploymentRecords.employeeId, args.employeeId),
         inArray(hrmEmploymentRecords.employmentStatus, ["active", "probation", "suspended"]),
       ),
@@ -621,7 +724,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
   async insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employeeId: string;
     legalEntityId: string;
@@ -636,7 +739,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
     const [row] = await db
       .insert(hrmEmploymentRecords)
       .values({
-        tenantId: args.tenantId,
+        orgId: args.orgId,
         createdBy: args.actorUserId,
         updatedBy: args.actorUserId,
         employeeId: args.employeeId,
@@ -657,7 +760,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
   async updateStatus(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     employmentStatus: string;
     terminationDate?: string;
@@ -676,7 +779,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
       })
       .where(
         and(
-          eq(hrmEmploymentRecords.tenantId, args.tenantId),
+          eq(hrmEmploymentRecords.orgId, args.orgId),
           eq(hrmEmploymentRecords.id, args.employmentId),
         ),
       );
@@ -684,7 +787,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
   async insertStatusHistory(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employmentId: string;
     oldStatus: string | null;
@@ -696,7 +799,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
     const db = this.getExecutor(args.tx);
 
     await db.insert(hrmEmploymentStatusHistory).values({
-      tenantId: args.tenantId,
+      orgId: args.orgId,
       createdBy: args.actorUserId,
       updatedBy: args.actorUserId,
       employmentId: args.employmentId,
@@ -713,7 +816,7 @@ export class DrizzleEmploymentRepository implements EmploymentRepository {
 
 ---
 
-# 8) `packages/core/src/erp/hr/core/repositories/drizzle-work-assignment.repository.ts`
+# 8. `packages/core/src/erp/hr/core/repositories/drizzle-work-assignment.repository.ts`
 
 ```ts
 import { and, eq, isNull, lte, or, gte } from "drizzle-orm";
@@ -745,7 +848,7 @@ type DbExecutor = {
 function mapAssignment(row: any): WorkAssignmentRecord {
   return {
     id: row.id,
-    tenantId: row.tenantId,
+    orgId: row.orgId,
     employmentId: row.employmentId,
     legalEntityId: row.legalEntityId,
     businessUnitId: row.businessUnitId ?? null,
@@ -776,14 +879,14 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
   async findCurrentByEmploymentId(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
   }): Promise<WorkAssignmentRecord | null> {
     const db = this.getExecutor(args.tx);
 
     const row = await db.query.hrmWorkAssignments.findFirst({
       where: and(
-        eq(hrmWorkAssignments.tenantId, args.tenantId),
+        eq(hrmWorkAssignments.orgId, args.orgId),
         eq(hrmWorkAssignments.employmentId, args.employmentId),
         eq(hrmWorkAssignments.isCurrent, true),
       ),
@@ -794,7 +897,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
   async findOverlappingAssignments(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     effectiveFrom: string;
     effectiveTo?: string | null;
@@ -803,7 +906,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
     const rows = await db.query.hrmWorkAssignments.findMany({
       where: and(
-        eq(hrmWorkAssignments.tenantId, args.tenantId),
+        eq(hrmWorkAssignments.orgId, args.orgId),
         eq(hrmWorkAssignments.employmentId, args.employmentId),
         lte(hrmWorkAssignments.effectiveFrom, args.effectiveTo ?? "9999-12-31"),
         or(
@@ -818,7 +921,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
   async insert(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     actorUserId: string;
     employmentId: string;
     legalEntityId: string;
@@ -842,7 +945,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
     const [row] = await db
       .insert(hrmWorkAssignments)
       .values({
-        tenantId: args.tenantId,
+        orgId: args.orgId,
         createdBy: args.actorUserId,
         updatedBy: args.actorUserId,
         employmentId: args.employmentId,
@@ -871,7 +974,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
   async closeCurrentAssignment(args: {
     tx?: unknown;
-    tenantId: string;
+    orgId: string;
     employmentId: string;
     effectiveTo: string;
     actorUserId: string;
@@ -888,7 +991,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
       })
       .where(
         and(
-          eq(hrmWorkAssignments.tenantId, args.tenantId),
+          eq(hrmWorkAssignments.orgId, args.orgId),
           eq(hrmWorkAssignments.employmentId, args.employmentId),
           eq(hrmWorkAssignments.isCurrent, true),
         ),
@@ -899,7 +1002,7 @@ export class DrizzleWorkAssignmentRepository implements WorkAssignmentRepository
 
 ---
 
-# 9) `packages/core/src/erp/hr/core/dto/create-person.dto.ts`
+# 9. `packages/core/src/erp/hr/core/dto/create-person.dto.ts`
 
 ```ts
 export interface CreatePersonInput {
@@ -927,7 +1030,7 @@ export interface CreatePersonOutput {
 
 ---
 
-# 10) `packages/core/src/erp/hr/core/dto/transfer-employee.dto.ts`
+# 10. `packages/core/src/erp/hr/core/dto/transfer-employee.dto.ts`
 
 ```ts
 export interface TransferEmployeeInput {
@@ -956,7 +1059,7 @@ export interface TransferEmployeeOutput {
 
 ---
 
-# 11) `packages/core/src/erp/hr/core/services/create-person.service.ts`
+# 11. `packages/core/src/erp/hr/core/services/create-person.service.ts`
 
 ```ts
 import type { HrmCommandContext } from "../../shared/types/hrm-command-context";
@@ -973,7 +1076,7 @@ export interface CreatePersonDeps {
   auditService: {
     record: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       action: string;
       aggregateType: string;
@@ -985,7 +1088,7 @@ export interface CreatePersonDeps {
   outboxService: {
     enqueue: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       eventName: string;
       aggregateType: string;
       aggregateId: string;
@@ -993,7 +1096,7 @@ export interface CreatePersonDeps {
     }) => Promise<void>;
   };
   codeGenerator: {
-    nextPersonCode: (tenantId: string) => Promise<string>;
+    nextPersonCode: (orgId: string) => Promise<string>;
   };
 }
 
@@ -1014,11 +1117,11 @@ export class CreatePersonService {
     try {
       return await this.deps.db.transaction(async (tx) => {
         const personCode =
-          input.personCode ?? (await this.deps.codeGenerator.nextPersonCode(ctx.tenantId));
+          input.personCode ?? (await this.deps.codeGenerator.nextPersonCode(ctx.orgId));
 
         const existing = await this.deps.personRepository.findByPersonCode({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           personCode,
         });
 
@@ -1033,7 +1136,7 @@ export class CreatePersonService {
         const person = await this.deps.personRepository.insert({
           tx,
           params: {
-            tenantId: ctx.tenantId,
+            orgId: ctx.orgId,
             actorUserId: ctx.actorUserId,
             personCode,
             legalName: input.legalName,
@@ -1054,7 +1157,7 @@ export class CreatePersonService {
 
         await this.deps.auditService.record({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           action: "hrm.person.created",
           aggregateType: "hrm_person",
@@ -1071,7 +1174,7 @@ export class CreatePersonService {
 
         await this.deps.outboxService.enqueue({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           eventName: "hrm.person.created",
           aggregateType: "hrm_person",
           aggregateId: person.id,
@@ -1097,7 +1200,7 @@ export class CreatePersonService {
 
 ---
 
-# 12) `packages/core/src/erp/hr/core/services/transfer-employee.service.ts`
+# 12. `packages/core/src/erp/hr/core/services/transfer-employee.service.ts`
 
 ```ts
 import type { HrmCommandContext } from "../../shared/types/hrm-command-context";
@@ -1120,7 +1223,7 @@ export interface TransferEmployeeDeps {
   auditService: {
     record: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       action: string;
       aggregateType: string;
@@ -1132,7 +1235,7 @@ export interface TransferEmployeeDeps {
   outboxService: {
     enqueue: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       eventName: string;
       aggregateType: string;
       aggregateId: string;
@@ -1156,7 +1259,7 @@ export class TransferEmployeeService {
     }
 
     const employment = await this.deps.employmentRepository.findById({
-      tenantId: ctx.tenantId,
+      orgId: ctx.orgId,
       employmentId: input.employmentId,
     });
 
@@ -1179,7 +1282,7 @@ export class TransferEmployeeService {
 
     const currentAssignment =
       await this.deps.workAssignmentRepository.findCurrentByEmploymentId({
-        tenantId: ctx.tenantId,
+        orgId: ctx.orgId,
         employmentId: input.employmentId,
       });
 
@@ -1193,7 +1296,7 @@ export class TransferEmployeeService {
 
     const overlapping =
       await this.deps.workAssignmentRepository.findOverlappingAssignments({
-        tenantId: ctx.tenantId,
+        orgId: ctx.orgId,
         employmentId: input.employmentId,
         effectiveFrom: input.effectiveFrom,
         effectiveTo: null,
@@ -1215,7 +1318,7 @@ export class TransferEmployeeService {
       return await this.deps.db.transaction(async (tx) => {
         await this.deps.workAssignmentRepository.closeCurrentAssignment({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           employmentId: input.employmentId,
           effectiveTo: input.effectiveFrom,
           actorUserId: ctx.actorUserId,
@@ -1223,7 +1326,7 @@ export class TransferEmployeeService {
 
         const newAssignment = await this.deps.workAssignmentRepository.insert({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           employmentId: input.employmentId,
           legalEntityId: input.legalEntityId,
@@ -1258,7 +1361,7 @@ export class TransferEmployeeService {
 
         await this.deps.auditService.record({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           action: HRM_EVENTS.EMPLOYEE_TRANSFERRED,
           aggregateType: "hrm_employment",
@@ -1272,7 +1375,7 @@ export class TransferEmployeeService {
 
         await this.deps.outboxService.enqueue({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           eventName: HRM_EVENTS.EMPLOYEE_TRANSFERRED,
           aggregateType: "hrm_employment",
           aggregateId: input.employmentId,
@@ -1295,7 +1398,7 @@ export class TransferEmployeeService {
 
 ---
 
-# 13) `apps/api/src/routes/erp/hr/create-person.ts`
+# 13. `apps/api/src/routes/erp/hr/create-person.ts`
 
 ```ts
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -1345,12 +1448,12 @@ export async function registerCreatePersonRoute(app: FastifyInstance) {
         });
       }
 
-      const tenantId = request.headers["x-tenant-id"];
+      const orgId = request.headers["x-org-id"];
       const actorUserId = request.headers["x-actor-user-id"];
       const idempotencyKey = request.headers["idempotency-key"];
 
       if (
-        typeof tenantId !== "string" ||
+        typeof orgId !== "string" ||
         typeof actorUserId !== "string" ||
         typeof idempotencyKey !== "string"
       ) {
@@ -1358,7 +1461,7 @@ export async function registerCreatePersonRoute(app: FastifyInstance) {
           ok: false,
           error: {
             code: "HRM_UNAUTHORIZED",
-            message: "Missing tenant/auth/idempotency context",
+            message: "Missing org/auth/idempotency context",
           },
         });
       }
@@ -1367,7 +1470,7 @@ export async function registerCreatePersonRoute(app: FastifyInstance) {
 
       const result = await service.execute(
         {
-          tenantId,
+          orgId,
           actorUserId,
           idempotencyKey,
           correlationId:
@@ -1397,7 +1500,7 @@ export async function registerCreatePersonRoute(app: FastifyInstance) {
 
 ---
 
-# 14) `apps/api/src/routes/erp/hr/transfer-employee.ts`
+# 14. `apps/api/src/routes/erp/hr/transfer-employee.ts`
 
 ```ts
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -1449,12 +1552,12 @@ export async function registerTransferEmployeeRoute(app: FastifyInstance) {
         });
       }
 
-      const tenantId = request.headers["x-tenant-id"];
+      const orgId = request.headers["x-org-id"];
       const actorUserId = request.headers["x-actor-user-id"];
       const idempotencyKey = request.headers["idempotency-key"];
 
       if (
-        typeof tenantId !== "string" ||
+        typeof orgId !== "string" ||
         typeof actorUserId !== "string" ||
         typeof idempotencyKey !== "string"
       ) {
@@ -1462,7 +1565,7 @@ export async function registerTransferEmployeeRoute(app: FastifyInstance) {
           ok: false,
           error: {
             code: "HRM_UNAUTHORIZED",
-            message: "Missing tenant/auth/idempotency context",
+            message: "Missing org/auth/idempotency context",
           },
         });
       }
@@ -1471,7 +1574,7 @@ export async function registerTransferEmployeeRoute(app: FastifyInstance) {
 
       const result = await service.execute(
         {
-          tenantId,
+          orgId,
           actorUserId,
           idempotencyKey,
           correlationId:
@@ -1502,33 +1605,29 @@ export async function registerTransferEmployeeRoute(app: FastifyInstance) {
 
 ---
 
-# 15) Next exact batch to build
+# 15. Next exact batch to build
 
-Now the next correct files are:
+Wave 2 target scope is functionally complete.
 
-```text
-packages/core/src/erp/hr/core/services/terminate-employment.service.ts
-packages/core/src/erp/hr/core/services/rehire-employee.service.ts
-packages/core/src/erp/hr/core/queries/get-employee-profile.query.ts
-packages/core/src/erp/hr/core/queries/list-employees.query.ts
-apps/api/src/routes/erp/hr/terminate-employment.ts
-apps/api/src/routes/erp/hr/list-employees.ts
-apps/api/src/routes/erp/hr/get-employee-profile.ts
-```
-
-Then after that:
+Next implementation batch should focus on closure quality, not feature parity:
 
 ```text
-packages/db/src/schema/erp/hrm/hrm-recruitment.ts
-packages/db/src/schema/erp/hrm/hrm-onboarding.ts
-recruitment services
-onboarding services
+1. Add repository unit tests for Drizzle repository implementations
+2. Add integration tests for create/transfer/terminate/rehire lifecycle paths
+3. Add explicit invariant tests (assignment overlap + employment transition guards)
+4. Update Wave 2 evidence with test outputs and case mapping
 ```
 
-The reason is simple:
+Then continue with program-level closure items already tracked in Wave 1:
 
-**Phase 1 is not complete when you can hire.
-Phase 1 is complete when you can hire, move, terminate, rehire, and explain the employment timeline with evidence.**
+```text
+apps/web HR delivery
+seed data implementation
+full test closure
+final check:all sign-off
+```
 
-I can continue with the next drop-in batch:
-**terminate + rehire + employee profile queries + API routes**.
+The rule remains:
+
+**Phase 1 is not complete when commands exist.
+Phase 1 is complete when command behavior is proven with tests and evidence.**

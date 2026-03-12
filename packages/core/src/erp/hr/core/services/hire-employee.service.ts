@@ -3,6 +3,7 @@ import type { DbClient } from "@afenda/db";
 import {
   auditLog,
   hrmEmployeeProfiles,
+  hrmEmploymentContracts,
   hrmEmploymentRecords,
   hrmEmploymentStatusHistory,
   hrmPersons,
@@ -63,6 +64,10 @@ function buildEmployeeCode(): string {
 
 function buildEmploymentNumber(): string {
   return `EMR-${randomUUID().slice(0, 8).toUpperCase()}`;
+}
+
+function buildContractNumber(): string {
+  return `CTR-${randomUUID().slice(0, 8).toUpperCase()}`;
 }
 
 export async function hireEmployee(
@@ -168,6 +173,24 @@ export async function hireEmployee(
         throw new Error("Failed to insert work assignment");
       }
 
+      let contractId: string | undefined;
+      if (input.contract) {
+        const [contract] = await tx
+          .insert(hrmEmploymentContracts)
+          .values({
+            orgId,
+            employmentId: employment.id,
+            contractNumber: input.contract.contractNumber ?? buildContractNumber(),
+            contractType: input.contract.contractType,
+            contractStartDate: input.contract.contractStartDate,
+            contractEndDate: input.contract.contractEndDate,
+            documentFileId: input.contract.documentFileId,
+          })
+          .returning({ id: hrmEmploymentContracts.id });
+
+        contractId = contract?.id;
+      }
+
       await tx
         .update(hrmEmployeeProfiles)
         .set({
@@ -197,6 +220,7 @@ export async function hireEmployee(
           employeeId: employee.id,
           employmentId: employment.id,
           workAssignmentId: assignment.id,
+          contractId,
           personId: input.personId,
           employeeCode,
         },
@@ -211,6 +235,7 @@ export async function hireEmployee(
           employeeId: employee.id,
           employmentId: employment.id,
           workAssignmentId: assignment.id,
+          contractId,
           personId: input.personId,
           employeeCode,
         },
@@ -220,6 +245,7 @@ export async function hireEmployee(
         employeeId: employee.id,
         employmentId: employment.id,
         workAssignmentId: assignment.id,
+        contractId,
       };
     });
 

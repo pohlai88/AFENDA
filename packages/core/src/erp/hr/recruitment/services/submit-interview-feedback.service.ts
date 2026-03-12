@@ -29,6 +29,8 @@ export async function submitInterviewFeedback(
 
   try {
     const data = await db.transaction(async (tx) => {
+      const comments = input.feedbackText ?? input.comments;
+
       const [row] = await tx
         .insert(hrmInterviewFeedback)
         .values({
@@ -36,7 +38,7 @@ export async function submitInterviewFeedback(
           interviewId: input.interviewId,
           reviewerEmployeeId: input.reviewerEmployeeId,
           recommendation: input.recommendation,
-          comments: input.comments,
+          comments,
           submittedAt: input.submittedAt ? sql`${input.submittedAt}::date` : sql`now()::date`,
         })
         .returning({ id: hrmInterviewFeedback.id });
@@ -45,6 +47,11 @@ export async function submitInterviewFeedback(
         throw new Error("Failed to insert feedback");
       }
 
+      const payload = {
+        interviewFeedbackId: row.id,
+        interviewId: input.interviewId,
+      };
+
       await tx.insert(auditLog).values({
         orgId,
         actorPrincipalId: actorPrincipalId ?? null,
@@ -52,17 +59,17 @@ export async function submitInterviewFeedback(
         entityType: "hrm_interview_feedback",
         entityId: row.id,
         correlationId,
-        details: { feedbackId: row.id, interviewId: input.interviewId },
+        details: payload,
       });
       await tx.insert(outboxEvent).values({
         orgId,
         type: "HRM.INTERVIEW_FEEDBACK_SUBMITTED",
         version: "1",
         correlationId,
-        payload: { feedbackId: row.id, interviewId: input.interviewId },
+        payload,
       });
 
-      return { feedbackId: row.id };
+      return { ...payload, feedbackId: row.id };
     });
 
     return ok(data);

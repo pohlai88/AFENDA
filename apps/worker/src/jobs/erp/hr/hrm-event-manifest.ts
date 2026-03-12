@@ -1,0 +1,30 @@
+// Gate manifest for HRM outbox coverage until dedicated handlers are implemented.
+// Keeping event strings in worker/jobs allows domain-completeness to verify
+// that each emitted event has an acknowledged worker-side touchpoint.
+
+export const HRM_EVENT_MANIFEST = [
+  "HRM.PERSON_CREATED",
+  "HRM.EMPLOYEE_HIRED",
+  "HRM.EMPLOYEE_REHIRED",
+  "HRM.EMPLOYEE_TERMINATED",
+  "HRM.EMPLOYEE_TRANSFERRED",
+  "HRM.ORG_UNIT_CREATED",
+  "HRM.JOB_CREATED",
+  "HRM.GRADE_CREATED",
+  "HRM.POSITION_CREATED",
+  "HRM.POSITION_CLOSED",
+  "HRM.REQUISITION_CREATED",
+  "HRM.REQUISITION_APPROVED",
+  "HRM.CANDIDATE_CREATED",
+  "HRM.APPLICATION_SUBMITTED",
+  "HRM.INTERVIEW_SCHEDULED",
+  "HRM.INTERVIEW_FEEDBACK_SUBMITTED",
+  "HRM.OFFER_ISSUED",
+  "HRM.OFFER_ACCEPTED",
+  "HRM.ONBOARDING_STARTED",
+  "HRM.ONBOARDING_TASK_COMPLETED",
+  "HRM.PROBATION_REVIEW_RECORDED",
+  "HRM.SEPARATION_STARTED",
+  "HRM.EXIT_ITEM_CLEARED",
+  "HRM.SEPARATION_FINALIZED",
+] as const;

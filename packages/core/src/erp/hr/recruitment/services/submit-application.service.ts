@@ -31,13 +31,20 @@ export async function submitApplication(
   }
 
   const [requisition] = await db
-    .select({ id: hrmJobRequisitions.id })
+    .select({ id: hrmJobRequisitions.id, status: hrmJobRequisitions.status })
     .from(hrmJobRequisitions)
     .where(and(eq(hrmJobRequisitions.orgId, orgId), eq(hrmJobRequisitions.id, input.requisitionId)));
 
   if (!requisition) {
     return err(HRM_ERROR_CODES.REQUISITION_NOT_FOUND, "Requisition not found", {
       requisitionId: input.requisitionId,
+    });
+  }
+
+  if (requisition.status !== "approved") {
+    return err(HRM_ERROR_CODES.CONFLICT, "Requisition must be approved before application submission", {
+      requisitionId: input.requisitionId,
+      status: requisition.status,
     });
   }
 
@@ -67,10 +74,13 @@ export async function submitApplication(
           orgId,
           candidateId: input.candidateId,
           requisitionId: input.requisitionId,
-          applicationStage: input.applicationStage ?? "applied",
-          appliedAt: input.appliedAt ? sql`${input.appliedAt}::date` : sql`now()::date`,
+          applicationStage: input.stageCode ?? "applied",
+          appliedAt: input.applicationDate ? sql`${input.applicationDate}::date` : sql`now()::date`,
         })
-        .returning({ id: hrmCandidateApplications.id });
+        .returning({
+          id: hrmCandidateApplications.id,
+          applicationStage: hrmCandidateApplications.applicationStage,
+        });
 
       if (!row) {
         throw new Error("Failed to insert application");
@@ -87,6 +97,7 @@ export async function submitApplication(
           applicationId: row.id,
           candidateId: input.candidateId,
           requisitionId: input.requisitionId,
+          stageCode: row.applicationStage,
         },
       });
       await tx.insert(outboxEvent).values({
@@ -98,10 +109,16 @@ export async function submitApplication(
           applicationId: row.id,
           candidateId: input.candidateId,
           requisitionId: input.requisitionId,
+          stageCode: row.applicationStage,
         },
       });
 
-      return { applicationId: row.id };
+      return {
+        applicationId: row.id,
+        candidateId: input.candidateId,
+        requisitionId: input.requisitionId,
+        stageCode: row.applicationStage,
+      };
     });
 
     return ok(data);

@@ -4,8 +4,8 @@ import { z } from "zod";
 import { recordProbationReview } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
-const BodySchema = z.object({ employmentId: z.string().uuid(), reviewDate: z.string(), outcome: z.string().min(1).max(50), reviewerEmployeeId: z.string().uuid().optional(), comments: z.string().max(2000).optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ probationReviewId: z.string().uuid() }));
+const BodySchema = z.object({ employmentId: z.string().uuid(), reviewDueDate: z.string().optional(), reviewStatus: z.string().min(1).max(50).optional(), decisionCode: z.string().max(50).optional(), confirmedAt: z.string().optional(), reviewDate: z.string().optional(), outcome: z.string().min(1).max(50).optional(), reviewerEmployeeId: z.string().uuid().optional(), comments: z.string().max(2000).optional() });
+const ResponseSchema = makeSuccessSchema(z.object({ probationReviewId: z.string().uuid(), employmentId: z.string().uuid(), reviewStatus: z.string() }));
 
 export async function hrRecordProbationReviewRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

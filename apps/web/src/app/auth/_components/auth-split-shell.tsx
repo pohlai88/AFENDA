@@ -26,10 +26,10 @@ export function AuthSplitShell({
           className
         )}
       >
-        <div className="grid min-h-[calc(100dvh-3rem)] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-border shadow-2xl lg:grid-cols-[1.08fr_0.92fr] bg-modal dark:bg-modal">
+        <div className="grid min-h-[calc(100dvh-3rem)] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-border shadow-2xl lg:grid-cols-[1.08fr_0.92fr] bg-modal">
           <aside
             className={cn(
-              "flex min-w-0 flex-col justify-center overflow-hidden px-8 py-10 xl:px-12 xl:py-12 bg-surface-275 dark:bg-surface-275",
+              "flex min-w-0 flex-col justify-center overflow-hidden px-8 py-10 xl:px-12 xl:py-12 bg-surface-275",
               asideClassName
             )}
           >
@@ -38,7 +38,7 @@ export function AuthSplitShell({
 
           <main
             className={cn(
-              "flex min-w-0 flex-col justify-center border-l border-border-strong bg-modal dark:bg-modal px-8 py-10 xl:px-11 xl:py-12",
+              "flex min-w-0 flex-col justify-center border-l border-border-strong bg-modal px-8 py-10 xl:px-11 xl:py-12",
               contentClassName
             )}
           >

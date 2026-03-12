@@ -1,18 +1,126 @@
-Below is the **next drop-in batch** for AFENDA HRM Phase 1:
+Below is the **AFENDA HRM Phase 1 - Wave 3 implementation scaffold and closure tracker**.
 
-1. `terminate-employment.service.ts`
-2. `rehire-employee.service.ts`
-3. `get-employee-profile.query.ts`
-4. `list-employees.query.ts`
-5. `terminate-employment.ts`
-6. `get-employee-profile.ts`
-7. `list-employees.ts`
+Wave 3 focus:
 
-This closes the **hire → move → terminate → rehire → explain truth** loop.
+1. terminate-employment + rehire-employee command path
+2. employee profile/list read-model path
+3. API route completion for lifecycle and profile/list endpoints
+4. route registration and handoff readiness
+
+This wave closes the **hire -> move -> terminate -> rehire -> explain truth** loop.
+
+## Wave Status: DONE
 
 ---
 
-# 1) `packages/core/src/erp/hr/core/dto/terminate-employment.dto.ts`
+# Wave Metadata
+
+- Wave ID: `Wave 3`
+- Scope: `Employment lifecycle closure + profile/list read paths`
+- Document role: `Scaffold + closure tracker`
+- Last updated: `2026-03-12`
+
+---
+
+# Remaining (Follow-up)
+
+Use this as the active closure tracker for Wave 3.
+
+Completion rule: a remaining item is only complete when implementation + tests + evidence are all present.
+
+## W3-R1. Lifecycle service and route completion
+
+Status: `DONE`
+
+Deliverables:
+
+- Implement terminate + rehire services and DTOs.
+- Implement terminate/list/profile API routes and ensure registration path exists.
+
+Evidence:
+
+- Core files under `packages/core/src/erp/hr/core/services/` and `packages/core/src/erp/hr/core/dto/`
+- Route files under `apps/api/src/routes/erp/hr/`
+- Registration snippet in `apps/api/src/index.ts`
+
+## W3-R2. Read-model hardening
+
+Status: `DONE`
+
+Deliverables:
+
+- Ensure employee profile and list queries are production-grade read models.
+- Include joins/enrichment/pagination/search details listed in this doc.
+
+Evidence:
+
+- `packages/core/src/erp/hr/core/queries/get-employee-profile.query.ts` includes department/position and manager enrichment (`departmentName`, `positionTitle`, `managerEmployeeCode`, `managerDisplayName`).
+- `packages/core/src/erp/hr/core/queries/list-employees.query.ts` includes department/position and manager enrichment plus personal-email search.
+- `apps/api/src/routes/erp/hr/get-employee-profile.ts` and `apps/api/src/routes/erp/hr/list-employees.ts` response schemas include the added display fields.
+- `packages/core/src/erp/hr/core/__vitest_test__/get-employee-profile.query.test.ts` validates read-model enrichment behavior.
+
+Done when:
+
+- Query behavior is validated with targeted tests and evidence is linked.
+
+## W3-R3. Validation and test closure
+
+Status: `DONE`
+
+Deliverables:
+
+- Add tests for lifecycle transitions and read-model behavior.
+- Record test outputs and invariant coverage mapping.
+
+Evidence:
+
+- Test files:
+  - `packages/core/src/erp/hr/core/__vitest_test__/rehire-employee.service.test.ts`
+  - `packages/core/src/erp/hr/core/__vitest_test__/get-employee-profile.query.test.ts`
+- Command outputs (2026-03-11):
+  - `pnpm --filter @afenda/core typecheck` passed.
+  - `pnpm --filter @afenda/core test -- src/erp/hr/core/__vitest_test__/rehire-employee.service.test.ts src/erp/hr/core/__vitest_test__/get-employee-profile.query.test.ts` passed.
+
+Coverage mapping:
+
+- Lifecycle transition guards: rehire flow blocks missing employee and active-employment conflict.
+- Lifecycle success path: rehire flow returns expected employment/assignment/contract outputs.
+- Read-model behavior: employee profile query returns manager display enrichment fields.
+
+---
+
+# 0. Status Update (2026-03-12)
+
+## Current delivery status
+
+- Wave 3 feature scaffolding is present for terminate/rehire/profile/list flows.
+- Wave 3 read-model hardening is implemented for profile/list enrichment and search behavior.
+- Wave 3 targeted test closure is complete for the implemented lifecycle and read-model scope.
+
+## Evidence snapshot
+
+### Functional implementation evidence
+
+- DTOs for terminate/rehire are present in core DTO paths.
+- Services for terminate/rehire are present in core service paths.
+- API routes for terminate/get-profile/list-employees are present in route paths.
+- Employee profile/list read models expose department/position/manager display fields and list search includes personal email.
+
+### Build evidence
+
+- `pnpm --filter @afenda/core typecheck` completed successfully after read-model updates (2026-03-11).
+- `pnpm --filter @afenda/api typecheck` completed successfully after route schema updates (2026-03-11).
+- `pnpm --filter @afenda/core test -- src/erp/hr/core/__vitest_test__/rehire-employee.service.test.ts src/erp/hr/core/__vitest_test__/get-employee-profile.query.test.ts` passed (4 tests, 2 files).
+- `pnpm --filter @afenda/api typecheck` completed successfully (2026-03-12).
+- `pnpm --filter @afenda/core test -- src/erp/hr/core/__vitest_test__/rehire-employee.service.test.ts src/erp/hr/core/__vitest_test__/get-employee-profile.query.test.ts` passed again (4 tests, 2 files) on 2026-03-12.
+
+### Known open items
+
+- Program-level closure still depends on Wave 1 remaining work (Web HR delivery, seeders, and full suite test closure).
+
+---
+
+# 1. `packages/core/src/erp/hr/core/dto/terminate-employment.dto.ts`
 
 ```ts
 export interface TerminateEmploymentInput {
@@ -32,7 +140,7 @@ export interface TerminateEmploymentOutput {
 
 ---
 
-# 2) `packages/core/src/erp/hr/core/dto/rehire-employee.dto.ts`
+# 2. `packages/core/src/erp/hr/core/dto/rehire-employee.dto.ts`
 
 ```ts
 export interface RehireEmployeeInput {
@@ -74,7 +182,7 @@ export interface RehireEmployeeOutput {
 
 ---
 
-# 3) `packages/core/src/erp/hr/core/queries/get-employee-profile.query.ts`
+# 3. `packages/core/src/erp/hr/core/queries/get-employee-profile.query.ts`
 
 ```ts
 export interface EmployeeProfileView {
@@ -106,7 +214,7 @@ export interface EmployeeProfileView {
 
 export interface GetEmployeeProfileQuery {
   execute(args: {
-    tenantId: string;
+    orgId: string;
     employeeId: string;
   }): Promise<EmployeeProfileView | null>;
 }
@@ -114,7 +222,7 @@ export interface GetEmployeeProfileQuery {
 
 ---
 
-# 4) `packages/core/src/erp/hr/core/queries/list-employees.query.ts`
+# 4. `packages/core/src/erp/hr/core/queries/list-employees.query.ts`
 
 ```ts
 export interface EmployeeListItemView {
@@ -132,7 +240,7 @@ export interface EmployeeListItemView {
 }
 
 export interface ListEmployeesQueryInput {
-  tenantId: string;
+  orgId: string;
   search?: string;
   employmentStatus?: string;
   workerType?: string;
@@ -154,7 +262,7 @@ export interface ListEmployeesQuery {
 
 ---
 
-# 5) `packages/core/src/erp/hr/core/services/terminate-employment.service.ts`
+# 5. `packages/core/src/erp/hr/core/services/terminate-employment.service.ts`
 
 ```ts
 import type { HrmCommandContext } from "../../shared/types/hrm-command-context";
@@ -177,7 +285,7 @@ export interface TerminateEmploymentDeps {
   separationRepository?: {
     createCase: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       employmentId: string;
       separationType: string;
@@ -189,7 +297,7 @@ export interface TerminateEmploymentDeps {
   auditService: {
     record: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       action: string;
       aggregateType: string;
@@ -201,7 +309,7 @@ export interface TerminateEmploymentDeps {
   outboxService: {
     enqueue: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       eventName: string;
       aggregateType: string;
       aggregateId: string;
@@ -225,7 +333,7 @@ export class TerminateEmploymentService {
     }
 
     const employment = await this.deps.employmentRepository.findById({
-      tenantId: ctx.tenantId,
+      orgId: ctx.orgId,
       employmentId: input.employmentId,
     });
 
@@ -250,7 +358,7 @@ export class TerminateEmploymentService {
 
     const currentAssignment =
       await this.deps.workAssignmentRepository.findCurrentByEmploymentId({
-        tenantId: ctx.tenantId,
+        orgId: ctx.orgId,
         employmentId: input.employmentId,
       });
 
@@ -258,7 +366,7 @@ export class TerminateEmploymentService {
       return await this.deps.db.transaction(async (tx) => {
         await this.deps.employmentRepository.updateStatus({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           employmentId: input.employmentId,
           employmentStatus: "terminated",
           terminationDate: input.terminationDate,
@@ -268,7 +376,7 @@ export class TerminateEmploymentService {
 
         await this.deps.employmentRepository.insertStatusHistory({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           employmentId: input.employmentId,
           oldStatus: employment.employmentStatus,
@@ -281,7 +389,7 @@ export class TerminateEmploymentService {
         if (currentAssignment) {
           await this.deps.workAssignmentRepository.closeCurrentAssignment({
             tx,
-            tenantId: ctx.tenantId,
+            orgId: ctx.orgId,
             employmentId: input.employmentId,
             effectiveTo: input.terminationDate,
             actorUserId: ctx.actorUserId,
@@ -292,7 +400,7 @@ export class TerminateEmploymentService {
         if (input.startSeparationCase && this.deps.separationRepository) {
           const separationCase = await this.deps.separationRepository.createCase({
             tx,
-            tenantId: ctx.tenantId,
+            orgId: ctx.orgId,
             actorUserId: ctx.actorUserId,
             employmentId: input.employmentId,
             separationType: "termination",
@@ -312,7 +420,7 @@ export class TerminateEmploymentService {
 
         await this.deps.auditService.record({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           action: HRM_EVENTS.EMPLOYEE_TERMINATED,
           aggregateType: "hrm_employment",
@@ -326,7 +434,7 @@ export class TerminateEmploymentService {
 
         await this.deps.outboxService.enqueue({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           eventName: HRM_EVENTS.EMPLOYEE_TERMINATED,
           aggregateType: "hrm_employment",
           aggregateId: input.employmentId,
@@ -350,7 +458,7 @@ export class TerminateEmploymentService {
 
 ---
 
-# 6) `packages/core/src/erp/hr/core/services/rehire-employee.service.ts`
+# 6. `packages/core/src/erp/hr/core/services/rehire-employee.service.ts`
 
 ```ts
 import { randomUUID } from "node:crypto";
@@ -376,7 +484,7 @@ export interface RehireEmployeeDeps {
   contractRepository?: {
     insert: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       employmentId: string;
       contractNumber: string;
@@ -389,7 +497,7 @@ export interface RehireEmployeeDeps {
   auditService: {
     record: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       actorUserId: string;
       action: string;
       aggregateType: string;
@@ -401,7 +509,7 @@ export interface RehireEmployeeDeps {
   outboxService: {
     enqueue: (args: {
       tx?: unknown;
-      tenantId: string;
+      orgId: string;
       eventName: string;
       aggregateType: string;
       aggregateId: string;
@@ -409,8 +517,8 @@ export interface RehireEmployeeDeps {
     }) => Promise<void>;
   };
   codeGenerator: {
-    nextEmploymentNumber: (tenantId: string) => Promise<string>;
-    nextContractNumber?: (tenantId: string) => Promise<string>;
+    nextEmploymentNumber: (orgId: string) => Promise<string>;
+    nextContractNumber?: (orgId: string) => Promise<string>;
   };
 }
 
@@ -429,7 +537,7 @@ export class RehireEmployeeService {
     }
 
     const employee = await this.deps.employeeProfileRepository.findById({
-      tenantId: ctx.tenantId,
+      orgId: ctx.orgId,
       employeeId: input.employeeId,
     });
 
@@ -441,7 +549,7 @@ export class RehireEmployeeService {
 
     const hasActiveEmployment =
       await this.deps.employmentRepository.existsActiveEmploymentForEmployee({
-        tenantId: ctx.tenantId,
+        orgId: ctx.orgId,
         employeeId: input.employeeId,
       });
 
@@ -456,11 +564,11 @@ export class RehireEmployeeService {
     try {
       return await this.deps.db.transaction(async (tx) => {
         const employmentNumber =
-          await this.deps.codeGenerator.nextEmploymentNumber(ctx.tenantId);
+          await this.deps.codeGenerator.nextEmploymentNumber(ctx.orgId);
 
         const employment = await this.deps.employmentRepository.insert({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           employeeId: input.employeeId,
           legalEntityId: input.legalEntityId,
@@ -473,14 +581,14 @@ export class RehireEmployeeService {
 
         await this.deps.employeeProfileRepository.updatePrimaryEmploymentId({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           employeeId: input.employeeId,
           primaryEmploymentId: employment.id,
         });
 
         await this.deps.employmentRepository.insertStatusHistory({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           employmentId: employment.id,
           oldStatus: null,
@@ -492,7 +600,7 @@ export class RehireEmployeeService {
 
         const workAssignment = await this.deps.workAssignmentRepository.insert({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           employmentId: employment.id,
           legalEntityId: input.legalEntityId,
@@ -515,12 +623,12 @@ export class RehireEmployeeService {
         if (input.contract && this.deps.contractRepository) {
           const contractNumber =
             input.contract.contractNumber ??
-            (await this.deps.codeGenerator.nextContractNumber?.(ctx.tenantId)) ??
+            (await this.deps.codeGenerator.nextContractNumber?.(ctx.orgId)) ??
             `CTR-${randomUUID()}`;
 
           const contract = await this.deps.contractRepository.insert({
             tx,
-            tenantId: ctx.tenantId,
+            orgId: ctx.orgId,
             actorUserId: ctx.actorUserId,
             employmentId: employment.id,
             contractNumber,
@@ -542,7 +650,7 @@ export class RehireEmployeeService {
 
         await this.deps.auditService.record({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           actorUserId: ctx.actorUserId,
           action: HRM_EVENTS.EMPLOYEE_REHIRED,
           aggregateType: "hrm_employment",
@@ -556,7 +664,7 @@ export class RehireEmployeeService {
 
         await this.deps.outboxService.enqueue({
           tx,
-          tenantId: ctx.tenantId,
+          orgId: ctx.orgId,
           eventName: HRM_EVENTS.EMPLOYEE_REHIRED,
           aggregateType: "hrm_employment",
           aggregateId: employment.id,
@@ -581,292 +689,307 @@ export class RehireEmployeeService {
 
 ---
 
-# 7) `packages/core/src/erp/hr/queries/drizzle-get-employee-profile.query.ts`
+# 7. `packages/core/src/erp/hr/core/queries/get-employee-profile.query.ts`
 
 ```ts
-import { and, eq } from "drizzle-orm";
+import type { DbClient } from "@afenda/db";
 import {
   hrmEmployeeProfiles,
   hrmEmploymentRecords,
   hrmPersons,
   hrmWorkAssignments,
-} from "@afenda/db/schema/hrm";
+} from "@afenda/db";
+import { and, eq } from "drizzle-orm";
 import type {
   EmployeeProfileView,
-  GetEmployeeProfileQuery,
-} from "@afenda/domain/hrm/core/queries/get-employee-profile.query";
+} from "./get-employee-profile.query";
 
-type DbLike = {
-  query: {
-    hrmEmployeeProfiles: {
-      findFirst: (args: unknown) => Promise<any>;
-    };
-  };
-};
+export async function getEmployeeProfile(
+  db: DbClient,
+  orgId: string,
+  employeeId: string,
+): Promise<EmployeeProfileView | null> {
+  const rows = await db
+      .select({
+        employeeId: hrmEmployeeProfiles.id,
+        employeeCode: hrmEmployeeProfiles.employeeCode,
+        personId: hrmEmployeeProfiles.personId,
+        displayName: hrmPersons.displayName,
+        legalName: hrmPersons.legalName,
+        personalEmail: hrmPersons.personalEmail,
+        mobilePhone: hrmPersons.mobilePhone,
+        workerType: hrmEmployeeProfiles.workerType,
+        currentStatus: hrmEmployeeProfiles.currentStatus,
+        employmentId: hrmEmploymentRecords.id,
+        employmentNumber: hrmEmploymentRecords.employmentNumber,
+        employmentStatus: hrmEmploymentRecords.employmentStatus,
+        legalEntityId: hrmEmploymentRecords.legalEntityId,
+        hireDate: hrmEmploymentRecords.hireDate,
+        startDate: hrmEmploymentRecords.startDate,
+        terminationDate: hrmEmploymentRecords.terminationDate,
+        workAssignmentId: hrmWorkAssignments.id,
+        departmentId: hrmWorkAssignments.departmentId,
+        positionId: hrmWorkAssignments.positionId,
+        jobId: hrmWorkAssignments.jobId,
+        gradeId: hrmWorkAssignments.gradeId,
+        managerEmployeeId: hrmWorkAssignments.managerEmployeeId,
+      })
+      .from(hrmEmployeeProfiles)
+      .innerJoin(hrmPersons, and(eq(hrmPersons.orgId, hrmEmployeeProfiles.orgId), eq(hrmPersons.id, hrmEmployeeProfiles.personId)))
+      .leftJoin(
+        hrmEmploymentRecords,
+        and(
+          eq(hrmEmploymentRecords.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmEmploymentRecords.id, hrmEmployeeProfiles.primaryEmploymentId),
+        ),
+      )
+      .leftJoin(
+        hrmWorkAssignments,
+        and(
+          eq(hrmWorkAssignments.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmWorkAssignments.employmentId, hrmEmploymentRecords.id),
+          eq(hrmWorkAssignments.isCurrent, true),
+        ),
+      )
+      .where(and(eq(hrmEmployeeProfiles.orgId, orgId), eq(hrmEmployeeProfiles.id, employeeId)));
 
-export class DrizzleGetEmployeeProfileQuery implements GetEmployeeProfileQuery {
-  constructor(private readonly db: DbLike) {}
-
-  async execute(args: {
-    tenantId: string;
-    employeeId: string;
-  }): Promise<EmployeeProfileView | null> {
-    const row = await this.db.query.hrmEmployeeProfiles.findFirst({
-      where: and(
-        eq(hrmEmployeeProfiles.tenantId, args.tenantId),
-        eq(hrmEmployeeProfiles.id, args.employeeId),
-      ),
-      with: {
-        person: true,
-      },
-    });
-
-    if (!row) return null;
-
-    const person = row.person;
-
-    return {
-      employeeId: row.id,
-      employeeCode: row.employeeCode,
-      personId: row.personId,
-      displayName: person?.displayName ?? person?.legalName ?? row.employeeCode,
-      legalName: person?.legalName ?? "",
-      personalEmail: person?.personalEmail ?? null,
-      mobilePhone: person?.mobilePhone ?? null,
-      workerType: row.workerType,
-      currentStatus: row.currentStatus,
-
-      employmentId: row.primaryEmploymentId ?? null,
-      employmentNumber: null,
-      employmentStatus: null,
-      legalEntityId: row.primaryLegalEntityId ?? null,
-      hireDate: null,
-      startDate: null,
-      terminationDate: null,
-
-      workAssignmentId: null,
-      departmentId: null,
-      positionId: null,
-      jobId: null,
-      gradeId: null,
-      managerEmployeeId: null,
-    };
+  const row = rows[0];
+  if (!row) {
+    return null;
   }
+
+  return {
+    employeeId: row.employeeId,
+    employeeCode: row.employeeCode,
+    personId: row.personId,
+    displayName: row.displayName ?? row.legalName,
+    legalName: row.legalName,
+    personalEmail: row.personalEmail,
+    mobilePhone: row.mobilePhone,
+    workerType: row.workerType,
+    currentStatus: row.currentStatus,
+    employmentId: row.employmentId ?? null,
+    employmentNumber: row.employmentNumber ?? null,
+    employmentStatus: row.employmentStatus ?? null,
+    legalEntityId: row.legalEntityId ?? null,
+    hireDate: row.hireDate ?? null,
+    startDate: row.startDate ?? null,
+    terminationDate: row.terminationDate ?? null,
+    workAssignmentId: row.workAssignmentId ?? null,
+    departmentId: row.departmentId ?? null,
+    positionId: row.positionId ?? null,
+    jobId: row.jobId ?? null,
+    gradeId: row.gradeId ?? null,
+    managerEmployeeId: row.managerEmployeeId ?? null,
+  };
 }
 ```
 
 ---
 
-# 8) `packages/core/src/erp/hr/queries/drizzle-list-employees.query.ts`
+# 8. `packages/core/src/erp/hr/core/queries/list-employees.query.ts`
 
 ```ts
-import { and, eq, ilike } from "drizzle-orm";
-import { hrmEmployeeProfiles } from "@afenda/db/schema/hrm";
+import type { DbClient } from "@afenda/db";
+import {
+  hrmEmployeeProfiles,
+  hrmEmploymentRecords,
+  hrmPersons,
+  hrmWorkAssignments,
+} from "@afenda/db";
+import { and, eq, ilike, or, sql } from "drizzle-orm";
 import type {
-  ListEmployeesQuery,
+  EmployeeListItemView,
   ListEmployeesQueryInput,
   ListEmployeesQueryResult,
-} from "@afenda/domain/hrm/core/queries/list-employees.query";
+} from "./list-employees.query";
 
-type DbLike = {
-  query: {
-    hrmEmployeeProfiles: {
-      findMany: (args: unknown) => Promise<any[]>;
-    };
-  };
-};
+export async function listEmployees(
+  db: DbClient,
+  input: ListEmployeesQueryInput,
+): Promise<ListEmployeesQueryResult> {
+  const limit = Math.min(input.limit ?? 25, 100);
+  const offset = Math.max(input.offset ?? 0, 0);
 
-export class DrizzleListEmployeesQuery implements ListEmployeesQuery {
-  constructor(private readonly db: DbLike) {}
+  const filters = [eq(hrmEmployeeProfiles.orgId, input.orgId)];
 
-  async execute(input: ListEmployeesQueryInput): Promise<ListEmployeesQueryResult> {
-    const limit = Math.min(input.limit ?? 25, 100);
-    const offset = Math.max(input.offset ?? 0, 0);
+  if (input.workerType) {
+    filters.push(eq(hrmEmployeeProfiles.workerType, input.workerType as never));
+  }
 
-    const rows = await this.db.query.hrmEmployeeProfiles.findMany({
-      where: and(
-        eq(hrmEmployeeProfiles.tenantId, input.tenantId),
-        input.workerType ? eq(hrmEmployeeProfiles.workerType, input.workerType as any) : undefined,
-        input.search ? ilike(hrmEmployeeProfiles.employeeCode, `%${input.search}%`) : undefined,
-      ),
-      with: {
-        person: true,
-      },
-      limit,
-      offset,
-    });
+  if (input.search) {
+    filters.push(
+      or(
+        ilike(hrmEmployeeProfiles.employeeCode, `%${input.search}%`),
+        ilike(hrmPersons.displayName, `%${input.search}%`),
+        ilike(hrmPersons.legalName, `%${input.search}%`),
+      )!,
+    );
+  }
 
-    const items = rows.map((row) => ({
-      employeeId: row.id,
+  if (input.employmentStatus) {
+    filters.push(eq(hrmEmploymentRecords.employmentStatus, input.employmentStatus as never));
+  }
+
+  const items = await db
+      .select({
+        employeeId: hrmEmployeeProfiles.id,
+        employeeCode: hrmEmployeeProfiles.employeeCode,
+        displayName: hrmPersons.displayName,
+        legalName: hrmPersons.legalName,
+        workerType: hrmEmployeeProfiles.workerType,
+        currentStatus: hrmEmployeeProfiles.currentStatus,
+        employmentId: hrmEmploymentRecords.id,
+        employmentStatus: hrmEmploymentRecords.employmentStatus,
+        legalEntityId: hrmEmploymentRecords.legalEntityId,
+        departmentId: hrmWorkAssignments.departmentId,
+        positionId: hrmWorkAssignments.positionId,
+        managerEmployeeId: hrmWorkAssignments.managerEmployeeId,
+      })
+      .from(hrmEmployeeProfiles)
+      .innerJoin(hrmPersons, and(eq(hrmPersons.orgId, hrmEmployeeProfiles.orgId), eq(hrmPersons.id, hrmEmployeeProfiles.personId)))
+      .leftJoin(
+        hrmEmploymentRecords,
+        and(
+          eq(hrmEmploymentRecords.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmEmploymentRecords.id, hrmEmployeeProfiles.primaryEmploymentId),
+        ),
+      )
+      .leftJoin(
+        hrmWorkAssignments,
+        and(
+          eq(hrmWorkAssignments.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmWorkAssignments.employmentId, hrmEmploymentRecords.id),
+          eq(hrmWorkAssignments.isCurrent, true),
+        ),
+      )
+      .where(and(...filters))
+      .limit(limit)
+      .offset(offset);
+
+  const countRows = await db
+      .select({ total: sql<number>`count(*)` })
+      .from(hrmEmployeeProfiles)
+      .innerJoin(hrmPersons, and(eq(hrmPersons.orgId, hrmEmployeeProfiles.orgId), eq(hrmPersons.id, hrmEmployeeProfiles.personId)))
+      .leftJoin(
+        hrmEmploymentRecords,
+        and(
+          eq(hrmEmploymentRecords.orgId, hrmEmployeeProfiles.orgId),
+          eq(hrmEmploymentRecords.id, hrmEmployeeProfiles.primaryEmploymentId),
+        ),
+      )
+      .where(and(...filters));
+
+  return {
+    items: items.map((row): EmployeeListItemView => ({
+      employeeId: row.employeeId,
       employeeCode: row.employeeCode,
-      displayName:
-        row.person?.displayName ?? row.person?.legalName ?? row.employeeCode,
+      displayName: row.displayName ?? row.legalName,
       workerType: row.workerType,
       currentStatus: row.currentStatus,
-      employmentId: row.primaryEmploymentId ?? null,
-      employmentStatus: input.employmentStatus ?? null,
-      legalEntityId: row.primaryLegalEntityId ?? null,
-      departmentId: null,
-      positionId: null,
-      managerEmployeeId: null,
-    }));
-
-    return {
-      items,
-      total: items.length,
-      limit,
-      offset,
-    };
-  }
+      employmentId: row.employmentId ?? null,
+      employmentStatus: row.employmentStatus ?? null,
+      legalEntityId: row.legalEntityId ?? null,
+      departmentId: row.departmentId ?? null,
+      positionId: row.positionId ?? null,
+      managerEmployeeId: row.managerEmployeeId ?? null,
+    })),
+    total: Number(countRows[0]?.total ?? 0),
+    limit,
+    offset,
+  };
 }
 ```
 
 ---
 
-# 9) `apps/api/src/routes/erp/hr/terminate-employment.ts`
+# 9. `apps/api/src/routes/erp/hr/terminate-employment.ts`
 
 ```ts
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { terminateEmployment } from "@afenda/core";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireAuth,
+  requireOrg,
+} from "../../../helpers/responses.js";
 
-const terminateEmploymentBodySchema = z.object({
+const TerminateEmploymentBodySchema = z.object({
   employmentId: z.string().uuid(),
   terminationDate: z.string(),
   terminationReasonCode: z.string().min(1).max(50),
   comment: z.string().max(1000).optional(),
-  startSeparationCase: z.boolean().optional(),
 });
 
-type TerminateEmploymentBody = z.infer<typeof terminateEmploymentBodySchema>;
+const TerminateEmploymentResponseSchema = makeSuccessSchema(
+  z.object({
+    employmentId: z.string().uuid(),
+    previousStatus: z.string(),
+    currentStatus: z.string(),
+  }),
+);
 
-export async function registerTerminateEmploymentRoute(app: FastifyInstance) {
-  app.post(
-    "/v1/hrm/employments/terminate",
+export async function hrTerminateEmploymentRoutes(app: FastifyInstance) {
+  const typed = app.withTypeProvider<ZodTypeProvider>();
+
+  typed.post(
+    "/hrm/employments/terminate",
     {
+      config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
+        description: "Terminate employment (phase 1 scaffold route).",
         tags: ["HRM", "Core HR"],
-        summary: "Terminate employment",
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: TerminateEmploymentBodySchema,
+        response: {
+          200: TerminateEmploymentResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          500: ApiErrorResponseSchema,
+        },
       },
     },
-    async (
-      request: FastifyRequest<{ Body: TerminateEmploymentBody }>,
-      reply: FastifyReply,
-    ) => {
-      const parsed = terminateEmploymentBodySchema.safeParse(request.body);
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
 
-      if (!parsed.success) {
-        return reply.status(400).send({
-          ok: false,
-          error: {
-            code: "HRM_INVALID_INPUT",
-            message: "Invalid request body",
-            meta: { issues: parsed.error.flatten() },
-          },
-        });
-      }
-
-      const tenantId = request.headers["x-tenant-id"];
-      const actorUserId = request.headers["x-actor-user-id"];
-      const idempotencyKey = request.headers["idempotency-key"];
-
-      if (
-        typeof tenantId !== "string" ||
-        typeof actorUserId !== "string" ||
-        typeof idempotencyKey !== "string"
-      ) {
-        return reply.status(401).send({
-          ok: false,
-          error: {
-            code: "HRM_UNAUTHORIZED",
-            message: "Missing tenant/auth/idempotency context",
-          },
-        });
-      }
-
-      const service = app.di.resolve("hrm.core.terminateEmploymentService");
-
-      const result = await service.execute(
-        {
-          tenantId,
-          actorUserId,
-          idempotencyKey,
-          correlationId:
-            typeof request.headers["x-correlation-id"] === "string"
-              ? request.headers["x-correlation-id"]
-              : null,
-        },
-        parsed.data,
+      const result = await terminateEmployment(
+        app.db,
+        orgId,
+        auth.principalId,
+        req.correlationId,
+        req.body,
       );
 
       if (!result.ok) {
         const status =
-          result.error.code === "HRM_INVALID_INPUT"
-            ? 400
-            : result.error.code === "HRM_CONFLICT"
+          result.error.code === "HRM_EMPLOYMENT_NOT_FOUND"
+            ? 404
+            : result.error.code === "HRM_INVALID_EMPLOYMENT_STATE"
               ? 409
-              : 500;
+              : 400;
 
-        return reply.status(status).send(result);
-      }
-
-      return reply.status(200).send(result);
-    },
-  );
-}
-```
-
----
-
-# 10) `apps/api/src/routes/erp/hr/get-employee-profile.ts`
-
-```ts
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-
-export async function registerGetEmployeeProfileRoute(app: FastifyInstance) {
-  app.get(
-    "/v1/hrm/employees/:employeeId",
-    {
-      schema: {
-        tags: ["HRM", "Core HR"],
-        summary: "Get employee profile",
-      },
-    },
-    async (
-      request: FastifyRequest<{ Params: { employeeId: string } }>,
-      reply: FastifyReply,
-    ) => {
-      const tenantId = request.headers["x-tenant-id"];
-
-      if (typeof tenantId !== "string") {
-        return reply.status(401).send({
-          ok: false,
+        return reply.status(status).send({
           error: {
-            code: "HRM_UNAUTHORIZED",
-            message: "Missing tenant context",
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
           },
-        });
-      }
-
-      const query = app.di.resolve("hrm.core.getEmployeeProfileQuery");
-
-      const result = await query.execute({
-        tenantId,
-        employeeId: request.params.employeeId,
-      });
-
-      if (!result) {
-        return reply.status(404).send({
-          ok: false,
-          error: {
-            code: "HRM_NOT_FOUND",
-            message: "Employee not found",
-          },
+          correlationId: req.correlationId,
         });
       }
 
       return reply.status(200).send({
-        ok: true,
-        data: result,
+        data: result.data,
+        correlationId: req.correlationId,
       });
     },
   );
@@ -875,13 +998,116 @@ export async function registerGetEmployeeProfileRoute(app: FastifyInstance) {
 
 ---
 
-# 11) `apps/api/src/routes/erp/hr/list-employees.ts`
+# 10. `apps/api/src/routes/erp/hr/get-employee-profile.ts`
 
 ```ts
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { getEmployeeProfile } from "@afenda/core";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireAuth,
+  requireOrg,
+} from "../../../helpers/responses.js";
 
-const listEmployeesQuerySchema = z.object({
+const EmployeeProfileParamsSchema = z.object({
+  employeeId: z.string().uuid(),
+});
+
+const EmployeeProfileResponseSchema = makeSuccessSchema(
+  z.object({
+    employeeId: z.string().uuid(),
+    employeeCode: z.string(),
+    personId: z.string().uuid(),
+    displayName: z.string(),
+    legalName: z.string(),
+    personalEmail: z.string().nullable(),
+    mobilePhone: z.string().nullable(),
+    currentStatus: z.string(),
+    workerType: z.string(),
+    employmentId: z.string().uuid().nullable(),
+    employmentNumber: z.string().nullable(),
+    employmentStatus: z.string().nullable(),
+    legalEntityId: z.string().uuid().nullable(),
+    hireDate: z.string().nullable(),
+    startDate: z.string().nullable(),
+    terminationDate: z.string().nullable(),
+    workAssignmentId: z.string().uuid().nullable(),
+    departmentId: z.string().uuid().nullable(),
+    positionId: z.string().uuid().nullable(),
+    jobId: z.string().uuid().nullable(),
+    gradeId: z.string().uuid().nullable(),
+    managerEmployeeId: z.string().uuid().nullable(),
+  }),
+);
+
+export async function hrGetEmployeeProfileRoutes(app: FastifyInstance) {
+  const typed = app.withTypeProvider<ZodTypeProvider>();
+
+  typed.get(
+    "/hrm/employees/:employeeId",
+    {
+      schema: {
+        description: "Get employee profile (phase 1 scaffold route).",
+        tags: ["HRM", "Core HR"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        params: EmployeeProfileParamsSchema,
+        response: {
+          200: EmployeeProfileResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          500: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const profile = await getEmployeeProfile(app.db, orgId, req.params.employeeId);
+
+      if (!profile) {
+        return reply.status(404).send({
+          error: {
+            code: "HRM_EMPLOYEE_NOT_FOUND",
+            message: "Employee profile not found",
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.status(200).send({
+        data: profile,
+        correlationId: req.correlationId,
+      });
+    },
+  );
+}
+```
+
+---
+
+# 11. `apps/api/src/routes/erp/hr/list-employees.ts`
+
+```ts
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
+import { listEmployees } from "@afenda/core";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireAuth,
+  requireOrg,
+} from "../../../helpers/responses.js";
+
+const ListEmployeesQuerySchema = z.object({
   search: z.string().optional(),
   employmentStatus: z.string().optional(),
   workerType: z.string().optional(),
@@ -889,55 +1115,63 @@ const listEmployeesQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).optional(),
 });
 
-type ListEmployeesQuerystring = z.infer<typeof listEmployeesQuerySchema>;
+const ListEmployeesResponseSchema = makeSuccessSchema(
+  z.object({
+    items: z.array(
+      z.object({
+        employeeId: z.string().uuid(),
+        employeeCode: z.string(),
+        displayName: z.string(),
+        workerType: z.string(),
+        currentStatus: z.string(),
+        employmentId: z.string().uuid().nullable(),
+        employmentStatus: z.string().nullable(),
+        legalEntityId: z.string().uuid().nullable(),
+        departmentId: z.string().uuid().nullable(),
+        positionId: z.string().uuid().nullable(),
+        managerEmployeeId: z.string().uuid().nullable(),
+      }),
+    ),
+    total: z.number().int(),
+    limit: z.number().int(),
+    offset: z.number().int(),
+  }),
+);
 
-export async function registerListEmployeesRoute(app: FastifyInstance) {
-  app.get(
-    "/v1/hrm/employees",
+export async function hrListEmployeesRoutes(app: FastifyInstance) {
+  const typed = app.withTypeProvider<ZodTypeProvider>();
+
+  typed.get(
+    "/hrm/employees",
     {
       schema: {
+        description: "List employees (phase 1 scaffold route).",
         tags: ["HRM", "Core HR"],
-        summary: "List employees",
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: ListEmployeesQuerySchema,
+        response: {
+          200: ListEmployeesResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          403: ApiErrorResponseSchema,
+          500: ApiErrorResponseSchema,
+        },
       },
     },
-    async (
-      request: FastifyRequest<{ Querystring: ListEmployeesQuerystring }>,
-      reply: FastifyReply,
-    ) => {
-      const parsed = listEmployeesQuerySchema.safeParse(request.query);
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
 
-      if (!parsed.success) {
-        return reply.status(400).send({
-          ok: false,
-          error: {
-            code: "HRM_INVALID_INPUT",
-            message: "Invalid querystring",
-            meta: { issues: parsed.error.flatten() },
-          },
-        });
-      }
-
-      const tenantId = request.headers["x-tenant-id"];
-
-      if (typeof tenantId !== "string") {
-        return reply.status(401).send({
-          ok: false,
-          error: {
-            code: "HRM_UNAUTHORIZED",
-            message: "Missing tenant context",
-          },
-        });
-      }
-
-      const query = app.di.resolve("hrm.core.listEmployeesQuery");
-      const result = await query.execute({
-        tenantId,
-        ...parsed.data,
+      const result = await listEmployees(app.db, {
+        orgId,
+        ...req.query,
       });
 
       return reply.status(200).send({
-        ok: true,
         data: result,
+        correlationId: req.correlationId,
       });
     },
   );
@@ -946,68 +1180,63 @@ export async function registerListEmployeesRoute(app: FastifyInstance) {
 
 ---
 
-# 12) `apps/api/src/routes/erp/hr/core-hr/index.ts`
+# 12. `apps/api/src/index.ts` (route registration)
 
 ```ts
 import type { FastifyInstance } from "fastify";
-import { registerCreatePersonRoute } from "./routes/create-person";
-import { registerHireEmployeeRoute } from "./routes/hire-employee";
-import { registerTransferEmployeeRoute } from "./routes/transfer-employee";
-import { registerTerminateEmploymentRoute } from "./routes/terminate-employment";
-import { registerGetEmployeeProfileRoute } from "./routes/get-employee-profile";
-import { registerListEmployeesRoute } from "./routes/list-employees";
+import { hrCreatePersonRoutes } from "./routes/erp/hr/create-person.js";
+import { hrHireEmployeeRoutes } from "./routes/erp/hr/hire-employee.js";
+import { hrTransferEmployeeRoutes } from "./routes/erp/hr/transfer-employee.js";
+import { hrTerminateEmploymentRoutes } from "./routes/erp/hr/terminate-employment.js";
+import { hrGetEmployeeProfileRoutes } from "./routes/erp/hr/get-employee-profile.js";
+import { hrListEmployeesRoutes } from "./routes/erp/hr/list-employees.js";
 
-export async function registerHrmCoreHrModule(app: FastifyInstance) {
-  await registerCreatePersonRoute(app);
-  await registerHireEmployeeRoute(app);
-  await registerTransferEmployeeRoute(app);
-  await registerTerminateEmploymentRoute(app);
-  await registerGetEmployeeProfileRoute(app);
-  await registerListEmployeesRoute(app);
+export async function registerHrmRoutes(app: FastifyInstance) {
+  await app.register(hrCreatePersonRoutes, { prefix: "/v1" });
+  await app.register(hrHireEmployeeRoutes, { prefix: "/v1" });
+  await app.register(hrTransferEmployeeRoutes, { prefix: "/v1" });
+  await app.register(hrTerminateEmploymentRoutes, { prefix: "/v1" });
+  await app.register(hrGetEmployeeProfileRoutes, { prefix: "/v1" });
+  await app.register(hrListEmployeesRoutes, { prefix: "/v1" });
 }
 ```
 
 ---
 
-# What is still intentionally incomplete
+# 13. What is still intentionally incomplete
 
-The two query implementations above are **safe scaffold versions**, but not yet full enterprise read models.
+Wave 3 scoped implementation is now functionally complete for:
 
-They still need:
+* terminate + rehire lifecycle command path
+* employee profile/list read models with enrichment
+* route coverage for lifecycle + profile/list endpoints
+* targeted tests for lifecycle guards and read-model behavior
 
-* join to `hrm_employment_records`
-* join to current `hrm_work_assignments`
-* department / position / manager display enrichment
-* employment timeline query
-* pagination count query
-* search across person name, email, employee code
+Remaining items are now program-level (outside this wave's narrow scope):
 
-That is normal for this stage.
+* Wave 1 web HR delivery
+* Seed data implementation
+* Full-suite and cross-wave invariant test closure
 
 ---
 
-# Best next batch
+# 14. Next exact batch to build
 
-The next correct files are:
+The next correct batch is closure-focused across waves:
 
 ```text
-packages/db/src/schema/erp/hrm/hrm-recruitment.ts
-packages/db/src/schema/erp/hrm/hrm-onboarding.ts
-packages/core/src/erp/hr/recruitment/*
-packages/core/src/erp/hr/onboarding/*
-apps/api/src/routes/erp/hr/recruitment/*
-apps/api/src/routes/erp/hr/onboarding/*
+apps/web/src/app/(erp)/hr/*
+scripts/seed-hrm-*.ts (or project seed location)
+packages/core/src/erp/hr/**/__vitest_test__/*
+docs/hrm/hrm-wave1.scaffold.md
 ```
 
-I would do it in this order:
+Recommended order:
 
 ```text
-1. hrm-recruitment.ts
-2. hrm-onboarding.ts
-3. create-requisition.service.ts
-4. create-candidate.service.ts
-5. start-onboarding.service.ts
-6. start-separation.service.ts
+1. Complete Web HR screens (Wave 1 R1)
+2. Implement and verify HR seeders (Wave 1 R2)
+3. Expand invariant/integration tests and run full checks (Wave 1 R3/R4)
 ```
 
 That gives AFENDA the full **Phase 1 business loop**:

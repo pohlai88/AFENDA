@@ -7,6 +7,15 @@ import { Client } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { sql, eq, inArray } from "drizzle-orm";
 import * as s from "./schema/index";
+import { hrmOrgUnitSeeds } from "./seeds/hrm/seed-hrm-org-units";
+import { hrmJobSeeds } from "./seeds/hrm/seed-hrm-jobs";
+import { hrmJobGradeSeeds } from "./seeds/hrm/seed-hrm-job-grades";
+import { hrmPositionSeeds } from "./seeds/hrm/seed-hrm-positions";
+import { hrmRequisitionSeeds } from "./seeds/hrm/seed-hrm-requisition-templates";
+import {
+  hrmOnboardingTaskTemplateSeeds,
+  hrmExitChecklistTemplateSeeds,
+} from "./seeds/hrm/seed-hrm-onboarding-task-templates";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 config({ path: resolve(__dirname, "../../../.env") });
@@ -298,9 +307,302 @@ async function main() {
           },
         ])
         .onConflictDoNothing();
+
+      // ── HRM FOUNDATION SEEDS (idempotent) ───────────────────────────────
+      await tx
+        .insert(s.hrmOrgUnits)
+        .values(
+          hrmOrgUnitSeeds.map((u) => ({
+            orgId: org.id,
+            legalEntityId: org.id,
+            orgUnitCode: u.orgUnitCode,
+            orgUnitName: u.orgUnitName,
+            status: "active",
+          })),
+        )
+        .onConflictDoNothing();
+
+      const orgUnits = await tx
+        .select({ id: s.hrmOrgUnits.id, orgUnitCode: s.hrmOrgUnits.orgUnitCode })
+        .from(s.hrmOrgUnits)
+        .where(eq(s.hrmOrgUnits.orgId, org.id));
+      const orgUnitByCode = new Map(orgUnits.map((u) => [u.orgUnitCode, u.id]));
+
+      await tx
+        .insert(s.hrmJobs)
+        .values(
+          hrmJobSeeds.map((j) => ({
+            orgId: org.id,
+            jobCode: j.jobCode,
+            jobTitle: j.jobTitle,
+            status: "active",
+          })),
+        )
+        .onConflictDoNothing();
+
+      const jobs = await tx
+        .select({ id: s.hrmJobs.id, jobCode: s.hrmJobs.jobCode })
+        .from(s.hrmJobs)
+        .where(eq(s.hrmJobs.orgId, org.id));
+      const jobByCode = new Map(jobs.map((j) => [j.jobCode, j.id]));
+
+      await tx
+        .insert(s.hrmJobGrades)
+        .values(
+          hrmJobGradeSeeds.map((g) => ({
+            orgId: org.id,
+            gradeCode: g.gradeCode,
+            gradeName: g.gradeName,
+            gradeRank: g.gradeRank,
+            minSalaryAmount: g.minSalaryAmount,
+            midSalaryAmount: g.midSalaryAmount,
+            maxSalaryAmount: g.maxSalaryAmount,
+          })),
+        )
+        .onConflictDoNothing();
+
+      const grades = await tx
+        .select({ id: s.hrmJobGrades.id, gradeCode: s.hrmJobGrades.gradeCode })
+        .from(s.hrmJobGrades)
+        .where(eq(s.hrmJobGrades.orgId, org.id));
+      const gradeByCode = new Map(grades.map((g) => [g.gradeCode, g.id]));
+
+      await tx
+        .insert(s.hrmPositions)
+        .values(
+          hrmPositionSeeds.map((p) => ({
+            orgId: org.id,
+            legalEntityId: org.id,
+            positionCode: p.positionCode,
+            positionTitle: p.positionTitle,
+            orgUnitId: orgUnitByCode.get(p.orgUnitCode) ?? null,
+            jobId: jobByCode.get(p.jobCode) ?? null,
+            gradeId: gradeByCode.get(p.gradeCode) ?? null,
+            headcountLimit: p.headcountLimit,
+            positionStatus: "open" as const,
+            isBudgeted: true,
+            effectiveFrom: new Date(),
+            isCurrent: true,
+          })),
+        )
+        .onConflictDoNothing();
+
+      const positions = await tx
+        .select({ id: s.hrmPositions.id, positionCode: s.hrmPositions.positionCode })
+        .from(s.hrmPositions)
+        .where(eq(s.hrmPositions.orgId, org.id));
+      const positionByCode = new Map(positions.map((p) => [p.positionCode, p.id]));
+
+      await tx
+        .insert(s.hrmJobRequisitions)
+        .values(
+          hrmRequisitionSeeds.map((r) => ({
+            orgId: org.id,
+            requisitionNumber: r.requisitionNumber,
+            requisitionTitle: r.requisitionTitle,
+            legalEntityId: org.id,
+            orgUnitId: orgUnitByCode.get(r.orgUnitCode) ?? null,
+            positionId: positionByCode.get(r.positionCode) ?? null,
+            requestedHeadcount: r.requestedHeadcount,
+            requestedStartDate: r.requestedStartDate,
+            status: r.status,
+          })),
+        )
+        .onConflictDoNothing();
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const existingPerson = await tx.query.hrmPersons.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.orgId, org.id), eq(t.personCode, "HR-PER-0001")),
+      });
+
+      const insertedHrmPerson =
+        existingPerson == null
+          ? (
+              await tx
+                .insert(s.hrmPersons)
+                .values({
+                  orgId: org.id,
+                  personCode: "HR-PER-0001",
+                  legalName: "Casey Walker",
+                  firstName: "Casey",
+                  lastName: "Walker",
+                  displayName: "Casey Walker",
+                  personalEmail: "casey.walker@demo.afenda",
+                  mobilePhone: "+1-202-555-0131",
+                  status: "active",
+                })
+                .returning()
+            )[0]
+          : null;
+      const hrmPerson = existingPerson ?? insertedHrmPerson;
+      if (!hrmPerson) throw new Error("hrm person upsert failed");
+
+      const existingEmployee = await tx.query.hrmEmployeeProfiles.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.orgId, org.id), eq(t.employeeCode, "HR-EMP-0001")),
+      });
+
+      const insertedHrmEmployee =
+        existingEmployee == null
+          ? (
+              await tx
+                .insert(s.hrmEmployeeProfiles)
+                .values({
+                  orgId: org.id,
+                  personId: hrmPerson.id,
+                  employeeCode: "HR-EMP-0001",
+                  workerType: "employee",
+                  currentStatus: "active",
+                  primaryLegalEntityId: org.id,
+                })
+                .returning()
+            )[0]
+          : null;
+      const hrmEmployee = existingEmployee ?? insertedHrmEmployee;
+      if (!hrmEmployee) throw new Error("hrm employee upsert failed");
+
+      const existingEmployment = await tx.query.hrmEmploymentRecords.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.orgId, org.id), eq(t.employmentNumber, "HR-EMPLOY-0001")),
+      });
+
+      const insertedHrmEmployment =
+        existingEmployment == null
+          ? (
+              await tx
+                .insert(s.hrmEmploymentRecords)
+                .values({
+                  orgId: org.id,
+                  employeeId: hrmEmployee.id,
+                  legalEntityId: org.id,
+                  employmentNumber: "HR-EMPLOY-0001",
+                  employmentType: "permanent",
+                  hireDate: today,
+                  startDate: today,
+                  employmentStatus: "active",
+                  payrollStatus: "inactive",
+                  isPrimary: true,
+                })
+                .returning()
+            )[0]
+          : null;
+      const hrmEmployment = existingEmployment ?? insertedHrmEmployment;
+      if (!hrmEmployment) throw new Error("hrm employment upsert failed");
+
+      if (!hrmEmployee.primaryEmploymentId) {
+        await tx
+          .update(s.hrmEmployeeProfiles)
+          .set({ primaryEmploymentId: hrmEmployment.id })
+          .where(eq(s.hrmEmployeeProfiles.id, hrmEmployee.id));
+      }
+
+      const existingPlan = await tx.query.hrmOnboardingPlans.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.orgId, org.id), eq(t.employmentId, hrmEmployment.id), eq(t.planStatus, "open")),
+      });
+
+      const insertedOnboardingPlan =
+        existingPlan == null
+          ? (
+              await tx
+                .insert(s.hrmOnboardingPlans)
+                .values({
+                  orgId: org.id,
+                  employmentId: hrmEmployment.id,
+                  planStatus: "open",
+                  startDate: today,
+                })
+                .returning()
+            )[0]
+          : null;
+      const onboardingPlan = existingPlan ?? insertedOnboardingPlan;
+      if (!onboardingPlan) throw new Error("hrm onboarding plan upsert failed");
+
+      const existingTaskCodes = new Set(
+        (
+          await tx
+            .select({ taskCode: s.hrmOnboardingTasks.taskCode })
+            .from(s.hrmOnboardingTasks)
+            .where(eq(s.hrmOnboardingTasks.onboardingPlanId, onboardingPlan.id))
+        )
+          .map((row) => row.taskCode)
+          .filter((code): code is string => Boolean(code)),
+      );
+
+      const taskRows = hrmOnboardingTaskTemplateSeeds
+        .filter((task) => !existingTaskCodes.has(task.taskCode))
+        .map((task) => ({
+          orgId: org.id,
+          onboardingPlanId: onboardingPlan.id,
+          taskCode: task.taskCode,
+          taskTitle: task.taskTitle,
+          ownerEmployeeId: hrmEmployee.id,
+          taskStatus: "pending",
+          mandatory: task.mandatory,
+          dueDate: new Date(Date.now() + task.dueDaysFromStart * 86_400_000)
+            .toISOString()
+            .slice(0, 10),
+        }));
+      if (taskRows.length > 0) {
+        await tx.insert(s.hrmOnboardingTasks).values(taskRows);
+      }
+
+      const existingSeparationCase = await tx.query.hrmSeparationCases.findFirst({
+        where: (t, { and, eq }) =>
+          and(eq(t.orgId, org.id), eq(t.employmentId, hrmEmployment.id), eq(t.caseStatus, "open")),
+      });
+
+      const insertedSeparationCase =
+        existingSeparationCase == null
+          ? (
+              await tx
+                .insert(s.hrmSeparationCases)
+                .values({
+                  orgId: org.id,
+                  employmentId: hrmEmployment.id,
+                  caseStatus: "open",
+                  separationType: "resignation",
+                  initiatedAt: today,
+                  targetLastWorkingDate: today,
+                })
+                .returning()
+            )[0]
+          : null;
+      const separationCase = existingSeparationCase ?? insertedSeparationCase;
+      if (!separationCase) throw new Error("hrm separation case upsert failed");
+
+      const existingExitCodes = new Set(
+        (
+          await tx
+            .select({ itemCode: s.hrmExitClearanceItems.itemCode })
+            .from(s.hrmExitClearanceItems)
+            .where(eq(s.hrmExitClearanceItems.separationCaseId, separationCase.id))
+        )
+          .map((row) => row.itemCode)
+          .filter((code): code is string => Boolean(code)),
+      );
+
+      const clearanceRows = hrmExitChecklistTemplateSeeds
+        .filter((item) => !existingExitCodes.has(item.itemCode))
+        .map((item) => ({
+          orgId: org.id,
+          separationCaseId: separationCase.id,
+          itemCode: item.itemCode,
+          itemLabel: item.itemLabel,
+          ownerEmployeeId: hrmEmployee.id,
+          mandatory: item.mandatory,
+          clearanceStatus: "pending",
+        }));
+      if (clearanceRows.length > 0) {
+        await tx.insert(s.hrmExitClearanceItems).values(clearanceRows);
+      }
     });
 
     console.log("✅ seeded: org + admin principal + RBAC + CoA + sequences + sample supplier");
+    console.log("✅ seeded: HR org units + jobs + grades + positions + requisition templates");
+    console.log("✅ seeded: HR onboarding task templates + separation checklist templates");
     console.log("   ADR-0003: Using party/organization/person/principal/membership model");
     console.log("   org slug:     demo");
     console.log("   admin email:  admin@demo.afenda");

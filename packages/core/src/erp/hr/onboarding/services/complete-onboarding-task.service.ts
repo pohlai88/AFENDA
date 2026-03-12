@@ -13,14 +13,14 @@ export async function completeOnboardingTask(
   correlationId: string,
   input: CompleteOnboardingTaskInput,
 ): Promise<HrmResult<CompleteOnboardingTaskOutput>> {
-  const [task] = await db.select({ id: hrmOnboardingTasks.id, taskStatus: hrmOnboardingTasks.taskStatus }).from(hrmOnboardingTasks).where(and(eq(hrmOnboardingTasks.orgId, orgId), eq(hrmOnboardingTasks.id, input.taskId)));
-  if (!task) return err(HRM_ERROR_CODES.ONBOARDING_TASK_NOT_FOUND, "Onboarding task not found", { taskId: input.taskId });
+  const [task] = await db.select({ id: hrmOnboardingTasks.id, taskStatus: hrmOnboardingTasks.taskStatus }).from(hrmOnboardingTasks).where(and(eq(hrmOnboardingTasks.orgId, orgId), eq(hrmOnboardingTasks.id, input.onboardingTaskId)));
+  if (!task) return err(HRM_ERROR_CODES.ONBOARDING_TASK_NOT_FOUND, "Onboarding task not found", { onboardingTaskId: input.onboardingTaskId });
 
   try {
     const data = await db.transaction(async (tx) => {
-      await tx.update(hrmOnboardingTasks).set({ taskStatus: "completed", completedAt: input.completedAt ? sql`${input.completedAt}::date` : sql`now()::date`, updatedAt: sql`now()` }).where(and(eq(hrmOnboardingTasks.orgId, orgId), eq(hrmOnboardingTasks.id, input.taskId)));
-      const payload = { taskId: input.taskId, previousStatus: task.taskStatus, currentStatus: "completed" };
-      await tx.insert(auditLog).values({ orgId, actorPrincipalId: actorPrincipalId ?? null, action: HRM_EVENTS.ONBOARDING_TASK_COMPLETED, entityType: "hrm_onboarding_task", entityId: input.taskId, correlationId, details: payload });
+      await tx.update(hrmOnboardingTasks).set({ taskStatus: "completed", completedAt: sql`${input.completedAt}::date`, updatedAt: sql`now()` }).where(and(eq(hrmOnboardingTasks.orgId, orgId), eq(hrmOnboardingTasks.id, input.onboardingTaskId)));
+      const payload = { onboardingTaskId: input.onboardingTaskId, status: "completed", completedAt: input.completedAt, previousStatus: task.taskStatus };
+      await tx.insert(auditLog).values({ orgId, actorPrincipalId: actorPrincipalId ?? null, action: HRM_EVENTS.ONBOARDING_TASK_COMPLETED, entityType: "hrm_onboarding_task", entityId: input.onboardingTaskId, correlationId, details: payload });
       await tx.insert(outboxEvent).values({ orgId, type: "HRM.ONBOARDING_TASK_COMPLETED", version: "1", correlationId, payload });
       return payload;
     });

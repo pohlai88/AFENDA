@@ -5,8 +5,19 @@ import { acceptOffer } from "@afenda/core";
 import { ApiErrorResponseSchema, makeSuccessSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
 
 const ParamsSchema = z.object({ offerId: z.string().uuid() });
-const BodySchema = z.object({ acceptedAt: z.string().optional() });
-const ResponseSchema = makeSuccessSchema(z.object({ offerId: z.string().uuid(), previousStatus: z.string(), currentStatus: z.string() }));
+const BodySchema = z.object({
+  acceptedAt: z.string(),
+  autoStartOnboarding: z.boolean().optional(),
+  onboardingTemplateId: z.string().uuid().optional(),
+});
+const ResponseSchema = makeSuccessSchema(
+  z.object({
+    offerId: z.string().uuid(),
+    offerStatus: z.string(),
+    acceptedAt: z.string(),
+    onboardingPlanId: z.string().uuid().optional(),
+  }),
+);
 
 export async function hrAcceptOfferRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
