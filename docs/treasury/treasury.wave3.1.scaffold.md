@@ -11,7 +11,8 @@
 > - FX snapshot read/write workflows: COMPLETE (core + API + web)
 > - Dual native/base amount persistence: COMPLETE in repo and migrated locally
 > - Validation: COMPLETE (treasury targeted tests + `@afenda/core`, `@afenda/api`, `@afenda/web` typecheck)
-> - Wave 3.1 closure state: CODE COMPLETE
+> - Wave 3.1 closure state: DONE (implementation complete; staging/production migration rollout pending)
+> - Next action: START Wave 3.5 scaffold
 
 ## Verified Wave 3.1 Status
 

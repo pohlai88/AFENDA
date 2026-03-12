@@ -10,6 +10,9 @@ export * from "./treasury-payment-batch-item";
 export * from "./cash-position-snapshot";
 export * from "./liquidity-scenario";
 export * from "./liquidity-forecast";
+// Wave 3.5 — AP/AR Liquidity Projections
+export * from "./ap-due-payment-projection";
+export * from "./ar-expected-receipt-projection";
 export * from "./liquidity-source-feed";
 export * from "./fx-rate-snapshot";
 export * from "./liquidity-lineage";

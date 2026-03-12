@@ -484,6 +484,23 @@ const SYNC_PAIRS = [
     excludeFromContract: [],
     excludeFromDb: [],
   },
+  // Wave 3.5 — AP/AR → Treasury Bridge
+  {
+    dbFile: "packages/db/src/schema/erp/finance/treasury/ap-due-payment-projection.ts",
+    dbTable: "ap_due_payment_projection",
+    contractFile: "packages/contracts/src/erp/finance/treasury/ap-due-payment-projection.entity.ts",
+    contractSchema: "ApDuePaymentProjectionSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/treasury/ar-expected-receipt-projection.ts",
+    dbTable: "ar_expected_receipt_projection",
+    contractFile: "packages/contracts/src/erp/finance/treasury/ar-expected-receipt-projection.entity.ts",
+    contractSchema: "ArExpectedReceiptProjectionSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
 ];
 
 // ─── Rule Documentation ─────────────────────────────────────────────────────

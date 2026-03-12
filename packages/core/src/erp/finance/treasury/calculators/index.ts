@@ -28,3 +28,5 @@ export * from "./liquidity-forecast";
 export * from "./fx-normalization";
 // Sprint 3.3: forecast variance backtesting
 export * from "./forecast-variance";
+// Wave 3.5: AP/AR → Treasury liquidity bridge — daily bucket allocation
+export * from "./liquidity-bucket-allocation";

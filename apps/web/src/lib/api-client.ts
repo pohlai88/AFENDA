@@ -1813,6 +1813,83 @@ export async function fetchTreasuryForecastVariance(
   return res.json();
 }
 
+// ── Treasury: Wave 3.5 — AP Due Payment Projections ──────────────────────────
+
+export interface ApDuePaymentProjectionRow {
+  id: string;
+  orgId: string;
+  sourcePayableId: string;
+  supplierId: string;
+  supplierName: string;
+  paymentTermCode: string | null;
+  dueDate: string;
+  expectedPaymentDate: string;
+  currencyCode: string;
+  grossAmountMinor: string;
+  openAmountMinor: string;
+  paymentMethod: string | null;
+  status: string;
+  sourceVersion: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchApDuePaymentProjections(params?: {
+  status?: string;
+  dueDateLte?: string;
+  supplierId?: string;
+}): Promise<{ data: ApDuePaymentProjectionRow[] }> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.dueDateLte) query.set("dueDateLte", params.dueDateLte);
+  if (params?.supplierId) query.set("supplierId", params.supplierId);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/ap-due-payment-projections${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`AP due payment projections API error ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.data;
+}
+
+// ── Treasury: Wave 3.5 — AR Expected Receipt Projections ─────────────────────
+
+export interface ArExpectedReceiptProjectionRow {
+  id: string;
+  orgId: string;
+  sourceReceivableId: string;
+  customerId: string;
+  customerName: string;
+  dueDate: string;
+  expectedReceiptDate: string;
+  currencyCode: string;
+  grossAmountMinor: string;
+  openAmountMinor: string;
+  receiptMethod: string | null;
+  status: string;
+  sourceVersion: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchArExpectedReceiptProjections(params?: {
+  status?: string;
+  dueDateLte?: string;
+  customerId?: string;
+}): Promise<{ data: ArExpectedReceiptProjectionRow[] }> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.dueDateLte) query.set("dueDateLte", params.dueDateLte);
+  if (params?.customerId) query.set("customerId", params.customerId);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/treasury/ar-expected-receipt-projections${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(
+      `AR expected receipt projections API error ${res.status}: ${await res.text()}`,
+    );
+  const json = await res.json();
+  return json.data;
+}
+
 export interface AuditLogRow {
   id: string;
   orgId: string;

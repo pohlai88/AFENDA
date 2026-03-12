@@ -42,6 +42,8 @@ import { handleTreasuryLiquidityForecastEvent } from "./jobs/erp/finance/treasur
 import { handleTreasuryForecastVarianceEvent } from "./jobs/erp/finance/treasury/handle-forecast-variance.js";
 import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treasury/handle-liquidity-source-feed.js";
 import { handleTreasuryFxRateSnapshotEvent } from "./jobs/erp/finance/treasury/handle-fx-rate-snapshot.js";
+import { handleTreasuryApDuePaymentProjectionEvent } from "./jobs/erp/finance/treasury/handle-ap-due-payment-projection.js";
+import { handleTreasuryArExpectedReceiptProjectionEvent } from "./jobs/erp/finance/treasury/handle-ar-expected-receipt-projection.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -104,6 +106,9 @@ const taskList = {
   handle_treasury_forecast_variance_event: handleTreasuryForecastVarianceEvent,
   handle_treasury_liquidity_source_feed_event: handleTreasuryLiquiditySourceFeedEvent,
   handle_treasury_fx_rate_snapshot_event: handleTreasuryFxRateSnapshotEvent,
+  // Wave 3.5 — AP/AR → Treasury Bridge
+  handle_treasury_ap_due_payment_projection_event: handleTreasuryApDuePaymentProjectionEvent,
+  handle_treasury_ar_expected_receipt_projection_event: handleTreasuryArExpectedReceiptProjectionEvent,
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
 } as const;

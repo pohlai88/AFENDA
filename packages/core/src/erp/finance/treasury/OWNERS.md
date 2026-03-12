@@ -31,6 +31,10 @@ Pillar: `erp` | Domain: `finance/treasury`
 | `lineage.queries.ts` | `listCashPositionSnapshotLineage`, `listLiquidityForecastBucketLineage` |
 | `forecast-variance.service.ts` | `recordForecastVariance` |
 | `forecast-variance.queries.ts` | `listForecastVarianceByForecastId`, `getForecastVarianceById` |
+| `ap-due-payment-projection.service.ts` | `upsertApDuePaymentProjection` |
+| `ap-due-payment-projection.queries.ts` | `listApDuePaymentProjections` |
+| `ar-expected-receipt-projection.service.ts` | `upsertArExpectedReceiptProjection` |
+| `ar-expected-receipt-projection.queries.ts` | `listArExpectedReceiptProjections` |
 
 ## Planned files (added per sprint)
 

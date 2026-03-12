@@ -37,6 +37,10 @@ Pillar: `erp` | Domain: `finance/treasury`
 | 3.2 | `liquidity-scenario.commands.ts` | `CreateLiquidityScenarioCommandSchema`, `ActivateLiquidityScenarioCommandSchema` | Scenario create/activate commands |
 | 3.2 | `liquidity-forecast.entity.ts` | `LiquidityForecastSchema`, `LiquidityForecastBucketSchema` | Forecast aggregate + bucket contracts |
 | 3.2 | `liquidity-forecast.commands.ts` | `RequestLiquidityForecastCommandSchema` | Forecast request command |
+| 3.5 | `ap-due-payment-projection.entity.ts` | `ApDuePaymentProjectionSchema` | AP payable outflow projection contract |
+| 3.5 | `ap-due-payment-projection.commands.ts` | `UpsertApDuePaymentProjectionCommandSchema` | AP due payment projection upsert command |
+| 3.5 | `ar-expected-receipt-projection.entity.ts` | `ArExpectedReceiptProjectionSchema` | AR receivable inflow projection contract |
+| 3.5 | `ar-expected-receipt-projection.commands.ts` | `UpsertArExpectedReceiptProjectionCommandSchema` | AR expected receipt projection upsert command |
 | 3.2+ | `liquidity-source-feed.entity.ts` | `LiquiditySourceFeedSchema` | AP/AR/manual projection feed contract |
 | 3.2+ | `liquidity-source-feed.commands.ts` | `UpsertLiquiditySourceFeedCommandSchema` | Feed upsert command |
 | 3.3 | `forecast-variance.entity.ts` | `ForecastVarianceSchema` | Forecast vs actual variance records |

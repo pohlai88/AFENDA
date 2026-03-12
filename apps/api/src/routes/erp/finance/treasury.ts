@@ -63,6 +63,13 @@ import {
   UpsertFxRateSnapshotCommandSchema,
   // Wave 3.3 — Forecast Variance
   RecordForecastVarianceCommandSchema,
+  // Wave 3.5 — AP/AR → Treasury Bridge
+  UpsertApDuePaymentProjectionCommandSchema,
+  ApDuePaymentProjectionStatusValues,
+  ApDuePaymentMethodValues,
+  UpsertArExpectedReceiptProjectionCommandSchema,
+  ArExpectedReceiptProjectionStatusValues,
+  ArExpectedReceiptMethodValues,
 } from "@afenda/contracts";
 import {
   activateBankAccount,
@@ -121,6 +128,11 @@ import {
   recordForecastVariance,
   listForecastVarianceByForecastId,
   getForecastVarianceById,
+  // Wave 3.5 — AP/AR → Treasury Bridge
+  upsertApDuePaymentProjection,
+  listApDuePaymentProjections,
+  upsertArExpectedReceiptProjection,
+  listArExpectedReceiptProjections,
 } from "@afenda/core";
 import type { OrgScopedContext } from "@afenda/core";
 import {
@@ -2591,6 +2603,207 @@ export async function treasuryRoutes(app: FastifyInstance) {
       }
 
       return { data: toForecastVarianceResponse(found), correlationId: req.correlationId };
+    },
+  );
+
+  // ─── Wave 3.5: AP/AR → Treasury Bridge ───────────────────────────────────
+
+  const ApDuePaymentProjectionRowSchema = z.object({
+    id: z.string().uuid(),
+    orgId: z.string().uuid(),
+    sourcePayableId: z.string().uuid(),
+    supplierId: z.string().uuid(),
+    supplierName: z.string(),
+    paymentTermCode: z.string().nullable(),
+    dueDate: z.string(),
+    expectedPaymentDate: z.string(),
+    currencyCode: z.string(),
+    grossAmountMinor: z.string(),
+    openAmountMinor: z.string(),
+    paymentMethod: z.enum(ApDuePaymentMethodValues).nullable(),
+    status: z.enum(ApDuePaymentProjectionStatusValues),
+    sourceVersion: z.string(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  });
+
+  const ArExpectedReceiptProjectionRowSchema = z.object({
+    id: z.string().uuid(),
+    orgId: z.string().uuid(),
+    sourceReceivableId: z.string().uuid(),
+    customerId: z.string().uuid(),
+    customerName: z.string(),
+    dueDate: z.string(),
+    expectedReceiptDate: z.string(),
+    currencyCode: z.string(),
+    grossAmountMinor: z.string(),
+    openAmountMinor: z.string(),
+    receiptMethod: z.enum(ArExpectedReceiptMethodValues).nullable(),
+    status: z.enum(ArExpectedReceiptProjectionStatusValues),
+    sourceVersion: z.string(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  });
+
+  // POST /commands/upsert-ap-due-payment-projection
+  server.post(
+    "/commands/upsert-ap-due-payment-projection",
+    {
+      schema: {
+        description: "Upsert an AP due payment projection (AP → Treasury bridge).",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: UpsertApDuePaymentProjectionCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          401: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const ctx = req.ctx as OrgScopedContext;
+      const result = await upsertApDuePaymentProjection(
+        app.db,
+        ctx,
+        { principalId: auth.principalId as PrincipalId },
+        req.correlationId as CorrelationId,
+        req.body as any,
+      );
+
+      if (!result.ok) {
+        return reply.status(422).send({ error: result.error, correlationId: req.correlationId });
+      }
+
+      return { data: result.data, correlationId: req.correlationId };
+    },
+  );
+
+  // GET /treasury/ap-due-payment-projections
+  function toApDuePaymentProjectionResponse(row: any) {
+    return {
+      ...row,
+      paymentMethod: row.paymentMethod as (typeof ApDuePaymentMethodValues)[number] | null,
+      status: row.status as (typeof ApDuePaymentProjectionStatusValues)[number],
+      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+    };
+  }
+
+  server.get(
+    "/treasury/ap-due-payment-projections",
+    {
+      schema: {
+        description: "List AP due payment projections.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: z.object({
+          status: z.enum(ApDuePaymentProjectionStatusValues).optional(),
+          dueDateLte: z.string().date().optional(),
+          supplierId: z.string().uuid().optional(),
+        }),
+        response: {
+          200: makeSuccessSchema(z.object({ data: z.array(ApDuePaymentProjectionRowSchema) })),
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const rows = await listApDuePaymentProjections(app.db, orgId as OrgId, req.query as any);
+      return {
+        data: { data: rows.map(toApDuePaymentProjectionResponse) },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  // POST /commands/upsert-ar-expected-receipt-projection
+  server.post(
+    "/commands/upsert-ar-expected-receipt-projection",
+    {
+      schema: {
+        description: "Upsert an AR expected receipt projection (AR → Treasury bridge).",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: UpsertArExpectedReceiptProjectionCommandSchema,
+        response: {
+          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
+          401: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const ctx = req.ctx as OrgScopedContext;
+      const result = await upsertArExpectedReceiptProjection(
+        app.db,
+        ctx,
+        { principalId: auth.principalId as PrincipalId },
+        req.correlationId as CorrelationId,
+        req.body as any,
+      );
+
+      if (!result.ok) {
+        return reply.status(422).send({ error: result.error, correlationId: req.correlationId });
+      }
+
+      return { data: result.data, correlationId: req.correlationId };
+    },
+  );
+
+  // GET /treasury/ar-expected-receipt-projections
+  function toArExpectedReceiptProjectionResponse(row: any) {
+    return {
+      ...row,
+      receiptMethod: row.receiptMethod as (typeof ArExpectedReceiptMethodValues)[number] | null,
+      status: row.status as (typeof ArExpectedReceiptProjectionStatusValues)[number],
+      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+    };
+  }
+
+  server.get(
+    "/treasury/ar-expected-receipt-projections",
+    {
+      schema: {
+        description: "List AR expected receipt projections.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: z.object({
+          status: z.enum(ArExpectedReceiptProjectionStatusValues).optional(),
+          dueDateLte: z.string().date().optional(),
+          customerId: z.string().uuid().optional(),
+        }),
+        response: {
+          200: makeSuccessSchema(z.object({ data: z.array(ArExpectedReceiptProjectionRowSchema) })),
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const rows = await listArExpectedReceiptProjections(app.db, orgId as OrgId, req.query as any);
+      return {
+        data: { data: rows.map(toArExpectedReceiptProjectionResponse) },
+        correlationId: req.correlationId,
+      };
     },
   );
 }

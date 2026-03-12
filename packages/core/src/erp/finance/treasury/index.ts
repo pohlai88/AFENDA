@@ -29,6 +29,10 @@ import * as rawFxRateSnapshotQueries from "./fx-rate-snapshot.queries";
 import * as rawLineageQueries from "./lineage.queries";
 import * as rawForecastVarianceService from "./forecast-variance.service";
 import * as rawForecastVarianceQueries from "./forecast-variance.queries";
+import * as rawApDuePaymentProjectionService from "./ap-due-payment-projection.service";
+import * as rawApDuePaymentProjectionQueries from "./ap-due-payment-projection.queries";
+import * as rawArExpectedReceiptProjectionService from "./ar-expected-receipt-projection.service";
+import * as rawArExpectedReceiptProjectionQueries from "./ar-expected-receipt-projection.queries";
 
 export type {
 	BankAccountServiceError,
@@ -165,6 +169,29 @@ export type {
 
 export type { ForecastVarianceRow } from "./forecast-variance.queries";
 
+// Wave 3.5 — AP/AR → Treasury Bridge
+export type {
+	ApDuePaymentProjectionServiceError,
+	ApDuePaymentProjectionServiceResult,
+	UpsertApDuePaymentProjectionParams,
+} from "./ap-due-payment-projection.service";
+
+export type {
+	ApDuePaymentProjectionRow,
+	ApDuePaymentProjectionListParams,
+} from "./ap-due-payment-projection.queries";
+
+export type {
+	ArExpectedReceiptProjectionServiceError,
+	ArExpectedReceiptProjectionServiceResult,
+	UpsertArExpectedReceiptProjectionParams,
+} from "./ar-expected-receipt-projection.service";
+
+export type {
+	ArExpectedReceiptProjectionRow,
+	ArExpectedReceiptProjectionListParams,
+} from "./ar-expected-receipt-projection.queries";
+
 // Calculators (pure functions)
 export * from "./calculators/index";
 
@@ -191,6 +218,10 @@ const instrumented = instrumentService("treasury", {
 	...rawLineageQueries,
 	...rawForecastVarianceService,
 	...rawForecastVarianceQueries,
+	...rawApDuePaymentProjectionService,
+	...rawApDuePaymentProjectionQueries,
+	...rawArExpectedReceiptProjectionService,
+	...rawArExpectedReceiptProjectionQueries,
 });
 
 export const {
@@ -253,5 +284,10 @@ export const {
 	recordForecastVariance,
 	listForecastVarianceByForecastId,
 	getForecastVarianceById,
+	// Wave 3.5 — AP/AR → Treasury Bridge
+	upsertApDuePaymentProjection,
+	listApDuePaymentProjections,
+	upsertArExpectedReceiptProjection,
+	listArExpectedReceiptProjections,
 } = instrumented;
 

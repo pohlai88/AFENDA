@@ -88,6 +88,21 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "TREAS.BANK_STATEMENT_FAILED":
       await helpers.addJob("handle_treasury_bank_statement_event", payload);
       break;
+    case "TREAS.LIQUIDITY_SOURCE_FEED_UPSERTED":
+      await helpers.addJob("handle_treasury_liquidity_source_feed_event", payload);
+      break;
+    case "TREAS.FX_RATE_SNAPSHOT_UPSERTED":
+      await helpers.addJob("handle_treasury_fx_rate_snapshot_event", payload);
+      break;
+    case "TREAS.FORECAST_VARIANCE_RECORDED":
+      await helpers.addJob("handle_treasury_forecast_variance_event", payload);
+      break;
+    case "TREAS.AP_DUE_PAYMENT_PROJECTION_UPSERTED":
+      await helpers.addJob("handle_treasury_ap_due_payment_projection_event", payload);
+      break;
+    case "TREAS.AR_EXPECTED_RECEIPT_PROJECTION_UPSERTED":
+      await helpers.addJob("handle_treasury_ar_expected_receipt_projection_event", payload);
+      break;
     case "GL.JOURNAL_POSTED":
       await helpers.addJob("handle_journal_posted", payload);
       break;

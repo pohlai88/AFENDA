@@ -20,6 +20,7 @@ import type {
 } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../../kernel/governance/audit/audit";
 import { buildLiquidityForecastBuckets } from "./calculators/liquidity-forecast";
+import { allocateFeedToDailyBuckets } from "./calculators/liquidity-bucket-allocation";
 import { normalizeToBase } from "./fx-normalization.service";
 
 export type LiquidityForecastServiceError = {
@@ -326,17 +327,8 @@ export async function requestLiquidityForecast(
     });
   }
 
-  const feedTotalsByDate = new Map<string, { inflow: string; outflow: string }>();
   const feedSourceIdsByDate = new Map<string, string[]>();
   for (const row of normalizedFeedRows) {
-    const current = feedTotalsByDate.get(row.dueDate) ?? { inflow: "0", outflow: "0" };
-    if (row.direction === "inflow") {
-      current.inflow = addMinor(current.inflow, row.normalizedAmountMinor);
-    } else {
-      current.outflow = addMinor(current.outflow, row.normalizedAmountMinor);
-    }
-    feedTotalsByDate.set(row.dueDate, current);
-
     const feedIds = feedSourceIdsByDate.get(row.dueDate) ?? [];
     feedIds.push(row.id);
     feedSourceIdsByDate.set(row.dueDate, feedIds);
@@ -347,14 +339,23 @@ export async function requestLiquidityForecast(
   const bucketSourceIdsByDate: Record<string, string[]> = {};
 
   const dateBuckets = enumerateDailyBucketDates(params.startDate, params.endDate);
+  const allocatedFeedBuckets = allocateFeedToDailyBuckets({
+    startDate: params.startDate,
+    endDate: params.endDate,
+    feeds: normalizedFeedRows.map((row) => ({
+      effectiveDate: row.dueDate,
+      amountMinor: row.normalizedAmountMinor,
+      direction: row.direction,
+    })),
+  });
+
   const computed = buildLiquidityForecastBuckets({
     openingLiquidityMinor: snapshot.totalProjectedAvailableMinor,
-    buckets: dateBuckets.map((bucket) => {
-      const feed = feedTotalsByDate.get(bucket.startDate) ?? { inflow: "0", outflow: "0" };
-      bucketSourceIdsByDate[bucket.startDate] = feedSourceIdsByDate.get(bucket.startDate) ?? [];
+    buckets: allocatedFeedBuckets.buckets.map((bucket) => {
+      bucketSourceIdsByDate[bucket.date] = feedSourceIdsByDate.get(bucket.date) ?? [];
       return {
-        expectedInflowsMinor: addMinor(feed.inflow, assumedDailyInflowsMinor),
-        expectedOutflowsMinor: addMinor(feed.outflow, assumedDailyOutflowsMinor),
+        expectedInflowsMinor: addMinor(bucket.expectedInflowsMinor, assumedDailyInflowsMinor),
+        expectedOutflowsMinor: addMinor(bucket.expectedOutflowsMinor, assumedDailyOutflowsMinor),
       };
     }),
   });
