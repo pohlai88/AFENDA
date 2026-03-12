@@ -29,66 +29,19 @@ const ADMIN_URL = "postgres://afenda:afenda@localhost:5433/afenda_dev";
 export const TEST_DB_URL = "postgres://afenda:afenda@localhost:5433/afenda_test";
 
 export async function setup() {
-  // ── 1. Create afenda_test database if not exists ─────────────────────────
+  // ── 1. Recreate afenda_test database deterministically ──────────────────
   const adminClient = new Client({ connectionString: ADMIN_URL });
   await adminClient.connect();
   try {
-    const exists = await adminClient.query(
-      `SELECT 1 FROM pg_database WHERE datname = 'afenda_test'`,
-    );
-    if (exists.rowCount === 0) {
-      await adminClient.query(`CREATE DATABASE afenda_test OWNER afenda`);
-      console.log("✅ created afenda_test database");
-    }
+    await adminClient.query(`DROP DATABASE IF EXISTS afenda_test WITH (FORCE)`);
+    await adminClient.query(`CREATE DATABASE afenda_test OWNER afenda`);
+    console.log("✅ recreated afenda_test database");
   } finally {
     await adminClient.end();
   }
 
   // ── 2. Run migrations ───────────────────────────────────────────────────
   const migrationsFolder = resolve(__dirname, "../../../../packages/db/drizzle");
-
-  // Detect push-bootstrapped DB: schema exists but no __drizzle_migrations table.
-  // In that case, drop + recreate so migrations can run cleanly from scratch.
-  const probeClient = new Client({ connectionString: TEST_DB_URL });
-  await probeClient.connect();
-  try {
-    const { rows } = await probeClient.query<{ has_migration_table: boolean }>(
-      `SELECT EXISTS (
-         SELECT FROM information_schema.tables
-         WHERE table_schema = 'public' AND table_name = '__drizzle_migrations'
-       ) AS has_migration_table`,
-    );
-    const hasMigrationTable = rows[0]?.has_migration_table ?? false;
-
-    if (!hasMigrationTable) {
-      // Check if schema was push-bootstrapped (tables exist without migration tracking)
-      const { rows: schemaRows } = await probeClient.query<{ has_schema: boolean }>(
-        `SELECT EXISTS (
-           SELECT FROM information_schema.tables
-           WHERE table_schema = 'public' AND table_name = 'party'
-         ) AS has_schema`,
-      );
-      if (schemaRows[0]?.has_schema) {
-        console.log("⚠️  push-bootstrapped afenda_test detected — rebuilding from migrations");
-        await probeClient.end();
-        const rebuildAdmin = new Client({ connectionString: ADMIN_URL });
-        await rebuildAdmin.connect();
-        try {
-          await rebuildAdmin.query(`DROP DATABASE afenda_test WITH (FORCE)`);
-          await rebuildAdmin.query(`CREATE DATABASE afenda_test OWNER afenda`);
-          console.log("✅ recreated afenda_test database");
-        } finally {
-          await rebuildAdmin.end();
-        }
-      } else {
-        await probeClient.end();
-      }
-    } else {
-      await probeClient.end();
-    }
-  } catch {
-    await probeClient.end();
-  }
 
   const migrateClient = new Client({
     connectionString: TEST_DB_URL,

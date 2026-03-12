@@ -17,4 +17,7 @@ export * from "./liquidity-source-feed";
 export * from "./fx-rate-snapshot";
 export * from "./liquidity-lineage";
 export * from "./forecast-variance";
+// Wave 4.1 — In-house Banking + Intercompany Transfers
+export * from "./internal-bank-account.table";
+export * from "./intercompany-transfer.table";
 

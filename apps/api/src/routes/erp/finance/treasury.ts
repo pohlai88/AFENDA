@@ -70,6 +70,19 @@ import {
   UpsertArExpectedReceiptProjectionCommandSchema,
   ArExpectedReceiptProjectionStatusValues,
   ArExpectedReceiptMethodValues,
+  // Wave 4.1 — In-house Banking + Intercompany Transfers
+  createInternalBankAccountCommandSchema,
+  activateInternalBankAccountCommandSchema,
+  deactivateInternalBankAccountCommandSchema,
+  createIntercompanyTransferCommandSchema,
+  submitIntercompanyTransferCommandSchema,
+  approveIntercompanyTransferCommandSchema,
+  rejectIntercompanyTransferCommandSchema,
+  settleIntercompanyTransferCommandSchema,
+  internalBankAccountStatusValues,
+  internalBankAccountTypeValues,
+  intercompanyTransferStatusValues,
+  intercompanyTransferPurposeValues,
 } from "@afenda/contracts";
 import {
   activateBankAccount,
@@ -133,6 +146,10 @@ import {
   listApDuePaymentProjections,
   upsertArExpectedReceiptProjection,
   listArExpectedReceiptProjections,
+  InternalBankAccountService,
+  InternalBankAccountQueries,
+  IntercompanyTransferService,
+  IntercompanyTransferQueries,
 } from "@afenda/core";
 import type { OrgScopedContext } from "@afenda/core";
 import {
@@ -261,6 +278,16 @@ function toBankAccountResponse(row: {
 
 export async function treasuryRoutes(app: FastifyInstance) {
   const server = app.withTypeProvider<ZodTypeProvider>();
+  const internalBankAccountService = new InternalBankAccountService({
+    db: app.db,
+    logger: app.log,
+  });
+  const internalBankAccountQueries = new InternalBankAccountQueries({ db: app.db });
+  const intercompanyTransferService = new IntercompanyTransferService({
+    db: app.db,
+    logger: app.log,
+  });
+  const intercompanyTransferQueries = new IntercompanyTransferQueries({ db: app.db });
 
   server.post(
     "/commands/create-bank-account",
@@ -2804,6 +2831,634 @@ export async function treasuryRoutes(app: FastifyInstance) {
         data: { data: rows.map(toArExpectedReceiptProjectionResponse) },
         correlationId: req.correlationId,
       };
+    },
+  );
+
+  // ─── Wave 4.1: In-house Banking + Intercompany Transfers ───────────────
+
+  const CreateInternalBankAccountApiSchema = createInternalBankAccountCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const ActivateInternalBankAccountApiSchema = activateInternalBankAccountCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const DeactivateInternalBankAccountApiSchema = deactivateInternalBankAccountCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const CreateIntercompanyTransferApiSchema = createIntercompanyTransferCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const SubmitIntercompanyTransferApiSchema = submitIntercompanyTransferCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const ApproveIntercompanyTransferApiSchema = approveIntercompanyTransferCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const RejectIntercompanyTransferApiSchema = rejectIntercompanyTransferCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const SettleIntercompanyTransferApiSchema = settleIntercompanyTransferCommandSchema.omit({
+    orgId: true,
+    actorUserId: true,
+    correlationId: true,
+  });
+
+  const InternalBankAccountRowSchema = z.object({
+    id: z.string().uuid(),
+    orgId: z.string().uuid(),
+    legalEntityId: z.string().uuid(),
+    code: z.string(),
+    accountName: z.string(),
+    accountType: z.enum(internalBankAccountTypeValues),
+    currencyCode: z.string(),
+    externalBankAccountId: z.string().uuid().nullable(),
+    status: z.enum(internalBankAccountStatusValues),
+    isPrimaryFundingAccount: z.boolean(),
+    activatedAt: z.string().datetime().nullable(),
+    deactivatedAt: z.string().datetime().nullable(),
+    closedAt: z.string().datetime().nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  });
+
+  const IntercompanyTransferRowSchema = z.object({
+    id: z.string().uuid(),
+    orgId: z.string().uuid(),
+    transferNumber: z.string(),
+    fromLegalEntityId: z.string().uuid(),
+    toLegalEntityId: z.string().uuid(),
+    fromInternalBankAccountId: z.string().uuid(),
+    toInternalBankAccountId: z.string().uuid(),
+    purpose: z.enum(intercompanyTransferPurposeValues),
+    currencyCode: z.string(),
+    transferAmountMinor: z.string(),
+    debitLegAmountMinor: z.string(),
+    creditLegAmountMinor: z.string(),
+    requestedExecutionDate: z.string().date(),
+    status: z.enum(intercompanyTransferStatusValues),
+    makerUserId: z.string().uuid(),
+    checkerUserId: z.string().uuid().nullable(),
+    approvedAt: z.string().datetime().nullable(),
+    rejectedAt: z.string().datetime().nullable(),
+    settledAt: z.string().datetime().nullable(),
+    rejectionReason: z.string().nullable(),
+    sourceVersion: z.string(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  });
+
+  function toInternalBankAccountResponse(row: any) {
+    const toIso = (value: Date | string | null) => !value ? null : value instanceof Date ? value.toISOString() : value;
+    return {
+      ...row,
+      accountType: row.accountType as (typeof internalBankAccountTypeValues)[number],
+      status: row.status as (typeof internalBankAccountStatusValues)[number],
+      activatedAt: toIso(row.activatedAt),
+      deactivatedAt: toIso(row.deactivatedAt),
+      closedAt: toIso(row.closedAt),
+      createdAt: toIso(row.createdAt),
+      updatedAt: toIso(row.updatedAt),
+    };
+  }
+
+  function toIntercompanyTransferResponse(row: any) {
+    const toIso = (value: Date | string | null) => !value ? null : value instanceof Date ? value.toISOString() : value;
+    return {
+      ...row,
+      purpose: row.purpose as (typeof intercompanyTransferPurposeValues)[number],
+      status: row.status as (typeof intercompanyTransferStatusValues)[number],
+      approvedAt: toIso(row.approvedAt),
+      rejectedAt: toIso(row.rejectedAt),
+      settledAt: toIso(row.settledAt),
+      createdAt: toIso(row.createdAt),
+      updatedAt: toIso(row.updatedAt),
+    };
+  }
+
+  function mapWave41ErrorStatus(code: string) {
+    switch (code) {
+      case "TREASURY_INTERNAL_BANK_ACCOUNT_NOT_FOUND":
+      case "TREASURY_INTERCOMPANY_TRANSFER_NOT_FOUND":
+      case "TREASURY_INTERCOMPANY_TRANSFER_ACCOUNT_NOT_FOUND":
+        return 404 as const;
+      case "TREASURY_INTERNAL_BANK_ACCOUNT_CODE_EXISTS":
+      case "TREASURY_INTERCOMPANY_TRANSFER_NUMBER_EXISTS":
+        return 409 as const;
+      case "TREASURY_INTERCOMPANY_TRANSFER_ACCOUNT_INACTIVE":
+      case "TREASURY_INTERCOMPANY_TRANSFER_ENTITY_ACCOUNT_MISMATCH":
+      case "TREASURY_INTERCOMPANY_TRANSFER_CURRENCY_MISMATCH":
+      case "TREASURY_INTERCOMPANY_TRANSFER_DEBIT_MISMATCH":
+      case "TREASURY_INTERCOMPANY_TRANSFER_CREDIT_MISMATCH":
+      case "TREASURY_INTERCOMPANY_TRANSFER_UNBALANCED":
+      case "TREASURY_INTERCOMPANY_TRANSFER_SAME_ENTITY":
+      case "TREASURY_INTERNAL_BANK_ACCOUNT_ILLEGAL_TRANSITION":
+      case "TREASURY_INTERCOMPANY_TRANSFER_ILLEGAL_TRANSITION":
+      case "TREASURY_INTERCOMPANY_TRANSFER_SOD_VIOLATION":
+        return 422 as const;
+      default:
+        return 400 as const;
+    }
+  }
+
+  server.post(
+    "/commands/create-internal-bank-account",
+    {
+      schema: {
+        description: "Create an internal bank account in draft state.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: CreateInternalBankAccountApiSchema,
+        response: {
+          201: makeSuccessSchema(InternalBankAccountRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await internalBankAccountService.createInternalBankAccount({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.status(201).send({
+        data: toInternalBankAccountResponse(result.data),
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  server.post(
+    "/commands/activate-internal-bank-account",
+    {
+      schema: {
+        description: "Activate an internal bank account.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: ActivateInternalBankAccountApiSchema,
+        response: {
+          200: makeSuccessSchema(InternalBankAccountRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await internalBankAccountService.activateInternalBankAccount({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toInternalBankAccountResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.post(
+    "/commands/deactivate-internal-bank-account",
+    {
+      schema: {
+        description: "Deactivate an internal bank account.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: DeactivateInternalBankAccountApiSchema,
+        response: {
+          200: makeSuccessSchema(InternalBankAccountRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await internalBankAccountService.deactivateInternalBankAccount({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toInternalBankAccountResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.get(
+    "/treasury/internal-bank-accounts",
+    {
+      schema: {
+        description: "List internal bank accounts.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: z.object({
+          legalEntityId: z.string().uuid().optional(),
+          status: z.enum(internalBankAccountStatusValues).optional(),
+        }),
+        response: {
+          200: makeSuccessSchema(z.object({ data: z.array(InternalBankAccountRowSchema) })),
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const rows = req.query.legalEntityId && req.query.status === "active"
+        ? await internalBankAccountQueries.listActiveByLegalEntity(orgId, req.query.legalEntityId)
+        : await internalBankAccountQueries.listByOrg(orgId);
+
+      const filtered = req.query.status
+        ? rows.filter((row) => row.status === req.query.status)
+        : rows;
+
+      return {
+        data: { data: filtered.map(toInternalBankAccountResponse) },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  server.get(
+    "/treasury/internal-bank-accounts/:id",
+    {
+      schema: {
+        description: "Get an internal bank account by ID.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        response: {
+          200: makeSuccessSchema(InternalBankAccountRowSchema),
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const found = await internalBankAccountQueries.getById(orgId, req.params.id);
+      if (!found || found.orgId !== orgId) {
+        return reply.status(404).send({
+          error: {
+            code: "TREASURY_INTERNAL_BANK_ACCOUNT_NOT_FOUND",
+            message: "Internal bank account not found",
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toInternalBankAccountResponse(found), correlationId: req.correlationId };
+    },
+  );
+
+  server.post(
+    "/commands/create-intercompany-transfer",
+    {
+      schema: {
+        description: "Create an intercompany transfer in draft state.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: CreateIntercompanyTransferApiSchema,
+        response: {
+          201: makeSuccessSchema(IntercompanyTransferRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await intercompanyTransferService.createIntercompanyTransfer({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.status(201).send({
+        data: toIntercompanyTransferResponse(result.data),
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  server.post(
+    "/commands/submit-intercompany-transfer",
+    {
+      schema: {
+        description: "Submit an intercompany transfer for approval.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: SubmitIntercompanyTransferApiSchema,
+        response: {
+          200: makeSuccessSchema(IntercompanyTransferRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await intercompanyTransferService.submitIntercompanyTransfer({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toIntercompanyTransferResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.post(
+    "/commands/approve-intercompany-transfer",
+    {
+      schema: {
+        description: "Approve an intercompany transfer.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: ApproveIntercompanyTransferApiSchema,
+        response: {
+          200: makeSuccessSchema(IntercompanyTransferRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await intercompanyTransferService.approveIntercompanyTransfer({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toIntercompanyTransferResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.post(
+    "/commands/reject-intercompany-transfer",
+    {
+      schema: {
+        description: "Reject an intercompany transfer.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: RejectIntercompanyTransferApiSchema,
+        response: {
+          200: makeSuccessSchema(IntercompanyTransferRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await intercompanyTransferService.rejectIntercompanyTransfer({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toIntercompanyTransferResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.post(
+    "/commands/settle-intercompany-transfer",
+    {
+      schema: {
+        description: "Settle an approved intercompany transfer.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: SettleIntercompanyTransferApiSchema,
+        response: {
+          200: makeSuccessSchema(IntercompanyTransferRowSchema),
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+          409: ApiErrorResponseSchema,
+          422: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await intercompanyTransferService.settleIntercompanyTransfer({
+        ...req.body,
+        orgId,
+        actorUserId: auth.principalId,
+        correlationId: req.correlationId,
+      });
+
+      if (!result.ok) {
+        return reply.status(mapWave41ErrorStatus(result.error.code)).send({
+          error: result.error,
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toIntercompanyTransferResponse(result.data), correlationId: req.correlationId };
+    },
+  );
+
+  server.get(
+    "/treasury/intercompany-transfers",
+    {
+      schema: {
+        description: "List intercompany transfers.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        querystring: z.object({
+          status: z.enum(intercompanyTransferStatusValues).optional(),
+        }),
+        response: {
+          200: makeSuccessSchema(z.object({ data: z.array(IntercompanyTransferRowSchema) })),
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const rows = req.query.status
+        ? await intercompanyTransferQueries.listByStatus(orgId, req.query.status)
+        : await intercompanyTransferQueries.listByOrg(orgId);
+
+      return {
+        data: { data: rows.map(toIntercompanyTransferResponse) },
+        correlationId: req.correlationId,
+      };
+    },
+  );
+
+  server.get(
+    "/treasury/intercompany-transfers/:id",
+    {
+      schema: {
+        description: "Get an intercompany transfer by ID.",
+        tags: ["Treasury"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        response: {
+          200: makeSuccessSchema(IntercompanyTransferRowSchema),
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      requireAuth(req, reply);
+
+      const found = await intercompanyTransferQueries.getById(orgId, req.params.id);
+      if (!found || found.orgId !== orgId) {
+        return reply.status(404).send({
+          error: {
+            code: "TREASURY_INTERCOMPANY_TRANSFER_NOT_FOUND",
+            message: "Intercompany transfer not found",
+          },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return { data: toIntercompanyTransferResponse(found), correlationId: req.correlationId };
     },
   );
 }

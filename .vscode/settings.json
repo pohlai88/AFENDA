@@ -29,5 +29,23 @@
   "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  // ── Terminal: force UTF-8 (code page 65001) in every PowerShell session ──
+  // Prevents pnpm/turbo box-drawing chars from appearing as "ÔÄ»" garbage.
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "args": [
+        "-NoExit",
+        "-Command",
+        "chcp 65001 | Out-Null; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::InputEncoding = [System.Text.Encoding]::UTF8; $OutputEncoding = [System.Text.Encoding]::UTF8"
+      ]
+    }
+  },
+
+  // ── File encoding: always read/write UTF-8; never silently re-encode ──
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false
 }

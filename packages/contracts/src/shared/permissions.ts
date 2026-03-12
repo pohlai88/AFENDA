@@ -145,6 +145,13 @@ export const PermissionValues = [
   "treasury.ar-expected-receipt.manage",
   "treasury.fx-rate.read",
   "treasury.fx-rate.manage",
+
+  // Treasury — Wave 4.1 In-house Banking + Intercompany Transfers
+  "erp.finance.treasury.internal-bank-account.read",
+  "erp.finance.treasury.internal-bank-account.manage",
+  "erp.finance.treasury.intercompany-transfer.read",
+  "erp.finance.treasury.intercompany-transfer.manage",
+  "erp.finance.treasury.intercompany-transfer.settle",
 ] as const;
 
 export type Permission = (typeof PermissionValues)[number];

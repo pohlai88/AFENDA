@@ -35,6 +35,10 @@ Pillar: `erp` | Domain: `finance/treasury`
 | `ap-due-payment-projection.queries.ts` | `listApDuePaymentProjections` |
 | `ar-expected-receipt-projection.service.ts` | `upsertArExpectedReceiptProjection` |
 | `ar-expected-receipt-projection.queries.ts` | `listArExpectedReceiptProjections` |
+| `internal-bank-account.service.ts` | `InternalBankAccountService` |
+| `internal-bank-account.queries.ts` | `InternalBankAccountQueries` |
+| `intercompany-transfer.service.ts` | `IntercompanyTransferService` |
+| `intercompany-transfer.queries.ts` | `IntercompanyTransferQueries` |
 
 ## Planned files (added per sprint)
 

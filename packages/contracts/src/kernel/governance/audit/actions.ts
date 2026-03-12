@@ -135,6 +135,15 @@ export const AuditActionValues = [
   "treasury.liquidity-source-feed.upserted",
   "treasury.fx-rate-snapshot.upserted",
   "treasury.forecast-variance.recorded",
+  // Treasury — Wave 4.1 In-house Banking + Intercompany Transfers
+  "treasury.internal-bank-account.created",
+  "treasury.internal-bank-account.activated",
+  "treasury.internal-bank-account.deactivated",
+  "treasury.intercompany-transfer.created",
+  "treasury.intercompany-transfer.submitted",
+  "treasury.intercompany-transfer.approved",
+  "treasury.intercompany-transfer.rejected",
+  "treasury.intercompany-transfer.settled",
 ] as const;
 
 export type AuditAction = (typeof AuditActionValues)[number];
@@ -186,6 +195,8 @@ export const AuditEntityTypeValues = [
   "liquidity_source_feed",
   "fx_rate_snapshot",
   "forecast_variance",
+  "internal_bank_account",
+  "intercompany_transfer",
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];

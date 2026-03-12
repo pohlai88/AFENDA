@@ -33,6 +33,10 @@ import * as rawApDuePaymentProjectionService from "./ap-due-payment-projection.s
 import * as rawApDuePaymentProjectionQueries from "./ap-due-payment-projection.queries";
 import * as rawArExpectedReceiptProjectionService from "./ar-expected-receipt-projection.service";
 import * as rawArExpectedReceiptProjectionQueries from "./ar-expected-receipt-projection.queries";
+import * as rawInternalBankAccountService from "./internal-bank-account.service";
+import * as rawInternalBankAccountQueries from "./internal-bank-account.queries";
+import * as rawIntercompanyTransferService from "./intercompany-transfer.service";
+import * as rawIntercompanyTransferQueries from "./intercompany-transfer.queries";
 
 export type {
 	BankAccountServiceError,
@@ -192,6 +196,12 @@ export type {
 	ArExpectedReceiptProjectionListParams,
 } from "./ar-expected-receipt-projection.queries";
 
+// Wave 4.1 — In-house Banking + Intercompany Transfers
+export { InternalBankAccountService } from "./internal-bank-account.service";
+export { InternalBankAccountQueries } from "./internal-bank-account.queries";
+export { IntercompanyTransferService } from "./intercompany-transfer.service";
+export { IntercompanyTransferQueries } from "./intercompany-transfer.queries";
+
 // Calculators (pure functions)
 export * from "./calculators/index";
 
@@ -222,6 +232,10 @@ const instrumented = instrumentService("treasury", {
 	...rawApDuePaymentProjectionQueries,
 	...rawArExpectedReceiptProjectionService,
 	...rawArExpectedReceiptProjectionQueries,
+	...rawInternalBankAccountService,
+	...rawInternalBankAccountQueries,
+	...rawIntercompanyTransferService,
+	...rawIntercompanyTransferQueries,
 });
 
 export const {

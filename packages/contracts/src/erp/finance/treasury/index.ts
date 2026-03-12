@@ -36,4 +36,9 @@ export * from "./fx-rate-snapshot.commands.js";
 export * from "./liquidity-lineage.entity.js";
 export * from "./forecast-variance.entity.js";
 export * from "./forecast-variance.commands.js";
+// Wave 4.1
+export * from "./internal-bank-account.entity.js";
+export * from "./internal-bank-account.commands.js";
+export * from "./intercompany-transfer.entity.js";
+export * from "./intercompany-transfer.commands.js";
 

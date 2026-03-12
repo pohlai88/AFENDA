@@ -76,6 +76,22 @@ const SYNC_PAIRS = [
     excludeFromContract: [],
     excludeFromDb: [],
   },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/treasury/internal-bank-account.table.ts",
+    dbTable: "treasury_internal_bank_account",
+    contractFile: "packages/contracts/src/erp/finance/treasury/internal-bank-account.entity.ts",
+    contractSchema: "internalBankAccountEntitySchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/finance/treasury/intercompany-transfer.table.ts",
+    dbTable: "treasury_intercompany_transfer",
+    contractFile: "packages/contracts/src/erp/finance/treasury/intercompany-transfer.entity.ts",
+    contractSchema: "intercompanyTransferEntitySchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
 
   // ─── Purchasing ──────────────────────────────────────────────────────
   {

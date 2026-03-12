@@ -17,6 +17,7 @@
  */
 
 // Sprint 1+ calculators exported here
+export * from "./intercompany-balancing";
 
 // Sprint 2.1: reconciliation matching engine
 export * from "./reconciliation.calculator";
