@@ -38,7 +38,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "e2e": "pnpm -C apps/web e2e",
-    "e2e:auth": "pnpm -C apps/web exec playwright test e2e/auth.spec.ts --project=chromium --workers=1",
+    "e2e:auth": "pnpm -C apps/web exec playwright test e2e/smoke.spec.ts --project=chromium --workers=1",
+    "e2e:auth:reuse": "set PLAYWRIGHT_BASE_URL=http://localhost:3000&& pnpm -C apps/web exec playwright test e2e/smoke.spec.ts --project=chromium --workers=1",
     "dev:e2e": "turbo run dev --filter=@afenda/web --filter=@afenda/api"
   },
   "devDependencies": {

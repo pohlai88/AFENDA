@@ -11,7 +11,7 @@ test("signin page renders core controls", async ({ page }) => {
   await page.goto("/auth/signin", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel(/email/i)).toBeVisible();
   await expect(page.getByLabel(/password/i)).toBeVisible();
-  await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^sign in$/i })).toBeVisible();
 });
 
 test("verify page renders MFA input", async ({ page }) => {
@@ -21,6 +21,8 @@ test("verify page renders MFA input", async ({ page }) => {
 
 test("portal route redirects to signin when unauthenticated", async ({ page }) => {
   await page.goto("/portal/supplier", { waitUntil: "domcontentloaded" });
-  await expect(page).toHaveURL(/\/auth\/portal\/supplier\/signin|\/auth\/signin|\/portal\/supplier/);
+  await expect(page).toHaveURL(
+    /\/auth\/portal\/supplier\/signin|\/auth\/signin|\/portal\/supplier/,
+  );
   await expect(page.getByLabel(/email/i)).toBeVisible();
 });
