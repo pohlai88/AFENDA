@@ -12,6 +12,7 @@ import { AuthHeader } from "../_components/auth-header";
 import { AuthHiddenField } from "../_components/auth-hidden-field";
 import { AuthOAuthButtons } from "../_components/auth-oauth-buttons";
 import { AuthPageShell } from "../_components/auth-page-shell";
+import { AuthSessionDebugBanner } from "../_components/auth-session-debug-banner";
 import { AuthSubmitButton } from "../_components/auth-submit-button";
 import { PortalSwitcher } from "../_components/portal-switcher";
 import {
@@ -36,6 +37,7 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
 
   return (
     <AuthPageShell portal="app" journey="signin">
+      <AuthSessionDebugBanner />
       <AuthHeader
         backHref="/"
         backLabel="Back to home"
@@ -109,7 +111,7 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
           <AuthSubmitButton>Sign in</AuthSubmitButton>
 
           <Link
-            href={callbackUrl ? `/auth/verify?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/verify"}
+            href={callbackUrl ? `/auth/signin-with-code?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/auth/signin-with-code"}
             className="w-full"
           >
             <Button
@@ -117,7 +119,7 @@ export function SignInPageClient({ callbackUrl, noticeState }: SignInPageClientP
               variant="outline"
               className="w-full"
             >
-              Have a verification code?
+              Sign in with a code
             </Button>
           </Link>
 

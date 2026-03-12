@@ -21,9 +21,9 @@ import { AfendaMark } from "./AfendaMark";
    ────────────────────────────────────────────────────────────────────────── */
 
 const scales = {
-  sm: { icon: 18, text: "text-lg",  tag: "text-[10px]", gap: "gap-1.5", tagGap: "gap-0.5" },
-  md: { icon: 24, text: "text-2xl", tag: "text-[11px]", gap: "gap-2.5", tagGap: "gap-1"   },
-  lg: { icon: 32, text: "text-4xl", tag: "text-[13px]", gap: "gap-3",   tagGap: "gap-1.5" },
+  sm: { icon: 18, text: "text-lg", tag: "text-[10px]", gap: "gap-1.5", tagGap: "gap-0.5" },
+  md: { icon: 24, text: "text-2xl", tag: "text-[11px]", gap: "gap-2.5", tagGap: "gap-1" },
+  lg: { icon: 32, text: "text-4xl", tag: "text-[13px]", gap: "gap-3", tagGap: "gap-1.5" },
 } as const;
 
 interface AfendaLogoProps {
@@ -53,14 +53,8 @@ export function AfendaLogo({
     <div className={`flex flex-col ${alignClass} ${s.tagGap} ${className}`}>
       {/* Line 1: Icon + Brand Name — cap-height aligned */}
       <div className={`flex items-center ${s.gap}`}>
-        <AfendaMark
-          size={s.icon}
-          variant={variant}
-          className="flex-shrink-0"
-        />
-        <span
-          className={`${s.text} font-bold tracking-[-0.03em] leading-none text-foreground`}
-        >
+        <AfendaMark size={s.icon} variant={variant} className="shrink-0" />
+        <span className={`${s.text} leading-none font-bold tracking-[-0.03em] text-foreground`}>
           AFENDA
         </span>
       </div>
@@ -68,12 +62,10 @@ export function AfendaLogo({
       {/* Line 2: Tagline — mono foundation at 50% visual weight */}
       {showTagline && (
         <motion.p
-          initial={
-            isAnimated ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }
-          }
+          initial={isAnimated ? { opacity: 0, y: 4 } : { opacity: 1, y: 0 }}
           animate={{ opacity: 1, y: 0 }}
           transition={isAnimated ? { delay: 0.25, duration: 0.4 } : { duration: 0 }}
-          className={`${s.tag} font-mono uppercase tracking-[0.2em] text-muted-foreground`}
+          className={`${s.tag} font-mono tracking-[0.2em] text-muted-foreground uppercase`}
         >
           Where numbers become canon
         </motion.p>

@@ -4,15 +4,11 @@
  * Runs in `onRequest` (before rate-limit evaluation) so the rate limiter
  * can key by resolved principalId instead of raw IP.
  *
- * Supports two modes:
+ * Supports one active mode during Neon Auth migration:
  *
  *   1. **Dev mode** (`NODE_ENV !== "production"`):
  *      Send `X-Dev-User-Email` header — resolves the principal from the DB by
  *      email and builds a full RequestContext. No token required.
- *
- *   2. **Production mode**:
- *      `Authorization: Bearer <NextAuth JWE>` — decrypts the token using
- *      HKDF(NEXTAUTH_SECRET) and resolves the principal from the DB.
  *
  * ADR-0003 COMPLETE:
  *   - Uses `resolvePrincipalContext` (party/principal/membership model)
@@ -21,53 +17,58 @@
  * Routes that require authentication check `req.ctx` and return 401 when absent.
  */
 
-import type { FastifyInstance } from "fastify";
-import fp from "fastify-plugin";
-import { jwtDecrypt } from "jose";
+import type { FastifyPluginAsync } from "fastify";
 import { resolvePrincipalContext } from "@afenda/core";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const DEV_HEADER = "x-dev-user-email";
 
-// ── NextAuth JWE decryption ───────────────────────────────────────────────────
-// NextAuth v4 encrypts JWTs with AES-256-GCM, using a key derived from
-// NEXTAUTH_SECRET via HKDF-SHA256 with info="NextAuth.js Generated Encryption Key".
+function extractBearerToken(value: string | string[] | undefined): string | null {
+  if (!value) return null;
 
-async function deriveNextAuthKey(secret: string): Promise<CryptoKey> {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(secret), "HKDF", false, [
-    "deriveKey",
-  ]);
-  return crypto.subtle.deriveKey(
-    {
-      name: "HKDF",
-      hash: "SHA-256",
-      salt: new Uint8Array(),
-      info: enc.encode("NextAuth.js Generated Encryption Key"),
-    },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["decrypt"],
-  );
+  const header = Array.isArray(value) ? value[0] : value;
+  if (!header) return null;
+
+  const [scheme, token] = header.split(" ");
+  if (!scheme || !token || scheme.toLowerCase() !== "bearer") return null;
+  return token.trim();
 }
 
-async function decryptNextAuthToken(
-  token: string,
-  secret: string,
-): Promise<{ email?: string; requiresMfa?: boolean } | null> {
-  try {
-    const key = await deriveNextAuthKey(secret);
-    const { payload } = await jwtDecrypt(token, key);
-    return payload as { email?: string; requiresMfa?: boolean };
-  } catch {
-    return null; // expired, tampered, or wrong secret
+function resolveJwksUrl(): string | null {
+  const explicit = process.env["NEON_AUTH_JWKS_URL"];
+  if (explicit) return explicit;
+
+  const baseUrl = process.env["NEON_AUTH_BASE_URL"];
+  if (!baseUrl) return null;
+
+  return new URL(
+    ".well-known/jwks.json",
+    baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`,
+  ).toString();
+}
+
+function extractEmailFromPayload(payload: Record<string, unknown>): string | null {
+  const email = payload["email"];
+  if (typeof email === "string" && email.length > 0) return email;
+
+  const preferredUsername = payload["preferred_username"];
+  if (
+    typeof preferredUsername === "string" &&
+    preferredUsername.length > 0 &&
+    preferredUsername.includes("@")
+  ) {
+    return preferredUsername;
   }
+
+  return null;
 }
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
-export const authPlugin = fp(async function authPlugin(app: FastifyInstance) {
+export const authPlugin: FastifyPluginAsync = async (app) => {
   app.decorateRequest("ctx", undefined);
+  const jwksUrl = resolveJwksUrl();
+  const jwks = jwksUrl ? createRemoteJWKSet(new URL(jwksUrl)) : null;
 
   // onRequest fires after correlationId + orgSlug hooks (which are registered
   // before this plugin in index.ts). So req.correlationId and req.orgSlug are
@@ -99,45 +100,47 @@ export const authPlugin = fp(async function authPlugin(app: FastifyInstance) {
       return;
     }
 
-    // ── Bearer token (NextAuth JWE) ──────────────────────────────────────────
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return;
-    if (!authHeader.startsWith("Bearer ")) return;
+    const bearerToken = extractBearerToken(req.headers.authorization);
+    if (!bearerToken || !jwks) return;
 
-    const token = authHeader.slice(7).trim();
-    // NextAuth JWE should have five dot-separated segments.
-    if (!/^([^\.]+\.){4}[^\.]+$/.test(token)) {
-      app.log.debug({ correlationId: req.correlationId }, "Bearer token format invalid");
-      return;
-    }
+    try {
+      const verified = await jwtVerify(bearerToken, jwks);
+      const email = extractEmailFromPayload(verified.payload);
 
-    const secret = process.env["NEXTAUTH_SECRET"];
-    if (!secret) {
-      app.log.error("NEXTAUTH_SECRET not set — cannot verify Bearer token");
-      return;
-    }
+      if (!email) {
+        app.log.warn(
+          {
+            correlationId: req.correlationId,
+            orgSlug: slug,
+            claims: Object.keys(verified.payload),
+          },
+          "Neon Auth token verified but email claim is missing",
+        );
+        return;
+      }
 
-    const payload = await decryptNextAuthToken(token, secret);
-    if (!payload?.email) {
-      app.log.debug("Bearer token invalid or expired");
-      return;
-    }
+      const ctx = await resolvePrincipalContext(app.db, email, slug, req.correlationId);
+      if (!ctx) {
+        app.log.warn(
+          { correlationId: req.correlationId, orgSlug: slug, email },
+          "Verified Neon Auth token did not resolve to a principal context",
+        );
+        return;
+      }
 
-    // ── MFA enforcement ────────────────────────────────────────────────────
-    // If the session has requiresMfa=true, the user authenticated with
-    // email+password but has not yet completed TOTP verification.
-    // Block all routes except the MFA challenge endpoint itself.
-    if (payload.requiresMfa === true && req.url !== "/v1/auth/verify-mfa-challenge") {
-      app.log.debug({ correlationId: req.correlationId }, "MFA required — request blocked");
-      return;
-    }
-
-    const ctx = await resolvePrincipalContext(app.db, payload.email, slug, req.correlationId);
-    if (ctx) {
       req.ctx = ctx;
       if (ctx.activeContext?.orgId) {
         req.orgId = ctx.activeContext.orgId;
       }
+    } catch (error) {
+      app.log.warn(
+        {
+          correlationId: req.correlationId,
+          orgSlug: slug,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        "Failed to verify Neon Auth bearer token",
+      );
     }
   });
-});
+};

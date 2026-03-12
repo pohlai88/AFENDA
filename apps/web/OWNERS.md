@@ -34,8 +34,8 @@ All App Router pages are organized under `src/app/` using route groups.
 | `(kernel)/admin/insights/page.tsx` | OTel Insight Factory dashboard |
 | `(kernel)/admin/insights/internal-insights.ts` | Shared OTel insight response generator |
 | `(kernel)/admin/traces/page.tsx` | Jaeger trace viewer |
-| `(kernel)/auth/signin/page.tsx` | NextAuth sign-in page |
-| `(public)/auth/signout/page.tsx` | Sign-out transition page that calls NextAuth signout |
+| `(kernel)/auth/signin/page.tsx` | Sign-in page (Neon Auth migration target) |
+| `(public)/auth/signout/page.tsx` | Sign-out transition page |
 | `(public)/auth/reset-password/status/page.tsx` | Reset-password outcome status page |
 | `(kernel)/governance/` | ← directory scaffolded, no pages yet (Sprint 3) |
 
@@ -66,14 +66,14 @@ All App Router pages are organized under `src/app/` using route groups.
 
 | File | Description |
 |---|---|
-| `api/auth/[...nextauth]/route.ts` | NextAuth v4 handler |
+| `api/auth/[...path]/route.ts` | Neon Auth route handler (sign-in, sign-up, OAuth callback, session, etc.) |
 | `api/internal/insights/route.ts` | Proxied OTel insights endpoint |
 
 ### Lib
 
 | File | Description |
 |---|---|
-| `src/lib/auth.ts` | NextAuth config (JWT strategy, HKDF secret) |
+| `auth.ts` | Auth shim during Neon Auth migration |
 | `src/lib/api-client.ts` | Typed fetch wrapper for `apps/api` |
 | `src/lib/utils.ts` | Miscellaneous utility functions |
 

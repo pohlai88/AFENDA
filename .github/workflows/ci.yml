@@ -99,7 +99,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://afenda:afenda@localhost:5432/afenda_test
       DATABASE_URL_DIRECT: postgresql://afenda:afenda@localhost:5432/afenda_test
-      NEXTAUTH_SECRET: ci-test-secret-not-for-production
+      NEON_AUTH_BASE_URL: http://localhost:4500/neondb/auth
+      NEON_AUTH_COOKIE_SECRET: ci-test-cookie-secret-32bytes-min
       AUTH_CHALLENGE_SECRET: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456
     steps:
       - uses: actions/checkout@v4

@@ -31,6 +31,10 @@
     "db:generate": "pnpm -C packages/db db:generate",
     "db:seed": "pnpm -C packages/db db:seed",
     "db:studio": "pnpm -C packages/db db:studio",
+    "sync:env": "node scripts/sync-env-config-to-env.mjs",
+    "neon:auth-validate": "node scripts/validate-neon-auth-env.mjs",
+    "neon:auth-config": "node scripts/neon-auth-config.mjs",
+    "neon:auth-sync-fix": "pnpm -C packages/db node scripts/run-fix-neon-auth-sync.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "e2e": "pnpm -C apps/web e2e",
@@ -44,14 +48,20 @@
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "eslint-config-prettier": "catalog:",
+    "eslint-plugin-drizzle": "catalog:",
+    "eslint-plugin-jsx-a11y": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "prettier": "catalog:",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "turbo": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
     "typescript-eslint": "catalog:",
-    "eslint-plugin-react-hooks": "catalog:",
-    "eslint-plugin-jsx-a11y": "catalog:",
-    "eslint-plugin-drizzle": "catalog:",
+    "vitest": "catalog:",
     "yaml": "catalog:"
+  },
+  "dependencies": {
+    "@neondatabase/auth": "catalog:",
+    "@neondatabase/neon-js": "catalog:",
+    "better-auth": "catalog:"
   }
 }

@@ -53,14 +53,13 @@ export function LandingNav() {
             ))}
           </div>
 
-          {/* CTA — TODO: Replace when new auth is scaffolded */}
           <div className="flex items-center gap-3">
-            <Link href="/">
+            <Link href="/auth/signin">
               <Button variant="ghost" className="hidden sm:inline-flex text-sm px-4">
                 Sign In
               </Button>
             </Link>
-            <Link href="/">
+            <Link href="/auth/signup">
               <Button variant="default" className="text-sm px-4 py-2 gap-1.5">
                 Get Started
               </Button>

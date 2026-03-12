@@ -1,11 +1,10 @@
 /**
- * Next.js middleware entry point — delegates to the lightweight proxy auth.
+ * Next.js middleware — delegates to proxy (session guard + redirects).
  *
- * Uses the minimal NextAuth instance from proxy.ts (no providers, session-check only)
- * to avoid pulling DB/provider code into the Edge runtime bundle.
+ * Official SDK uses auth.middleware({ loginUrl: '/auth/sign-in' }); we use a
+ * custom proxy because lib/auth/server is Node-only (DB). See docs/neon-auth-nextjs-server-reference.md.
  *
- * config.matcher must be defined statically inline — Next.js cannot re-export it
- * from another module (it is statically analysed at build time).
+ * config.matcher must be defined statically inline (Next.js static analysis).
  *
  * Protected route groups:
  *   /app/*         — Internal ERP app shell

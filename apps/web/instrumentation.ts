@@ -9,8 +9,11 @@ export async function register() {
   if (process.env.NODE_ENV !== "production") return;
 
   const missing: string[] = [];
-  if (!process.env.AUTH_SECRET?.trim()) {
-    missing.push("AUTH_SECRET");
+  if (!process.env.NEON_AUTH_BASE_URL?.trim()) {
+    missing.push("NEON_AUTH_BASE_URL");
+  }
+  if (!process.env.NEON_AUTH_COOKIE_SECRET?.trim()) {
+    missing.push("NEON_AUTH_COOKIE_SECRET");
   }
   if (!process.env.AUTH_CHALLENGE_SECRET?.trim()) {
     missing.push("AUTH_CHALLENGE_SECRET");

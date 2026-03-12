@@ -9,7 +9,6 @@
     "outDir": ".next",
     "plugins": [{ "name": "next" }],
     "incremental": true,
-    "baseUrl": ".",
     "paths": {
       "@/auth": ["./auth.ts"],
       "@/*": ["./src/*"],

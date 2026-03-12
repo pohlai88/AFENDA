@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 
 import { signIn } from "@/auth";
-import { establishWebSessionFromGrant } from "@/features/auth/server/establish-session";
 import { buildFailureState, buildValidationErrorState } from "../_lib/auth-errors";
 import { resolveInviteRedirect } from "../_lib/auth-redirect";
 import type { AuthActionState } from "../_lib/auth-state";
@@ -100,7 +99,7 @@ export async function acceptInviteAction(
     return buildFailureState(mapInviteConsumeFailureToMessage(consumeResult.reason));
   }
 
-  const { email, portal, sessionGrant } = result.data;
+  const { email, portal } = result.data;
 
   await publishAuthAuditEvent("auth.invite.accepted", {
     email,
@@ -116,19 +115,13 @@ export async function acceptInviteAction(
   const redirectUrl = resolveInviteRedirect(callbackUrl);
 
   try {
-    if (sessionGrant) {
-      await establishWebSessionFromGrant({ grant: sessionGrant, redirectTo: redirectUrl });
-    } else {
-      await signIn("credentials", {
-        email,
-        password,
-        portal,
-        callbackUrl: redirectUrl,
-      });
-    }
+    await signIn("credentials", {
+      email,
+      password,
+      callbackUrl: redirectUrl,
+    });
   } catch (error) {
     if (isRedirectError(error)) throw error;
-    // Session establishment failed: return success message with redirect
     return {
       ok: true,
       message: "Invitation accepted. Redirecting...",

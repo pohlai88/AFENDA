@@ -1,5 +1,5 @@
 /**
- * Auth routes — unauthenticated credential verification for NextAuth.
+ * Auth routes — unauthenticated credential verification for the web auth layer.
  *
  * Routes (AuthFlowResult shape where noted):
  *   POST /v1/auth/context
@@ -23,6 +23,7 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   acceptPortalInvitation,
+  createMfaChallenge,
   createSessionGrant,
   getAuthContext,
   mapAuthErrorMessage,
@@ -75,6 +76,8 @@ const VerifyCredentialsSuccessSchema = makeSuccessSchema(
   z.object({
     principalId: z.string().uuid(),
     email: z.string().email(),
+    requiresMfa: z.boolean().optional(),
+    mfaToken: z.string().optional(),
   }),
 );
 
@@ -140,6 +143,7 @@ const VerifyResetTokenResponseSchema = AuthFlowResultSchema(VerifyResetTokenData
 const VerifyInviteTokenResponseSchema = AuthFlowResultSchema(VerifyInviteTokenDataSchema);
 const LoginDataWithMfaSchema = LoginDataSchema.extend({
   requiresMfa: z.boolean().optional(),
+  mfaToken: z.string().optional(),
 });
 const LoginResponseSchema = AuthFlowResultSchema(LoginDataWithMfaSchema);
 
@@ -180,7 +184,7 @@ export async function authRoutes(app: FastifyInstance) {
       },
       schema: {
         description:
-          "Verify email + password. Used by NextAuth authorize(). Returns principalId and email if valid. Unauthenticated.",
+          "Verify email + password. Returns principalId and email if valid. Unauthenticated.",
         tags: ["Auth"],
         body: VerifyCredentialsBodySchema,
         response: {
@@ -203,11 +207,22 @@ export async function authRoutes(app: FastifyInstance) {
         });
       }
 
+      let mfaToken: string | undefined;
+      if (result.requiresMfa) {
+        const challenge = await createMfaChallenge(app.db, {
+          principalId: result.principalId,
+          email: result.email,
+          portal: portal ?? "app",
+        });
+        mfaToken = challenge.mfaToken;
+      }
+
       return {
         data: {
           principalId: result.principalId,
           email: result.email,
           requiresMfa: result.requiresMfa ?? false,
+          mfaToken,
         },
         correlationId: req.correlationId,
       };
@@ -740,12 +755,23 @@ export async function authRoutes(app: FastifyInstance) {
         };
       }
 
+      let mfaToken: string | undefined;
+      if (result.requiresMfa) {
+        const challenge = await createMfaChallenge(app.db, {
+          principalId: result.principalId,
+          email: result.email,
+          portal: portal ?? "app",
+        });
+        mfaToken = challenge.mfaToken;
+      }
+
       return {
         ok: true as const,
         data: {
           principalId: result.principalId,
           email: result.email,
           requiresMfa: result.requiresMfa ?? false,
+          mfaToken,
         },
         correlationId: req.correlationId,
       };

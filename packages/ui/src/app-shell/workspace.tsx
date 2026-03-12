@@ -33,7 +33,7 @@ export function AppShellWorkspace({
         value={textareaValue}
         onChange={(event) => handleChange(event.target.value)}
         placeholder={placeholder}
-        className="min-h-[320px] w-full resize-y"
+        className="min-h-80 w-full resize-y"
       />
     </section>
   );

@@ -1,11 +1,11 @@
 /**
  * Auth Error Messages — Centralized error message mapping for authentication flows
  * 
- * Maps error codes from NextAuth, Better Auth, and AFENDA IAM system to
+ * Maps error codes from legacy auth providers and AFENDA IAM system to
  * user-friendly messages displayed in auth forms.
  * 
  * Error code sources:
- * - NextAuth errors: CredentialsSignin, OAuthSignin, etc.
+ * - Legacy Auth.js/NextAuth errors: CredentialsSignin, OAuthSignin, etc.
  * - IAM errors: IAM_CREDENTIALS_INVALID, IAM_PORTAL_*, etc.
  * - Auth transport: AUTH_UPSTREAM_UNAVAILABLE, AUTH_INVALID_RESPONSE
  * 
@@ -17,7 +17,7 @@
  */
 
 export const AUTH_ERROR_MESSAGES = {
-  // ── NextAuth standard errors (generic to prevent email enumeration) ──
+  // ── Legacy Auth.js/NextAuth standard errors (generic to prevent email enumeration) ──
   CredentialsSignin: "We couldn't verify your credentials.",
   OAuthSignin: "Unable to sign in with OAuth provider.",
   OAuthCallback: "OAuth callback error. Please try again.",

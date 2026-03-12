@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "dist",
     "declaration": true,
-    "baseUrl": ".",
     "paths": {
       "@afenda/contracts": ["../contracts/src/index.ts"],
       "@afenda/db": ["../db/src/index.ts"]

@@ -8,6 +8,7 @@ import drizzle from "eslint-plugin-drizzle";
 import noHardcodedColors from "./tools/eslint/no-hardcoded-colors.mjs";
 import noJsDateInDb from "./tools/eslint/no-js-date-in-db.mjs";
 import noRawFormElements from "./tools/eslint/no-raw-form-elements.mjs";
+import { rule as noNoncanonicalTailwind } from "./tools/eslint/no-noncanonical-tailwind.mjs";
 
 export default tseslint.config(
   // ── Global ignores ──────────────────────────────────────────────────────────
@@ -86,11 +87,7 @@ export default tseslint.config(
 
   // ── Drizzle: enforce .where() on delete/update (prevents accidental full-table ops) ─
   {
-    files: [
-      "packages/core/src/**/*.ts",
-      "packages/db/src/**/*.ts",
-      "apps/api/src/**/*.ts",
-    ],
+    files: ["packages/core/src/**/*.ts", "packages/db/src/**/*.ts", "apps/api/src/**/*.ts"],
     ignores: ["**/__vitest_test__/**", "**/__e2e_test__/**"],
     languageOptions: {
       parserOptions: {
@@ -124,6 +121,7 @@ export default tseslint.config(
           "no-hardcoded-colors": noHardcodedColors,
           "no-raw-form-elements": noRawFormElements,
           "no-js-date-in-db": noJsDateInDb,
+          "no-noncanonical-tailwind": noNoncanonicalTailwind,
         },
       },
     },
@@ -132,24 +130,17 @@ export default tseslint.config(
   // ── Design-system: tokens + shadcn (apps/web, packages/ui) ───────────────
   {
     files: ["apps/web/**/*.tsx", "packages/ui/**/*.tsx"],
-    ignores: [
-      "**/*.test.tsx",
-      "**/__vitest_test__/**",
-      "packages/ui/src/components/**",
-    ],
+    ignores: ["**/*.test.tsx", "**/__vitest_test__/**", "packages/ui/src/components/**"],
     rules: {
       "@afenda/no-hardcoded-colors": "error",
       "@afenda/no-raw-form-elements": "error",
+      "@afenda/no-noncanonical-tailwind": "warn",
     },
   },
 
   // ── Server clock: no new Date() in DB code (core, api, worker) ────────────
   {
-    files: [
-      "packages/core/src/**/*.ts",
-      "apps/api/src/**/*.ts",
-      "apps/worker/src/**/*.ts",
-    ],
+    files: ["packages/core/src/**/*.ts", "apps/api/src/**/*.ts", "apps/worker/src/**/*.ts"],
     ignores: ["**/__vitest_test__/**", "**/__e2e_test__/**"],
     rules: {
       "@afenda/no-js-date-in-db": "error",

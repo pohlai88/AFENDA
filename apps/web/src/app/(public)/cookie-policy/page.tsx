@@ -30,21 +30,21 @@ export const metadata: Metadata = {
 
 const cookieData = [
   {
-    name: "next-auth.session-token",
-    purpose: "Stores encrypted JWT session for user authentication",
+    name: "neon-auth.session",
+    purpose: "Stores session token for user authentication",
     category: "Strictly Necessary",
     duration: "8 hours (expires on logout or timeout)",
     icon: Shield,
   },
   {
-    name: "next-auth.csrf-token",
+    name: "neon-auth.csrf-token",
     purpose: "CSRF protection for authentication requests",
     category: "Strictly Necessary",
     duration: "Session (cleared when browser closes)",
     icon: Shield,
   },
   {
-    name: "next-auth.callback-url",
+    name: "neon-auth.callback-url",
     purpose: "Temporary redirect URL during login flow",
     category: "Strictly Necessary",
     duration: "Session (cleared after redirect)",

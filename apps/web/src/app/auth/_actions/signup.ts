@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 
-import { signIn } from "@/auth";
+import { getBaseUrl } from "@/auth";
+import { auth as neonAuth, isNeonAuthConfigured } from "@/lib/auth/server";
 import { getAfendaAuthService } from "@/features/auth/server/afenda-auth.service";
 import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { getAuthSecurityContext } from "@/features/auth/server/security/auth-security-context";
@@ -36,43 +37,59 @@ export async function signUpAction(
     email,
     ipAddress: security.ipAddress,
     userAgent: security.userAgent,
+    metadata: { companyName },
   });
 
-  const service = getAfendaAuthService();
-  const result = await service.signUp({
-    fullName,
-    companyName,
+  if (!isNeonAuthConfigured || !neonAuth) {
+    return buildFailureState(
+      "Authentication is not configured. Set Neon Auth environment variables to continue.",
+    );
+  }
+
+  const callbackPath = resolveOrganizationPostSignInRedirect(callbackUrl);
+  const absoluteCallbackURL = `${getBaseUrl()}${callbackPath.startsWith("/") ? callbackPath : `/${callbackPath}`}`;
+
+  const result = await neonAuth.signUp.email({
+    name: fullName,
     email,
     password,
+    callbackURL: absoluteCallbackURL,
   });
 
-  if (!result.ok) {
+  if (result.error) {
     await publishAuthAuditEvent("auth.signup.failure", {
       email,
       ipAddress: security.ipAddress,
       userAgent: security.userAgent,
-      errorCode: result.code,
+      errorCode: result.error.code,
     });
-    return buildFailureState(result.message);
+    return buildFailureState(result.error.message ?? "Unable to create your account.");
   }
 
   await publishAuthAuditEvent("auth.signup.success", {
     email,
-    userId: result.data.principalId,
+    userId: result.data?.user.id,
     ipAddress: security.ipAddress,
     userAgent: security.userAgent,
-    metadata: { orgSlug: result.data.orgSlug },
+    metadata: { companyName },
   });
 
   const callbackUrlResolved = resolveOrganizationPostSignInRedirect(callbackUrl);
 
   try {
-    await signIn("credentials", {
+    const signInResult = await neonAuth.signIn.email({
       email,
       password,
-      portal: "app",
-      callbackUrl: callbackUrlResolved,
+      callbackURL: absoluteCallbackURL,
     });
+
+    if (signInResult.error) {
+      redirect(
+        `/auth/signin?signup=success&callbackUrl=${encodeURIComponent(callbackUrlResolved)}`,
+      );
+    }
+
+    redirect(callbackUrlResolved);
   } catch (error) {
     if (isRedirectError(error)) throw error;
     // Sign-in after signup failed; redirect to signin so user can sign in manually

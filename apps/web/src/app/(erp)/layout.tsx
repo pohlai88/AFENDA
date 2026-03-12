@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
+/** Session depends on cookies — force dynamic (Neon Auth). */
+export const dynamic = "force-dynamic";
+
 /**
  * ERP route group layout — defence-in-depth session check.
  *

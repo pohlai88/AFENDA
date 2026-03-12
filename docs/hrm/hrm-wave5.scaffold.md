@@ -147,7 +147,7 @@ Done when:
 ## Blockers log (update during execution)
 
 - No technical blockers identified.
-- Scope blocker: Wave 5 invariant test suite not yet created as dedicated set.
+- Scope blocker resolved: Wave 5 invariant test suite now exists across recruitment, onboarding, and core.
 
 ---
 
@@ -173,6 +173,14 @@ Done when:
 - Full gate run (`pnpm check:all`) executed on 2026-03-12.
 - Gate result: all 22 gates passed.
 - Note on finance gate in local dev: `journal-balance` and `idempotency` are currently skipped when API test infrastructure (DB) is unavailable; gate still passes with remaining critical finance tests (`posting`, `money`).
+
+### Re-validation snapshot (latest)
+
+- Wave 5 targeted tests re-run on 2026-03-12: 8 files passed, 12 tests passed.
+- Finance invariants re-run on 2026-03-12: `posting` + `money` passed; `journal-balance` + `idempotency` skipped due local API test infra/DB unavailability.
+- Full gates re-run on 2026-03-12: all 22 gates passed.
+- Catalog baseline restored during re-validation by aligning `@neondatabase/auth` and `better-auth` to workspace catalog references.
+- Cross-repo note: API plugin typing regression resolved; `pnpm typecheck` now passes.
 
 ### Known open items
 

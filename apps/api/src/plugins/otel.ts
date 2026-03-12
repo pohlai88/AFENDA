@@ -16,11 +16,10 @@
  * Must be registered AFTER authPlugin (so req.ctx is populated).
  */
 
-import type { FastifyInstance } from "fastify";
-import fp from "fastify-plugin";
+import type { FastifyPluginAsync } from "fastify";
 import { extractRequestAttrs, setActiveSpanAttributes, updateActiveSpanName } from "@afenda/core";
 
-async function otelPlugin(app: FastifyInstance) {
+const otelPlugin: FastifyPluginAsync = async (app) => {
   // ── onRequest: stamp domain context attrs on the HTTP span ───────────────
   // Runs after auth so req.ctx / req.orgId are already populated.
   app.addHook("onRequest", async (req) => {
@@ -43,11 +42,6 @@ async function otelPlugin(app: FastifyInstance) {
   });
 
   app.log.debug("OTel request enrichment plugin registered");
-}
+};
 
-export const otelEnrichmentPlugin = fp(otelPlugin, {
-  name: "otel-enrichment",
-  // No `dependencies` — registration order in index.ts guarantees
-  // auth runs before this.  Fastify dependency names are fragile
-  // (auto-derived from function name) so we avoid coupling to them.
-});
+export const otelEnrichmentPlugin = otelPlugin;

@@ -15,8 +15,7 @@
  *   3. onError: `releaseIdempotency()` deletes the pending row so retries work.
  */
 
-import type { FastifyInstance } from "fastify";
-import fp from "fastify-plugin";
+import type { FastifyPluginAsync } from "fastify";
 import { IdempotencyKeyHeader, type OrgId, type IdempotencyKey } from "@afenda/contracts";
 import {
   beginIdempotency,
@@ -48,7 +47,7 @@ interface IdempotencyMeta {
   requestHash: string;
 }
 
-export const idempotencyPlugin = fp(async function idempotencyPlugin(app: FastifyInstance) {
+export const idempotencyPlugin: FastifyPluginAsync = async (app) => {
   // ── preHandler: claim idempotency key ──────────────────────────────────────
   app.addHook("preHandler", async (req, reply) => {
     const key =
@@ -160,4 +159,4 @@ export const idempotencyPlugin = fp(async function idempotencyPlugin(app: Fastif
       app.log.warn({ err }, "Failed to release idempotency key (non-fatal)");
     }
   });
-});
+};

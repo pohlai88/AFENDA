@@ -1324,8 +1324,8 @@ app.setErrorHandler((error, req, reply) => {
 // packages/core/src/shared/env.ts
 export const ApiEnvSchema = z.object({
   DATABASE_URL: z.string().url(),
-  NEXTAUTH_SECRET: z.string().min(32),
-  JWT_SECRET: z.string().min(32),
+  NEON_AUTH_BASE_URL: z.string().url(),
+  NEON_AUTH_COOKIE_SECRET: z.string().min(32),
 });
 
 // Validate on startup
@@ -1351,8 +1351,8 @@ openssl rand -base64 32
 export function redactEnv(env: Record<string, unknown>) {
   const redacted = { ...env };
   const sensitiveKeys = [
-    "DATABASE_URL", "NEXTAUTH_SECRET", 
-    "JWT_SECRET", "API_KEY"
+    "DATABASE_URL", "NEON_AUTH_COOKIE_SECRET", 
+    "AUTH_CHALLENGE_SECRET", "API_KEY"
   ];
   
   for (const key of sensitiveKeys) {

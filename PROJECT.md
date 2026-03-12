@@ -367,10 +367,10 @@ Defined in `packages/contracts/src/shared/errors.ts`. Prefixes: `SHARED_*`, `AP_
 
 ### Authentication
 
-**NextAuth v4** (JWT strategy). API validates tokens via `jose` + HKDF key derivation from `NEXTAUTH_SECRET`.
+**Neon Auth** (Better Auth + managed PostgreSQL). API validates tokens via JWKS (`jose` + `createRemoteJWKSet`) from the Neon Auth endpoint.
 
 - Dev mode: `X-Dev-User-Email` header → resolves full context
-- Prod: `Authorization: Bearer <NextAuth JWE>`
+- Prod: `Authorization: Bearer <JWT>` verified against Neon Auth JWKS
 
 ### Organization resolution
 
@@ -649,7 +649,7 @@ Current counts: 176 tests (154 unit + 22 integration), all passing.
 | PostgreSQL | 17 |
 | Jaeger | v2 (latest) |
 | @aws-sdk/client-s3 | 3.750.0 |
-| next-auth | 4.24.13 |
+| @neondatabase/auth | 0.2.0-beta.1 |
 
 ### Observability
 

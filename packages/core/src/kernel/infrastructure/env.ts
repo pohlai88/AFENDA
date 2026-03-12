@@ -105,30 +105,17 @@ export const BaseEnvSchema = z.object({
 
 // ── API ──────────────────────────────────────────────────────────────────────
 
-const PLACEHOLDER_SECRETS = new Set([
-  "your-nextauth-secret-generate-with-openssl-rand-base64-32",
-  "dev-secret-change-in-production",
-  "ci-test-secret-not-for-production",
-  "change-in-production",
-]);
-
 export const ApiEnvSchema = BaseEnvSchema.extend({
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   ALLOWED_ORIGINS: origins,
   AUTH_CHALLENGE_SECRET: nonEmpty("AUTH_CHALLENGE_SECRET").pipe(
     z.string().min(32, "AUTH_CHALLENGE_SECRET must be at least 32 hex chars"),
   ),
-  NEXTAUTH_SECRET: nonEmpty("NEXTAUTH_SECRET")
-    .pipe(z.string().min(16, "NEXTAUTH_SECRET must be at least 16 characters"))
-    .pipe(
-      z.string().refine(
-        (s) => {
-          if (process.env.NODE_ENV !== "production") return true;
-          return !PLACEHOLDER_SECRETS.has(s) && !s.includes("change-in-production");
-        },
-        { message: "NEXTAUTH_SECRET must not be a placeholder in production" },
-      ),
-    ),
+  // Neon Auth — managed authentication (identity provider)
+  NEON_AUTH_BASE_URL: z.string().url("NEON_AUTH_BASE_URL must be a valid URL").optional(),
+  NEON_AUTH_COOKIE_SECRET: z.string().min(32, "NEON_AUTH_COOKIE_SECRET must be at least 32 chars").optional(),
+  NEON_AUTH_JWKS_URL: z.string().url("NEON_AUTH_JWKS_URL must be a valid URL").optional(),
+  NEXT_PUBLIC_NEON_AUTH_URL: z.string().url("NEXT_PUBLIC_NEON_AUTH_URL must be a valid URL").optional().describe("Neon Auth endpoint for client-side SDK"),
   S3_ENDPOINT: url("S3_ENDPOINT"),
   S3_REGION: z.string().default("auto"),
   S3_BUCKET: s3Bucket,
@@ -168,7 +155,8 @@ export function resolveWorkerDbUrl(env: WorkerEnv): string {
 const SECRET_KEYS: ReadonlySet<string> = new Set([
   "DATABASE_URL",
   "WORKER_DATABASE_URL",
-  "NEXTAUTH_SECRET",
+  "NEON_AUTH_COOKIE_SECRET",
+  "NEON_AUTH_JWKS_URL",
   "AUTH_CHALLENGE_SECRET",
   "AUTH_EVIDENCE_SIGNING_SECRET",
   "S3_SECRET_ACCESS_KEY",

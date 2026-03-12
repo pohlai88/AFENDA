@@ -1,7 +1,7 @@
 /**
  * Credential verification and password change.
  *
- * Used by NextAuth authorize() via verify-credentials API.
+ * Used by web auth credential verification via verify-credentials API.
  * Import Direction: api → core (never web → core).
  */
 

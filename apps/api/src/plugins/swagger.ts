@@ -12,19 +12,18 @@
  * Skip list excludes infrastructure endpoints (/healthz, /readyz) from docs.
  */
 
-import type { FastifyInstance } from "fastify";
-import fp from "fastify-plugin";
+import type { FastifyPluginAsync } from "fastify";
 import fastifySwagger from "@fastify/swagger";
 import scalarApiReference from "@scalar/fastify-api-reference";
 import { jsonSchemaTransform, createJsonSchemaTransform } from "fastify-type-provider-zod";
 
-export const swaggerPlugin = fp(async function swaggerPlugin(app: FastifyInstance) {
+export const swaggerPlugin: FastifyPluginAsync = async (app) => {
   // ── OpenAPI 3.1 spec generation ──────────────────────────────────────────
   const transform = createJsonSchemaTransform({
     skipList: ["/healthz", "/readyz", "/v1/docs", "/v1/docs/*", "/v1/docs/openapi.json"],
   });
 
-  await app.register(fastifySwagger, {
+  await app.register(fastifySwagger as any, {
     openapi: {
       openapi: "3.1.0",
       info: {
@@ -69,9 +68,9 @@ export const swaggerPlugin = fp(async function swaggerPlugin(app: FastifyInstanc
           bearerAuth: {
             type: "http",
             scheme: "bearer",
-            bearerFormat: "JWE",
+            bearerFormat: "JWT",
             description:
-              "NextAuth v4 encrypted JWT. In dev mode, use `X-Dev-User-Email` header instead.",
+              "Neon Auth bearer token (migration target). In dev mode, use `X-Dev-User-Email` header instead.",
           },
           devAuth: {
             type: "apiKey",
@@ -86,7 +85,7 @@ export const swaggerPlugin = fp(async function swaggerPlugin(app: FastifyInstanc
   });
 
   // ── Scalar API reference UI ──────────────────────────────────────────────
-  await app.register(scalarApiReference, {
+  await app.register(scalarApiReference as any, {
     routePrefix: "/v1/docs",
     configuration: {
       theme: "kepler",
@@ -104,4 +103,4 @@ export const swaggerPlugin = fp(async function swaggerPlugin(app: FastifyInstanc
 
   app.log.info("OpenAPI spec at /v1/docs/openapi.json");
   app.log.info("API reference UI at /v1/docs");
-});
+};

@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 
-import { establishWebSessionFromGrant } from "@/features/auth/server/establish-session";
 import { buildFailureState, buildValidationErrorState } from "../_lib/auth-errors";
 import { resolveVerifyRedirect } from "../_lib/auth-redirect";
 import type { AuthActionState } from "../_lib/auth-state";
@@ -80,7 +79,7 @@ export async function verifyAction(
     return buildFailureState("This verification challenge is no longer valid.");
   }
 
-  const { user, sessionGrant } = await verifyMfaChallenge({
+  const { user } = await verifyMfaChallenge({
     mfaToken,
     code,
     ipAddress: security.ipAddress,
@@ -106,10 +105,7 @@ export async function verifyAction(
       },
     });
 
-    if (
-      failed.challenge &&
-      failed.challenge.attemptCount >= failed.challenge.maxAttempts
-    ) {
+    if (failed.challenge && failed.challenge.attemptCount >= failed.challenge.maxAttempts) {
       return buildFailureState("Too many invalid verification attempts.");
     }
 
@@ -146,20 +142,6 @@ export async function verifyAction(
   });
 
   const redirectTo = resolveVerifyRedirect(callbackUrl);
-
-  if (sessionGrant) {
-    try {
-      await establishWebSessionFromGrant({ grant: sessionGrant, redirectTo });
-    } catch (error) {
-      if (isRedirectError(error)) throw error;
-      // Session establishment failed: return success message with redirect
-      return {
-        ok: true,
-        message: "Verification successful. Redirecting...",
-        redirectTo,
-      };
-    }
-  }
 
   redirect(redirectTo);
 }

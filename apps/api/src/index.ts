@@ -146,7 +146,7 @@ export async function buildApp() {
     throw new Error("ALLOWED_ORIGINS must be set in production");
   }
 
-  await app.register(cors, {
+  await app.register(cors as any, {
     origin: env.ALLOWED_ORIGINS.length > 0 ? env.ALLOWED_ORIGINS : isDev,
     credentials: true,
   });
@@ -191,11 +191,11 @@ export async function buildApp() {
   // Unauthenticated requests: 100 req/min (keyed by IP).
   // Authenticated requests:   300 req/min (keyed by principalId).
   // Per-route overrides are set via route config.rateLimit.
-  await app.register(rateLimit, {
+  await app.register(rateLimit as any, {
     global: true,
-    max: (req) => (req.ctx?.principalId ? 300 : 100),
+    max: (req: any) => (req.ctx?.principalId ? 300 : 100),
     timeWindow: "1 minute",
-    keyGenerator: (req) => req.ctx?.principalId ?? req.ip,
+    keyGenerator: (req: any) => req.ctx?.principalId ?? req.ip,
   });
 
   // ── Idempotency ────────────────────────────────────────────────────────────

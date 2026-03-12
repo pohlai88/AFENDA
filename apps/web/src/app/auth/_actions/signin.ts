@@ -1,30 +1,18 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
 import type { PortalType } from "@afenda/contracts";
 import { redirect } from "next/navigation";
 
-import { signIn } from "@/auth";
+import { getBaseUrl } from "@/auth";
+import { auth as neonAuth, isNeonAuthConfigured } from "@/lib/auth/server";
 
 import { buildFailureState, buildValidationErrorState } from "../_lib/auth-errors";
-import {
-  buildVerifyRedirect,
-  resolveOrganizationPostSignInRedirect,
-  resolvePortalPostSignInRedirect,
-} from "../_lib/auth-redirect";
+import { resolveOrganizationPostSignInRedirect, resolvePortalPostSignInRedirect } from "../_lib/auth-redirect";
 import type { AuthActionState } from "../_lib/auth-state";
 import { portalSignInSchema, signInSchema } from "../_lib/auth-schemas";
 
-import { canAccessPortal } from "@/features/auth/server/access/portal-access.service";
-import { getAfendaAuthService } from "@/features/auth/server/afenda-auth.service";
-import { mapVerifyCredentialsResultToUser } from "@/features/auth/server/auth-user.mapper";
 import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
-import {
-  buildChallengeExpiry,
-  createAuthChallenge,
-} from "@/features/auth/server/challenge/auth-challenge.service";
 import { checkAuthRateLimit } from "@/features/auth/server/rate-limit/rate-limit.service";
-import { evaluateAuthRisk } from "@/features/auth/server/risk/auth-risk.service";
 import { getAuthSecurityContext } from "@/features/auth/server/security/auth-security-context";
 
 async function safePublishAuthAuditEvent(
@@ -53,181 +41,77 @@ async function runPortalSignIn(params: {
   const security = await getAuthSecurityContext();
 
   try {
+    if (!isNeonAuthConfigured || !neonAuth) {
+      return buildFailureState(
+        "Authentication is not configured. Set Neon Auth environment variables to continue.",
+      );
+    }
 
-  const rateLimit = await checkAuthRateLimit(
-    `signin:${portal}:${security.ipAddress ?? "unknown"}:${email.toLowerCase()}`,
-    { limit: 5, windowSeconds: 300 },
-  );
-
-  if (!rateLimit.allowed) {
-    await safePublishAuthAuditEvent("auth.signin.failure", {
-      email,
-      portal,
-      callbackUrl,
-      ipAddress: security.ipAddress,
-      userAgent: security.userAgent,
-      errorCode: "RATE_LIMITED",
-      metadata: {
-        retryAfterSeconds: rateLimit.retryAfterSeconds,
-      },
-    });
-
-    return buildFailureState("Too many sign-in attempts. Please try again later.");
-  }
-
-  const risk = await evaluateAuthRisk({
-    email,
-    portal,
-    ipAddress: security.ipAddress,
-    userAgent: security.userAgent,
-  });
-
-  if (risk.blocked) {
-    await safePublishAuthAuditEvent("auth.signin.failure", {
-      email,
-      portal,
-      callbackUrl,
-      ipAddress: security.ipAddress,
-      userAgent: security.userAgent,
-      errorCode: "RISK_BLOCKED",
-      metadata: {
-        riskLevel: risk.level,
-        reasons: risk.reasons,
-      },
-    });
-
-    return buildFailureState("This sign-in attempt was blocked.");
-  }
-
-  await safePublishAuthAuditEvent("auth.signin.attempt", {
-    email,
-    portal,
-    callbackUrl,
-    ipAddress: security.ipAddress,
-    userAgent: security.userAgent,
-    metadata: {
-      riskLevel: risk.level,
-      riskReasons: risk.reasons,
-    },
-  });
-
-  const authService = getAfendaAuthService();
-  const result = await authService.verifyCredentials({
-    email,
-    password,
-    portal,
-    ipAddress: security.ipAddress,
-    userAgent: security.userAgent,
-  });
-
-  const user = mapVerifyCredentialsResultToUser(result, portal);
-
-  if (!user) {
-    await safePublishAuthAuditEvent("auth.signin.failure", {
-      email,
-      portal,
-      callbackUrl,
-      ipAddress: security.ipAddress,
-      userAgent: security.userAgent,
-      errorCode: "INVALID_CREDENTIALS",
-    });
-
-    return buildFailureState("Invalid email or password.");
-  }
-
-  const allowedPortal = await canAccessPortal({
-    portal,
-    roles: user.roles,
-    permissions: user.permissions,
-  });
-
-  if (!allowedPortal) {
-    await safePublishAuthAuditEvent("auth.signin.failure", {
-      email,
-      userId: user.id,
-      tenantId: user.tenantId,
-      tenantSlug: user.tenantSlug,
-      portal,
-      ipAddress: security.ipAddress,
-      userAgent: security.userAgent,
-      errorCode: "PORTAL_ACCESS_DENIED",
-    });
-
-    return buildFailureState("You do not have access to this portal.");
-  }
-
-  if (user.requiresMfa || risk.requiresMfa) {
-    const mfaChallengeToken = randomBytes(32).toString("hex");
-    await createAuthChallenge({
-      type: "mfa",
-      rawToken: mfaChallengeToken,
-      email: user.email,
-      portal,
-      callbackUrl,
-      userId: user.id,
-      tenantId: user.tenantId,
-      tenantSlug: user.tenantSlug,
-      expiresAt: buildChallengeExpiry(10),
-      maxAttempts: 5,
-      metadata: {
-        riskLevel: risk.level,
-        riskReasons: risk.reasons,
-      },
-    });
-
-    await safePublishAuthAuditEvent("auth.signin.mfa_required", {
-      email,
-      userId: user.id,
-      tenantId: user.tenantId,
-      tenantSlug: user.tenantSlug,
-      portal,
-      ipAddress: security.ipAddress,
-      userAgent: security.userAgent,
-      metadata: {
-        riskLevel: risk.level,
-        riskReasons: risk.reasons,
-      },
-    });
-
-    redirect(
-      buildVerifyRedirect({
-        callbackUrl: resolvePortalRedirect(portal, callbackUrl),
-        mfaToken: mfaChallengeToken,
-      }),
+    const rateLimit = await checkAuthRateLimit(
+      `signin:${portal}:${security.ipAddress ?? "unknown"}:${email.toLowerCase()}`,
+      { limit: 5, windowSeconds: 300 },
     );
-  }
 
-  await safePublishAuthAuditEvent("auth.signin.success", {
-    email,
-    userId: user.id,
-    tenantId: user.tenantId,
-    tenantSlug: user.tenantSlug,
-    portal,
-    ipAddress: security.ipAddress,
-    userAgent: security.userAgent,
-  });
+    if (!rateLimit.allowed) {
+      await safePublishAuthAuditEvent("auth.signin.failure", {
+        email,
+        portal,
+        callbackUrl,
+        ipAddress: security.ipAddress,
+        userAgent: security.userAgent,
+        errorCode: "RATE_LIMITED",
+        metadata: {
+          retryAfterSeconds: rateLimit.retryAfterSeconds,
+        },
+      });
 
-  try {
+      return buildFailureState("Too many sign-in attempts. Please try again later.");
+    }
+
+    await safePublishAuthAuditEvent("auth.signin.attempt", {
+      email,
+      portal,
+      callbackUrl,
+      ipAddress: security.ipAddress,
+      userAgent: security.userAgent,
+    });
+
     const callbackUrlResolved =
       portal === "app"
         ? resolveOrganizationPostSignInRedirect(callbackUrl)
         : resolvePortalPostSignInRedirect(portal, callbackUrl);
 
-    await signIn("credentials", {
+    const path = callbackUrlResolved.startsWith("/") ? callbackUrlResolved : `/${callbackUrlResolved}`;
+    const absoluteCallbackURL = `${getBaseUrl()}${path}`;
+
+    const result = await neonAuth.signIn.email({
       email,
       password,
-      portal,
-      callbackUrl: callbackUrlResolved,
+      callbackURL: absoluteCallbackURL,
     });
 
-    return { ok: true };
-  } catch (error) {
-    if (isRedirectError(error)) throw error;
-    if (isCredentialsSigninError(error)) {
-      return buildFailureState("Invalid email or password.");
+    if (result.error) {
+      await safePublishAuthAuditEvent("auth.signin.failure", {
+        email,
+        portal,
+        callbackUrl,
+        ipAddress: security.ipAddress,
+        userAgent: security.userAgent,
+        errorCode: result.error.code ?? "INVALID_CREDENTIALS",
+      });
+
+      return buildFailureState(result.error.message ?? "Invalid email or password.");
     }
-    return buildFailureState("Unable to sign in. Please try again.");
-  }
+
+    await safePublishAuthAuditEvent("auth.signin.success", {
+      email,
+      userId: result.data?.user.id,
+      portal,
+      ipAddress: security.ipAddress,
+      userAgent: security.userAgent,
+    });
+
+    redirect(callbackUrlResolved);
 
   } catch (error) {
     if (isRedirectError(error)) throw error;

@@ -164,7 +164,7 @@ function ConfettiBurst({ onComplete }: { onComplete: () => void }) {
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
       {/* Central flash */}
       <motion.div
-        className="absolute top-1/2 left-1/2 w-[600px] h-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="absolute top-1/2 left-1/2 w-150 h-150 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           background:
             "radial-gradient(circle, rgba(52,211,153,0.25) 0%, rgba(20,184,166,0.08) 40%, transparent 70%)",
@@ -234,7 +234,7 @@ function CountdownRing({
 
   return (
     <div className="relative flex items-center justify-center w-9 h-9">
-      <svg width="36" height="36" className="rotate-[-90deg]">
+      <svg width="36" height="36" className="-rotate-90">
         {/* Track */}
         <circle
           cx="18"
@@ -308,7 +308,7 @@ function TearEdgeLeak({ intensity }: { intensity: number }) {
    VEIL — "The Classified Dossier" with frosted-glass preview
    ═══════════════════════════════════════════════════════════════════ */
 
-function Veil({ onReveal, reduced }: { onReveal: () => void; reduced: boolean | null }) {
+function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: boolean | null }) {
   const dragX = useMotionValue(0);
   const revealBtnRef = useRef<HTMLButtonElement>(null);
   const [timerSeconds, setTimerSeconds] = useState(10); // SSR-safe default
@@ -605,7 +605,7 @@ function Veil({ onReveal, reduced }: { onReveal: () => void; reduced: boolean | 
         {/* ── Bottom controls ── */}
         <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 flex flex-col items-center gap-3 z-20">
           {/* Drag progress bar */}
-          <div className="w-36 h-[3px] rounded-full bg-slate-800/60 overflow-hidden">
+          <div className="w-36 h-0.75 rounded-full bg-slate-800/60 overflow-hidden">
             <motion.div
               className="h-full rounded-full bg-linear-to-r from-emerald-500/80 to-teal-400"
               style={{ scaleX: progressBar, transformOrigin: "left" }}
@@ -772,7 +772,7 @@ function SystemStrip({ reduced, revealed }: { reduced: boolean | null; revealed:
             })}
           </div>
           <div className="hidden sm:block w-px h-10 bg-slate-800/60" />
-          <div className="min-w-0 flex-shrink">
+          <div className="min-w-0 shrink">
             <FeedTicker reduced={reduced} />
           </div>
         </div>
@@ -815,7 +815,7 @@ function PillarCard({
       className="group relative rounded-xl border border-slate-800/50 bg-slate-900/20 backdrop-blur-sm p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/70 hover:bg-slate-900/40"
     >
       <div className="flex items-start gap-4">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-500/15 bg-teal-500/[0.06] text-teal-400/80 transition-colors group-hover:border-teal-500/30 group-hover:bg-teal-500/10 group-hover:text-teal-400">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-500/15 bg-teal-500/6 text-teal-400/80 transition-colors group-hover:border-teal-500/30 group-hover:bg-teal-500/10 group-hover:text-teal-400">
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -887,7 +887,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
     >
       {/* ── Atmosphere ── */}
       <div
-        className="absolute inset-0 bg-[linear-gradient(to_right,rgba(30,41,59,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,41,59,0.15)_1px,transparent_1px)] bg-[size:72px_72px] pointer-events-none"
+        className="absolute inset-0 bg-[linear-gradient(to_right,rgba(30,41,59,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,41,59,0.15)_1px,transparent_1px)] bg-size-[72px_72px] pointer-events-none"
         style={{
           maskImage:
             "radial-gradient(ellipse 70% 50% at 50% 30%, #000 40%, transparent 100%)",
@@ -895,9 +895,9 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
             "radial-gradient(ellipse 70% 50% at 50% 30%, #000 40%, transparent 100%)",
         }}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.05] blur-[160px] rounded-full pointer-events-none" />
-      <div className="absolute top-[15%] right-[15%] w-[350px] h-[350px] bg-cyan-500/[0.03] blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute top-[10%] left-[10%] w-[250px] h-[250px] bg-teal-500/[0.03] blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-150 bg-emerald-500/5 blur-[160px] rounded-full pointer-events-none" />
+      <div className="absolute top-[15%] right-[15%] w-87.5 h-87.5 bg-cyan-500/3 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-[10%] left-[10%] w-62.5 h-62.5 bg-teal-500/3 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 inset-x-0 h-40 bg-linear-to-t from-[#030712] to-transparent pointer-events-none z-20" />
 
       {/* Screen reader */}
@@ -920,7 +920,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.05, ease: EASE }}
             >
-              <Badge className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300 backdrop-blur-md">
+              <Badge className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/6 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300 backdrop-blur-md">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/50" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
@@ -981,7 +981,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               className="mt-10 flex flex-col sm:flex-row items-center gap-3"
             >
               <Link
-                href="/"
+                href="/auth/signup"
                 className="group relative h-12 overflow-hidden rounded-xl bg-emerald-500 px-8 text-sm font-semibold text-slate-950 shadow-[0_8px_30px_rgba(16,185,129,0.25)] transition-all hover:bg-emerald-400 hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)] inline-flex items-center justify-center"
               >
                 <span className="relative z-10 flex items-center">

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const SETTINGS_NAV = [
   { href: "/governance/settings/company",       label: "Company" },
+  { href: "/governance/settings/organizations", label: "Organizations" },
   { href: "/governance/settings",               label: "General" },
   { href: "/governance/settings/features",      label: "Features" },
   { href: "/governance/settings/numbering",     label: "Numbering" },

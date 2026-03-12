@@ -76,17 +76,14 @@ export type VerifyInviteTokenResult = AuthFlowResult<{
 export type AcceptInviteResult = AuthFlowResult<{
   email: string;
   portal: Exclude<PortalType, "app">;
-  /** When present, use establishWebSessionFromGrant. When absent, fall back to credentials. */
-  sessionGrant?: string;
 }>;
 
 export type VerifyMfaResult = AuthFlowResult<{
   principalId: string;
   email: string;
-  sessionGrant?: string;
 }>;
 
-// ── Session user (for Auth.js mapping) ────────────────────────────────────────
+// ── Session user ───────────────────────────────────────────────────────────────
 
 export interface AfendaAuthenticatedUser {
   id: string;

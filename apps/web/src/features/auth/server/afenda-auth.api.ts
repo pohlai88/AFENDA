@@ -55,7 +55,11 @@ export class ApiAfendaAuthService implements AfendaAuthService {
     });
 
     const json = (await res.json()) as
-      | { ok: true; data: { principalId: string; email: string; requiresMfa?: boolean }; correlationId?: string }
+      | {
+          ok: true;
+          data: { principalId: string; email: string; requiresMfa?: boolean };
+          correlationId?: string;
+        }
       | { ok: false; code: string; message: string; correlationId?: string };
 
     return json;
@@ -131,7 +135,7 @@ export class ApiAfendaAuthService implements AfendaAuthService {
     const json = (await res.json()) as
       | {
           ok: true;
-          data: { email: string; portal: string; message: string; sessionGrant: string };
+          data: { email: string; portal: string; message: string };
           correlationId?: string;
         }
       | { ok: false; code: string; message: string; correlationId?: string };
@@ -143,7 +147,6 @@ export class ApiAfendaAuthService implements AfendaAuthService {
       data: {
         email: json.data.email,
         portal: json.data.portal as Exclude<import("@afenda/contracts").PortalType, "app">,
-        sessionGrant: json.data.sessionGrant,
       },
     };
   }
@@ -155,7 +158,7 @@ export class ApiAfendaAuthService implements AfendaAuthService {
     });
 
     const json = (await res.json()) as
-      | { ok: true; data: { principalId: string; email: string; sessionGrant?: string }; correlationId?: string }
+      | { ok: true; data: { principalId: string; email: string }; correlationId?: string }
       | { ok: false; code: string; message: string; correlationId?: string };
 
     if (!json.ok) return json;
@@ -164,7 +167,6 @@ export class ApiAfendaAuthService implements AfendaAuthService {
       data: {
         principalId: json.data.principalId,
         email: json.data.email,
-        sessionGrant: json.data.sessionGrant,
       },
     };
   }
@@ -183,7 +185,10 @@ export class ApiAfendaAuthService implements AfendaAuthService {
       | { error: { code: string; message: string }; correlationId?: string };
 
     if (!res.ok) {
-      const err = json && "error" in json ? json.error : { code: "SIGNUP_FAILED", message: "Unable to create account" };
+      const err =
+        json && "error" in json
+          ? json.error
+          : { code: "SIGNUP_FAILED", message: "Unable to create account" };
       return { ok: false, code: err.code, message: err.message };
     }
 

@@ -44,6 +44,55 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const emailOtpSendSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+});
+
+export const emailOtpSignInSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  otp: z.string().min(4, "Code is too short.").max(8, "Code is too long."),
+  callbackUrl: z.string().optional(),
+});
+
+/** For auth.emailOtp.verifyEmail({ email, otp }) — verify email with OTP code. */
+export const emailOtpVerifySchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+  otp: z.string().min(4, "Code is too short.").max(8, "Code is too long."),
+});
+
+/** For auth.organization.create({ name, slug? }) — create organization (Neon Auth organizations plugin). */
+export const organizationCreateSchema = z.object({
+  name: z.string().trim().min(1, "Organization name is required.").max(160),
+  slug: z
+    .string()
+    .trim()
+    .max(64)
+    .optional()
+    .refine(
+      (s) => !s || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s),
+      "Slug must be lowercase letters, numbers, and hyphens only.",
+    ),
+});
+
+/** For auth.organization.inviteMember({ organizationId, email, role? }). */
+export const organizationInviteMemberSchema = z.object({
+  organizationId: z.string().uuid("Select an organization."),
+  email: z.string().email("Please enter a valid email address."),
+  role: z.string().trim().max(64).optional().or(z.literal("")),
+});
+
+/** For auth.admin.banUser({ userId, reason }). */
+export const adminBanUserSchema = z.object({
+  userId: z.string().min(1, "User ID is required."),
+  reason: z.string().trim().min(1, "Reason is required.").max(500),
+});
+
+/** For auth.admin.setRole({ userId, role }). */
+export const adminSetRoleSchema = z.object({
+  userId: z.string().min(1, "User ID is required."),
+  role: z.string().trim().min(1, "Role is required.").max(64),
+});
+
 export const verifySchema = z.object({
   code: z
     .string()

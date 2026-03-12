@@ -11,7 +11,7 @@
   },
   "scripts": {
     "dev": "node -e \"console.log('contracts: dev noop')\"",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json --rootDir src --outDir dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "lint": "eslint src/"

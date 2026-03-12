@@ -20,19 +20,19 @@
     "@fastify/rate-limit": "catalog:",
     "@fastify/swagger": "catalog:",
     "@scalar/fastify-api-reference": "catalog:",
-    "fastify-type-provider-zod": "catalog:",
-    "zod": "catalog:",
     "dotenv": "catalog:",
     "fastify": "catalog:",
     "fastify-plugin": "catalog:",
+    "fastify-type-provider-zod": "catalog:",
     "jose": "catalog:",
     "pino": "catalog:",
-    "pino-pretty": "catalog:"
+    "pino-pretty": "catalog:",
+    "zod": "catalog:"
   },
   "optionalDependencies": {
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/sdk-node": "^0.212.0",
     "@opentelemetry/auto-instrumentations-node": "^0.70.1",
+    "@opentelemetry/sdk-node": "^0.212.0",
     "puppeteer": "^24.0.0"
   },
   "devDependencies": {

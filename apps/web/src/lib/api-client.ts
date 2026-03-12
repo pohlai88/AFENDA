@@ -6,19 +6,14 @@
  * render error states.
  *
  * Auth:
- * - Server Components: Reads session token from cookies, sends Authorization: Bearer
+ * - Server Components: Reads transition session token cookie, sends Authorization: Bearer
  * - Client Components: Browser automatically sends cookies, no manual auth needed
  * - Dev mode (no session): Sends x-dev-user-email for API bypass
  */
 
-import type {
-  AuthContextResponse,
-  CapabilityResult,
-  PortalType,
-} from "@afenda/contracts";
+import type { AuthContextResponse, CapabilityResult, PortalType } from "@afenda/contracts";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
 /** Default org slug for API requests. TODO: from org context when available. */
 const DEFAULT_ORG = "demo";
@@ -41,8 +36,8 @@ export async function getApiHeaders(): Promise<Record<string, string>> {
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
     const sessionToken =
-      cookieStore.get("authjs.session-token")?.value ??
-      cookieStore.get("__Secure-authjs.session-token")?.value;
+      cookieStore.get("neon-auth.session")?.value ??
+      cookieStore.get("__Secure-neon-auth.session")?.value;
 
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
@@ -217,10 +212,7 @@ export async function fetchPrepayments(params?: {
 }
 
 /** List payment terms with cursor pagination. */
-export async function fetchPaymentTerms(params?: {
-  cursor?: string;
-  limit?: number;
-}): Promise<{
+export async function fetchPaymentTerms(params?: { cursor?: string; limit?: number }): Promise<{
   data: Array<{
     id: string;
     code: string;
@@ -369,11 +361,8 @@ export async function fetchInvoicesByAgingBucket(
   const query = new URLSearchParams();
   if (params?.asOfDate) query.set("asOfDate", params.asOfDate);
   const qs = query.toString();
-  const res = await apiFetch(
-    `/api/v1/ap/aging/${bucket}/invoices${qs ? `?${qs}` : ""}`,
-  );
-  if (!res.ok)
-    throw new Error(`Aging bucket API error ${res.status}: ${await res.text()}`);
+  const res = await apiFetch(`/api/v1/ap/aging/${bucket}/invoices${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Aging bucket API error ${res.status}: ${await res.text()}`);
   return res.json();
 }
 
@@ -413,14 +402,11 @@ export async function exportPaymentRunFile(
       q.set("companyEntryDescription", params.companyEntryDescription);
   }
   const headers = await getApiHeaders();
-  const res = await fetch(
-    `${API_BASE}/v1/payment-runs/${paymentRunId}/export?${q}`,
-    {
-      headers: { ...headers },
-      credentials: "include",
-      cache: "no-store",
-    },
-  );
+  const res = await fetch(`${API_BASE}/v1/payment-runs/${paymentRunId}/export?${q}`, {
+    headers: { ...headers },
+    credentials: "include",
+    cache: "no-store",
+  });
   if (!res.ok) {
     const err = (await res.json().catch(() => null)) as {
       error?: { message?: string };
@@ -431,9 +417,7 @@ export async function exportPaymentRunFile(
   const contentDisp = res.headers.get("Content-Disposition");
   const fileName =
     contentDisp?.match(/filename="?([^"]+)"?/)?.[1] ??
-    `payment-${params.format.toLowerCase()}.${
-      params.format === "ISO20022" ? "xml" : "ach"
-    }`;
+    `payment-${params.format.toLowerCase()}.${params.format === "ISO20022" ? "xml" : "ach"}`;
   return { blob, fileName };
 }
 
@@ -496,7 +480,7 @@ export async function createInvoice(command: {
     }),
   });
   if (!res.ok) {
-    const body = await res.json().catch(() => null) as { error?: { message?: string } } | null;
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
     throw new Error(body?.error?.message ?? `Create invoice failed (${res.status})`);
   }
   return res.json();
@@ -554,7 +538,9 @@ export async function bulkInvoiceAction(command: {
     }),
   });
 
-  const json = (await res.json().catch(() => null)) as { data?: { ok: number; failed: number } } | null;
+  const json = (await res.json().catch(() => null)) as {
+    data?: { ok: number; failed: number };
+  } | null;
   if (!res.ok || !json?.data) {
     return { ok: 0, failed: command.invoiceIds.length };
   }
@@ -762,10 +748,7 @@ export async function fetchOrgMembers(): Promise<OrgMembersFetchResponse> {
  * Change the authenticated user's password. Requires current password.
  * Used by the Security settings page.
  */
-export async function changePassword(
-  currentPassword: string,
-  newPassword: string,
-): Promise<void> {
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
   const res = await apiFetch("/v1/me/password", {
     method: "PATCH",
     body: JSON.stringify({ currentPassword, newPassword }),
@@ -773,6 +756,66 @@ export async function changePassword(
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
     throw new Error(body?.error?.message ?? `Password change failed (${res.status})`);
+  }
+}
+
+// ── MFA (TOTP) ────────────────────────────────────────────────────────────────
+
+export interface MfaStatusResponse {
+  enabled: boolean;
+}
+
+export interface MfaSetupData {
+  secret: string;
+  otpauthUri: string;
+}
+
+/** Returns whether TOTP MFA is currently enabled for the authenticated user. */
+export async function fetchMfaStatus(): Promise<MfaStatusResponse> {
+  const res = await apiFetch("/v1/me/mfa");
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `MFA status fetch failed (${res.status})`);
+  }
+  const json = (await res.json()) as { data: MfaStatusResponse };
+  return json.data;
+}
+
+/**
+ * Generate a new TOTP secret and otpauth:// URI for enrollment.
+ * Does NOT enable MFA — caller must confirm with confirmTotpSetup().
+ */
+export async function generateTotpSetup(): Promise<MfaSetupData> {
+  const res = await apiFetch("/v1/me/mfa/setup", { method: "POST" });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `MFA setup generation failed (${res.status})`);
+  }
+  const json = (await res.json()) as { data: MfaSetupData };
+  return json.data;
+}
+
+/**
+ * Verify a trial TOTP code against the given secret, then persist the enrollment.
+ * Throws if the code is invalid.
+ */
+export async function confirmTotpSetup(secret: string, code: string): Promise<void> {
+  const res = await apiFetch("/v1/me/mfa/setup/confirm", {
+    method: "POST",
+    body: JSON.stringify({ secret, code }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `MFA confirmation failed (${res.status})`);
+  }
+}
+
+/** Disable MFA for the authenticated user by removing the TOTP enrollment. */
+export async function disableMfa(): Promise<void> {
+  const res = await apiFetch("/v1/me/mfa", { method: "DELETE" });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `MFA disable failed (${res.status})`);
   }
 }
 
@@ -899,9 +942,7 @@ export async function fetchCapabilities(
     query.set("submittedByPrincipalId", params.submittedByPrincipalId);
 
   const qs = query.toString();
-  const res = await apiFetch(
-    `/v1/capabilities/${entityKey}${qs ? `?${qs}` : ""}`,
-  );
+  const res = await apiFetch(`/v1/capabilities/${entityKey}${qs ? `?${qs}` : ""}`);
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
   return res.json();
 }

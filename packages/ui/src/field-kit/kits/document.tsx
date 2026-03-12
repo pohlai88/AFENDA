@@ -74,10 +74,7 @@ function validateFile(file: File, meta: DocumentFieldMeta): string | null {
     return "File type is not allowed.";
   }
 
-  if (
-    typeof meta.maxSizeBytes === "number" &&
-    file.size > meta.maxSizeBytes
-  ) {
+  if (typeof meta.maxSizeBytes === "number" && file.size > meta.maxSizeBytes) {
     return `File is too large. Maximum allowed is ${formatBytes(meta.maxSizeBytes)}.`;
   }
 
@@ -121,9 +118,7 @@ export function createDocumentKit(
         return (
           <span className="inline-flex items-center gap-1.5 text-sm">
             <span className="text-muted-foreground">📄</span>
-            <span className="max-w-[220px] truncate underline decoration-dotted">
-              {legacyName}
-            </span>
+            <span className="max-w-55 truncate underline decoration-dotted">{legacyName}</span>
           </span>
         );
       }
@@ -135,23 +130,12 @@ export function createDocumentKit(
       return (
         <span className="inline-flex items-center gap-1.5 text-sm" title={value.fileName}>
           <span className="text-muted-foreground">📄</span>
-          <span className="max-w-[220px] truncate underline decoration-dotted">
-            {value.fileName}
-          </span>
+          <span className="max-w-55 truncate underline decoration-dotted">{value.fileName}</span>
         </span>
       );
     },
 
-    FormWidget: ({
-      value,
-      onChange,
-      fieldKey,
-      label,
-      required,
-      readonly,
-      error,
-      description,
-    }) => {
+    FormWidget: ({ value, onChange, fieldKey, label, required, readonly, error, description }) => {
       const meta = options.getMeta(fieldKey);
       const inputRef = useRef<HTMLInputElement>(null);
       const [isDragging, setIsDragging] = useState(false);
@@ -180,8 +164,7 @@ export function createDocumentKit(
             onChange(uploaded);
             setUploadState({ kind: "idle" });
           } catch (err) {
-            const message =
-              err instanceof Error ? err.message : "Upload failed.";
+            const message = err instanceof Error ? err.message : "Upload failed.";
             setUploadState({ kind: "error", message });
           } finally {
             if (inputRef.current) inputRef.current.value = "";
@@ -201,8 +184,7 @@ export function createDocumentKit(
           setUploadState({ kind: "idle" });
           if (inputRef.current) inputRef.current.value = "";
         } catch (err) {
-          const message =
-            err instanceof Error ? err.message : "Unable to remove file.";
+          const message = err instanceof Error ? err.message : "Unable to remove file.";
           setUploadState({ kind: "error", message });
         }
       }, [fieldKey, meta, onChange, docRef, legacyFileName]);
@@ -260,9 +242,7 @@ export function createDocumentKit(
               )}
             </div>
 
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+            {description && <p className="text-xs text-muted-foreground">{description}</p>}
           </div>
         );
       }
@@ -284,9 +264,7 @@ export function createDocumentKit(
                 <span className="mt-0.5 text-muted-foreground">📄</span>
 
                 <div className="min-w-0 flex-1">
-                  <div className="truncate font-medium">
-                    {docRef?.fileName ?? legacyFileName}
-                  </div>
+                  <div className="truncate font-medium">{docRef?.fileName ?? legacyFileName}</div>
                   {docRef && (
                     <div className="text-xs text-muted-foreground">
                       {docRef.mime} · {formatBytes(docRef.sizeBytes)} · {docRef.status}
@@ -296,12 +274,7 @@ export function createDocumentKit(
 
                 <div className="flex items-center gap-1">
                   {docRef?.url && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      asChild
-                    >
+                    <Button type="button" variant="ghost" size="sm" asChild>
                       <a href={docRef?.url} target="_blank" rel="noreferrer">
                         View
                       </a>
@@ -372,9 +345,7 @@ export function createDocumentKit(
                 {isDragging ? "📥" : "📎"}
               </span>
               <p className="text-sm text-muted-foreground">
-                {isDragging
-                  ? "Drop file here"
-                  : "Drag and drop a file, or click to browse"}
+                {isDragging ? "Drop file here" : "Drag and drop a file, or click to browse"}
               </p>
             </div>
           )}
@@ -393,9 +364,7 @@ export function createDocumentKit(
           />
 
           {uploadState.kind === "uploading" && (
-            <p className="text-xs text-muted-foreground">
-              Uploading {uploadState.fileName}...
-            </p>
+            <p className="text-xs text-muted-foreground">Uploading {uploadState.fileName}...</p>
           )}
 
           {description && uploadState.kind !== "error" && !error && (
@@ -421,8 +390,7 @@ export function createDocumentKit(
 
     filterOps: [],
 
-    exportAdapter: (value) =>
-      value && isDocumentRef(value) ? value.fileName : "",
+    exportAdapter: (value) => (value && isDocumentRef(value) ? value.fileName : ""),
   };
 }
 

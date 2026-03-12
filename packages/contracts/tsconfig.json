@@ -1,7 +1,6 @@
 {
   "extends": "@afenda/tsconfig/base.json",
   "compilerOptions": {
-    "outDir": "dist",
     "declaration": true,
     "emitDeclarationOnly": false
   },

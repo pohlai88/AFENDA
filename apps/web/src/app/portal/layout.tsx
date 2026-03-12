@@ -4,6 +4,9 @@ import Link from "next/link";
 
 import { auth } from "@/auth";
 
+/** Session depends on cookies — force dynamic (Neon Auth). */
+export const dynamic = "force-dynamic";
+
 /**
  * Portal layout — defence-in-depth session check.
  *

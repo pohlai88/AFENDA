@@ -22,10 +22,7 @@ export function VerifyClientPage({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [state, formAction] = useActionState(
-    verifyAction,
-    INITIAL_AUTH_ACTION_STATE,
-  );
+  const [state, formAction] = useActionState(verifyAction, INITIAL_AUTH_ACTION_STATE);
 
   useEffect(() => {
     if (state.ok && state.redirectTo) {
@@ -93,6 +90,12 @@ export function VerifyClientPage({
           >
             Need help signing in?
           </Link>
+          <p className="text-center text-xs text-muted-foreground">
+            Haven&apos;t set up an authenticator app yet?{" "}
+            <Link href="/governance/settings/security" className="text-primary hover:underline">
+              Go to Security Settings
+            </Link>
+          </p>
         </div>
       </AuthFooter>
     </AuthPageShell>

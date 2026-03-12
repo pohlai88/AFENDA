@@ -10,11 +10,10 @@
  * For Neon: runs warm-up with retry on startup to handle scale-to-zero cold starts.
  */
 
-import type { FastifyInstance } from "fastify";
-import fp from "fastify-plugin";
+import type { FastifyPluginAsync } from "fastify";
 import { createDb, warmUpDbWithRetry } from "@afenda/core";
 
-export const dbPlugin = fp(async function dbPlugin(app: FastifyInstance) {
+export const dbPlugin: FastifyPluginAsync = async (app) => {
   const url = process.env["DATABASE_URL"];
   if (!url) throw new Error("DATABASE_URL is required to start the API");
 
@@ -37,4 +36,4 @@ export const dbPlugin = fp(async function dbPlugin(app: FastifyInstance) {
   }
 
   app.log.info("DB client registered (pool max=%d)", pool.options.max);
-});
+};

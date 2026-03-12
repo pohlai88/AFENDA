@@ -4,6 +4,7 @@ import type { AuthActionState } from "../_lib/auth-state";
 interface SignInPageProps {
   searchParams: Promise<{
     callbackUrl?: string;
+    oauth_error?: string;
     reset?: string;
     signedOut?: string;
     signup?: string;
@@ -35,6 +36,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     noticeState = {
       ok: false,
       message: "Authentication is temporarily unavailable. Please try again.",
+    };
+  } else if (params.oauth_error) {
+    noticeState = {
+      ok: false,
+      message: params.oauth_error,
     };
   }
 
