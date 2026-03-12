@@ -14,6 +14,9 @@ packages/db/drizzle
 
 # test output
 coverage
+apps/web/playwright-report/
+apps/web/test-results/
+tools/tmp/
 
 # large reference docs (local skill files)
 .agents/skills/postgresql-18-A4.html
