@@ -15,7 +15,7 @@
  *   - `activeContext` carries the current "hat" (partyRoleId + orgId)
  */
 import { z } from "zod";
-import { CorrelationIdSchema, OrgIdSchema, PrincipalIdSchema } from "../../shared/ids.js";
+import { CorrelationIdSchema, PrincipalIdSchema } from "../../shared/ids.js";
 import { RoleKeySchema, PermissionKeySchema } from "./role.entity.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { ActiveContextSchema } from "./membership.entity.js";

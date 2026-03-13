@@ -1,0 +1,268 @@
+# Minimal OpenAPI snippets for Boardroom minutes + action items.
+# Drop-in reference for API implementation; align with Fastify route schemas.
+openapi: 3.0.3
+info:
+  title: Comm Boardroom API (minutes + action items)
+  version: 1.0.0
+
+paths:
+  /v1/comm-board-meetings/{meetingId}/minutes:
+    get:
+      summary: List minutes for a meeting
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BoardMinute"
+                  correlationId:
+                    type: string
+                    format: uuid
+
+  /v1/commands/comm-board-meetings/minutes/record:
+    post:
+      summary: Record minutes for a meeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardMinuteCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                  correlationId:
+                    type: string
+                    format: uuid
+
+  /v1/comm-board-meetings/{meetingId}/minutes/{minuteId}/action-items:
+    get:
+      summary: List action items for a minute
+      parameters:
+        - name: meetingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: minuteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BoardActionItem"
+
+  /v1/commands/comm-board-meetings/action-items/create:
+    post:
+      summary: Create action item for a minute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardActionItemCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+
+  /v1/commands/comm-board-meetings/action-items/update:
+    post:
+      summary: Update action item (status, assignee, due date)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BoardActionItemUpdate"
+      responses:
+        "200":
+          description: OK
+
+components:
+  schemas:
+    BoardMinuteCreate:
+      type: object
+      required: [idempotencyKey, meetingId, content]
+      properties:
+        idempotencyKey:
+          type: string
+          format: uuid
+        meetingId:
+          type: string
+          format: uuid
+        resolutionId:
+          type: string
+          format: uuid
+          nullable: true
+        content:
+          type: string
+        metadata:
+          type: object
+
+    BoardMinute:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        orgId:
+          type: string
+          format: uuid
+        meetingId:
+          type: string
+          format: uuid
+        resolutionId:
+          type: string
+          format: uuid
+          nullable: true
+        createdByPrincipalId:
+          type: string
+          format: uuid
+        recordedAt:
+          type: string
+          format: date-time
+        content:
+          type: string
+        metadata:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    BoardActionItemCreate:
+      type: object
+      required: [idempotencyKey, minuteId, title]
+      properties:
+        idempotencyKey:
+          type: string
+          format: uuid
+        minuteId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        assigneeId:
+          type: string
+          format: uuid
+          nullable: true
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+
+    BoardActionItemUpdate:
+      type: object
+      required: [idempotencyKey, actionItemId]
+      properties:
+        idempotencyKey:
+          type: string
+          format: uuid
+        actionItemId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [open, in_progress, done, cancelled]
+        assigneeId:
+          type: string
+          format: uuid
+          nullable: true
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+
+    BoardActionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        orgId:
+          type: string
+          format: uuid
+        minuteId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        assigneeId:
+          type: string
+          format: uuid
+          nullable: true
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: string
+          enum: [open, in_progress, done, cancelled]
+        createdByPrincipalId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true

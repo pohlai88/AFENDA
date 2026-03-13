@@ -1469,6 +1469,209 @@ export async function updateNumberingConfig(
   return res.json();
 }
 
+// ── COMM Workflows ───────────────────────────────────────────────────────────
+
+import type {
+  WorkflowStatus,
+  WorkflowRunStatus,
+  WorkflowTriggerType,
+  WorkflowActionType,
+  ConditionOperator,
+} from "@afenda/contracts";
+
+export interface WorkflowTriggerCondition {
+  field: string;
+  operator: ConditionOperator;
+  value?: unknown;
+}
+
+export interface WorkflowTriggerInput {
+  type: WorkflowTriggerType;
+  conditions?: WorkflowTriggerCondition[];
+}
+
+export interface WorkflowActionInput {
+  type: WorkflowActionType;
+  config: Record<string, unknown>;
+}
+
+export interface WorkflowRow {
+  id: string;
+  orgId: string;
+  name: string;
+  description: string | null;
+  status: WorkflowStatus;
+  trigger: WorkflowTriggerInput;
+  actions: WorkflowActionInput[];
+  createdByPrincipalId: string;
+  createdAt: string;
+  updatedAt: string;
+  lastTriggeredAt: string | null;
+  runCount: number;
+}
+
+export interface WorkflowRunActionResult {
+  actionType: string;
+  status: string;
+  result?: unknown;
+  error?: string;
+}
+
+export interface WorkflowRunRow {
+  id: string;
+  orgId: string;
+  workflowId: string;
+  status: WorkflowRunStatus;
+  triggerEventId: string | null;
+  triggerPayload: Record<string, unknown>;
+  startedAt: string;
+  completedAt: string | null;
+  error: string | null;
+  executedActions: WorkflowRunActionResult[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkflowListResponse {
+  data: WorkflowRow[];
+  correlationId: string;
+}
+
+export interface WorkflowDetailResponse {
+  data: WorkflowRow;
+  correlationId: string;
+}
+
+export interface WorkflowRunListResponse {
+  data: WorkflowRunRow[];
+  correlationId: string;
+}
+
+export interface WorkflowRunDetailResponse {
+  data: WorkflowRunRow;
+  correlationId: string;
+}
+
+export async function fetchWorkflows(params?: {
+  status?: WorkflowStatus;
+}): Promise<WorkflowListResponse> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/workflows${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Workflow API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchWorkflow(id: string): Promise<WorkflowDetailResponse> {
+  const res = await apiFetch(`/v1/workflows/${id}`);
+  if (!res.ok) throw new Error(`Workflow API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchWorkflowRuns(
+  workflowId: string,
+  params?: { status?: WorkflowRunStatus },
+): Promise<WorkflowRunListResponse> {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/workflows/${workflowId}/runs${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Workflow run API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchWorkflowRun(runId: string): Promise<WorkflowRunDetailResponse> {
+  const res = await apiFetch(`/v1/workflow-runs/${runId}`);
+  if (!res.ok) throw new Error(`Workflow run API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createWorkflow(command: {
+  idempotencyKey: string;
+  name: string;
+  description?: string;
+  trigger: WorkflowTriggerInput;
+  actions: WorkflowActionInput[];
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-workflow", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create workflow failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateWorkflow(command: {
+  idempotencyKey: string;
+  workflowId: string;
+  name?: string;
+  description?: string;
+  trigger?: WorkflowTriggerInput;
+  actions?: WorkflowActionInput[];
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/update-workflow", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update workflow failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function changeWorkflowStatus(command: {
+  idempotencyKey: string;
+  workflowId: string;
+  status: WorkflowStatus;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/change-workflow-status", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Change workflow status failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function deleteWorkflow(command: {
+  idempotencyKey: string;
+  workflowId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/delete-workflow", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Delete workflow failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function executeWorkflow(command: {
+  idempotencyKey: string;
+  workflowId: string;
+  triggerEventId?: string;
+  triggerPayload: Record<string, unknown>;
+}): Promise<ApiSuccess<{ runId: string }>> {
+  const res = await apiFetch("/v1/commands/execute-workflow", {
+    method: "POST",
+    body: JSON.stringify(command),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Execute workflow failed (${res.status})`);
+  }
+  return res.json();
+}
+
 // ── Audit ────────────────────────────────────────────────────────────────────
 
 // ── Treasury Wave 2: Reconciliation Sessions ─────────────────────────────────
@@ -2291,7 +2494,7 @@ export interface CommCommentRow {
 export interface CommChatterMessageRow {
   id: string;
   orgId: string;
-  entityType: "task" | "project";
+  entityType: "task" | "project" | "document";
   entityId: string;
   parentMessageId: string | null;
   authorPrincipalId: string;
@@ -3678,6 +3881,12 @@ export interface AnnouncementAckSummary {
   progressPercent: number;
 }
 
+export interface AnnouncementMyRead {
+  acknowledged: boolean;
+  readAt: string | null;
+  readId: string | null;
+}
+
 /** List announcements with cursor pagination. */
 export async function fetchAnnouncements(params?: {
   cursor?: string;
@@ -3723,6 +3932,15 @@ export async function fetchAnnouncementAckSummary(
   announcementId: string,
 ): Promise<ApiSuccess<AnnouncementAckSummary>> {
   const res = await apiFetch(`/v1/announcements/${announcementId}/ack-summary`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get acknowledgement state for the current principal. */
+export async function fetchAnnouncementMyRead(
+  announcementId: string,
+): Promise<ApiSuccess<AnnouncementMyRead>> {
+  const res = await apiFetch(`/v1/announcements/${announcementId}/my-read`);
   if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
   return res.json();
 }
@@ -3812,6 +4030,536 @@ export async function acknowledgeAnnouncement(command: {
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
     throw new Error(body?.error?.message ?? `Acknowledge announcement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Docs ──────────────────────────────────────────────────────────────────────
+
+export interface CommDocumentRow {
+  id: string;
+  orgId: string;
+  documentNumber: string;
+  title: string;
+  body: string;
+  status: string;
+  documentType: "page" | "wiki" | "sop" | "template" | "policy";
+  visibility: "org" | "team" | "private";
+  slug: string | null;
+  parentDocId: string | null;
+  publishedAt: string | null;
+  publishedByPrincipalId: string | null;
+  createdByPrincipalId: string;
+  lastEditedByPrincipalId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommDocumentVersionRow {
+  id: string;
+  orgId: string;
+  documentId: string;
+  versionNumber: number;
+  title: string;
+  body: string;
+  createdByPrincipalId: string;
+  createdAt: string;
+}
+
+export async function fetchCommDocuments(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+  documentType?: "page" | "wiki" | "sop" | "template" | "policy";
+}): Promise<{
+  data: CommDocumentRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  if (params?.documentType) query.set("documentType", params.documentType);
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/comm-documents${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  const json = (await res.json()) as {
+    data: { data: CommDocumentRow[]; cursor: string | null; hasMore: boolean };
+    correlationId: string;
+  };
+  return {
+    data: json.data.data,
+    cursor: json.data.cursor,
+    hasMore: json.data.hasMore,
+    correlationId: json.correlationId,
+  };
+}
+
+export async function fetchCommDocument(id: string): Promise<ApiSuccess<CommDocumentRow>> {
+  const res = await apiFetch(`/v1/comm-documents/${id}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchCommDocumentBySlug(slug: string): Promise<ApiSuccess<CommDocumentRow>> {
+  const res = await apiFetch(`/v1/comm-documents/by-slug/${encodeURIComponent(slug)}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchCommDocumentChildren(
+  id: string,
+): Promise<ApiSuccess<{ data: CommDocumentRow[] }>> {
+  const res = await apiFetch(`/v1/comm-documents/${id}/children`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchCommDocumentBreadcrumb(
+  id: string,
+): Promise<ApiSuccess<{ data: CommDocumentRow[] }>> {
+  const res = await apiFetch(`/v1/comm-documents/${id}/breadcrumb`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchCommDocumentHistory(
+  id: string,
+): Promise<ApiSuccess<{ data: CommDocumentVersionRow[] }>> {
+  const res = await apiFetch(`/v1/comm-documents/${id}/history`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createCommDocument(command: {
+  title: string;
+  body: string;
+  documentType?: "page" | "wiki" | "sop" | "template" | "policy";
+  visibility?: "org" | "team" | "private";
+  slug?: string;
+  parentDocId?: string;
+}): Promise<ApiSuccess<{ id: string; documentNumber?: string }>> {
+  const res = await apiFetch("/v1/commands/comm-documents/create", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create document failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateCommDocument(command: {
+  documentId: string;
+  title: string;
+  body: string;
+  documentType?: "page" | "wiki" | "sop" | "template" | "policy";
+  visibility?: "org" | "team" | "private";
+  slug?: string;
+  parentDocId?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-documents/update", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update document failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function publishCommDocument(command: {
+  documentId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-documents/publish", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Publish document failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function archiveCommDocument(command: {
+  documentId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-documents/archive", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Archive document failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ─── Boardroom ────────────────────────────────────────────────────────────────
+
+export interface BoardMeetingRow {
+  id: string;
+  orgId: string;
+  meetingNumber: string;
+  title: string;
+  description: string | null;
+  status: string;
+  scheduledAt: string | null;
+  duration: number;
+  location: string | null;
+  chairId: string;
+  secretaryId: string | null;
+  quorumRequired: number;
+  startedAt: string | null;
+  adjournedAt: string | null;
+  createdByPrincipalId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchBoardMeetings(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<{
+  data: BoardMeetingRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/comm-board-meetings${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  const json = (await res.json()) as {
+    data: { data: BoardMeetingRow[]; cursor: string | null; hasMore: boolean };
+    correlationId: string;
+  };
+  return {
+    data: json.data.data,
+    cursor: json.data.cursor,
+    hasMore: json.data.hasMore,
+    correlationId: json.correlationId,
+  };
+}
+
+export async function fetchBoardMeeting(id: string): Promise<ApiSuccess<BoardMeetingRow>> {
+  const res = await apiFetch(`/v1/comm-board-meetings/${id}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createBoardMeeting(command: {
+  title: string;
+  description?: string;
+  scheduledAt?: string;
+  duration?: number;
+  location?: string;
+  chairId: string;
+  secretaryId?: string;
+  quorumRequired?: number;
+}): Promise<ApiSuccess<{ id: string; meetingNumber?: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/create", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create meeting failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateBoardMeeting(command: {
+  meetingId: string;
+  title?: string;
+  description?: string | null;
+  scheduledAt?: string | null;
+  duration?: number;
+  location?: string | null;
+  chairId?: string;
+  secretaryId?: string | null;
+  quorumRequired?: number;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/update", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update meeting failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface BoardAgendaItemRow {
+  id: string;
+  orgId: string;
+  meetingId: string;
+  sortOrder: number;
+  title: string;
+  description: string | null;
+  presenterId: string | null;
+  durationMinutes: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchBoardMeetingAgendaItems(
+  meetingId: string,
+): Promise<ApiSuccess<BoardAgendaItemRow[]>> {
+  const res = await apiFetch(`/v1/comm-board-meetings/${meetingId}/agenda-items`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function addBoardAgendaItem(command: {
+  meetingId: string;
+  title: string;
+  description?: string | null;
+  sortOrder?: number;
+  presenterId?: string | null;
+  durationMinutes?: number | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/agenda-items/add", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Add agenda item failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface BoardMeetingAttendeeRow {
+  id: string;
+  orgId: string;
+  meetingId: string;
+  principalId: string;
+  status: string;
+  role: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function fetchBoardMeetingAttendees(
+  meetingId: string,
+): Promise<ApiSuccess<BoardMeetingAttendeeRow[]>> {
+  const res = await apiFetch(`/v1/comm-board-meetings/${meetingId}/attendees`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function addBoardAttendee(command: {
+  meetingId: string;
+  principalId: string;
+  role?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/attendees/add", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Add attendee failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateBoardAttendeeStatus(command: {
+  attendeeId: string;
+  status: "invited" | "confirmed" | "attended" | "absent";
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/attendees/update-status", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update attendee status failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface BoardResolutionRow {
+  id: string;
+  orgId: string;
+  meetingId: string;
+  title: string;
+  description: string | null;
+  status: string;
+  proposedById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoardResolutionVoteRow {
+  id: string;
+  orgId: string;
+  resolutionId: string;
+  principalId: string;
+  vote: string;
+  createdAt: string;
+}
+
+export async function fetchBoardMeetingResolutions(
+  meetingId: string,
+): Promise<ApiSuccess<BoardResolutionRow[]>> {
+  const res = await apiFetch(`/v1/comm-board-meetings/${meetingId}/resolutions`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function fetchResolutionVotes(
+  meetingId: string,
+  resolutionId: string,
+): Promise<ApiSuccess<BoardResolutionVoteRow[]>> {
+  const res = await apiFetch(
+    `/v1/comm-board-meetings/${meetingId}/resolutions/${resolutionId}/votes`,
+  );
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function proposeBoardResolution(command: {
+  meetingId: string;
+  title: string;
+  description?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/resolutions/propose", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Propose resolution failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function castBoardVote(command: {
+  resolutionId: string;
+  vote: "for" | "against" | "abstain";
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/resolutions/cast-vote", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Cast vote failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface BoardMinuteRow {
+  id: string;
+  orgId: string;
+  meetingId: string;
+  resolutionId: string | null;
+  createdByPrincipalId: string;
+  recordedAt: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BoardActionItemRow {
+  id: string;
+  orgId: string;
+  minuteId: string;
+  title: string;
+  description: string | null;
+  assigneeId: string | null;
+  dueDate: string | null;
+  status: "open" | "in_progress" | "done" | "cancelled";
+  createdByPrincipalId: string;
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+}
+
+export async function fetchBoardMeetingMinutes(
+  meetingId: string,
+): Promise<ApiSuccess<BoardMinuteRow[]>> {
+  const res = await apiFetch(`/v1/comm-board-meetings/${meetingId}/minutes`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function recordBoardMinutes(command: {
+  meetingId: string;
+  resolutionId?: string | null;
+  content: string;
+  metadata?: Record<string, unknown>;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/minutes/record", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Record minutes failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchActionItemsByMinute(
+  meetingId: string,
+  minuteId: string,
+): Promise<ApiSuccess<BoardActionItemRow[]>> {
+  const res = await apiFetch(
+    `/v1/comm-board-meetings/${meetingId}/minutes/${minuteId}/action-items`,
+  );
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function createBoardActionItem(command: {
+  minuteId: string;
+  title: string;
+  description?: string | null;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/action-items/create", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create action item failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function updateBoardActionItem(command: {
+  id: string;
+  title?: string;
+  description?: string | null;
+  assigneeId?: string | null;
+  dueDate?: string | null;
+  status?: "open" | "in_progress" | "done" | "cancelled";
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/comm-board-meetings/action-items/update", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update action item failed (${res.status})`);
   }
   return res.json();
 }

@@ -10,10 +10,24 @@
  */
 
 export const CorrelationIdHeader = "x-correlation-id" as const;
+export const RequestIdHeader = "x-request-id" as const;
 export const IdempotencyKeyHeader = "idempotency-key" as const;
 export const OrgIdHeader = "x-org-id" as const;
+/**
+ * Informational response header used during deprecation windows.
+ * Example migration pattern:
+ * - Keep old header + new header for one release window.
+ * - Emit a warning value describing removal timeline.
+ */
+export const DeprecationWarningHeader = "x-deprecation-warning" as const;
 
 /** Typed allowlist — use to enumerate or validate header names. */
-export const HeaderNameValues = [CorrelationIdHeader, IdempotencyKeyHeader, OrgIdHeader] as const;
+export const HeaderNameValues = [
+  CorrelationIdHeader,
+  RequestIdHeader,
+  IdempotencyKeyHeader,
+  OrgIdHeader,
+  DeprecationWarningHeader,
+] as const;
 
 export type HeaderName = (typeof HeaderNameValues)[number];

@@ -46,6 +46,10 @@ export interface RegisterDocumentParams {
   /** File size in bytes — non-negative safe integer. */
   sizeBytes: number;
   uploadedByPrincipalId?: PrincipalId;
+  storageProvider?: string;
+  storageBucket?: string;
+  storageMetadata?: Record<string, unknown>;
+  objectVersion?: string;
 }
 
 export interface RegisterDocumentOptions {
@@ -176,6 +180,10 @@ export async function registerDocument(
         mime: params.mime,
         sizeBytes: params.sizeBytes,
         uploadedByPrincipalId: params.uploadedByPrincipalId ?? null,
+        storageProvider: params.storageProvider ?? "r2",
+        storageBucket: params.storageBucket ?? "axis-attachments",
+        storageMetadata: params.storageMetadata ?? {},
+        objectVersion: params.objectVersion ?? null,
       })
       .onConflictDoNothing({
         target: [document.orgId, document.objectKey],

@@ -43,7 +43,25 @@ export type SettingUpdate =
   | { key: "general.email.buttonColor"; value: string | null }
   | { key: "general.email.footerText"; value: string | null }
   // Locale (display preferences — see setting-keys.ts for semantics)
-  | { key: "general.locale.language"; value: "en" | "ar" | "de" | "es" | "fr" | "it" | "ja" | "ko" | "nl" | "pl" | "pt" | "ru" | "tr" | "zh" | null }
+  | {
+      key: "general.locale.language";
+      value:
+        | "en"
+        | "ar"
+        | "de"
+        | "es"
+        | "fr"
+        | "it"
+        | "ja"
+        | "ko"
+        | "nl"
+        | "pl"
+        | "pt"
+        | "ru"
+        | "tr"
+        | "zh"
+        | null;
+    }
   | { key: "general.locale.timezone"; value: string | null }
   | { key: "general.locale.dateFormat"; value: "DD/MM/YYYY" | "MM/DD/YYYY" | "YYYY-MM-DD" | null }
   | { key: "general.locale.timeFormat"; value: "12h" | "24h" | null }
@@ -60,7 +78,21 @@ export type SettingUpdate =
   | { key: "general.company.taxId"; value: string | null }
   | { key: "general.company.phone"; value: string | null }
   | { key: "general.company.website"; value: string | null }
-  | { key: "general.company.industry"; value: "technology" | "finance" | "healthcare" | "manufacturing" | "retail" | "services" | "construction" | "education" | "nonprofit" | "other" | null }
+  | {
+      key: "general.company.industry";
+      value:
+        | "technology"
+        | "finance"
+        | "healthcare"
+        | "manufacturing"
+        | "retail"
+        | "services"
+        | "construction"
+        | "education"
+        | "nonprofit"
+        | "other"
+        | null;
+    }
   | { key: "general.company.address.street"; value: string | null }
   | { key: "general.company.address.city"; value: string | null }
   | { key: "general.company.address.state"; value: string | null }
@@ -70,6 +102,10 @@ export type SettingUpdate =
   | { key: "general.notifications.emailOnApproval"; value: boolean | null }
   | { key: "general.notifications.emailOnPayment"; value: boolean | null }
   | { key: "general.notifications.emailOnOverdue"; value: boolean | null }
+  // Storage policy
+  | { key: "general.storage.maxUploadBytes"; value: number | null }
+  | { key: "general.storage.allowedMimeTypes"; value: string | null }
+  | { key: "general.storage.retentionDays"; value: number | null }
   // Features
   | { key: "features.ap.enabled"; value: boolean | null }
   | { key: "features.ar.enabled"; value: boolean | null }

@@ -12,29 +12,76 @@ const HexColorSchema = z
   .string()
   .regex(/^#[0-9a-fA-F]{6}$/, "Must be a 6-digit hex color e.g. #rrggbb");
 
+const MimeTypeTokenSchema = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/;
+
+const MimeTypeAllowListSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2000)
+  .refine((value) => {
+    const tokens = value
+      .split(",")
+      .map((token) => token.trim().toLowerCase())
+      .filter(Boolean);
+
+    return tokens.length > 0 && tokens.every((token) => MimeTypeTokenSchema.test(token));
+  }, "Must be a comma-separated list of MIME types (e.g. application/pdf,image/png)");
+
 // ── Curated IANA timezone list ─────────────────────────────────────────────────
 // Major global business regions only — not a universal IANA claim.
 // Both backend validation and UI select use the same list (no divergence).
 const SUPPORTED_TIMEZONES = [
   "UTC",
   // North America
-  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-  "America/Anchorage", "Pacific/Honolulu",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Anchorage",
+  "Pacific/Honolulu",
   // Canada & Mexico
-  "America/Toronto", "America/Vancouver", "America/Mexico_City",
+  "America/Toronto",
+  "America/Vancouver",
+  "America/Mexico_City",
   // South America
-  "America/Sao_Paulo", "America/Argentina/Buenos_Aires", "America/Bogota",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "America/Bogota",
   // Europe
-  "Europe/London", "Europe/Paris", "Europe/Berlin", "Europe/Rome", "Europe/Madrid",
-  "Europe/Amsterdam", "Europe/Stockholm", "Europe/Oslo", "Europe/Helsinki",
-  "Europe/Warsaw", "Europe/Prague", "Europe/Bucharest", "Europe/Istanbul", "Europe/Moscow",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Rome",
+  "Europe/Madrid",
+  "Europe/Amsterdam",
+  "Europe/Stockholm",
+  "Europe/Oslo",
+  "Europe/Helsinki",
+  "Europe/Warsaw",
+  "Europe/Prague",
+  "Europe/Bucharest",
+  "Europe/Istanbul",
+  "Europe/Moscow",
   // Africa & Middle East
-  "Africa/Cairo", "Africa/Lagos", "Africa/Johannesburg", "Asia/Dubai",
+  "Africa/Cairo",
+  "Africa/Lagos",
+  "Africa/Johannesburg",
+  "Asia/Dubai",
   // Asia
-  "Asia/Karachi", "Asia/Kolkata", "Asia/Dhaka", "Asia/Bangkok",
-  "Asia/Singapore", "Asia/Shanghai", "Asia/Tokyo", "Asia/Seoul", "Asia/Jakarta",
+  "Asia/Karachi",
+  "Asia/Kolkata",
+  "Asia/Dhaka",
+  "Asia/Bangkok",
+  "Asia/Singapore",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Asia/Seoul",
+  "Asia/Jakarta",
   // Oceania
-  "Australia/Sydney", "Australia/Melbourne", "Pacific/Auckland",
+  "Australia/Sydney",
+  "Australia/Melbourne",
+  "Pacific/Auckland",
 ] as const;
 
 export const SETTING_VALUE_SCHEMAS: Record<SettingKey, z.ZodTypeAny> = {
@@ -54,7 +101,20 @@ export const SETTING_VALUE_SCHEMAS: Record<SettingKey, z.ZodTypeAny> = {
   // numberFormat = IETF BCP-47 locale code driving decimal/thousands convention.
   //   en-US → 1,234.56   de-DE → 1.234,56   fr-FR → 1 234,56   en-IN → 1,23,456.78
   "general.locale.language": z.enum([
-    "en", "ar", "de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh",
+    "en",
+    "ar",
+    "de",
+    "es",
+    "fr",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "tr",
+    "zh",
   ]),
   "general.locale.timezone": z.enum(SUPPORTED_TIMEZONES),
   "general.locale.dateFormat": z.enum(["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"]),
@@ -80,34 +140,106 @@ export const SETTING_VALUE_SCHEMAS: Record<SettingKey, z.ZodTypeAny> = {
   "general.company.tradingName": z.string().max(200),
   "general.company.taxId": z.string().max(50),
   "general.company.phone": z.string().max(30),
-  "general.company.website": z.string().max(200).refine(
-    (v) => v === "" || /^https?:\/\/.+/.test(v),
-    { message: "Must be a URL starting with http:// or https://, or empty" },
-  ),
+  "general.company.website": z
+    .string()
+    .max(200)
+    .refine((v) => v === "" || /^https?:\/\/.+/.test(v), {
+      message: "Must be a URL starting with http:// or https://, or empty",
+    }),
   "general.company.industry": z.enum([
-    "technology", "finance", "healthcare", "manufacturing",
-    "retail", "services", "construction", "education", "nonprofit", "other",
+    "technology",
+    "finance",
+    "healthcare",
+    "manufacturing",
+    "retail",
+    "services",
+    "construction",
+    "education",
+    "nonprofit",
+    "other",
   ]),
   "general.company.address.street": z.string().max(200),
   "general.company.address.city": z.string().max(100),
   "general.company.address.state": z.string().max(100),
   "general.company.address.postalCode": z.string().max(20),
   // ISO 3166-1 alpha-2 — curated list of ~60 major business-registration countries.
-  "general.company.address.country": z.enum([
-    "AE", "AR", "AT", "AU", "BE", "BG", "BH", "BR", "CA", "CH",
-    "CL", "CN", "CO", "CZ", "DE", "DK", "EG", "ES", "FI", "FR",
-    "GB", "GH", "GR", "HK", "HR", "HU", "ID", "IE", "IL", "IN",
-    "IT", "JP", "KE", "KR", "KW", "LU", "MX", "MY", "NG", "NL",
-    "NO", "NZ", "OM", "PH", "PK", "PL", "PT", "QA", "RO", "RU",
-    "SA", "SE", "SG", "SK", "TH", "TR", "TW", "TZ", "UA", "US",
-    "VN", "ZA",
-  ]).or(z.literal("")),
+  "general.company.address.country": z
+    .enum([
+      "AE",
+      "AR",
+      "AT",
+      "AU",
+      "BE",
+      "BG",
+      "BH",
+      "BR",
+      "CA",
+      "CH",
+      "CL",
+      "CN",
+      "CO",
+      "CZ",
+      "DE",
+      "DK",
+      "EG",
+      "ES",
+      "FI",
+      "FR",
+      "GB",
+      "GH",
+      "GR",
+      "HK",
+      "HR",
+      "HU",
+      "ID",
+      "IE",
+      "IL",
+      "IN",
+      "IT",
+      "JP",
+      "KE",
+      "KR",
+      "KW",
+      "LU",
+      "MX",
+      "MY",
+      "NG",
+      "NL",
+      "NO",
+      "NZ",
+      "OM",
+      "PH",
+      "PK",
+      "PL",
+      "PT",
+      "QA",
+      "RO",
+      "RU",
+      "SA",
+      "SE",
+      "SG",
+      "SK",
+      "TH",
+      "TR",
+      "TW",
+      "TZ",
+      "UA",
+      "US",
+      "VN",
+      "ZA",
+    ])
+    .or(z.literal("")),
 
   // ── Notifications ─────────────────────────────────────────────────────────────
   // Org-level default email event preferences. NOT a workflow rules engine.
   "general.notifications.emailOnApproval": z.boolean(),
   "general.notifications.emailOnPayment": z.boolean(),
   "general.notifications.emailOnOverdue": z.boolean(),
+
+  // ── Storage ───────────────────────────────────────────────────────────────
+  "general.storage.maxUploadBytes": z.number().int().min(1).max(1073741824),
+  "general.storage.allowedMimeTypes": MimeTypeAllowListSchema,
+  "general.storage.retentionDays": z.number().int().min(1).max(3650),
 
   // ── Features ─────────────────────────────────────────────────────────────────
   "features.ap.enabled": z.boolean(),

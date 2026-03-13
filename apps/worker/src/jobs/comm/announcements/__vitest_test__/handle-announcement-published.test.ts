@@ -94,6 +94,10 @@ describe("handleAnnouncementPublished", () => {
       "00000000-0000-0000-0000-0000000000A1",
       "00000000-0000-0000-0000-0000000000B2",
     ]);
+    expect(items.every((item) => item.entityType === "announcement")).toBe(true);
+    expect(items.every((item) => item.entityId === "00000000-0000-0000-0000-000000000010")).toBe(
+      true,
+    );
   });
 
   it("skips fan-out when no audience principals resolve", async () => {

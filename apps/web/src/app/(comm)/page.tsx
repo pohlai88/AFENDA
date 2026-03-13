@@ -69,6 +69,12 @@ export default function CommPage() {
           >
             View Approvals
           </a>
+          <a
+            href="/comm/workflows"
+            className="inline-block rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Manage Workflows
+          </a>
         </div>
       </div>
     </div>

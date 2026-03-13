@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const SETTINGS_NAV = [
-  { href: "/governance/settings/company",       label: "Company" },
+  { href: "/governance/settings/company", label: "Company" },
   { href: "/governance/settings/organizations", label: "Organizations" },
-  { href: "/governance/settings",               label: "General" },
-  { href: "/governance/settings/features",      label: "Features" },
-  { href: "/governance/settings/numbering",     label: "Numbering" },
-  { href: "/governance/settings/access",        label: "Access" },
-  { href: "/governance/settings/security",      label: "Security" },
+  { href: "/governance/settings", label: "General" },
+  { href: "/governance/settings/features", label: "Features" },
+  { href: "/governance/settings/numbering", label: "Numbering" },
+  { href: "/governance/settings/access", label: "Access" },
+  { href: "/governance/settings/security", label: "Security" },
+  { href: "/governance/settings/storage", label: "Storage" },
   { href: "/governance/settings/custom-fields", label: "Custom Fields" },
 ] as const;
 
@@ -33,7 +34,7 @@ export function SettingsNav() {
             className={[
               "block rounded px-2 py-1.5 text-sm transition-colors",
               isActive
-                ? "bg-surface-100 text-foreground font-medium"
+                ? "bg-surface-100 font-medium text-foreground"
                 : "text-muted-foreground hover:bg-surface-100 hover:text-foreground",
             ].join(" ")}
           >

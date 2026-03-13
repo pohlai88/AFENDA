@@ -26,6 +26,14 @@ export const ErrorEnvelopeSchema = z.object({
 
 export type ErrorEnvelope = z.infer<typeof ErrorEnvelopeSchema>;
 
+/** Runtime helper to build and validate an error envelope. */
+export function makeErrorEnvelope(
+  error: z.infer<typeof ApiErrorSchema>,
+  correlationId: string,
+): ErrorEnvelope {
+  return ErrorEnvelopeSchema.parse({ error, correlationId });
+}
+
 // ─── Success wrapper for single-item responses ──────────────────────────────
 
 /**
@@ -45,6 +53,16 @@ export type SuccessEnvelope<T> = {
   data: T;
   correlationId: CorrelationId;
 };
+
+/** Runtime helper to build and validate a success envelope. */
+export function makeSuccessEnvelope<T extends z.ZodTypeAny>(
+  schema: T,
+  data: z.infer<T>,
+  correlationId: string,
+) {
+  const envelopeSchema = makeSuccessEnvelopeSchema(schema);
+  return envelopeSchema.parse({ data, correlationId });
+}
 
 // ─── Cursor pagination envelope ─────────────────────────────────────────────
 
@@ -72,6 +90,14 @@ export const makeCursorEnvelopeSchema = <T extends z.ZodTypeAny>(item: T) =>
           message: "cursor must be null when hasMore is false",
         });
       }
+
+      if (v.hasMore && (v.cursor === null || v.cursor.trim().length === 0)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["cursor"],
+          message: "cursor must be a non-empty string when hasMore is true",
+        });
+      }
     });
 
 export type CursorEnvelope<T> = {
@@ -80,3 +106,15 @@ export type CursorEnvelope<T> = {
   hasMore: boolean;
   correlationId: CorrelationId;
 };
+
+/** Runtime helper to build and validate a cursor envelope. */
+export function makeCursorEnvelope<T extends z.ZodTypeAny>(
+  itemSchema: T,
+  data: z.infer<T>[],
+  cursor: string | null,
+  hasMore: boolean,
+  correlationId: string,
+) {
+  const envelopeSchema = makeCursorEnvelopeSchema(itemSchema);
+  return envelopeSchema.parse({ data, cursor, hasMore, correlationId });
+}

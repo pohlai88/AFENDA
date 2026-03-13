@@ -1,0 +1,29 @@
+name = "afenda-r2"
+main = "./scripts/placeholder-worker.js"
+compatibility_date = "2026-03-13"
+
+# Set CLOUDFLARE_ACCOUNT_ID in your environment before running wrangler.
+
+# R2 bucket bindings for local wrangler operations and future worker integration.
+[[r2_buckets]]
+binding = "ATTACHMENTS"
+bucket_name = "axis-attachments"
+
+# Optional backup bucket binding.
+[[r2_buckets]]
+binding = "BACKUP"
+bucket_name = "axis-attachments-backup"
+
+[[queues.consumers]]
+queue = "afenda-r2-events"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "afenda-r2-events-dlq"
+
+[[queues.producers]]
+queue = "afenda-r2-events-dlq"
+binding = "R2_EVENT_DLQ"
+
+[vars]
+R2_EVENT_MAX_RETRIES = "5"

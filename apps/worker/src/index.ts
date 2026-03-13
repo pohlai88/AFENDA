@@ -44,19 +44,6 @@ import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treas
 import { handleTreasuryFxRateSnapshotEvent } from "./jobs/erp/finance/treasury/handle-fx-rate-snapshot.js";
 import { handleTreasuryApDuePaymentProjectionEvent } from "./jobs/erp/finance/treasury/handle-ap-due-payment-projection.js";
 import { handleTreasuryArExpectedReceiptProjectionEvent } from "./jobs/erp/finance/treasury/handle-ar-expected-receipt-projection.js";
-<<<<<<< HEAD
-import { handleTreasuryInternalBankAccountEvent } from "./jobs/erp/finance/treasury/handle-internal-bank-account.js";
-import { handleTreasuryIntercompanyTransferEvent } from "./jobs/erp/finance/treasury/handle-intercompany-transfer.js";
-import { handleIntercompanyTransferSettled } from "./jobs/erp/finance/treasury/handle-intercompany-transfer-settled.js";
-import { handleTreasuryNettingSessionClosedEvent } from "./jobs/erp/finance/treasury/handle-netting-session-closed.js";
-import { handleTreasuryInternalInterestRateEvent } from "./jobs/erp/finance/treasury/handle-internal-interest-rate.js";
-import { handleTreasuryFxRiskEvent } from "./jobs/erp/finance/treasury/handle-fx-risk.js";
-import { handleTreasuryRevaluationEvent } from "./jobs/erp/finance/treasury/handle-revaluation.js";
-import { handleTreasuryLimitBreached } from "./jobs/erp/finance/treasury/handle-treasury-limit-breached.js";
-import { handleBankConnectorSyncRequested } from "./jobs/erp/finance/treasury/handle-bank-connector-sync-requested.js";
-import { handleMarketDataRefreshRequested } from "./jobs/erp/finance/treasury/handle-market-data-refresh-requested.js";
-import { handleTreasuryPostingRequested } from "./jobs/erp/finance/treasury/handle-treasury-posting-requested.js";
-=======
 import { handleTaskCreated } from "./jobs/comm/tasks/handle-task-created.js";
 import { handleTaskUpdated } from "./jobs/comm/tasks/handle-task-updated.js";
 import { handleTaskAssigned } from "./jobs/comm/tasks/handle-task-assigned.js";
@@ -87,6 +74,17 @@ import { handleAnnouncementPublished } from "./jobs/comm/announcements/handle-an
 import { handleAnnouncementScheduled } from "./jobs/comm/announcements/handle-announcement-scheduled.js";
 import { handleAnnouncementAcknowledged } from "./jobs/comm/announcements/handle-announcement-acknowledged.js";
 import { handleAnnouncementArchived } from "./jobs/comm/announcements/handle-announcement-archived.js";
+import { handleDocumentCreated } from "./jobs/comm/docs/handle-document-created.js";
+import { handleDocumentUpdated } from "./jobs/comm/docs/handle-document-updated.js";
+import { handleDocumentPublished } from "./jobs/comm/docs/handle-document-published.js";
+import { handleDocumentArchived } from "./jobs/comm/docs/handle-document-archived.js";
+import { handleMeetingCreated } from "./jobs/comm/boardroom/handle-meeting-created.js";
+import { handleAgendaItemAdded } from "./jobs/comm/boardroom/handle-agenda-item-added.js";
+import { handleAttendeeAdded } from "./jobs/comm/boardroom/handle-attendee-added.js";
+import { handleResolutionProposed } from "./jobs/comm/boardroom/handle-resolution-proposed.js";
+import { handleMinutesRecorded } from "./jobs/comm/boardroom/handle-minutes-recorded.js";
+import { handleActionItemCreated } from "./jobs/comm/boardroom/handle-action-item-created.js";
+import { handleActionItemUpdated } from "./jobs/comm/boardroom/handle-action-item-updated.js";
 import { handleCommentCreated } from "./jobs/comm/shared/handle-comment-created.js";
 import { handleLabelCreated } from "./jobs/comm/shared/handle-label-created.js";
 import { handleLabelUpdated } from "./jobs/comm/shared/handle-label-updated.js";
@@ -102,7 +100,13 @@ import { handleCommentMentionsCreated } from "./jobs/comm/shared/handle-comment-
 import { handleInboxItemRead } from "./jobs/comm/shared/handle-inbox-item-read.js";
 import { handleInboxAllRead } from "./jobs/comm/shared/handle-inbox-all-read.js";
 import { handleNotificationPreferenceUpdated } from "./jobs/comm/shared/handle-notification-preference-updated.js";
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
+import { handleWorkflowCreated } from "./jobs/comm/workflows/handle-workflow-created.js";
+import { handleWorkflowUpdated } from "./jobs/comm/workflows/handle-workflow-updated.js";
+import { handleWorkflowStatusChanged } from "./jobs/comm/workflows/handle-workflow-status-changed.js";
+import { handleWorkflowDeleted } from "./jobs/comm/workflows/handle-workflow-deleted.js";
+import { handleWorkflowTriggered } from "./jobs/comm/workflows/handle-workflow-triggered.js";
+import { handleWorkflowRunCompleted } from "./jobs/comm/workflows/handle-workflow-run-completed.js";
+import { handleWorkflowRunFailed } from "./jobs/comm/workflows/handle-workflow-run-failed.js";
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -169,25 +173,6 @@ const taskList = {
   handle_treasury_ap_due_payment_projection_event: handleTreasuryApDuePaymentProjectionEvent,
   handle_treasury_ar_expected_receipt_projection_event:
     handleTreasuryArExpectedReceiptProjectionEvent,
-<<<<<<< HEAD
-  // Wave 4.1 — In-house Banking + Intercompany Transfers
-  handle_treasury_internal_bank_account_event: handleTreasuryInternalBankAccountEvent,
-  handle_treasury_intercompany_transfer_event: handleTreasuryIntercompanyTransferEvent,
-  handle_treasury_intercompany_transfer_settled_event: handleIntercompanyTransferSettled,
-  handle_treasury_netting_session_closed_event: handleTreasuryNettingSessionClosedEvent,
-  handle_treasury_internal_interest_rate_event: handleTreasuryInternalInterestRateEvent,
-  // Wave 5.1 — FX Management + Revaluation
-  handle_treasury_fx_risk_event: handleTreasuryFxRiskEvent,
-  handle_treasury_revaluation_event: handleTreasuryRevaluationEvent,
-  // Wave 6.1 — Treasury Policy + Limits
-  handle_treasury_limit_breached_event: handleTreasuryLimitBreached,
-  // Wave 6.2 — Integrations + Market Data
-  handle_bank_connector_sync_requested: handleBankConnectorSyncRequested,
-  handle_market_data_refresh_requested: handleMarketDataRefreshRequested,
-  // Wave 5.2 — Treasury Accounting Bridge
-  handle_treasury_posting_requested: handleTreasuryPostingRequested,
-=======
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
   handle_task_created: handleTaskCreated,
@@ -220,6 +205,17 @@ const taskList = {
   handle_announcement_scheduled: handleAnnouncementScheduled,
   handle_announcement_acknowledged: handleAnnouncementAcknowledged,
   handle_announcement_archived: handleAnnouncementArchived,
+  handle_document_created: handleDocumentCreated,
+  handle_document_updated: handleDocumentUpdated,
+  handle_document_published: handleDocumentPublished,
+  handle_document_archived: handleDocumentArchived,
+  handle_meeting_created: handleMeetingCreated,
+  handle_agenda_item_added: handleAgendaItemAdded,
+  handle_attendee_added: handleAttendeeAdded,
+  handle_resolution_proposed: handleResolutionProposed,
+  handle_minutes_recorded: handleMinutesRecorded,
+  handle_action_item_created: handleActionItemCreated,
+  handle_action_item_updated: handleActionItemUpdated,
   handle_comment_created: handleCommentCreated,
   handle_label_created: handleLabelCreated,
   handle_label_updated: handleLabelUpdated,
@@ -235,6 +231,13 @@ const taskList = {
   handle_inbox_item_read: handleInboxItemRead,
   handle_inbox_all_read: handleInboxAllRead,
   handle_notification_preference_updated: handleNotificationPreferenceUpdated,
+  handle_workflow_created: handleWorkflowCreated,
+  handle_workflow_updated: handleWorkflowUpdated,
+  handle_workflow_status_changed: handleWorkflowStatusChanged,
+  handle_workflow_deleted: handleWorkflowDeleted,
+  handle_workflow_triggered: handleWorkflowTriggered,
+  handle_workflow_run_completed: handleWorkflowRunCompleted,
+  handle_workflow_run_failed: handleWorkflowRunFailed,
 } as const;
 
 const runner = await run({
@@ -275,8 +278,12 @@ async function shutdown(signal: string) {
   // runner.promise resolves after stop() — process exits naturally below
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM");
+});
+process.on("SIGINT", () => {
+  void shutdown("SIGINT");
+});
 
 await runner.promise;
 log.info("worker exited cleanly");

@@ -6,6 +6,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle } from "@afenda/ui";
 import {
   fetchAnnouncement,
   fetchAnnouncementAckSummary,
+  fetchAnnouncementMyRead,
   acknowledgeAnnouncement,
   type AnnouncementAckSummary,
   type AnnouncementRow,
@@ -22,6 +23,8 @@ export default function AnnouncementDetailPage({ params }: AnnouncementDetailPag
   const [ackSummary, setAckSummary] = useState<AnnouncementAckSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAcknowledging, setIsAcknowledging] = useState(false);
+  const [hasAcknowledged, setHasAcknowledged] = useState(false);
+  const [ackError, setAckError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,18 +35,23 @@ export default function AnnouncementDetailPage({ params }: AnnouncementDetailPag
 
   useEffect(() => {
     if (!announcementId) return;
+    const id = announcementId;
 
     async function load() {
       try {
-        const [announcementResponse, ackSummaryResponse] = await Promise.all([
-          fetchAnnouncement(announcementId),
-          fetchAnnouncementAckSummary(announcementId),
+        const [announcementResponse, ackSummaryResponse, myReadResponse] = await Promise.all([
+          fetchAnnouncement(id),
+          fetchAnnouncementAckSummary(id),
+          fetchAnnouncementMyRead(id),
         ]);
         setAnnouncement(announcementResponse.data);
         setAckSummary(ackSummaryResponse.data);
+        setHasAcknowledged(myReadResponse.data.acknowledged);
+        setAckError(null);
       } catch {
         setAnnouncement(null);
         setAckSummary(null);
+        setHasAcknowledged(false);
       } finally {
         setLoading(false);
       }
@@ -53,18 +61,22 @@ export default function AnnouncementDetailPage({ params }: AnnouncementDetailPag
   }, [announcementId]);
 
   const handleAcknowledge = async () => {
-    if (!announcementId) return;
+    if (!announcementId || hasAcknowledged) return;
+    const id = announcementId;
+    setAckError(null);
+    setHasAcknowledged(true);
     setIsAcknowledging(true);
     try {
-      await acknowledgeAnnouncement({ announcementId });
+      await acknowledgeAnnouncement({ announcementId: id });
       const [announcementResponse, ackSummaryResponse] = await Promise.all([
-        fetchAnnouncement(announcementId),
-        fetchAnnouncementAckSummary(announcementId),
+        fetchAnnouncement(id),
+        fetchAnnouncementAckSummary(id),
       ]);
       setAnnouncement(announcementResponse.data);
       setAckSummary(ackSummaryResponse.data);
     } catch {
-      // Keep page stable and allow user to retry acknowledgement.
+      setHasAcknowledged(false);
+      setAckError("Acknowledgement failed. Please retry.");
     } finally {
       setIsAcknowledging(false);
     }
@@ -130,9 +142,23 @@ export default function AnnouncementDetailPage({ params }: AnnouncementDetailPag
 
           {announcement.status === "published" && (
             <div className="mt-6 border-t pt-6">
-              <Button onClick={handleAcknowledge} disabled={isAcknowledging} variant="default">
-                {isAcknowledging ? "Acknowledging..." : "Acknowledge"}
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  onClick={handleAcknowledge}
+                  disabled={isAcknowledging || hasAcknowledged}
+                  variant={hasAcknowledged ? "secondary" : "default"}
+                >
+                  {isAcknowledging
+                    ? "Acknowledging..."
+                    : hasAcknowledged
+                      ? "Acknowledged"
+                      : "Acknowledge"}
+                </Button>
+                {hasAcknowledged ? (
+                  <p className="text-sm text-muted-foreground">Your acknowledgement is recorded.</p>
+                ) : null}
+                {ackError ? <p className="text-sm text-destructive">{ackError}</p> : null}
+              </div>
             </div>
           )}
         </CardContent>

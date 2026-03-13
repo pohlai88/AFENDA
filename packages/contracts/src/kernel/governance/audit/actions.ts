@@ -144,29 +144,6 @@ export const AuditActionValues = [
   "treasury.intercompany-transfer.approved",
   "treasury.intercompany-transfer.rejected",
   "treasury.intercompany-transfer.settled",
-<<<<<<< HEAD
-  // Treasury — Wave 4.2 Netting + Internal Interest
-  "treasury.netting-session.create",
-  "treasury.netting-session.add-items",
-  "treasury.netting-session.close",
-  "treasury.netting-session.settle",
-  "treasury.internal-interest-rate.create",
-  "treasury.internal-interest-rate.activate",
-  // Treasury — Wave 5.1 FX Management + Revaluation
-  "treasury.fx-exposure.created",
-  "treasury.fx-exposure.closed",
-  "treasury.hedge-designation.created",
-  "treasury.hedge-designation.status-updated",
-  "treasury.revaluation-event.created",
-  "treasury.revaluation-event.status-updated",
-  // Treasury — Wave 6.2 Connectors + Market Data
-  "treasury.bank-connector.created",
-  "treasury.bank-connector.activated",
-  "treasury.bank-connector.sync-requested",
-  "treasury.market-data-feed.created",
-  "treasury.market-data-feed.activated",
-  "treasury.market-data-feed.refresh-requested",
-=======
 
   // COMM — shared
   "comment.created",
@@ -227,7 +204,35 @@ export const AuditActionValues = [
   "announcement.scheduled",
   "announcement.archived",
   "announcement.acknowledged",
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
+
+  // COMM — docs
+  "document.created",
+  "document.updated",
+  "document.published",
+  "document.archived",
+  "document.collaborator.added",
+  "document.collaborator.removed",
+
+  // COMM — boardroom
+  "meeting.created",
+  "meeting.updated",
+  "meeting.agenda_item_added",
+  "meeting.attendee_added",
+  "meeting.attendee_status_updated",
+  "meeting.resolution_proposed",
+  "meeting.vote_cast",
+  "meeting.minutes_recorded",
+  "meeting.action_item_created",
+  "meeting.action_item_updated",
+
+  // COMM — workflows
+  "workflow.created",
+  "workflow.updated",
+  "workflow.status_changed",
+  "workflow.deleted",
+  "workflow.triggered",
+  "workflow.run_completed",
+  "workflow.run_failed",
 ] as const;
 
 export type AuditAction = (typeof AuditActionValues)[number];
@@ -281,15 +286,6 @@ export const AuditEntityTypeValues = [
   "forecast_variance",
   "internal_bank_account",
   "intercompany_transfer",
-<<<<<<< HEAD
-  "fx_exposure",
-  "hedge_designation",
-  "revaluation_event",
-  "bank_connector",
-  "bank_connector_execution",
-  "market_data_feed",
-  "market_data_observation",
-=======
 
   // COMM
   "task",
@@ -312,7 +308,17 @@ export const AuditEntityTypeValues = [
   "approval_delegation",
   "announcement",
   "announcement_read",
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
+  "board_meeting",
+  "board_agenda_item",
+  "board_meeting_attendee",
+  "board_resolution",
+  "board_resolution_vote",
+  "board_minute",
+  "board_action_item",
+  "workflow",
+  "workflow_run",
+  "comm_document",
+  "comm_document_collaborator",
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];

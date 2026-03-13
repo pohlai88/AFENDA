@@ -14,7 +14,9 @@
     "build": "tsc -p tsconfig.json --rootDir src --outDir dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "permissions:check": "pnpm build && node scripts/validate-permissions.mjs",
+    "permissions:seed": "pnpm build && node scripts/generate-permission-seed.mjs"
   },
   "dependencies": {
     "zod": "catalog:"

@@ -37,9 +37,14 @@ import {
   attachEvidence,
   writeAuditLog,
   listDocuments,
+  getEffectiveSettings,
 } from "@afenda/core";
 import type { EvidencePolicyContext, UserId, WorkspaceId, EvidenceOperationId } from "@afenda/core";
-import { generatePresignedUploadUrl } from "../../services/s3.js";
+import {
+  generatePresignedUploadUrl,
+  resolveStorageBucket,
+  resolveStorageProviderName,
+} from "../../services/s3.js";
 import { CursorParamsSchema } from "@afenda/contracts";
 import { requireAuth } from "../../helpers/responses.js";
 
@@ -67,7 +72,80 @@ const DocumentListSchema = z.object({
 const PresignBodySchema = z.object({
   filename: z.string().trim().min(1).max(255).describe("Name of the file to upload"),
   contentType: z.string().trim().min(1).max(100).describe("MIME type of the file"),
+  sizeBytes: z.number().int().positive().safe().describe("Upload size in bytes"),
 });
+
+const StoragePolicySettingKeys = [
+  "general.storage.maxUploadBytes",
+  "general.storage.allowedMimeTypes",
+  "general.storage.retentionDays",
+] as const;
+
+type StoragePolicy = {
+  maxUploadBytes: number;
+  allowedMimeTypes: Set<string>;
+  retentionDays: number;
+};
+
+function parseMimeTypeAllowList(raw: unknown): Set<string> {
+  if (typeof raw !== "string") return new Set();
+  return new Set(
+    raw
+      .split(",")
+      .map((token) => token.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+async function resolveStoragePolicy(app: FastifyInstance, orgId: OrgId): Promise<StoragePolicy> {
+  const slice = await getEffectiveSettings(app.db, orgId, [...StoragePolicySettingKeys]);
+
+  const maxUploadBytes = Number(slice["general.storage.maxUploadBytes"]?.value ?? 10485760);
+  const retentionDays = Number(slice["general.storage.retentionDays"]?.value ?? 365);
+  const allowedMimeTypes = parseMimeTypeAllowList(
+    slice["general.storage.allowedMimeTypes"]?.value ?? "",
+  );
+
+  return {
+    maxUploadBytes: Number.isFinite(maxUploadBytes) ? maxUploadBytes : 10485760,
+    allowedMimeTypes,
+    retentionDays: Number.isFinite(retentionDays) ? retentionDays : 365,
+  };
+}
+
+function rejectByStoragePolicy(
+  policy: StoragePolicy,
+  payload: { contentType: string; sizeBytes: number },
+  req: Parameters<typeof requireOrg>[0],
+  reply: Parameters<typeof requireOrg>[1],
+): boolean {
+  const contentType = payload.contentType.trim().toLowerCase();
+  if (policy.allowedMimeTypes.size > 0 && !policy.allowedMimeTypes.has(contentType)) {
+    reply.status(400).send({
+      error: {
+        code: ERR.VALIDATION,
+        message: `Blocked by storage policy: MIME type \"${payload.contentType}\" is not allowed`,
+        fieldPath: "contentType",
+      },
+      correlationId: req.correlationId,
+    });
+    return true;
+  }
+
+  if (payload.sizeBytes > policy.maxUploadBytes) {
+    reply.status(400).send({
+      error: {
+        code: ERR.VALIDATION,
+        message: `Blocked by storage policy: sizeBytes exceeds maxUploadBytes (${policy.maxUploadBytes})`,
+        fieldPath: "sizeBytes",
+      },
+      correlationId: req.correlationId,
+    });
+    return true;
+  }
+
+  return false;
+}
 
 const PresignResponseSchema = makeSuccessSchema(
   z.object({
@@ -155,10 +233,15 @@ export async function evidenceRoutes(app: FastifyInstance) {
     async (req, reply) => {
       const orgId = requireOrg(req, reply);
       if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
 
-      const { filename, contentType } = req.body;
+      const { filename, contentType, sizeBytes } = req.body;
+      const policy = await resolveStoragePolicy(app, orgId as OrgId);
+      if (rejectByStoragePolicy(policy, { contentType, sizeBytes }, req, reply)) return;
+
       const objectKey = `${orgId}/${crypto.randomUUID()}/${filename}`;
-      const bucket = process.env["S3_BUCKET"] ?? "afenda-dev";
+      const bucket = resolveStorageBucket();
       const expiresIn = 300; // 5 minutes
 
       const url = await generatePresignedUploadUrl({
@@ -203,6 +286,17 @@ export async function evidenceRoutes(app: FastifyInstance) {
       const orgId = requireOrg(req, reply);
       if (!orgId) return;
 
+      const policy = await resolveStoragePolicy(app, orgId as OrgId);
+      if (
+        rejectByStoragePolicy(
+          policy,
+          { contentType: req.body.mime, sizeBytes: req.body.sizeBytes },
+          req,
+          reply,
+        )
+      )
+        return;
+
       let result;
       let auditEvent;
       try {
@@ -221,6 +315,14 @@ export async function evidenceRoutes(app: FastifyInstance) {
             mime: req.body.mime,
             sizeBytes: req.body.sizeBytes,
             uploadedByPrincipalId: req.ctx?.principalId,
+            storageProvider: resolveStorageProviderName(),
+            storageBucket: resolveStorageBucket(),
+            storageMetadata: {
+              retentionDays: policy.retentionDays,
+              retentionUntilUtc: new Date(
+                Date.now() + policy.retentionDays * 24 * 60 * 60 * 1000,
+              ).toISOString(),
+            },
           },
           { dedupBySha256: true },
           {

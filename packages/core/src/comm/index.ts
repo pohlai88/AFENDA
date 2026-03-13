@@ -4,3 +4,6 @@ export * from "./approvals";
 export * from "./shared";
 export * from "./chatter";
 export * from "./announcements";
+export * from "./docs";
+export * from "./boardroom";
+export * from "./workflows";

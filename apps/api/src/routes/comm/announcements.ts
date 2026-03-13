@@ -22,6 +22,7 @@ import {
   listAnnouncements,
   getAnnouncementById,
   listAnnouncementReads,
+  getAnnouncementReadByPrincipal,
   listAnnouncementAudienceOptions,
   getAnnouncementAckSummary,
 } from "@afenda/core";
@@ -82,6 +83,14 @@ const AnnouncementDetailResponseSchema = makeSuccessSchema(AnnouncementRowSchema
 
 const AnnouncementReadsResponseSchema = makeSuccessSchema(
   z.object({ data: z.array(AnnouncementReadRowSchema) }),
+);
+
+const AnnouncementMyReadResponseSchema = makeSuccessSchema(
+  z.object({
+    acknowledged: z.boolean(),
+    readAt: z.string().datetime().nullable(),
+    readId: z.string().uuid().nullable(),
+  }),
 );
 
 const AnnouncementAckSummaryResponseSchema = makeSuccessSchema(
@@ -250,6 +259,43 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       return reply.status(200).send({
         data: { data: reads.map(serializeRead) },
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  typed.get(
+    "/announcements/:id/my-read",
+    {
+      schema: {
+        tags: ["COMM Announcements"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        params: z.object({ id: z.string().uuid() }),
+        response: {
+          200: AnnouncementMyReadResponseSchema,
+          401: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const row = await getAnnouncementReadByPrincipal(
+        app.db,
+        orgId as OrgId,
+        req.params.id as AnnouncementId,
+        auth.principalId,
+      );
+
+      return reply.status(200).send({
+        data: {
+          acknowledged: Boolean(row?.acknowledgedAt),
+          readAt: row?.acknowledgedAt?.toISOString() ?? null,
+          readId: row?.id ?? null,
+        },
         correlationId: req.correlationId,
       });
     },

@@ -11,7 +11,6 @@ import { z } from "zod";
 import { PartyRoleIdSchema, OrgIdSchema, PartyIdSchema, PrincipalIdSchema } from "../../shared/ids.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { RoleTypeValues } from "./role-type.js";
-import type { RoleType } from "./role-type.js";
 
 // ─── PartyRole ───────────────────────────────────────────────────────────────
 

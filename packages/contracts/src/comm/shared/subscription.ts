@@ -3,7 +3,11 @@ import { EntityIdSchema, OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../.
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 
+// ─── ID Brand ─────────────────────────────────────────────────────────────────
+
 export const CommSubscriptionIdSchema = UuidSchema.brand<"CommSubscriptionId">();
+
+// ─── Enum Values & Schema ─────────────────────────────────────────────────────
 
 export const CommSubscriptionEntityTypeValues = [
   "task",
@@ -16,6 +20,8 @@ export const CommSubscriptionEntityTypeValues = [
 
 export const CommSubscriptionEntityTypeSchema = z.enum(CommSubscriptionEntityTypeValues);
 
+// ─── Entity Schema ────────────────────────────────────────────────────────────
+
 export const CommSubscriptionSchema = z.object({
   id: CommSubscriptionIdSchema,
   orgId: OrgIdSchema,
@@ -25,17 +31,25 @@ export const CommSubscriptionSchema = z.object({
   createdAt: UtcDateTimeSchema,
 });
 
-export const SubscribeEntityCommandSchema = z.object({
+// ─── Base Command Schema ──────────────────────────────────────────────────────
+
+const SubscriptionCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
+});
+
+// ─── Commands ─────────────────────────────────────────────────────────────────
+
+export const SubscribeEntityCommandSchema = SubscriptionCommandBase.extend({
   entityType: CommSubscriptionEntityTypeSchema,
   entityId: EntityIdSchema,
 });
 
-export const UnsubscribeEntityCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const UnsubscribeEntityCommandSchema = SubscriptionCommandBase.extend({
   entityType: CommSubscriptionEntityTypeSchema,
   entityId: EntityIdSchema,
 });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CommSubscriptionId = z.infer<typeof CommSubscriptionIdSchema>;
 export type CommSubscriptionEntityType = z.infer<typeof CommSubscriptionEntityTypeSchema>;

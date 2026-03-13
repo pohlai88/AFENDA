@@ -6,24 +6,10 @@ import { useRouter } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, Badge } from "@afenda/ui";
 import type { CommInboxItemRow } from "@/lib/api-client";
 import { markAllInboxRead, markInboxItemRead } from "@/lib/api-client";
+import { getEntityHref } from "./links";
 
 interface InboxClientProps {
   initialItems: CommInboxItemRow[];
-}
-
-function getEntityHref(item: CommInboxItemRow): string {
-  switch (item.entityType) {
-    case "task":
-      return `/comm/tasks/${item.entityId}`;
-    case "project":
-      return `/comm/projects/${item.entityId}`;
-    case "approval_request":
-      return `/comm/approvals/${item.entityId}`;
-    case "announcement":
-      return `/comm/announcements/${item.entityId}`;
-    default:
-      return "/comm";
-  }
 }
 
 export default function InboxClient({ initialItems }: InboxClientProps) {

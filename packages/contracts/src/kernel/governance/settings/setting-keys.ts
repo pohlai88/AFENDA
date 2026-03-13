@@ -59,6 +59,10 @@ export const SettingKeyValues = [
   "general.notifications.emailOnApproval",
   "general.notifications.emailOnPayment",
   "general.notifications.emailOnOverdue",
+  // Storage — org-level upload policy for evidence/documents.
+  "general.storage.maxUploadBytes",
+  "general.storage.allowedMimeTypes",
+  "general.storage.retentionDays",
   // Features — org-admin functional enablement flags (behavior category).
   // NOT engineering rollout flags — those must never enter org_setting.
   "features.ap.enabled",

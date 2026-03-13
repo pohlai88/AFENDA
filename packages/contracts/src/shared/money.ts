@@ -27,13 +27,109 @@ export const CurrencyCodeSchema = z
 
 export type CurrencyCode = z.infer<typeof CurrencyCodeSchema>;
 
-export const MoneySchema = z.object({
-  /**
-   * Minor-unit amount (cents, fils, etc.) as bigint.
-   * Accepts bigint directly or a numeric string (e.g. "12345") for JSON input.
-   */
-  amountMinor: z.coerce.bigint(),
-  currencyCode: CurrencyCodeSchema,
-});
+/**
+ * Safety bound for minor-unit amounts.
+ * Adjust to domain requirements if needed.
+ */
+export const MAX_ABSOLUTE_MINOR = BigInt("1000000000000000000"); // 1e18
+
+const AmountMinorInput = z.preprocess((value) => {
+  if (typeof value === "bigint") return value;
+  if (typeof value === "number" && Number.isInteger(value)) return BigInt(value);
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^-?\d+$/.test(trimmed)) return BigInt(trimmed);
+  }
+  return value;
+}, z.bigint());
+
+export const MoneySchema = z
+  .object({
+    /**
+     * Minor-unit amount (cents, fils, etc.) as bigint.
+     * Accepts bigint directly, a numeric string, or an integer number.
+     */
+    amountMinor: AmountMinorInput,
+    currencyCode: CurrencyCodeSchema,
+  })
+  .superRefine((value, ctx) => {
+    const amount = value.amountMinor;
+    if (amount > MAX_ABSOLUTE_MINOR || amount < -MAX_ABSOLUTE_MINOR) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `amountMinor absolute value must be <= ${MAX_ABSOLUTE_MINOR.toString()}`,
+        path: ["amountMinor"],
+      });
+    }
+  });
 
 export type Money = z.infer<typeof MoneySchema>;
+
+export type MoneyInput = {
+  amountMinor: string | number | bigint;
+  currencyCode: string;
+};
+
+/** Create validated money value from accepted input shapes. */
+export function makeMoney(input: MoneyInput): Money {
+  return MoneySchema.parse(input);
+}
+
+/** Runtime type guard for money payloads. */
+export function isMoney(value: unknown): value is Money {
+  return MoneySchema.safeParse(value).success;
+}
+
+/**
+ * Format minor units to major-unit display string.
+ * This helper does not perform rounding or FX conversion.
+ */
+export function formatMinorAsMajor(amountMinor: bigint, minorPerMajor = 100): string {
+  if (!Number.isInteger(minorPerMajor) || minorPerMajor <= 0) {
+    throw new Error("minorPerMajor must be a positive integer");
+  }
+
+  const sign = amountMinor < 0n ? "-" : "";
+  const abs = amountMinor < 0n ? -amountMinor : amountMinor;
+  const major = abs / BigInt(minorPerMajor);
+  const minor = abs % BigInt(minorPerMajor);
+  const minorWidth = Math.max(0, String(minorPerMajor - 1).length);
+  const minorStr = String(minor).padStart(minorWidth, "0");
+
+  return `${sign}${major}.${minorStr}`;
+}
+
+/** Serialize money into JSON-safe shape (bigint -> string). */
+export function serializeMoney(money: Money): { amountMinor: string; currencyCode: CurrencyCode } {
+  return {
+    amountMinor: money.amountMinor.toString(),
+    currencyCode: money.currencyCode,
+  };
+}
+
+/** Deserialize unknown payload into validated Money. */
+export function deserializeMoney(payload: unknown): Money {
+  return MoneySchema.parse(payload);
+}
+
+/** JSON replacer that serializes bigint values as strings. */
+export function moneyJsonReplacer(_key: string, value: unknown): unknown {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+}
+
+export const SharedMoney = {
+  CurrencyCodeSchema,
+  MoneySchema,
+  makeMoney,
+  isMoney,
+  formatMinorAsMajor,
+  serializeMoney,
+  deserializeMoney,
+  moneyJsonReplacer,
+  MAX_ABSOLUTE_MINOR,
+};
+
+export default SharedMoney;

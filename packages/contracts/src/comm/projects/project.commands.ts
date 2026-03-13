@@ -3,86 +3,112 @@ import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request
 import { DateSchema } from "../../shared/datetime.js";
 import { PrincipalIdSchema } from "../../shared/ids.js";
 import {
-  CommProjectMilestoneIdSchema,
   ProjectMemberRoleSchema,
   ProjectStatusSchema,
   ProjectVisibilitySchema,
+  CommProjectMilestoneIdSchema,
 } from "./project.entity.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
 
-export const CreateProjectCommandSchema = z.object({
+// ─── Reusable Field Schemas ───────────────────────────────────────────────────
+
+const NameSchema = z.string().trim().min(1).max(200);
+const DescriptionSchema = z.string().trim().max(20_000);
+const ColorSchema = z
+  .string()
+  .trim()
+  .regex(/^#[0-9A-Fa-f]{6}$/);
+
+// ─── Base Command Schema ──────────────────────────────────────────────────────
+
+const ProjectCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  name: z.string().trim().min(1).max(200),
-  description: z.string().trim().max(20_000).optional(),
-  visibility: ProjectVisibilitySchema.optional(),
-  startDate: DateSchema.optional(),
-  targetDate: DateSchema.optional(),
-  color: z
-    .string()
-    .trim()
-    .regex(/^#[0-9A-Fa-f]{6}$/)
-    .optional(),
 });
 
-export const UpdateProjectCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+// ─── Date Range Refinement ────────────────────────────────────────────────────
+
+function refineDateRange(
+  data: { startDate?: string | null; targetDate?: string | null },
+  ctx: z.RefinementCtx,
+) {
+  if (data.startDate && data.targetDate && data.targetDate < data.startDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Target date must be after start date.",
+      path: ["targetDate"],
+    });
+  }
+}
+
+// ─── Project Commands ─────────────────────────────────────────────────────────
+
+export const CreateProjectCommandSchema = ProjectCommandBase.extend({
+  name: NameSchema,
+  description: DescriptionSchema.nullable().optional().default(null),
+  visibility: ProjectVisibilitySchema.optional(),
+  startDate: DateSchema.nullable().optional().default(null),
+  targetDate: DateSchema.nullable().optional().default(null),
+  color: ColorSchema.nullable().optional().default(null),
+}).superRefine(refineDateRange);
+
+export const UpdateProjectCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
-  name: z.string().trim().min(1).max(200).optional(),
-  description: z.string().trim().max(20_000).nullable().optional(),
+  name: NameSchema.optional(),
+  description: DescriptionSchema.nullable().optional(),
   visibility: ProjectVisibilitySchema.optional(),
   startDate: DateSchema.nullable().optional(),
   targetDate: DateSchema.nullable().optional(),
-  color: z
-    .string()
-    .trim()
-    .regex(/^#[0-9A-Fa-f]{6}$/)
-    .nullable()
-    .optional(),
-});
+  color: ColorSchema.nullable().optional(),
+}).superRefine(refineDateRange);
 
-export const TransitionProjectStatusCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const TransitionProjectStatusCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
   toStatus: ProjectStatusSchema,
   reason: z.string().trim().min(1).max(500).optional(),
 });
 
-export const ArchiveProjectCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const ArchiveProjectCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
   reason: z.string().trim().min(1).max(500).optional(),
 });
 
-export const AddProjectMemberCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const DeleteProjectCommandSchema = ProjectCommandBase.extend({
+  projectId: CommProjectIdSchema,
+});
+
+// ─── Member Commands ──────────────────────────────────────────────────────────
+
+export const AddProjectMemberCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
   principalId: PrincipalIdSchema,
   role: ProjectMemberRoleSchema,
 });
 
-export const RemoveProjectMemberCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const RemoveProjectMemberCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
   principalId: PrincipalIdSchema,
 });
 
-export const CreateProjectMilestoneCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+// ─── Milestone Commands ───────────────────────────────────────────────────────
+
+export const CreateProjectMilestoneCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
-  name: z.string().trim().min(1).max(200),
-  description: z.string().trim().max(20_000).optional(),
+  name: NameSchema,
+  description: DescriptionSchema.nullable().optional().default(null),
   targetDate: DateSchema,
 });
 
-export const CompleteProjectMilestoneCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const CompleteProjectMilestoneCommandSchema = ProjectCommandBase.extend({
   milestoneId: CommProjectMilestoneIdSchema,
 });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CreateProjectCommand = z.infer<typeof CreateProjectCommandSchema>;
 export type UpdateProjectCommand = z.infer<typeof UpdateProjectCommandSchema>;
 export type TransitionProjectStatusCommand = z.infer<typeof TransitionProjectStatusCommandSchema>;
 export type ArchiveProjectCommand = z.infer<typeof ArchiveProjectCommandSchema>;
+export type DeleteProjectCommand = z.infer<typeof DeleteProjectCommandSchema>;
 export type AddProjectMemberCommand = z.infer<typeof AddProjectMemberCommandSchema>;
 export type RemoveProjectMemberCommand = z.infer<typeof RemoveProjectMemberCommandSchema>;
 export type CreateProjectMilestoneCommand = z.infer<typeof CreateProjectMilestoneCommandSchema>;

@@ -108,26 +108,100 @@ export const BaseEnvSchema = z.object({
 export const ApiEnvSchema = BaseEnvSchema.extend({
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   ALLOWED_ORIGINS: origins,
+  STORAGE_PROVIDER: z.enum(["r2", "s3"]).default("r2"),
   AUTH_CHALLENGE_SECRET: nonEmpty("AUTH_CHALLENGE_SECRET").pipe(
     z.string().min(32, "AUTH_CHALLENGE_SECRET must be at least 32 hex chars"),
   ),
   // Neon Auth — managed authentication (identity provider)
   NEON_AUTH_BASE_URL: z.string().url("NEON_AUTH_BASE_URL must be a valid URL").optional(),
-  NEON_AUTH_COOKIE_SECRET: z.string().min(32, "NEON_AUTH_COOKIE_SECRET must be at least 32 chars").optional(),
+  NEON_AUTH_COOKIE_SECRET: z
+    .string()
+    .min(32, "NEON_AUTH_COOKIE_SECRET must be at least 32 chars")
+    .optional(),
   NEON_AUTH_JWKS_URL: z.string().url("NEON_AUTH_JWKS_URL must be a valid URL").optional(),
-  NEXT_PUBLIC_NEON_AUTH_URL: z.string().url("NEXT_PUBLIC_NEON_AUTH_URL must be a valid URL").optional().describe("Neon Auth endpoint for client-side SDK"),
-  S3_ENDPOINT: url("S3_ENDPOINT"),
+  NEXT_PUBLIC_NEON_AUTH_URL: z
+    .string()
+    .url("NEXT_PUBLIC_NEON_AUTH_URL must be a valid URL")
+    .optional()
+    .describe("Neon Auth endpoint for client-side SDK"),
+  R2_ACCOUNT_ID: nonEmpty("R2_ACCOUNT_ID").optional(),
+  R2_ENDPOINT: url("R2_ENDPOINT").optional(),
+  R2_REGION: z.string().default("auto"),
+  R2_BUCKET_NAME: s3Bucket.optional(),
+  R2_BACKUP_BUCKET: s3Bucket.optional(),
+  R2_PUBLIC_BASE_URL: url("R2_PUBLIC_BASE_URL").optional(),
+  R2_ACCESS_KEY_ID: nonEmpty("R2_ACCESS_KEY_ID").optional(),
+  R2_SECRET_ACCESS_KEY: nonEmpty("R2_SECRET_ACCESS_KEY").optional(),
+  S3_ENDPOINT: url("S3_ENDPOINT").optional(),
   S3_REGION: z.string().default("auto"),
-  S3_BUCKET: s3Bucket,
-  S3_ACCESS_KEY_ID: nonEmpty("S3_ACCESS_KEY_ID"),
-  S3_SECRET_ACCESS_KEY: nonEmpty("S3_SECRET_ACCESS_KEY"),
+  S3_BUCKET: s3Bucket.optional(),
+  S3_ACCESS_KEY_ID: nonEmpty("S3_ACCESS_KEY_ID").optional(),
+  S3_SECRET_ACCESS_KEY: nonEmpty("S3_SECRET_ACCESS_KEY").optional(),
 }).superRefine((value, ctx) => {
-  if (value.NODE_ENV === "production" && value.ALLOWED_ORIGINS.length === 0) {
+  const hasText = (input: unknown): input is string =>
+    typeof input === "string" && input.trim().length > 0;
+
+  const requireField = (path: string, message: string) => {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ["ALLOWED_ORIGINS"],
-      message: "ALLOWED_ORIGINS must include at least one origin in production",
+      path: [path],
+      message,
     });
+  };
+
+  if (value.NODE_ENV === "production" && value.ALLOWED_ORIGINS.length === 0) {
+    requireField(
+      "ALLOWED_ORIGINS",
+      "ALLOWED_ORIGINS must include at least one origin in production",
+    );
+  }
+
+  if (value.STORAGE_PROVIDER === "s3") {
+    if (!hasText(value.S3_ENDPOINT))
+      requireField("S3_ENDPOINT", "S3_ENDPOINT is required when STORAGE_PROVIDER=s3");
+    if (!hasText(value.S3_BUCKET))
+      requireField("S3_BUCKET", "S3_BUCKET is required when STORAGE_PROVIDER=s3");
+    if (!hasText(value.S3_ACCESS_KEY_ID)) {
+      requireField("S3_ACCESS_KEY_ID", "S3_ACCESS_KEY_ID is required when STORAGE_PROVIDER=s3");
+    }
+    if (!hasText(value.S3_SECRET_ACCESS_KEY)) {
+      requireField(
+        "S3_SECRET_ACCESS_KEY",
+        "S3_SECRET_ACCESS_KEY is required when STORAGE_PROVIDER=s3",
+      );
+    }
+    return;
+  }
+
+  const hasEndpoint =
+    hasText(value.R2_ENDPOINT) || hasText(value.S3_ENDPOINT) || hasText(value.R2_ACCOUNT_ID);
+
+  if (!hasEndpoint) {
+    requireField(
+      "R2_ENDPOINT",
+      "Set one of R2_ENDPOINT, S3_ENDPOINT, or R2_ACCOUNT_ID when STORAGE_PROVIDER=r2",
+    );
+  }
+
+  const hasBucket = hasText(value.R2_BUCKET_NAME) || hasText(value.S3_BUCKET);
+  if (!hasBucket) {
+    requireField("R2_BUCKET_NAME", "Set R2_BUCKET_NAME or S3_BUCKET when STORAGE_PROVIDER=r2");
+  }
+
+  const hasAccessKey = hasText(value.R2_ACCESS_KEY_ID) || hasText(value.S3_ACCESS_KEY_ID);
+  const hasSecretKey = hasText(value.R2_SECRET_ACCESS_KEY) || hasText(value.S3_SECRET_ACCESS_KEY);
+
+  if (!hasAccessKey) {
+    requireField(
+      "R2_ACCESS_KEY_ID",
+      "Set R2_ACCESS_KEY_ID or S3_ACCESS_KEY_ID when STORAGE_PROVIDER=r2",
+    );
+  }
+  if (!hasSecretKey) {
+    requireField(
+      "R2_SECRET_ACCESS_KEY",
+      "Set R2_SECRET_ACCESS_KEY or S3_SECRET_ACCESS_KEY when STORAGE_PROVIDER=r2",
+    );
   }
 });
 
@@ -159,6 +233,8 @@ const SECRET_KEYS: ReadonlySet<string> = new Set([
   "NEON_AUTH_JWKS_URL",
   "AUTH_CHALLENGE_SECRET",
   "AUTH_EVIDENCE_SIGNING_SECRET",
+  "R2_SECRET_ACCESS_KEY",
+  "R2_ACCESS_KEY_ID",
   "S3_SECRET_ACCESS_KEY",
   "S3_ACCESS_KEY_ID",
 ]);

@@ -18,6 +18,7 @@ export type SettingCategory =
   | "financial"
   | "company"
   | "notifications"
+  | "storage"
   | "discuss"
   | "permissions"
   | "integrations"
@@ -323,6 +324,32 @@ export const SETTING_REGISTRY: Record<SettingKey, SettingDefinition> = {
     secret: false,
     mutable: true,
     defaultValue: true,
+  },
+
+  // ── Storage policy ───────────────────────────────────────────────────────
+  "general.storage.maxUploadBytes": {
+    key: "general.storage.maxUploadBytes",
+    category: "storage",
+    scope: "org",
+    secret: false,
+    mutable: true,
+    defaultValue: 10485760,
+  },
+  "general.storage.allowedMimeTypes": {
+    key: "general.storage.allowedMimeTypes",
+    category: "storage",
+    scope: "org",
+    secret: false,
+    mutable: true,
+    defaultValue: "application/pdf,image/png,image/jpeg,image/webp,text/plain",
+  },
+  "general.storage.retentionDays": {
+    key: "general.storage.retentionDays",
+    category: "storage",
+    scope: "org",
+    secret: false,
+    mutable: true,
+    defaultValue: 365,
   },
 
   // ── Phase 2+3 — Feature flags ─────────────────────────────────────────────

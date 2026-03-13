@@ -3,7 +3,11 @@ import { EntityIdSchema, OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../.
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 
+// ─── ID Brand ─────────────────────────────────────────────────────────────────
+
 export const CommCommentIdSchema = UuidSchema.brand<"CommCommentId">();
+
+// ─── Enum Values & Schema ─────────────────────────────────────────────────────
 
 export const CommCommentEntityTypeValues = [
   "task",
@@ -16,37 +20,50 @@ export const CommCommentEntityTypeValues = [
 
 export const CommCommentEntityTypeSchema = z.enum(CommCommentEntityTypeValues);
 
+// ─── Reusable Field Schema ────────────────────────────────────────────────────
+
+const BodySchema = z.string().trim().min(1).max(20_000);
+
+// ─── Entity Schema ────────────────────────────────────────────────────────────
+
 export const CommCommentSchema = z.object({
   id: CommCommentIdSchema,
   orgId: OrgIdSchema,
   entityType: CommCommentEntityTypeSchema,
   entityId: EntityIdSchema,
-  parentCommentId: CommCommentIdSchema.nullable(),
+  parentCommentId: CommCommentIdSchema.nullable().default(null),
   authorPrincipalId: PrincipalIdSchema,
-  body: z.string().trim().min(1).max(20_000),
-  editedAt: UtcDateTimeSchema.nullable(),
+  body: BodySchema,
+  editedAt: UtcDateTimeSchema.nullable().default(null),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });
 
-export const AddCommentCommandSchema = z.object({
+// ─── Base Command Schema ──────────────────────────────────────────────────────
+
+const CommentCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
+});
+
+// ─── Commands ─────────────────────────────────────────────────────────────────
+
+export const AddCommentCommandSchema = CommentCommandBase.extend({
   entityType: CommCommentEntityTypeSchema,
   entityId: EntityIdSchema,
-  parentCommentId: CommCommentIdSchema.optional(),
-  body: z.string().trim().min(1).max(20_000),
+  parentCommentId: CommCommentIdSchema.nullable().optional().default(null),
+  body: BodySchema,
 });
 
-export const EditCommentCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const EditCommentCommandSchema = CommentCommandBase.extend({
   commentId: CommCommentIdSchema,
-  body: z.string().trim().min(1).max(20_000),
+  body: BodySchema,
 });
 
-export const DeleteCommentCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const DeleteCommentCommandSchema = CommentCommandBase.extend({
   commentId: CommCommentIdSchema,
 });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CommCommentId = z.infer<typeof CommCommentIdSchema>;
 export type CommCommentEntityType = z.infer<typeof CommCommentEntityTypeSchema>;

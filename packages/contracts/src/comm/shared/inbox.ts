@@ -3,9 +3,13 @@ import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { EntityIdSchema, OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../../shared/ids.js";
 
+// ─── ID Brands ────────────────────────────────────────────────────────────────
+
 export const CommInboxItemIdSchema = UuidSchema.brand<"CommInboxItemId">();
 export const CommNotificationPreferenceIdSchema =
   UuidSchema.brand<"CommNotificationPreferenceId">();
+
+// ─── Enum Values & Schemas ────────────────────────────────────────────────────
 
 export const CommInboxEntityTypeValues = [
   "task",
@@ -21,49 +25,73 @@ export const CommInboxEntityTypeSchema = z.enum(CommInboxEntityTypeValues);
 export const CommNotificationChannelValues = ["in_app", "email"] as const;
 export const CommNotificationChannelSchema = z.enum(CommNotificationChannelValues);
 
-export const CommInboxItemSchema = z.object({
-  id: CommInboxItemIdSchema,
-  orgId: OrgIdSchema,
-  principalId: PrincipalIdSchema,
-  eventType: z.string().trim().min(1).max(120),
-  entityType: CommInboxEntityTypeSchema,
-  entityId: EntityIdSchema,
-  title: z.string().trim().min(1).max(200),
-  body: z.string().trim().max(10_000).nullable(),
-  isRead: z.boolean(),
-  readAt: UtcDateTimeSchema.nullable(),
-  occurredAt: UtcDateTimeSchema,
-  createdAt: UtcDateTimeSchema,
-});
+// ─── Reusable Field Schemas ───────────────────────────────────────────────────
+
+const EventTypeSchema = z.string().trim().min(1).max(120);
+const TitleSchema = z.string().trim().min(1).max(200);
+const BodySchema = z.string().trim().max(10_000);
+
+// ─── Entity Schemas ───────────────────────────────────────────────────────────
+
+export const CommInboxItemSchema = z
+  .object({
+    id: CommInboxItemIdSchema,
+    orgId: OrgIdSchema,
+    principalId: PrincipalIdSchema,
+    eventType: EventTypeSchema,
+    entityType: CommInboxEntityTypeSchema,
+    entityId: EntityIdSchema,
+    title: TitleSchema,
+    body: BodySchema.nullable().default(null),
+    isRead: z.boolean(),
+    readAt: UtcDateTimeSchema.nullable().default(null),
+    occurredAt: UtcDateTimeSchema,
+    createdAt: UtcDateTimeSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (!data.isRead && data.readAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "readAt must only be set if isRead is true.",
+        path: ["readAt"],
+      });
+    }
+  });
 
 export const CommNotificationPreferenceSchema = z.object({
   id: CommNotificationPreferenceIdSchema,
   orgId: OrgIdSchema,
   principalId: PrincipalIdSchema,
-  eventType: z.string().trim().min(1).max(120),
+  eventType: EventTypeSchema,
   channel: CommNotificationChannelSchema,
   enabled: z.boolean(),
-  mutedUntil: UtcDateTimeSchema.nullable(),
+  mutedUntil: UtcDateTimeSchema.nullable().default(null),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });
 
-export const MarkInboxItemReadCommandSchema = z.object({
+// ─── Base Command Schema ──────────────────────────────────────────────────────
+
+const InboxCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
+});
+
+// ─── Commands ─────────────────────────────────────────────────────────────────
+
+export const MarkInboxItemReadCommandSchema = InboxCommandBase.extend({
   itemId: CommInboxItemIdSchema,
 });
 
-export const MarkAllInboxReadCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-});
+export const MarkAllInboxReadCommandSchema = InboxCommandBase;
 
-export const UpsertNotificationPreferenceCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  eventType: z.string().trim().min(1).max(120),
+export const UpsertNotificationPreferenceCommandSchema = InboxCommandBase.extend({
+  eventType: EventTypeSchema,
   channel: CommNotificationChannelSchema,
   enabled: z.boolean(),
-  mutedUntil: UtcDateTimeSchema.optional().nullable(),
+  mutedUntil: UtcDateTimeSchema.nullable().optional().default(null),
 });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CommInboxItemId = z.infer<typeof CommInboxItemIdSchema>;
 export type CommNotificationPreferenceId = z.infer<typeof CommNotificationPreferenceIdSchema>;

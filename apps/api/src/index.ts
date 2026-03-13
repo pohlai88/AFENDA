@@ -12,11 +12,12 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { validatorCompiler, serializerCompiler } from "fastify-type-provider-zod";
 import { z } from "zod";
-import { CorrelationIdHeader, OrgIdHeader } from "@afenda/contracts";
+import { OrgIdHeader } from "@afenda/contracts";
 import { validateEnv, ApiEnvSchema, checkDbHealth, resolveOrgId, redactEnv } from "@afenda/core";
 
 // Plugins
 import { dbPlugin } from "./plugins/db.js";
+import { headersPlugin } from "./plugins/headers.js";
 import { authPlugin } from "./plugins/auth.js";
 import { idempotencyPlugin } from "./plugins/idempotency.js";
 import { swaggerPlugin } from "./plugins/swagger.js";
@@ -95,7 +96,10 @@ import { commTaskRoutes } from "./routes/comm/tasks.js";
 import { commProjectRoutes } from "./routes/comm/projects.js";
 import { commApprovalRoutes } from "./routes/comm/approvals.js";
 import { commAnnouncementRoutes } from "./routes/comm/announcements.js";
+import { commDocumentRoutes } from "./routes/comm/docs.js";
+import { commBoardMeetingRoutes } from "./routes/comm/boardroom/meeting.js";
 import { commSharedRoutes } from "./routes/comm/shared.js";
+import { commWorkflowRoutes } from "./routes/comm/workflows.js";
 // Supplier sub-entity routes (templates — uncomment when implemented)
 // import { supplierSiteRoutes } from "./routes/erp/supplier/supplier-site.js";
 // import { supplierBankAccountRoutes } from "./routes/erp/supplier/supplier-bank-account.js";
@@ -136,7 +140,7 @@ export async function buildApp() {
   //
   //   1. dbPlugin          → decorates app.db (sync, no hooks)
   //   2. CORS              → preflight + headers (onRequest)
-  //   3. correlationId     → onRequest: set req.correlationId
+  //   3. headersPlugin     → onRequest: set req.correlationId + mirror x-request-id/x-correlation-id
   //   4. orgSlug           → onRequest: set req.orgSlug / req.orgId
   //   5. authPlugin        → onRequest: reads correlationId+orgSlug, sets req.ctx
   //   6. rateLimit         → onRequest: keys by req.ctx.principalId (set by step 5)
@@ -157,13 +161,8 @@ export async function buildApp() {
     credentials: true,
   });
 
-  // ── Correlation ID ─────────────────────────────────────────────────────────
-  app.addHook("onRequest", async (req, reply) => {
-    const incoming = req.headers[CorrelationIdHeader] as string | undefined;
-    const correlationId = incoming ?? crypto.randomUUID();
-    req.correlationId = correlationId;
-    reply.header(CorrelationIdHeader, correlationId);
-  });
+  // ── Canonical wire headers (request/correlation IDs) ─────────────────────
+  await app.register(headersPlugin as any);
 
   // ── Org slug → UUID resolution (ADR-0003) ─────────────────────────────────
   const orgCache = new Map<string, string>(); // slug → UUID
@@ -360,7 +359,10 @@ export async function buildApp() {
   await app.register(commProjectRoutes, { prefix: "/v1" });
   await app.register(commApprovalRoutes, { prefix: "/v1" });
   await app.register(commAnnouncementRoutes, { prefix: "/v1" });
+  await app.register(commDocumentRoutes, { prefix: "/v1" });
+  await app.register(commBoardMeetingRoutes, { prefix: "/v1" });
   await app.register(commSharedRoutes, { prefix: "/v1" });
+  await app.register(commWorkflowRoutes, { prefix: "/v1" });
   // Supplier sub-entity routes (templates — uncomment when implemented)
   // await app.register(supplierSiteRoutes, { prefix: "/v1" });
   // await app.register(supplierBankAccountRoutes, { prefix: "/v1" });

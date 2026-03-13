@@ -22,7 +22,7 @@
  */
 
 import { readFileSync, existsSync } from "node:fs";
-import { resolve, relative, sep } from "node:path";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { reportViolations, reportSuccess } from "../lib/reporter.mjs";
 
@@ -50,7 +50,6 @@ const ROOT = resolve(__dirname, "../..");
  */
 // ─── Intentional exclusions ───────────────────────────────────────────────────
 //
-// org_setting: excluded by design. value_json is intentionally polymorphic —
 // one column carries all setting value types (string, number, boolean, array).
 // A 1:1 sync pair would produce false COLUMN_MISSING_FROM_CONTRACT violations.
 // Type safety is enforced by the per-key SETTING_VALUE_SCHEMAS registry in core,
@@ -823,6 +822,78 @@ const SYNC_PAIRS = [
     excludeFromContract: [],
     excludeFromDb: [],
   },
+  {
+    dbFile: "packages/db/src/schema/comm/docs.ts",
+    dbTable: "comm_document",
+    contractFile: "packages/contracts/src/comm/docs/document.entity.ts",
+    contractSchema: "CommDocumentSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/docs.ts",
+    dbTable: "comm_document_version",
+    contractFile: "packages/contracts/src/comm/docs/document.entity.ts",
+    contractSchema: "CommDocumentVersionSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_meeting",
+    contractFile: "packages/contracts/src/comm/boardroom/meeting.entity.ts",
+    contractSchema: "BoardMeetingSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_agenda_item",
+    contractFile: "packages/contracts/src/comm/boardroom/agenda-item.entity.ts",
+    contractSchema: "BoardAgendaItemSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_meeting_attendee",
+    contractFile: "packages/contracts/src/comm/boardroom/attendee.entity.ts",
+    contractSchema: "BoardMeetingAttendeeSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_resolution",
+    contractFile: "packages/contracts/src/comm/boardroom/resolution.entity.ts",
+    contractSchema: "BoardResolutionSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_resolution_vote",
+    contractFile: "packages/contracts/src/comm/boardroom/resolution.entity.ts",
+    contractSchema: "BoardResolutionVoteSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_minutes",
+    contractFile: "packages/contracts/src/comm/boardroom/minutes.entity.ts",
+    contractSchema: "BoardMinuteSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
+  {
+    dbFile: "packages/db/src/schema/comm/boardroom.ts",
+    dbTable: "comm_board_action_item",
+    contractFile: "packages/contracts/src/comm/boardroom/minutes.entity.ts",
+    contractSchema: "BoardActionItemSchema",
+    excludeFromContract: [],
+    excludeFromDb: [],
+  },
 ];
 
 // ─── Rule Documentation ─────────────────────────────────────────────────────
@@ -903,8 +974,11 @@ function extractTableFields(content, sqlName) {
  * @returns {string[] | null}  — field names, or null if schema not found
  */
 function extractZodFields(content, schemaName, intersectionFields = []) {
-  // Try z.object first
-  const objectRe = new RegExp(`export\\s+const\\s+${schemaName}\\s*=\\s*z\\.object\\(\\s*\\{`);
+  // Try z.object first (supports chained: z.object({...}).superRefine(...) or z\n.object({...}))
+  const objectRe = new RegExp(
+    `export\\s+const\\s+${schemaName}\\s*=\\s*z\\s*\\.object\\s*\\(\\s*\\{`,
+    "s",
+  );
   let m = content.match(objectRe);
 
   // Fall back to z.intersection(z.object({...}), ...)

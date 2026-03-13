@@ -1,0 +1,884 @@
+[
+  {
+    "key": "iam.principal.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "iam.role.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "iam.role.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "iam.permission.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.submit",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.approve",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.reject",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.void",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.markpaid",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-terms.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-terms.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.hold.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.hold.release",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.hold.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice-line.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.invoice-line.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.approve",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.execute",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.cancel",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run.reverse",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run-item.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run-item.add",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run-item.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "ap.payment-run-item.remove",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "gl.account.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "gl.journal.post",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "gl.journal.reverse",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "gl.journal.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "purch.purchase-order.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "purch.purchase-order.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "purch.receipt.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "purch.receipt.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.supplier.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.supplier.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.site.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.site.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.bank-account.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.bank-account.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "sup.bank-account.verify",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "doc.document.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "doc.evidence.attach",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "audit.log.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "admin.org.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "admin.settings.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "admin.settings.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "admin.custom-fields.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "admin.custom-fields.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.read",
+    "description": "Read treasury bank accounts",
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.write",
+    "description": "Create or update treasury bank accounts",
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.activate",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-account.deactivate",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-statement.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.bank-statement.ingest",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.reconciliation.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.reconciliation.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.reconciliation.manage",
+    "description": "Manage treasury reconciliations",
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment.approve",
+    "description": "Approve treasury payments",
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment.release",
+    "description": "Release approved treasury payments",
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-batch.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-batch.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-batch.approve",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-batch.release",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-batch.cancel",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-instruction.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-instruction.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.payment-instruction.approve",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.cash-position.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.liquidity-forecast.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.liquidity-forecast.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.liquidity-source-feed.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.liquidity-source-feed.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.ap-due-projection.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.ap-due-projection.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.ar-expected-receipt.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.ar-expected-receipt.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.fx-rate.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.fx-rate.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "treasury.forecast-variance.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "erp.finance.treasury.internal-bank-account.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "erp.finance.treasury.internal-bank-account.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "erp.finance.treasury.intercompany-transfer.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "erp.finance.treasury.intercompany-transfer.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "erp.finance.treasury.intercompany-transfer.settle",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.comment.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.comment.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.comment.delete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.label.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.label.delete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.saved-view.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.saved-view.delete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.subscription.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.subscription.delete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.assign",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.complete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.archive",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.bulk-assign",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.task.bulk-transition",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.approve",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.reject",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.delegate",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.escalate",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval.withdraw",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval-policy.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval-policy.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.approval-delegation.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.publish",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.schedule",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.archive",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.acknowledge",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.announcement.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.document.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.document.write",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.document.manage",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.workflow.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.workflow.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.workflow.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.workflow.delete",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.workflow.execute",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.meeting.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.meeting.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.meeting.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.agenda-item.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.agenda-item.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.attendee.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.attendee.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.attendee.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.resolution.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.resolution.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.resolution.vote",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.minute.record",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.minute.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.action-item.create",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.action-item.read",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  },
+  {
+    "key": "comm.action-item.update",
+    "description": null,
+    "deprecated": false,
+    "replacedBy": null
+  }
+]

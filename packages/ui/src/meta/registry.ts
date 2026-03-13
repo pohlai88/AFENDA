@@ -21,6 +21,7 @@ import { financeApInvoice } from "./entities/finance.ap-invoice";
 import { supplierSupplier } from "./entities/supplier";
 import { glAccount } from "./entities/gl.account";
 import { glJournalEntry } from "./entities/gl.journal-entry";
+import { commWorkflow } from "./entities/comm.workflow";
 
 // ── Registry ──────────────────────────────────────────────────────────────────
 
@@ -29,6 +30,7 @@ const registry = new Map<string, EntityRegistration>([
   [supplierSupplier.entityDef.entityKey, supplierSupplier],
   [glAccount.entityDef.entityKey, glAccount],
   [glJournalEntry.entityDef.entityKey, glJournalEntry],
+  [commWorkflow.entityDef.entityKey, commWorkflow],
 ]);
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -43,7 +45,10 @@ export function getEntityRegistration(entityKey: string): EntityRegistration {
 }
 
 /** Get the EntityDef + field list. */
-export function getEntity(entityKey: string): { entityDef: EntityDef; fieldDefs: readonly FieldDefInput[] } {
+export function getEntity(entityKey: string): {
+  entityDef: EntityDef;
+  fieldDefs: readonly FieldDefInput[];
+} {
   const reg = getEntityRegistration(entityKey);
   return { entityDef: reg.entityDef, fieldDefs: reg.fieldDefs };
 }

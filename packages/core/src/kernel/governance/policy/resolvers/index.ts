@@ -6,3 +6,5 @@
 import "./ap-invoice.resolver";
 import "./supplier.resolver";
 import "./gl-account.resolver";
+import "./comm-workflow.resolver";
+import "./comm-document.resolver";

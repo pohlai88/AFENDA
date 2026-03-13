@@ -1,7 +1,17 @@
 # AFENDA Communication Module — Enterprise Architecture Plan
 
 > **Pillar:** `comm` | **Benchmark:** Notion · Asana · Linear · Jira · ServiceNow · Diligent  
-> **Last Updated:** March 13, 2026 | **Status:** Tasks ✅ · Projects ✅ · Approvals ✅ · Shared Infra ✅ · Inbox ✅ · Chatter ✅ · **Announcements 🟡 (Phase 5 in progress)**
+> **Last Updated:** March 15, 2026 | **Status:** Tasks ✅ · Projects ✅ · Approvals ✅ · Shared Infra ✅ · Inbox ✅ · Chatter ✅ · **Announcements ✅** · **Docs ✅ (RBAC + collaborator complete)** · **Boardroom ✅ COMPLETE** · **Workflows ✅ COMPLETE**
+
+---
+
+### Quick status
+
+| Phase | Module    | Status          | Next action                                                                                       |
+| ----- | --------- | --------------- | ------------------------------------------------------------------------------------------------- |
+| 6A    | Docs      | **COMPLETE** ✅ | Run `pnpm db:migrate` when `DATABASE_URL` set; includes RBAC + collaborator (migration 0010)      |
+| 6B    | Boardroom | **COMPLETE** ✅ | All features implemented (meetings, agenda, attendees, resolutions, votes, minutes, action items) |
+| 7     | Workflows | **COMPLETE** ✅ | All layers delivered; uses `comm.workflow.*` permission keys                                      |
 
 ---
 
@@ -19,17 +29,18 @@ Every `comm` module is:
 
 ### Current Delivery Snapshot
 
-| Module            | Contracts                                       | DB  | Core                                                          | API                                          | Worker                                            | Web UI                                         | Status          |
-| ----------------- | ----------------------------------------------- | --- | ------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------- | ---------------------------------------------- | --------------- |
-| **tasks**         | ✅                                              | ✅  | ✅                                                            | ✅                                           | ✅ (12 handlers)                                  | ✅ list/my/board/detail/new                    | **Complete**    |
-| **projects**      | ✅                                              | ✅  | ✅                                                            | ✅                                           | ✅ (7 handlers)                                   | ✅ list/detail/board/timeline/settings         | **Complete**    |
-| **approvals**     | ✅                                              | ✅  | ✅                                                            | ✅                                           | ✅ (8 handlers)                                   | ✅ queue/pending/detail/policies               | **Complete**    |
-| **shared infra**  | ✅ comments/labels/views/subscriptions/mentions | ✅  | ✅ comments+labels+saved-view+subscription+mention extraction | ✅ comments+labels+saved-view+subscription   | ✅ comment/label/view/subscription/mention events | ✅ task/project comments+labels+watch controls | **Complete**    |
-| **inbox**         | ✅ inbox items + notification prefs             | ✅  | ✅ markRead/markAllRead/upsertPref + queries                  | ✅ list/unread-count/mark-read/prefs         | ✅ inbox-fanout/item-read/all-read/pref-updated   | ✅ /comm/inbox, /unread, /preferences          | **Complete**    |
-| **chatter**       | ✅ message + post command schemas               | ✅  | ✅ postChatterMessage + listChatterMessages (reuses comment)  | ✅ GET /chatter/messages + POST chatter/post | ✅ via mention fan-out → inbox items              | ✅ EntityChatterClient on task+project detail  | **Complete**    |
-| **announcements** | ✅ entity/commands/events                       | ✅  | ✅ service + queries + audience options                       | ✅ list/detail/reads + command routes        | ✅ publish/schedule/ack/archive (+ tests)         | ✅ feed/create/detail + audience picker        | **In Progress** |
-| **docs**          | —                                               | —   | —                                                             | —                                            | —                                                 | —                                              | Future          |
-| **boardroom**     | —                                               | —   | —                                                             | —                                            | —                                                 | —                                              | Future          |
+| Module            | Contracts                                                          | DB                                                                      | Core                                                                       | API                                                                                        | Worker                                                                  | Web UI                                                                                 | Status                   |
+| ----------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------ |
+| **tasks**         | ✅                                                                 | ✅                                                                      | ✅                                                                         | ✅                                                                                         | ✅ (12 handlers)                                                        | ✅ list/my/board/detail/new                                                            | **Complete**             |
+| **projects**      | ✅                                                                 | ✅                                                                      | ✅                                                                         | ✅                                                                                         | ✅ (7 handlers)                                                         | ✅ list/detail/board/timeline/settings                                                 | **Complete**             |
+| **approvals**     | ✅                                                                 | ✅                                                                      | ✅                                                                         | ✅                                                                                         | ✅ (8 handlers)                                                         | ✅ queue/pending/detail/policies                                                       | **Complete**             |
+| **shared infra**  | ✅ comments/labels/views/subscriptions/mentions                    | ✅                                                                      | ✅ comments+labels+saved-view+subscription+mention extraction              | ✅ comments+labels+saved-view+subscription                                                 | ✅ comment/label/view/subscription/mention events                       | ✅ task/project comments+labels+watch controls                                         | **Complete**             |
+| **inbox**         | ✅ inbox items + notification prefs                                | ✅                                                                      | ✅ markRead/markAllRead/upsertPref + queries                               | ✅ list/unread-count/mark-read/prefs                                                       | ✅ inbox-fanout/item-read/all-read/pref-updated                         | ✅ /comm/inbox, /unread, /preferences                                                  | **Complete**             |
+| **chatter**       | ✅ message + post command schemas                                  | ✅                                                                      | ✅ postChatterMessage + listChatterMessages (reuses comment)               | ✅ GET /chatter/messages + POST chatter/post                                               | ✅ via mention fan-out → inbox items                                    | ✅ EntityChatterClient on task+project detail                                          | **Complete**             |
+| **announcements** | ✅ entity/commands/events                                          | ✅                                                                      | ✅ service + queries + audience options                                    | ✅ list/detail/reads + command routes                                                      | ✅ publish/schedule/ack/archive (+ tests)                               | ✅ feed/create/detail + audience picker                                                | **Complete**             |
+| **docs**          | ✅ entity+commands+events+collaborator schemas                     | ✅ schema + `comm_document_collaborator` (migration 0010)               | ✅ service+queries+hierarchy+addCollaborator/removeCollaborator            | ✅ list/detail/children/breadcrumb/by-slug/collaborators + RBAC (comm.document.\*)         | ✅ create/update/publish/archive handlers                               | ✅ list/new/detail/history+type/visibility/slug                                        | **COMPLETE** ✅          |
+| **boardroom**     | ✅ meeting+agenda+attendee+resolution+minutes+action-item (entity) | ✅ schema (meeting, agenda, attendee, resolution, minutes, action_item) | ✅ meeting+agenda+attendee+resolution+minutes+action-item services+queries | ✅ list/detail/create/update + agenda/attendees/resolutions+votes + minutes + action-items | ✅ meeting/agenda-item/attendee/resolution/minutes/action-item handlers | ✅ list/new/detail + agenda + attendees + resolutions+vote + minutes + action-items UI | **Phase 6B COMPLETE** ✅ |
+| **workflows**     | ✅ workflow+run entity/commands/events                             | ✅ `comm_workflow` + `comm_workflow_run` tables                         | ✅ CRUD + execute service + run queries                                    | ✅ list/detail/runs + command routes (comm.workflow.\* RBAC)                               | ✅ execute/complete/fail run handlers                                   | ✅ list/new/detail/runs pages + capability resolver                                    | **Phase 7 COMPLETE** ✅  |
 
 **Verified complete (March 13, 2026):**
 
@@ -39,107 +50,256 @@ Every `comm` module is:
 - `shared`: comments (with @mention extraction), labels, saved views, and subscriptions are active end-to-end across core + API + worker + web (task detail watch/unwatch + list).
 - `inbox`: contracts (CommInboxItem + CommNotificationPreference schemas) + DB tables + core service (markInboxItemRead, markAllInboxRead, upsertNotificationPreference) + API routes + worker fan-out (inbox-fanout.ts) + web pages (/comm/inbox, /comm/inbox/unread, /comm/inbox/preferences) with InboxClient and PreferencesClient components.
 - `chatter`: contracts (CommChatterMessage schemas) + core service (postChatterMessage via shared addComment + listChatterMessages) + API routes (GET /chatter/messages, POST /commands/chatter/post-message) + reusable EntityChatterClient component wired into task detail and project detail side panels; mention fan-out produces inbox items for @mentions.
-- `announcements` (phase 5 current slice): contracts + DB + core services/queries + API routes + worker handlers + web pages are implemented; audience targeting now includes org/team/role with audience option lookup and selection in create flow; scheduled publish and publish fan-out worker paths are covered by worker tests.
+- `announcements`: Phase 5B hardening is complete. Inbox deep-link routing, acknowledgement UX state, core regression coverage, and full validation (`typecheck`, `test`, `check:all`) are closed.
+
+**Stabilization run (March 13, 2026):**
+
+- Docs thin slice: fixed audit action registry (document.created/updated/published/archived), `listCommDocuments` export conflict with kernel `listDocuments`, `withAudit` generic typing, announcements detail page Skeleton import and `announcementId` null handling. All gates pass (`pnpm typecheck && pnpm test && pnpm check:all`).
+
+**Phase 6A complete (March 13, 2026):**
+
+- `docs`: full vertical slice across contracts, DB schema, core services/queries, API routes, worker handlers, web pages. Includes documentType, visibility, slug, parentDocId, hierarchy (breadcrumb, children, by-slug), shared infra (comments, labels, subscriptions), publish/archive guards, and focused tests. Collaborator/presence table deferred.
+
+**Phase 6B COMPLETE (March 14, 2026):**
+
+- `boardroom`: **FULLY IMPLEMENTED end-to-end** including:
+  - ✅ Meeting CRUD (create, list, detail, update)
+  - ✅ Agenda items (add, list, display on meeting detail)
+  - ✅ Attendees (add, update status, list, display on meeting detail)
+  - ✅ Resolutions (propose, list, display on meeting detail)
+  - ✅ Votes (cast vote For/Against/Abstain, list votes per resolution)
+  - ✅ **Minutes** (record minutes, list by meeting, detail page)
+  - ✅ **Action items** (create from minutes, update status/assignee/due date, list by minute)
+  - ✅ **DB schema**: `comm_board_meeting`, `comm_board_agenda_item`, `comm_board_meeting_attendee`, `comm_board_resolution`, `comm_board_resolution_vote`, **`comm_board_minutes`**, **`comm_board_action_item`**
+  - ✅ **Migration**: `0008_comm_board_minutes_action_item.sql` generated and ready
+  - ✅ **Web UI**: Meeting list/new/detail with agenda card, attendees card, resolutions card, **minutes section**, **action items pages**
+  - ✅ **Events**: COMM_MEETING_CREATED, COMM_AGENDA_ITEM_ADDED, COMM_ATTENDEE_ADDED, COMM_ATTENDEE_STATUS_UPDATED, COMM_RESOLUTION_PROPOSED, COMM_VOTE_CAST, **COMM_MINUTES_RECORDED**, **COMM_ACTION_ITEM_CREATED**, **COMM_ACTION_ITEM_UPDATED**
+  - ✅ **Worker handlers**: handle-meeting-created, handle-agenda-item-added, handle-attendee-added, handle-resolution-proposed, **handle-minutes-recorded**, **handle-action-item-created**, **handle-action-item-updated**
+
+**Next development focus (as of March 14, 2026):**
+
+1. **Phase 6A — Docs module (complete)** ✅
+
+   - [x] Thin-slice contracts are present.
+   - [x] Thin-slice DB schema is present.
+   - [x] Thin-slice core/API mutation and query flows are present.
+   - [x] Thin-slice worker publish fan-out is present.
+   - [x] Thin-slice web pages exist for list/create/detail/history.
+   - [x] Full validation passes after route namespace and gate reconciliation.
+   - [x] Align contracts to target spec: add `documentType`, `visibility`, `slug`, `parentDocId`, `lastEditedByPrincipalId`.
+   - [x] Add DB completion work: document_type, visibility, slug, parent_doc_id, last_edited_by_principal_id columns + migration 0003.
+   - [ ] Add collaborator/presence table (deferred to later phase).
+   - [x] Expand core/API flows: update semantics, publish/archive guards, slug/path handling, hierarchy queries (getDocumentBySlug, listChildDocuments, getDocumentBreadcrumb), and slug uniqueness guards.
+   - [x] Integrate shared infrastructure: comments (EntityChatterClient), labels (EntityLabelsClient), subscriptions (watch/unwatch), and chatter context for docs.
+   - [x] Add docs-focused tests in core/API/worker/web: document.service.test.ts, document.queries.test.ts, handle-document-published.test.ts, inbox links for document, docs-links.test.ts.
+   - **Exit criteria met:** docs CRUD + version history + publish notifications work end-to-end; data model matches target knowledge-base spec; all 22 gates pass. ✅
+   - **Deferred:** collaborator/presence table. **Action:** run `pnpm db:migrate` once `DATABASE_URL` is set.
+
+2. **Phase 6B — Boardroom module (COMPLETE)** ✅
+
+   - [x] Contracts + DB for meetings (entity, commands, events, `comm_board_meeting` table).
+   - [x] Core/API command/query flows for meeting create/update/list/detail.
+   - [x] Worker handlers for meeting-created, meeting-updated; inbox fan-out to chair + secretary.
+   - [x] Agenda items: contracts, DB `comm_board_agenda_item`, core/API/worker, web (list + add item).
+   - [x] Attendees: contracts, DB `comm_board_meeting_attendee`, core/API/worker, web (list + add attendee + status).
+   - [x] Resolutions + votes: contracts, DB `comm_board_resolution` + `comm_board_resolution_vote`, core/API/worker, web (list + propose + cast vote).
+   - [x] Web pages for agenda, attendees, resolutions (cards on meeting detail + add/propose/vote flows).
+   - [x] **Minutes + action items**: ✅ FULLY IMPLEMENTED
+     - [x] Contracts: `minutes.entity.ts`, `minutes.commands.ts`, `minutes.queries.ts`, events (COMM_MINUTES_RECORDED, COMM_ACTION_ITEM_CREATED, COMM_ACTION_ITEM_UPDATED)
+     - [x] DB schema: `comm_board_minutes`, `comm_board_action_item` tables with RLS, indexes, foreign keys
+     - [x] Migration: `0008_comm_board_minutes_action_item.sql` generated
+     - [x] Core services: recordMinutes, listMinutesByMeeting, createActionItem, updateActionItem, listActionItemsByMinute
+     - [x] API routes: GET /minutes, POST /commands/minutes/record, GET /action-items, POST /commands/action-items/create, PATCH /update
+     - [x] Worker handlers: handle-minutes-recorded.ts, handle-action-item-created.ts, handle-action-item-updated.ts
+     - [x] Web UI: Minutes section on meeting detail, record minutes page, minutes detail page with action items list, create/update action item pages
+     - [x] API client: fetchBoardMeetingMinutes, recordBoardMinutes, fetchActionItemsByMinute, createBoardActionItem, updateBoardActionItem
+   - **Exit criteria:** ✅ ALL COMPLETE. Meeting + agenda + attendees + resolutions + votes + minutes + action items end-to-end; all 22 gates pass. **PHASE COMPLETE**.
+
+3. **Phase 7 — Workflows automation engine** (NEXT PRIORITY)
+
+   - [ ] Rule model + trigger/action schemas and validation.
+   - [ ] Execution service with idempotent runs and audit event trails.
+   - [ ] Worker trigger integration from tasks/approvals/boardroom/docs events.
+   - [ ] Rule management UI and execution visibility.
+   - Exit criteria: safe trigger-condition-action automations run across comm modules.
 
 ### Next Development and Implementation Sequence
 
-The next execution sequence should prioritize highest leverage and lowest architecture risk:
+The next execution sequence should prioritize highest leverage and lowest architecture risk from the **current** repo state:
 
-1. **Phase 4A-R — Shared Infra Remaining Scope (recommended immediate next slice)**
+1. **Docs Phase 6A — Complete** ✅
 
-   - ✅ Saved views in core + API + web tasks list (persist/restore filters, sort, columns, default view).
-   - ✅ Subscriptions in core + API + worker + web (watch/unwatch/list and worker routing).
-   - ✅ Mention extraction in comment service: `@<uuid>` patterns → `COMM.COMMENT_MENTIONS_CREATED` outbox event.
-   - ✅ Worker mention fan-out now writes inbox items for mentioned principals.
-   - Exit criteria met: mentions produce inbox notifications via worker fan-out.
+   - Schema, core/API, shared infra, UI, and tests are implemented. Run `pnpm db:migrate` once `DATABASE_URL` is set.
 
-2. **Phase 4B — Inbox Foundation**
+2. **Boardroom Phase 6B — COMPLETE** ✅
 
-   - ✅ Implemented contracts + DB schema + core + API for inbox items and notification preferences.
-   - ✅ Added `/comm/inbox`, `/comm/inbox/unread`, `/comm/inbox/preferences` web pages with read and preference controls.
-   - ✅ Connected task/project/approval/subscription handlers to inbox item creation dispatch.
-   - ✅ Exit criteria met: unified in-app inbox is populated by fan-out jobs from tasks/projects/approvals/shared-infra events.
+   - **ALL FEATURES DELIVERED**: meetings, agenda, attendees, resolutions, votes, minutes, and action items are fully implemented end-to-end
+   - Meeting CRUD + agenda items + attendees + resolutions + votes + **minutes + action items** implemented end-to-end
+   - Inbox fan-out on meeting created (chair + secretary); worker handlers for agenda-item-added, attendee-added, resolution-proposed, **minutes-recorded, action-item-created, action-item-updated**
+   - Shell/nav: Boardroom, Announcements, Docs, Inbox in COMM and BoardRoom sections
+   - **Status:** ✅ PHASE COMPLETE — no remaining work
 
-3. **Phase 4C — Chatter MVP** ✅ **COMPLETE**
+3. **Workflows Phase 7 — Post-domain automation** (NEXT PRIORITY)
 
-   - ✅ Added initial chatter contracts/core/API scaffolding (`task`/`project`) reusing shared comment persistence and mention fan-out events.
-   - ✅ Wired task/project detail pages to chatter endpoints via a reusable web chatter panel component.
-   - ✅ Contextual thread/message model implemented via `entityType/entityId` routing through shared `comm_comment` table.
-   - ✅ task/project detail side panels (EntityChatterClient) — no standalone route required.
-   - ✅ Mention support via `@<uuid>` extraction in comment service → `COMM.COMMENT_MENTIONS_CREATED` → inbox fan-out.
-   - ✅ **Exit criteria met:** threaded discussion live on task/project entities with inbox notifications for @mentions.
+   - Meeting CRUD + agenda items + attendees + resolutions + votes implemented end-to-end.
+   - Inbox fan-out on meeting created (chair + secretary); worker handlers for agenda-item-added, attendee-added, resolution-proposed.
+   - Shell/nav: Boardroom, Announcements, Docs, Inbox in COMM and BoardRoom sections.
+   - **Remaining:** minutes + action items (contracts and reference SQL/OpenAPI in repo; implement DB, core, API, worker, web).
 
-4. **Phase 5 — Announcements** 🟡 **IN PROGRESS (Current Slice Delivered)**
+4. **Workflows Phase 7 — Post-domain automation**
 
-   Org-wide broadcast flow: publish → audience targeting → read receipt tracking → acknowledgement enforcement.
+   - Build workflows only after docs and boardroom primitives are stable.
+   - Reuse existing outbox and worker fan-out patterns instead of introducing a separate orchestration path.
+   - Exit criteria: trigger-condition-action automation executes safely with audit, idempotency, and org isolation.
 
-   **Delivered in current slice:**
+### Remaining Work (as of March 14, 2026)
 
-   - [x] **Contracts** (`packages/contracts/src/comm/announcements/`)
+| Area          | Item                                                         | Status          | Priority      |
+| ------------- | ------------------------------------------------------------ | --------------- | ------------- |
+| **Docs**      | Run `pnpm db:migrate` once `DATABASE_URL` is set             | —               | Before deploy |
+| **Docs**      | Collaborator/presence table (`comm_document_collaborator`)   | ✅ Done         | —             |
+| **Docs**      | `comm.document.*` permissions (document-level RBAC)          | ✅ Done         | —             |
+| **Boardroom** | Agenda items (entity, commands, DB, API, web)                | Done            | —             |
+| **Boardroom** | Attendees (entity, commands, DB, API, web)                   | ✅ Done         | —             |
+| **Boardroom** | Resolutions + votes (entity, commands, DB, API, web)         | ✅ Done         | —             |
+| **Boardroom** | Minutes + action items (DB, core, API, worker, web)          | ✅ **COMPLETE** | —             |
+| **Boardroom** | Inbox fan-out on meeting created (worker handler)            | ✅ Done         | —             |
+| **Boardroom** | Add boardroom to shell/nav                                   | ✅ Done         | —             |
+| **Workflows** | Phase 7 — all layers (contracts, DB, core, API, worker, web) | ✅ **COMPLETE** | —             |
 
-     - `announcement.entity.ts`, `announcement.commands.ts`, `announcement.events.ts` are present and exported.
+---
 
-   - [x] **DB Schema** (`packages/db/src/schema/comm/announcements.ts`)
+### Remaining to close (checklist)
 
-     - announcement and acknowledgement/read persistence is implemented in schema layer.
+To close the COMM plan, complete the following in order:
 
-   - [x] **Core Service + Queries** (`packages/core/src/comm/announcements/`)
+| #     | Item                                      | Scope                            | Artifacts / notes                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----- | ----------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ~~1~~ | ~~**Boardroom: Minutes + action items**~~ | ~~DB, core, API, worker, web~~   | ✅ **COMPLETE** — All layers implemented: contracts (`minutes.entity.ts`, `minutes.commands.ts`), DB schema (`comm_board_minutes`, `comm_board_action_item`), migration (`0008_comm_board_minutes_action_item.sql`), core services (recordMinutes, createActionItem, updateActionItem, list queries), API routes (GET/POST endpoints), worker handlers (handle-minutes-recorded, handle-action-item-\*), web UI (minutes section + detail pages, action items CRUD). |
+| 2     | **Docs: Document-level RBAC**             | Contracts, API                   | Add `comm.document.read`, `comm.document.write`, `comm.document.manage` to `permissions.ts`; enforce in document API (document-level check then org fallback).                                                                                                                                                                                                                                                                                                       |
+| 3     | **Docs: Collaborator table**              | DB, core, API                    | Table `comm_document_collaborator` (see reference SQL in `docs/comm/boardroom-minutes-action-items-migration.sql`); add/remove collaborator API; optional list-by-document.                                                                                                                                                                                                                                                                                          |
+| 4     | **Workflows Phase 7**                     | Contracts, DB, core, API, worker | Trigger/action model; `workflows` table; lightweight worker executor; basic admin UI. After #1–3 stable.                                                                                                                                                                                                                                                                                                                                                             |
+| 5     | **Operational**                           | —                                | Run `pnpm db:migrate` when `DATABASE_URL` set; feature flags `feature_comm_minutes`, `feature_comm_action_items`, `feature_comm_doc_collaborators`; monitoring counters.                                                                                                                                                                                                                                                                                             |
 
-     - create/publish/schedule/archive/acknowledge services exist.
-     - query layer includes list/detail/reads and audience options for team/role targeting.
+### Defer vs implement — implementation strategy (no passive deferrals)
 
-   - [x] **API Routes** (`apps/api/src/routes/comm/announcements.ts`)
+Nothing is deferred by default. Every previously deferred item has a clear **implementation strategy**; deferral only when blocked by external dependency (e.g. third-party service, product decision). Principles: **thin-slice first**, **contracts-first**, **feature flags / opt-in**, and **acceptance criteria** per slice.
 
-     - list/detail/reads endpoints and announcement command routes are implemented.
-     - audience options endpoint for create flow targeting is implemented.
-       - acknowledgement summary endpoint (`/v1/announcements/:id/ack-summary`) is implemented.
+---
 
-   - [x] **Worker Handlers** (`apps/worker/src/jobs/comm/announcements/`)
+#### Decision table — items, priority, effort, immediate action
 
-     - published/scheduled/acknowledged/archived handlers are implemented.
-     - tests cover publish fan-out and scheduled due-publish behavior.
+| Item                                      |    Priority     | Estimated effort | Immediate action                             | Reasoning (codebase evidence)                                                                                                                                |
+| ----------------------------------------- | :-------------: | :--------------: | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ~~**Boardroom: minutes + action items**~~ |    ~~High~~     |    ~~Medium~~    | ✅ **COMPLETE**                              | ✅ All tables exist (`comm_board_minutes`, `comm_board_action_item`); migration 0008 generated; full implementation across contracts/DB/core/API/worker/web. |
+| **Workflows Phase 7 (engine + triggers)** | **HIGH (NEXT)** |      Large       | **Implement next**                           | No `workflows` in `packages/contracts/src/comm/`; requires trigger/action semantics and integration points. Unblocked now that boardroom is complete.        |
+| **Docs: Collaborator / presence**         |     Medium      |  Small → Medium  | **Implement minimal collaborator model**     | No `document_collaborator` in `packages/db/src/schema/comm/docs.ts`; add thin-slice co-edit metadata first.                                                  |
+| **Docs: `comm.document.*` permissions**   |     Medium      |      Small       | **Implement document-level RBAC thin slice** | No `comm.document.*` in `permissions.ts`; implement minimal RBAC hooks and expand later.                                                                     |
+| **DB migration (`pnpm db:migrate`)**      |   Operational   |    Very small    | **Run before deploy**                        | No code change; required when `DATABASE_URL` present.                                                                                                        |
 
-   - [x] **Web UI** (`apps/web/src/app/(comm)/announcements/`)
+---
 
-     - feed, create, and detail pages are implemented.
-     - create flow supports org/team/role selection with audience ID targeting.
-       - detail page now shows targeted/acknowledged/pending counts and progress percentage.
+#### Implementation strategy (principles)
 
-   - [ ] **Core Tests Expansion** (`packages/core/src/comm/announcements/__vitest_test__/`)
+- **No passive deferrals:** For each item, define a minimal, testable implementation path. Defer only if blocked by external dependency.
+- **Thin-slice first:** Smallest useful vertical slice that delivers value and enables iteration.
+- **Contracts-first:** Add contracts (types/DTOs) and DB schema together so API, worker, and web can proceed in parallel.
+- **Feature flags / opt-in:** Ship behind flags to limit blast radius.
+- **Acceptance criteria:** Per item: clear acceptance tests and migration steps.
 
-     - add core service/query tests for permission denial, idempotency, and acknowledgement/read invariants.
+---
 
-   **Next development (Phase 5B - recommended immediate execution order):**
+#### ~~Boardroom minutes + action items — concrete design~~ ✅ COMPLETE
 
-   1. **Publisher acknowledgement analytics** ✅
+**Status:** ✅ **FULLY IMPLEMENTED** (March 14, 2026)
 
-      - Delivered: publisher-facing read/ack summary on announcement detail (total targeted, acknowledged, pending, progress).
-      - Delivered: dedicated summary query and API response shape.
+All design criteria have been successfully implemented:
 
-   2. **Inbox-to-announcement deep-link consistency**
+- ✅ **DB schema**: `comm_board_minutes` and `comm_board_action_item` tables created with proper RLS, indexes (`meeting_id`, `org_id`, `minute_id`, `assignee_id`, `due_date`), foreign keys, and org scoping
+- ✅ **Migration**: `0008_comm_board_minutes_action_item.sql` generated with idempotent DDL
+- ✅ **Contracts**: `BoardMinuteSchema`, `BoardActionItemSchema`, `ActionItemStatusValues` in `minutes.entity.ts`; commands in `minutes.commands.ts`
+- ✅ **Events**: `COMM_MINUTES_RECORDED`, `COMM_ACTION_ITEM_CREATED`, `COMM_ACTION_ITEM_UPDATED` registered
+- ✅ **Core services**: `recordMinutes`, `listMinutesByMeeting`, `createActionItem`, `updateActionItem`, `listActionItemsByMinute`
+- ✅ **API endpoints**: All routes implemented under `/v1/comm-board-meetings/...`
+- ✅ **Worker handlers**: `handle-minutes-recorded.ts`, `handle-action-item-created.ts`, `handle-action-item-updated.ts`
+- ✅ **Web UI**: Minutes section on meeting detail page, record minutes form, minutes detail page with action items list, create/update action item forms
+- ✅ **API client**: `fetchBoardMeetingMinutes`, `recordBoardMinutes`, `fetchActionItemsByMinute`, `createBoardActionItem`, `updateBoardActionItem`
 
-      - Confirm inbox item payload/entity routing always resolves to `/comm/announcements/[id]`.
-      - Add regression tests around entity link generation.
+No further work required on this slice.
 
-   3. **Acknowledgement UX hardening**
+---
 
-      - Make acknowledgement state explicit in detail view (already acknowledged vs action required).
-      - Add optimistic UI + retry-safe handling for transient failures.
+#### Workflows Phase 7 — pragmatic implementation path
 
-   4. **Test and gate hardening**
+**Goal:** Minimal workflow runner and trigger model for the most common use-cases without a full engine.
 
-      - Add missing core announcement tests.
-      - Run `pnpm typecheck && pnpm test && pnpm check:all` after Phase 5B completion.
+**Thin-slice scope:**
 
-   **Phase 5 exit criteria (updated):** org admins can draft/schedule/publish announcements; audience members receive inbox fan-out and can acknowledge; publishers can view acknowledgement progress with trustworthy counts.
+- **Trigger types:** e.g. `on_resolution_passed`, `on_action_item_due`, `on_document_updated`.
+- **Action types:** e.g. `create_action_item`, `send_notification`, `call_webhook`.
+- **Storage:** `workflows` table with JSON `definition` and `enabled` flag; org-scoped.
+- **Executor:** Lightweight worker that evaluates triggers (on outbox events) and runs actions.
 
-5. **Phase 6 — Docs and Boardroom**
-   - Docs first (knowledge utility and lower governance complexity), then boardroom (higher governance complexity).
-   - Reuse shared comments, labels, subscriptions, and inbox patterns from earlier phases.
-   - Exit criteria: docs CRUD + versioning; board meetings + resolutions + minutes + task action-item bridge.
+**Why thin-slice:** Avoids full DSL; start with JSON definitions and a small set of triggers/actions. Integrates with Boardroom minutes and action items.
+
+**Acceptance criteria:**
+
+- Define a workflow that reacts to a resolution and creates an action item.
+- Admin UI to enable/disable workflows (basic).
+- Audit log for workflow runs.
+
+---
+
+#### Docs: collaborator and document-level permissions — minimal plan
+
+**Goal:** Minimal collaborator model and document-level RBAC for co-edit metadata and per-document access.
+
+**DB (one-table collaborator):**
+
+- `document_collaborators` (or `comm_document_collaborator`): `document_id`, `user_id` (principal_id), `role` (e.g. `editor`), `added_at`, `org_id`; PK `(document_id, user_id)`; RLS by org.
+
+**Permissions:**
+
+- Add `comm.document.read`, `comm.document.write`, `comm.document.manage` to `permissions.ts`.
+- In document API: if document-level permission exists, check it (e.g. collaborator or owner), else fallback to org-level.
+
+**Thin-slice:** Metadata-only presence (who is collaborator) and read/write checks. Real-time presence/co-editing (cursor sync) deferred until product requires it.
+
+**Acceptance criteria:**
+
+- Add/remove collaborator API works; document read/write endpoints enforce document-level permissions; migration and tests.
+
+---
+
+#### Operational checklist (pre-deploy and infra)
+
+- **Run migrations:** `pnpm db:migrate` when `DATABASE_URL` set.
+- **Feature flags:** Consider flags for minutes, action items, workflows, doc-collaborators.
+- **CI:** Migration step in CI; rollback test where feasible.
+- **Env:** `DATABASE_URL`, worker queue config, notification provider credentials as needed.
+- **Monitoring:** Basic metrics for workflow runs and action-item reminders.
+
+---
+
+#### Checkpoints and re-evaluation
+
+- **Ship Boardroom minutes + action items to staging** → pilot → then enable Workflows Phase 7 development.
+- **After one production release of minutes:** evaluate real-time co-editing need (metrics: collaborative docs, user requests).
+- **Workflows:** Re-evaluate after successful workflow-triggered action-item runs in production.
+
+---
+
+#### One-line prioritized order (executable)
+
+1. **Implement Boardroom minutes + action items** (contracts, DB, core, API, worker hooks).
+2. **Add document-level RBAC and document_collaborators** (thin slice).
+3. **Implement minimal Workflows Phase 7** (triggers/actions) integrated with Boardroom.
+4. **Run DB migrations and operational checks; enable feature flags; monitor.**
 
 ### Implementation Guardrails for Next Slices
 
+- **Registry completeness:** Every error code returned by services must be in `ErrorCodeValues` ([packages/contracts/src/shared/errors.ts](packages/contracts/src/shared/errors.ts)). The domain-completeness gate enforces comm (error/audit/permission prefixes).
+- **Docs access:** Docs are currently org-scoped; explicit `comm.document.*` permissions are not yet enforced. Add and wire permissions when document-level RBAC is required.
 - Keep strict schema-is-truth order: contracts → db → migration → core → api → worker → web → tests.
 - Reuse existing event/outbox patterns from tasks/projects/approvals; avoid introducing a parallel notification path.
 - Maintain multi-tenant and audit invariants on every new mutation (idempotency key + audit + outbox).
@@ -1649,9 +1809,9 @@ if (!hasPermission(ctx, "comm.task.create")) {
 | 3.4  | Web    | Queue, pending, detail, and policies pages                                                      | ✅     |
 | 3.5  | Gates  | Validation via standard quality gate flow (`pnpm typecheck && pnpm test && pnpm check:all`)     | ✅     |
 
-### Wave 4: Shared Infrastructure Activation 🟡 IN PROGRESS
+### Wave 4: Shared Infrastructure Activation ✅ COMPLETE
 
-Comments and labels are now live; saved views and subscriptions remain.
+**Delivered:** March 12–13, 2026
 
 | Step | Layer  | Work                                                                             | Status |
 | ---- | ------ | -------------------------------------------------------------------------------- | ------ |
@@ -1659,49 +1819,51 @@ Comments and labels are now live; saved views and subscriptions remain.
 | 4.2  | API    | Shared routes for comments + labels                                              | ✅     |
 | 4.3  | Worker | Comment/label event handlers                                                     | ✅     |
 | 4.4  | Web    | Task + project detail integration (`EntityCommentsClient`, `EntityLabelsClient`) | ✅     |
-| 4.5  | Core   | Saved views service/query surface                                                | 🔜     |
-| 4.6  | API    | Saved view + subscription endpoints                                              | 🔜     |
-| 4.7  | Worker | Subscription change fan-out and mention-driven inbox dispatch                    | 🔜     |
-| 4.8  | Web    | Saved view persistence on tasks list + watch/unwatch controls                    | 🔜     |
+| 4.5  | Core   | Saved views service/query surface                                                | ✅     |
+| 4.6  | API    | Saved view + subscription endpoints                                              | ✅     |
+| 4.7  | Worker | Subscription change fan-out and mention-driven inbox dispatch                    | ✅     |
+| 4.8  | Web    | Saved view persistence on tasks list + watch/unwatch controls                    | ✅     |
 
-### Wave 5: Inbox Foundation 🔜 NEXT
+### Wave 5: Inbox Foundation ✅ COMPLETE
 
-| Step | Layer  | Work                                                                             |
-| ---- | ------ | -------------------------------------------------------------------------------- |
-| 5.1  | Core   | Inbox service/query hardening and preference support                             |
-| 5.2  | API    | Inbox read/unread/list/mark-read/snooze/dismiss endpoints                        |
-| 5.3  | Worker | Unified dispatch path from tasks/projects/approvals/shared subscription events   |
-| 5.4  | Web    | `/comm/inbox`, `/comm/inbox/unread`, `/comm/inbox/preferences` with bulk actions |
-| 5.5  | Gates  | End-to-end verification and route/registry sync                                  |
+**Delivered:** March 12–13, 2026
+
+| Step | Layer  | Work                                                                             | Status |
+| ---- | ------ | -------------------------------------------------------------------------------- | ------ |
+| 5.1  | Core   | Inbox service/query hardening and preference support                             | ✅     |
+| 5.2  | API    | Inbox read/unread/list/mark-read/snooze/dismiss endpoints                        | ✅     |
+| 5.3  | Worker | Unified dispatch path from tasks/projects/approvals/shared subscription events   | ✅     |
+| 5.4  | Web    | `/comm/inbox`, `/comm/inbox/unread`, `/comm/inbox/preferences` with bulk actions | ✅     |
+| 5.5  | Gates  | End-to-end verification and route/registry sync                                  | ✅     |
 
 ### Wave 6: Boardroom + Announcements
 
-| Step | Layer       | Work                                                                      |
-| ---- | ----------- | ------------------------------------------------------------------------- |
-| 6.1  | Contracts   | `comm/boardroom/` schemas + `comm/announcements/` schemas                 |
-| 6.2  | DB          | Boardroom + announcements tables                                          |
-| 6.3  | Core        | Meeting lifecycle, resolution engine, voting, minutes                     |
-| 6.4  | Core        | Announcement publish engine, audience targeting, acknowledgement tracking |
-| 6.5  | API         | Boardroom + announcements routes                                          |
-| 6.6  | Worker      | Meeting/resolution handlers + announcement publish handlers               |
-| 6.7  | Web         | Boardroom: calendar, meeting detail, agenda, resolutions, minutes         |
-| 6.8  | Web         | Announcements: feed, create, detail with acknowledgement tracking         |
-| 6.9  | Integration | Resolution → auto-create task                                             |
+| Step | Layer       | Work                                                                      | Status                                                                                                   |
+| ---- | ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 6.1  | Contracts   | `comm/boardroom/` schemas + `comm/announcements/` schemas                 | Done                                                                                                     |
+| 6.2  | DB          | Boardroom + announcements tables                                          | Done                                                                                                     |
+| 6.3  | Core        | Meeting lifecycle, agenda, attendees, resolutions+votes, minutes          | Partial (meeting, agenda, attendees, resolutions+votes done; minutes+action-items pending)               |
+| 6.4  | Core        | Announcement publish engine, audience targeting, acknowledgement tracking | Done                                                                                                     |
+| 6.5  | API         | Boardroom + announcements routes                                          | Done                                                                                                     |
+| 6.6  | Worker      | Meeting/agenda/attendee/resolution handlers + announcement publish        | Partial (meeting, agenda-item, attendee, resolution-proposed done; minutes/action-item handlers pending) |
+| 6.7  | Web         | Boardroom: meeting detail, agenda, attendees, resolutions+votes, minutes  | Partial (list/new/detail, agenda, attendees, resolutions+vote UI done; minutes+action-items UI pending)  |
+| 6.8  | Web         | Announcements: feed, create, detail with acknowledgement tracking         | Done                                                                                                     |
+| 6.9  | Integration | Resolution → auto-create task                                             | Pending                                                                                                  |
 
 ### Wave 7: Docs + Chatter + Workflows
 
-| Step | Layer          | Work                                                                       |
-| ---- | -------------- | -------------------------------------------------------------------------- |
-| 7.1  | Contracts + DB | `comm/docs/`, `comm/chatter/`, `comm/workflows/`                           |
-| 7.2  | Core           | Document service (CRUD, versioning, publish)                               |
-| 7.3  | Core           | Chatter service (threads, messages, mentions)                              |
-| 7.4  | Core           | Workflow engine (trigger evaluation, condition matching, action execution) |
-| 7.5  | API            | Docs + chatter + workflows routes                                          |
-| 7.6  | Worker         | Document published, chatter mention, workflow execution handlers           |
-| 7.7  | Web            | Document explorer, editor, version history                                 |
-| 7.8  | Web            | Chatter side panel (attached to any entity detail page)                    |
-| 7.9  | Web            | Workflow builder (visual rule editor), execution log                       |
-| 7.10 | Integration    | Workflow triggers wired to all COMM + ERP outbox events                    |
+| Step | Layer          | Work                                                                       | Status                                           |
+| ---- | -------------- | -------------------------------------------------------------------------- | ------------------------------------------------ |
+| 7.1  | Contracts + DB | `comm/docs/`, `comm/chatter/`, `comm/workflows/`                           | Partial (docs + chatter done; workflows pending) |
+| 7.2  | Core           | Document service (CRUD, versioning, publish)                               | Done                                             |
+| 7.3  | Core           | Chatter service (threads, messages, mentions)                              | Done                                             |
+| 7.4  | Core           | Workflow engine (trigger evaluation, condition matching, action execution) | Pending                                          |
+| 7.5  | API            | Docs + chatter + workflows routes                                          | Partial (docs + chatter done; workflows pending) |
+| 7.6  | Worker         | Document published, chatter mention, workflow execution handlers           | Partial (document + chatter handlers done)       |
+| 7.7  | Web            | Document explorer, editor, version history                                 | Done                                             |
+| 7.8  | Web            | Chatter side panel (attached to any entity detail page)                    | Done                                             |
+| 7.9  | Web            | Workflow builder (visual rule editor), execution log                       | Pending                                          |
+| 7.10 | Integration    | Workflow triggers wired to all COMM + ERP outbox events                    | Pending                                          |
 
 ---
 

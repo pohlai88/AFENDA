@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, bigint, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, bigint, jsonb, index, unique } from "drizzle-orm/pg-core";
 import { organization, iamPrincipal } from "../identity";
 import { tsz, rlsOrg } from "../../_helpers";
 
@@ -21,10 +21,21 @@ export const document = pgTable(
       onDelete: "set null",
     }),
     uploadedAt: tsz("uploaded_at").defaultNow().notNull(),
+    // ── Storage routing ──────────────────────────────────────────────────────
+    storageProvider: text("storage_provider").default("r2"), // 'r2' | 's3'
+    storageBucket: text("storage_bucket").default("axis-attachments"), // target bucket name
+    storageMetadata: jsonb("storage_metadata").$type<Record<string, unknown>>().default({}), // provider-specific metadata
+    objectVersion: text("object_version"), // ETag / version ID from provider
   },
   (t) => [
     unique("document_org_object_key_uidx").on(t.orgId, t.objectKey),
     index("document_sha256_idx").on(t.orgId, t.sha256),
+    index("document_org_storage_uploaded_idx").on(
+      t.orgId,
+      t.storageProvider,
+      t.storageBucket,
+      t.uploadedAt,
+    ),
     rlsOrg,
   ],
 );

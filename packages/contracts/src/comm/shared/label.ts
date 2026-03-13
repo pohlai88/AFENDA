@@ -3,8 +3,12 @@ import { OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../../shared/ids.js"
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 
+// ─── ID Brands ────────────────────────────────────────────────────────────────
+
 export const CommLabelIdSchema = UuidSchema.brand<"CommLabelId">();
 export const CommLabelAssignmentIdSchema = UuidSchema.brand<"CommLabelAssignmentId">();
+
+// ─── Enum Values & Schema ─────────────────────────────────────────────────────
 
 export const CommLabelEntityTypeValues = [
   "task",
@@ -17,15 +21,24 @@ export const CommLabelEntityTypeValues = [
 
 export const CommLabelEntityTypeSchema = z.enum(CommLabelEntityTypeValues);
 
+// ─── Color Schema ─────────────────────────────────────────────────────────────
+
 export const CommLabelColorSchema = z
   .string()
   .trim()
   .regex(/^#[0-9A-Fa-f]{6}$/, "color must be a hex string like #14B8A6");
 
+// ─── Reusable Field Schemas ───────────────────────────────────────────────────
+
+const NameSchema = z.string().trim().min(1).max(50);
+const EntityIdStringSchema = z.string().trim().min(1);
+
+// ─── Entity Schemas ───────────────────────────────────────────────────────────
+
 export const CommLabelSchema = z.object({
   id: CommLabelIdSchema,
   orgId: OrgIdSchema,
-  name: z.string().trim().min(1).max(50),
+  name: NameSchema,
   color: CommLabelColorSchema,
   createdByPrincipalId: PrincipalIdSchema,
   createdAt: UtcDateTimeSchema,
@@ -37,42 +50,47 @@ export const CommLabelAssignmentSchema = z.object({
   orgId: OrgIdSchema,
   labelId: CommLabelIdSchema,
   entityType: CommLabelEntityTypeSchema,
-  entityId: z.string().trim().min(1),
+  entityId: EntityIdStringSchema,
   assignedByPrincipalId: PrincipalIdSchema,
   createdAt: UtcDateTimeSchema,
 });
 
-export const CreateLabelCommandSchema = z.object({
+// ─── Base Command Schema ──────────────────────────────────────────────────────
+
+const LabelCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  name: z.string().trim().min(1).max(50),
+});
+
+// ─── Commands ─────────────────────────────────────────────────────────────────
+
+export const CreateLabelCommandSchema = LabelCommandBase.extend({
+  name: NameSchema,
   color: CommLabelColorSchema,
 });
 
-export const UpdateLabelCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const UpdateLabelCommandSchema = LabelCommandBase.extend({
   labelId: CommLabelIdSchema,
-  name: z.string().trim().min(1).max(50).optional(),
+  name: NameSchema.optional(),
   color: CommLabelColorSchema.optional(),
 });
 
-export const DeleteLabelCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const DeleteLabelCommandSchema = LabelCommandBase.extend({
   labelId: CommLabelIdSchema,
 });
 
-export const AssignLabelCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const AssignLabelCommandSchema = LabelCommandBase.extend({
   labelId: CommLabelIdSchema,
   entityType: CommLabelEntityTypeSchema,
-  entityId: z.string().trim().min(1),
+  entityId: EntityIdStringSchema,
 });
 
-export const UnassignLabelCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const UnassignLabelCommandSchema = LabelCommandBase.extend({
   labelId: CommLabelIdSchema,
   entityType: CommLabelEntityTypeSchema,
-  entityId: z.string().trim().min(1),
+  entityId: EntityIdStringSchema,
 });
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CommLabelId = z.infer<typeof CommLabelIdSchema>;
 export type CommLabelAssignmentId = z.infer<typeof CommLabelAssignmentIdSchema>;

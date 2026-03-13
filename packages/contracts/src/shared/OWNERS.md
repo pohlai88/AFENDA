@@ -32,17 +32,34 @@ Without that comment it will be moved to a domain folder at the next review.
 
 ## Files
 
-| File             | Key exports                                                                                                                                                           | Notes                                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `datetime.ts`    | `UtcDateTimeSchema`, `UtcDateTime`, `DateSchema`, `DateString`, `DateRangeSchema`, `DateRange`                                                                        | All timestamps must use `UtcDateTimeSchema` (no local offsets). All business dates must use `DateSchema`.   |
-| `ids.ts`         | `UuidSchema`, `EntityIdSchema`, `brandedUuid()`, `CorrelationIdSchema`, `CorrelationId`, `OrgIdSchema`, `PrincipalIdSchema` + 6 cross-domain IDs (incl. `AuditLogId`) | Primitive layer — no deps; see ID rules below                                                               |
-| `errors.ts`      | `ErrorCodeValues`, `ErrorCodeSchema`, `ErrorCode`, `ApiErrorSchema`, `ApiError`                                                                                       | Namespaced codes — see below                                                                                |
-| `headers.ts`     | `CorrelationIdHeader`, `IdempotencyKeyHeader`, `OrgIdHeader`, `HeaderNameValues`, `HeaderName`                                                                        | **Constants only — no Zod**                                                                                 |
-| `money.ts`       | `CurrencyCodeSchema`, `CurrencyCode`, `MoneySchema`, `Money`                                                                                                          | `bigint` minor units via `z.coerce.bigint()`                                                                |
-| `pagination.ts`  | `CURSOR_LIMIT_DEFAULT`, `CURSOR_LIMIT_MAX`, `CursorParamsSchema`, `CursorParams`                                                                                      | Empty-string coercion via `z.preprocess`                                                                    |
-| `envelope.ts`    | `ErrorEnvelopeSchema`, `ErrorEnvelope`, `makeSuccessEnvelopeSchema()`, `SuccessEnvelope<T>`, `makeCursorEnvelopeSchema()`, `CursorEnvelope<T>`                        | Schema factories (not constants) — depends on `ids` + `errors`                                              |
-| `permissions.ts` | `PermissionValues`, `Permission`, `PERMISSION_SCOPES`                                                                                                                 | Central permission key registry — every guard references these constants. Pattern: `scope.entity.action`.    |
-| `index.ts`       | Domain barrel — re-exports all of the above                                                                                                                           | Primitives before composites; exports only, no logic                                                        |
+| File                   | Key exports                                                                                                                                                                  | Notes                                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `datetime.ts`          | `UtcDateTimeSchema`, `UtcDateTime`, `DateSchema`, `DateString`, `DateRangeSchema`, `DateRange`                                                                               | All timestamps must use `UtcDateTimeSchema` (no local offsets). All business dates must use `DateSchema`.    |
+| `ids.ts`               | `UuidSchema`, `EntityIdSchema`, `brandedUuid()`, `CorrelationIdSchema`, `CorrelationId`, `OrgIdSchema`, `PrincipalIdSchema`, `SharedIds`, `generateUuid()`, parse helpers    | Shared ID primitives and cross-domain branded IDs. Keep additions justified with cross-domain comments.      |
+| `clock.ts`             | `Clock`, `SystemClock`, `FixedClock`, `getClock()`, `setClock()`, `withClock()`, `withFixedClock()`, `now()`, `nowUtc()`, `nowMs()`, `SharedClock`                           | Shared time abstraction for deterministic testing and explicit time dependency management.                   |
+| `errors.ts`            | `ErrorCodeValues`, `ErrorCodeSchema`, `ErrorCode`, `ApiErrorSchema`, `ApiError`                                                                                              | Namespaced codes — see below                                                                                 |
+| `headers.ts`           | `CorrelationIdHeader`, `RequestIdHeader`, `IdempotencyKeyHeader`, `OrgIdHeader`, `DeprecationWarningHeader`, `HeaderNameValues`, `HeaderName`                                | Constants only — no Zod                                                                                      |
+| `money.ts`             | `CurrencyCodeSchema`, `CurrencyCode`, `MoneySchema`, `Money`, `makeMoney()`, `serializeMoney()`, `deserializeMoney()`, `SharedMoney`                                         | Canonical transport-safe money contract (`bigint` minor units)                                               |
+| `money-transport.ts`   | `moneyJsonReplacer()`, `moneyJsonReviver()`, `serializeMoney()`, `deserializeMoney()`, `stringifyWithMoney()`, `parseWithMoney()`, `MoneyTransport`                          | JSON transport helpers for bigint-safe wire payloads                                                         |
+| `money-utils.ts`       | `addMoney()`, `subtractMoney()`, `sumMoney()`, `compareMoney()`, `formatMoney()`                                                                                             | Deterministic money helpers only; no FX/rate logic                                                           |
+| `currency.ts`          | `CurrencyMetaSchema`, `CurrencyMeta`, `CurrencyRegistry`, `getCurrencyMeta()`, `registerCurrency()`, `listCurrencyCodes()`, `resetRegistryToDefaults()`                      | Canonical currency metadata registry for formatting, aggregation, and migration math                         |
+| `journal.ts`           | `JournalEntrySchema`, `validateJournalEntry()`, `applyJournalEntries()`, `recomputeBalances()`, `SharedJournal`                                                              | Canonical ledger primitives and deterministic balance recomputation helpers                                  |
+| `commands.ts`          | `BaseCommandSchema`, `BulkCommandSchema`, idempotency helpers                                                                                                                | Shared command primitives and common refinements                                                             |
+| `pagination.ts`        | `CURSOR_LIMIT_DEFAULT`, `CURSOR_LIMIT_MAX`, `PaginationSchema`, `CursorParamsSchema`, cursor encode/decode helpers, `PageResult<T>`                                          | Versioned cursor payloads and opaque cursor helpers                                                          |
+| `search.ts`            | `SearchQuerySchema`, `SearchResultSchema`, `SearchSortSchema`                                                                                                                | Shared search request/result primitives                                                                      |
+| `queries.ts`           | `BaseQueryParamsSchema`, `IdQueryParamsSchema`, `QueryHandler<>`, query cache helpers, cursor SQL helpers                                                                    | Shared query contracts and adapter helpers                                                                   |
+| `events.ts`            | `DomainEventSchema`, `EventEnvelopeSchema`, event helper factories                                                                                                           | Shared event contract primitives (transport-safe, schema-first)                                              |
+| `schema-versioning.ts` | `withSchemaVersion()`, `attachSchemaVersion()`, `parseVersionedPayload()`, `makeVersionedCursorSchema()`, `parseVersionedCursor()`, `registerVersionedSchemas()`             | Shared schema versioning helpers for events, API payloads, and opaque cursors                                |
+| `request-context.ts`   | `RequestContext`, `createRequestContext()`, `runWithRequestContext()`, `getRequestContext()`, `attachContextMiddleware()`, `ctxLogger()`, `ctxClock()`, `ctxCorrelationId()` | Request-scoped dependency carrier for clock/logger/flags/secrets with async propagation helpers              |
+| `idempotency.ts`       | `IdempotencyKeySchema`, `IdempotencyStore`, `ensureIdempotency()`, `createInMemoryIdempotencyStore()`, `SharedIdempotency`                                                   | Shared idempotency primitives and dedupe helper for command/event ingestion paths                            |
+| `idempotent-writes.ts` | `upsertById()`, `insertIfNotExists()`, `applyIfNotSeen()`, Postgres/Redis store adapters                                                                                     | Idempotent write primitives for atomic DB writes and store-backed event-entry dedupe                         |
+| `audit.ts`             | `AuditFieldsSchema`, `AuditLogEntrySchema`, `createAuditLogEntry()`, `appendAudit()`, `redactAuditSnapshots()`, `SharedAudit`                                                | 7W1H-style audit envelope primitives for append-only audit trail events                                      |
+| `db-migration.ts`      | `datePartitionColumnDefinition()`, `bigintColumnMigrationTemplate()`, `backfillValidator()`, `MigrationSqlSnippets`, `SharedDbMigration`                                     | Shared migration templates and backfill validation helpers for reproducible schema evolution                 |
+| `migration-helpers.ts` | `datePartitionColumnDefinition()`, `bigintColumnMigrationTemplate()`, `backfillValidator(opts)`, `MigrationHelpers`                                                          | DB-query-driven migration helper module for runtime row-count/total/sample-diff validation during backfills  |
+| `validation.ts`        | Shared refinements, schema builders, date-order helper utilities                                                                                                             | Reusable validation helpers for contract modules                                                             |
+| `envelope.ts`          | `ErrorEnvelopeSchema`, `makeErrorEnvelope()`, `makeSuccessEnvelopeSchema()`, `makeSuccessEnvelope()`, `makeCursorEnvelopeSchema()`, `makeCursorEnvelope()`, envelope typings | Envelope schema factories + runtime constructors; depends on `ids` + `errors`                                |
+| `permissions.ts`       | `PermissionValues`, `PermissionSchema`, `Permission`, `isPermission()`, `PermissionMeta`, `LegacyPermissionAliases`, `PERMISSION_SCOPES`                                     | Canonical permission registry. Canonical scope is `treasury.*`; legacy aliases remain for migration windows. |
+| `index.ts`             | Barrel re-exports all shared modules                                                                                                                                         | Exports only, no logic                                                                                       |
 
 ---
 
@@ -94,6 +111,13 @@ request-contract file (e.g. `iam/user.entity.ts`) or a dedicated
 - **Rounding and FX conversion live in `@afenda/core`**, not here.
 - **Locale-aware formatting** lives in `@afenda/ui/money`, not here or in core.
 
+For JSON boundaries (API responses, event payloads, and message buses), prefer
+`money-transport.ts` helpers:
+
+- `stringifyWithMoney()` and `moneyJsonReplacer()` for bigint-safe serialization
+- `parseWithMoney()` and `moneyJsonReviver()` for conservative deserialization
+- validate deserialized money objects with `MoneySchema.parse(...)` before use
+
 ---
 
 ## Rule: `errors.ts` — scoped namespace required
@@ -117,13 +141,13 @@ version before removal.
 
 ---
 
-## Rule: `outbox.ts` — versioning discipline
+## Rule: `events.ts` — versioning discipline
 
-- `type` — dot-namespaced SCREAMING_SNAKE, minimum two segments: `"AP.INVOICE_SUBMITTED"`, `"GL.JOURNAL.LINE_POSTED"`. Each segment starts with an uppercase letter.
-- `version` — `"1"` or `"1.0"`. Additive optional payload fields do **not** require a bump. Breaking changes (removed/renamed fields) **must** bump MAJOR.
-- `occurredAt` — UTC only; `Z` suffix is enforced by `.refine()`.
-- `payload` — must use `JsonObjectSchema` (recursive JSON-safe values). No `Date`, `BigInt`, `Map`, or class instances.
-- Top-level envelope is `.passthrough()` — unknown envelope fields (e.g. future `traceparent`) don't break old workers.
+- `type` should be namespaced and stable (e.g. `"AP.INVOICE_SUBMITTED"`, `"COMM.DOCUMENT_PUBLISHED"`).
+- `version` should be explicit and bumped for breaking payload changes.
+- `occurredAt` must be UTC (`Z` suffix).
+- `payload` must remain JSON-safe (no `Date`, `BigInt`, `Map`, class instances).
+- Envelope contracts should stay forward-compatible where practical.
 
 ---
 

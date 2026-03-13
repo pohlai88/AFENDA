@@ -1,13 +1,21 @@
 /**
  * @afenda/contracts — Canonical permission keys.
  *
+ * CHANGELOG:
+ *   - 2026-03-13: Canonicalized treasury scope to `treasury.*` (legacy `treas.*` moved to aliases).
+ *   - 2026-03-13: Normalized boardroom entity tokens to kebab-case (`agenda-item`, `action-item`).
+ *
  * RULES:
- *   1. Format: `scope.entity.action` (lowercase dot-separated).
+ *   1. Format: lowercase dot-separated with kebab-case tokens where needed.
+ *      Example: `scope.entity.action` and deeper module paths such as
+ *      `erp.finance.treasury.intercompany-transfer.manage`.
  *   2. Every permission used in SoD checks or route guards MUST be listed here.
  *   3. The DB seed script uses these values — keep in sync.
  *   4. Adding a permission is safe. Removing/renaming is BREAKING.
- *   5. No Zod — pure vocabulary, importable by db (*Values pattern).
+ *   5. Runtime validation is available via `PermissionSchema`.
  */
+
+import { z } from "zod";
 
 // ── Permission keys ───────────────────────────────────────────────────────────
 
@@ -54,37 +62,6 @@ export const PermissionValues = [
   "ap.payment-run-item.update",
   "ap.payment-run-item.remove",
 
-  // Treasury
-  "treas.bank-account.read",
-  "treas.bank-account.create",
-  "treas.bank-account.update",
-  "treas.bank-account.activate",
-  "treas.bank-account.deactivate",
-  "treas.bank-statement.read",
-  "treas.bank-statement.ingest",
-  "treas.reconciliation.read",
-  "treas.reconciliation.manage",
-  "treas.payment-batch.read",
-  "treas.payment-batch.create",
-  "treas.payment-batch.approve",
-  "treas.payment-batch.release",
-  "treas.payment-batch.cancel",
-  "treas.payment-instruction.read",
-  "treas.payment-instruction.manage",
-  "treas.payment-instruction.approve",
-  "treas.cash-position.read",
-  "treas.liquidity-forecast.read",
-  "treas.liquidity-forecast.manage",
-  "treas.liquidity-source-feed.read",
-  "treas.liquidity-source-feed.manage",
-  "treas.ap-due-projection.read",
-  "treas.ap-due-projection.manage",
-  "treas.ar-expected-receipt.read",
-  "treas.ar-expected-receipt.manage",
-  "treas.fx-rate.read",
-  "treas.fx-rate.manage",
-  "treas.forecast-variance.read",
-
   // GL (General Ledger)
   "gl.account.read",
   "gl.journal.post",
@@ -128,23 +105,41 @@ export const PermissionValues = [
   "admin.custom-fields.read",
   "admin.custom-fields.write",
 
-  // Treasury
+  // Treasury (canonical prefix)
   "treasury.bank-account.read",
   "treasury.bank-account.write",
+  "treasury.bank-account.create",
+  "treasury.bank-account.update",
+  "treasury.bank-account.activate",
+  "treasury.bank-account.deactivate",
   "treasury.bank-statement.read",
   "treasury.bank-statement.ingest",
   "treasury.reconciliation.read",
   "treasury.reconciliation.write",
+  "treasury.reconciliation.manage",
   "treasury.payment.read",
   "treasury.payment.approve",
   "treasury.payment.release",
+  "treasury.payment-batch.read",
+  "treasury.payment-batch.create",
+  "treasury.payment-batch.approve",
+  "treasury.payment-batch.release",
+  "treasury.payment-batch.cancel",
+  "treasury.payment-instruction.read",
+  "treasury.payment-instruction.manage",
+  "treasury.payment-instruction.approve",
   "treasury.cash-position.read",
+  "treasury.liquidity-forecast.read",
+  "treasury.liquidity-forecast.manage",
+  "treasury.liquidity-source-feed.read",
+  "treasury.liquidity-source-feed.manage",
   "treasury.ap-due-projection.read",
   "treasury.ap-due-projection.manage",
   "treasury.ar-expected-receipt.read",
   "treasury.ar-expected-receipt.manage",
   "treasury.fx-rate.read",
   "treasury.fx-rate.manage",
+  "treasury.forecast-variance.read",
 
   // Treasury — Wave 4.1 In-house Banking + Intercompany Transfers
   "erp.finance.treasury.internal-bank-account.read",
@@ -153,27 +148,6 @@ export const PermissionValues = [
   "erp.finance.treasury.intercompany-transfer.manage",
   "erp.finance.treasury.intercompany-transfer.settle",
 
-<<<<<<< HEAD
-  // Treasury — Wave 4.2 Netting + Internal Interest
-  "erp.finance.treasury.netting-session.read",
-  "erp.finance.treasury.netting-session.manage",
-  "erp.finance.treasury.netting-session.settle",
-  "erp.finance.treasury.internal-interest-rate.read",
-  "erp.finance.treasury.internal-interest-rate.manage",
-
-  // Treasury — Wave 5.1 FX Management + Revaluation
-  "erp.finance.treasury.fx-exposure.read",
-  "erp.finance.treasury.fx-exposure.manage",
-  "erp.finance.treasury.hedge-designation.read",
-  "erp.finance.treasury.hedge-designation.manage",
-  "erp.finance.treasury.revaluation-event.read",
-  "erp.finance.treasury.revaluation-event.manage",
-  // Treasury — Wave 6.2 Connectors + Market Data
-  "erp.finance.treasury.bank-connector.read",
-  "erp.finance.treasury.bank-connector.manage",
-  "erp.finance.treasury.market-data-feed.read",
-  "erp.finance.treasury.market-data-feed.manage",
-=======
   // COMM — shared
   "comm.comment.create",
   "comm.comment.read",
@@ -214,10 +188,154 @@ export const PermissionValues = [
   "comm.announcement.archive",
   "comm.announcement.acknowledge",
   "comm.announcement.read",
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
+
+  // COMM — documents
+  "comm.document.read",
+  "comm.document.write",
+  "comm.document.manage",
+
+  // COMM — workflows
+  "comm.workflow.read",
+  "comm.workflow.create",
+  "comm.workflow.update",
+  "comm.workflow.delete",
+  "comm.workflow.execute",
+
+  // Boardroom
+  "comm.meeting.create",
+  "comm.meeting.read",
+  "comm.meeting.update",
+  "comm.agenda-item.create",
+  "comm.agenda-item.read",
+  "comm.attendee.create",
+  "comm.attendee.read",
+  "comm.attendee.update",
+  "comm.resolution.create",
+  "comm.resolution.read",
+  "comm.resolution.vote",
+  "comm.minute.record",
+  "comm.minute.read",
+  "comm.action-item.create",
+  "comm.action-item.read",
+  "comm.action-item.update",
 ] as const;
 
-export type Permission = (typeof PermissionValues)[number];
+export const PermissionSchema = z.enum(PermissionValues);
+
+export type Permission = z.infer<typeof PermissionSchema>;
+
+export const PermissionValuePattern = /^[a-z0-9]+(?:\.[a-z0-9-]+){2,}$/;
+
+export function isPermission(value: unknown): value is Permission {
+  return PermissionSchema.safeParse(value).success;
+}
+
+export type PermissionMetaEntry = {
+  description?: string;
+  deprecated?: boolean;
+  replacedBy?: Permission | null;
+};
+
+export const LegacyPermissionAliases = {
+  "treas.bank-account.read": "treasury.bank-account.read",
+  "treas.bank-account.create": "treasury.bank-account.create",
+  "treas.bank-account.update": "treasury.bank-account.update",
+  "treas.bank-account.activate": "treasury.bank-account.activate",
+  "treas.bank-account.deactivate": "treasury.bank-account.deactivate",
+  "treas.bank-statement.read": "treasury.bank-statement.read",
+  "treas.bank-statement.ingest": "treasury.bank-statement.ingest",
+  "treas.reconciliation.read": "treasury.reconciliation.read",
+  "treas.reconciliation.manage": "treasury.reconciliation.manage",
+  "treas.payment-batch.read": "treasury.payment-batch.read",
+  "treas.payment-batch.create": "treasury.payment-batch.create",
+  "treas.payment-batch.approve": "treasury.payment-batch.approve",
+  "treas.payment-batch.release": "treasury.payment-batch.release",
+  "treas.payment-batch.cancel": "treasury.payment-batch.cancel",
+  "treas.payment-instruction.read": "treasury.payment-instruction.read",
+  "treas.payment-instruction.manage": "treasury.payment-instruction.manage",
+  "treas.payment-instruction.approve": "treasury.payment-instruction.approve",
+  "treas.cash-position.read": "treasury.cash-position.read",
+  "treas.liquidity-forecast.read": "treasury.liquidity-forecast.read",
+  "treas.liquidity-forecast.manage": "treasury.liquidity-forecast.manage",
+  "treas.liquidity-source-feed.read": "treasury.liquidity-source-feed.read",
+  "treas.liquidity-source-feed.manage": "treasury.liquidity-source-feed.manage",
+  "treas.ap-due-projection.read": "treasury.ap-due-projection.read",
+  "treas.ap-due-projection.manage": "treasury.ap-due-projection.manage",
+  "treas.ar-expected-receipt.read": "treasury.ar-expected-receipt.read",
+  "treas.ar-expected-receipt.manage": "treasury.ar-expected-receipt.manage",
+  "treas.fx-rate.read": "treasury.fx-rate.read",
+  "treas.fx-rate.manage": "treasury.fx-rate.manage",
+  "treas.forecast-variance.read": "treasury.forecast-variance.read",
+  "comm.agenda_item.create": "comm.agenda-item.create",
+  "comm.agenda_item.read": "comm.agenda-item.read",
+  "comm.action_item.create": "comm.action-item.create",
+  "comm.action_item.read": "comm.action-item.read",
+  "comm.action_item.update": "comm.action-item.update",
+} as const;
+
+export type LegacyPermission = keyof typeof LegacyPermissionAliases;
+
+export const PermissionMeta: Record<string, PermissionMetaEntry> = {
+  "treasury.bank-account.read": { description: "Read treasury bank accounts" },
+  "treasury.bank-account.write": { description: "Create or update treasury bank accounts" },
+  "treasury.payment.approve": { description: "Approve treasury payments" },
+  "treasury.payment.release": { description: "Release approved treasury payments" },
+  "treasury.reconciliation.manage": { description: "Manage treasury reconciliations" },
+
+  "treas.bank-account.read": {
+    deprecated: true,
+    replacedBy: "treasury.bank-account.read",
+    description: "Legacy treasury scope; migrate to treasury.*",
+  },
+  "treas.bank-account.create": {
+    deprecated: true,
+    replacedBy: "treasury.bank-account.create",
+    description: "Legacy treasury scope; migrate to treasury.*",
+  },
+  "comm.agenda_item.create": {
+    deprecated: true,
+    replacedBy: "comm.agenda-item.create",
+    description: "Legacy token style; migrate to kebab-case",
+  },
+  "comm.action_item.create": {
+    deprecated: true,
+    replacedBy: "comm.action-item.create",
+    description: "Legacy token style; migrate to kebab-case",
+  },
+};
+
+export function normalizePermission(permission: string): Permission | string {
+  const replacement = LegacyPermissionAliases[permission as LegacyPermission];
+  return replacement ?? permission;
+}
+
+export function validatePermissionVocabulary(
+  values: readonly string[] = PermissionValues,
+): string[] {
+  const issues: string[] = [];
+  const unique = new Set(values);
+
+  if (unique.size !== values.length) {
+    issues.push("PermissionValues contains duplicate entries");
+  }
+
+  for (const value of values) {
+    if (value !== value.toLowerCase()) {
+      issues.push(`Permission not lowercase: ${value}`);
+    }
+    if (!PermissionValuePattern.test(value)) {
+      issues.push(`Permission format invalid: ${value}`);
+    }
+  }
+
+  const hasTreasscope = values.some((value) => value.startsWith("treas."));
+  const hasTreasuryScope = values.some((value) => value.startsWith("treasury."));
+  if (hasTreasscope && hasTreasuryScope) {
+    issues.push("Conflicting treasury scopes detected: both treas.* and treasury.*");
+  }
+
+  return issues;
+}
 
 // ── Grouped by scope (convenience for UI rendering) ───────────────────────────
 
@@ -232,4 +350,5 @@ export const PERMISSION_SCOPES = {
   admin: PermissionValues.filter((p) => p.startsWith("admin.")),
   treasury: PermissionValues.filter((p) => p.startsWith("treasury.")),
   comm: PermissionValues.filter((p) => p.startsWith("comm.")),
+  erp: PermissionValues.filter((p) => p.startsWith("erp.")),
 } as const;

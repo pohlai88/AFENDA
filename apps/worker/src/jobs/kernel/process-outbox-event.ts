@@ -285,6 +285,48 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "COMM.ANNOUNCEMENT_ARCHIVED":
       await helpers.addJob("handle_announcement_archived", payload);
       break;
+    case "COMM.DOCUMENT_CREATED":
+      await helpers.addJob("handle_document_created", payload);
+      break;
+    case "COMM.DOCUMENT_UPDATED":
+      await helpers.addJob("handle_document_updated", payload);
+      break;
+    case "COMM.DOCUMENT_PUBLISHED":
+      await helpers.addJob("handle_document_published", payload);
+      break;
+    case "COMM.DOCUMENT_ARCHIVED":
+      await helpers.addJob("handle_document_archived", payload);
+      break;
+    case "COMM.MEETING_CREATED":
+      await helpers.addJob("handle_meeting_created", payload);
+      break;
+    case "COMM.AGENDA_ITEM_ADDED":
+      await helpers.addJob("handle_agenda_item_added", payload);
+      break;
+    case "COMM.ATTENDEE_ADDED":
+      await helpers.addJob("handle_attendee_added", payload);
+      break;
+    case "COMM.ATTENDEE_STATUS_UPDATED":
+      // No async side effects (audit suffices)
+      break;
+    case "COMM.RESOLUTION_PROPOSED":
+      await helpers.addJob("handle_resolution_proposed", payload);
+      break;
+    case "COMM.VOTE_CAST":
+      // No async side effects (audit suffices)
+      break;
+    case "COMM.MINUTES_RECORDED":
+      await helpers.addJob("handle_minutes_recorded", payload);
+      break;
+    case "COMM.ACTION_ITEM_CREATED":
+      await helpers.addJob("handle_action_item_created", payload);
+      break;
+    case "COMM.ACTION_ITEM_UPDATED":
+      await helpers.addJob("handle_action_item_updated", payload);
+      break;
+    case "COMM.MEETING_UPDATED":
+      // No async side effects for meeting update (audit suffices)
+      break;
     case "COMM.COMMENT_CREATED":
       await helpers.addJob("handle_comment_created", payload);
       break;
@@ -329,6 +371,27 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
       break;
     case "COMM.NOTIFICATION_PREFERENCE_UPDATED":
       await helpers.addJob("handle_notification_preference_updated", payload);
+      break;
+    case "COMM.WORKFLOW_CREATED":
+      await helpers.addJob("handle_workflow_created", payload);
+      break;
+    case "COMM.WORKFLOW_UPDATED":
+      await helpers.addJob("handle_workflow_updated", payload);
+      break;
+    case "COMM.WORKFLOW_STATUS_CHANGED":
+      await helpers.addJob("handle_workflow_status_changed", payload);
+      break;
+    case "COMM.WORKFLOW_DELETED":
+      await helpers.addJob("handle_workflow_deleted", payload);
+      break;
+    case "COMM.WORKFLOW_TRIGGERED":
+      await helpers.addJob("handle_workflow_triggered", payload);
+      break;
+    case "COMM.WORKFLOW_RUN_COMPLETED":
+      await helpers.addJob("handle_workflow_run_completed", payload);
+      break;
+    case "COMM.WORKFLOW_RUN_FAILED":
+      await helpers.addJob("handle_workflow_run_failed", payload);
       break;
     case "PURCHASING.PURCHASE_ORDER_CREATED":
       // No async side effects for draft PO creation

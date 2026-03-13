@@ -2,11 +2,14 @@ import { z } from "zod";
 import { EntityIdSchema, OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../../shared/ids.js";
 import { DateSchema, UtcDateTimeSchema } from "../../shared/datetime.js";
 
+/** ID brands */
 export const ApprovalRequestIdSchema = UuidSchema.brand<"ApprovalRequestId">();
 export const ApprovalStepIdSchema = UuidSchema.brand<"ApprovalStepId">();
 export const ApprovalPolicyIdSchema = UuidSchema.brand<"ApprovalPolicyId">();
 export const ApprovalDelegationIdSchema = UuidSchema.brand<"ApprovalDelegationId">();
+export const ApprovalStatusHistoryIdSchema = UuidSchema.brand<"ApprovalStatusHistoryId">();
 
+/** Literal value sets */
 export const ApprovalStatusValues = [
   "pending",
   "approved",
@@ -30,11 +33,18 @@ export const ApprovalStatusSchema = z.enum(ApprovalStatusValues);
 export const ApprovalStepStatusSchema = z.enum(ApprovalStepStatusValues);
 export const ApprovalUrgencySchema = z.enum(ApprovalUrgencyValues);
 
+/** Reusable string schemas */
+const ApprovalNumberSchema = z.string().trim().min(1).max(64);
+const TitleSchema = z.string().trim().min(1).max(500);
+const LabelSchema = z.string().trim().min(1).max(200);
+const ReasonSchema = z.string().trim().max(500);
+const CommentSchema = z.string().trim().max(2000);
+
 export const ApprovalRequestSchema = z.object({
   id: ApprovalRequestIdSchema,
   orgId: OrgIdSchema,
-  approvalNumber: z.string().trim().min(1).max(64),
-  title: z.string().trim().min(1).max(500),
+  approvalNumber: ApprovalNumberSchema,
+  title: TitleSchema,
   sourceEntityType: z.string().trim().min(1).max(128),
   sourceEntityId: EntityIdSchema,
   requestedByPrincipalId: PrincipalIdSchema,
@@ -42,36 +52,53 @@ export const ApprovalRequestSchema = z.object({
   currentStepIndex: z.number().int().nonnegative(),
   totalSteps: z.number().int().positive(),
   urgency: ApprovalUrgencySchema,
-  dueDate: DateSchema.nullable(),
-  resolvedAt: UtcDateTimeSchema.nullable(),
-  resolvedByPrincipalId: PrincipalIdSchema.nullable(),
+  dueDate: DateSchema.nullable().default(null),
+  resolvedAt: UtcDateTimeSchema.nullable().default(null),
+  resolvedByPrincipalId: PrincipalIdSchema.nullable().default(null),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });
 
-export const ApprovalStepSchema = z.object({
-  id: ApprovalStepIdSchema,
-  orgId: OrgIdSchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  stepIndex: z.number().int().nonnegative(),
-  label: z.string().trim().min(1).max(200).nullable(),
-  assigneeId: PrincipalIdSchema,
-  delegatedToId: PrincipalIdSchema.nullable(),
-  status: ApprovalStepStatusSchema,
-  comment: z.string().trim().max(2000).nullable(),
-  actedAt: UtcDateTimeSchema.nullable(),
-  createdAt: UtcDateTimeSchema,
-  updatedAt: UtcDateTimeSchema,
-});
+export const ApprovalStepSchema = z
+  .object({
+    id: ApprovalStepIdSchema,
+    orgId: OrgIdSchema,
+    approvalRequestId: ApprovalRequestIdSchema,
+    stepIndex: z.number().int().nonnegative(),
+    label: LabelSchema.nullable().default(null),
+    assigneeId: PrincipalIdSchema,
+    delegatedToId: PrincipalIdSchema.nullable().default(null),
+    status: ApprovalStepStatusSchema,
+    comment: CommentSchema.nullable().default(null),
+    actedAt: UtcDateTimeSchema.nullable().default(null),
+    createdAt: UtcDateTimeSchema,
+    updatedAt: UtcDateTimeSchema,
+  })
+  .superRefine((data, ctx) => {
+    if (data.status === "delegated" && !data.delegatedToId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Delegated steps must include delegatedToId.",
+        path: ["delegatedToId"],
+      });
+    }
+    if (data.status !== "pending" && !data.actedAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Non-pending steps must include actedAt.",
+        path: ["actedAt"],
+      });
+    }
+  });
 
 export const ApprovalStatusHistorySchema = z.object({
-  id: UuidSchema,
+  id: ApprovalStatusHistoryIdSchema,
   orgId: OrgIdSchema,
   approvalRequestId: ApprovalRequestIdSchema,
   fromStatus: ApprovalStatusSchema,
   toStatus: ApprovalStatusSchema,
-  changedByPrincipalId: PrincipalIdSchema.nullable(),
-  reason: z.string().trim().max(500).nullable(),
+  changedByPrincipalId: PrincipalIdSchema.nullable().default(null),
+  reason: ReasonSchema.nullable().default(null),
   occurredAt: UtcDateTimeSchema,
 });
 
@@ -94,7 +121,7 @@ export const ApprovalDelegationSchema = z.object({
   toPrincipalId: PrincipalIdSchema,
   validFrom: DateSchema,
   validUntil: DateSchema,
-  reason: z.string().trim().max(500).nullable(),
+  reason: ReasonSchema.nullable().default(null),
   isActive: z.boolean(),
   createdAt: UtcDateTimeSchema,
 });
@@ -103,6 +130,7 @@ export type ApprovalRequestId = z.infer<typeof ApprovalRequestIdSchema>;
 export type ApprovalStepId = z.infer<typeof ApprovalStepIdSchema>;
 export type ApprovalPolicyId = z.infer<typeof ApprovalPolicyIdSchema>;
 export type ApprovalDelegationId = z.infer<typeof ApprovalDelegationIdSchema>;
+export type ApprovalStatusHistoryId = z.infer<typeof ApprovalStatusHistoryIdSchema>;
 export type ApprovalStatus = z.infer<typeof ApprovalStatusSchema>;
 export type ApprovalStepStatus = z.infer<typeof ApprovalStepStatusSchema>;
 export type ApprovalUrgency = z.infer<typeof ApprovalUrgencySchema>;

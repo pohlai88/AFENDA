@@ -95,6 +95,10 @@ export const erpNavigationDomains: NavigationDomainConfig[] = [
       { title: "Team Board", url: "/comm/tasks/board", icon: "presentation" },
       { title: "All Tasks", url: "/comm/tasks", icon: "folder" },
       { title: "Projects", url: "/comm/projects", icon: "briefcase" },
+      { title: "Boardroom", url: "/comm/boardroom", icon: "presentation" },
+      { title: "Announcements", url: "/comm/announcements", icon: "folder" },
+      { title: "Docs", url: "/comm/docs", icon: "book-open" },
+      { title: "Inbox", url: "/comm/inbox", icon: "users" },
     ],
   },
   { key: "crm", title: "CRM", url: "/crm", icon: "users" },
@@ -146,11 +150,14 @@ export const erpNavigationDomains: NavigationDomainConfig[] = [
 ];
 
 /**
- * Empty by default. Add communication domains when ready.
- * Example:
- * { name: "Announcements", url: "/boardroom/announcements", icon: "folder" }
+ * BoardRoom / Communication domains (meetings, announcements, etc.).
  */
-export const boardRoomNavigationDomains: BoardRoomDomainConfig[] = [];
+export const boardRoomNavigationDomains: BoardRoomDomainConfig[] = [
+  { name: "Boardroom", url: "/comm/boardroom", icon: "presentation" },
+  { name: "Announcements", url: "/comm/announcements", icon: "folder" },
+  { name: "Docs", url: "/comm/docs", icon: "book-open" },
+  { name: "Inbox", url: "/comm/inbox", icon: "users" },
+];
 
 // Quick toggle template examples:
 // export const boardRoomNavigationDomains: BoardRoomDomainConfig[] = [

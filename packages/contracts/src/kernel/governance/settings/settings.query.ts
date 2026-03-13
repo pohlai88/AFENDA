@@ -78,6 +78,10 @@ export const SettingsResponseSchema = z.object({
   "general.notifications.emailOnApproval": SettingValueResponseSchema,
   "general.notifications.emailOnPayment": SettingValueResponseSchema,
   "general.notifications.emailOnOverdue": SettingValueResponseSchema,
+  // Storage
+  "general.storage.maxUploadBytes": SettingValueResponseSchema,
+  "general.storage.allowedMimeTypes": SettingValueResponseSchema,
+  "general.storage.retentionDays": SettingValueResponseSchema,
   // Features
   "features.ap.enabled": SettingValueResponseSchema,
   "features.ar.enabled": SettingValueResponseSchema,
@@ -97,9 +101,6 @@ export type SettingsResponse = z.infer<typeof SettingsResponseSchema>;
 
 // ── PATCH response — slice of updated keys only ───────────────────────────────
 
-export const SettingsSliceResponseSchema = z.record(
-  z.string(),
-  SettingValueResponseSchema,
-);
+export const SettingsSliceResponseSchema = z.record(z.string(), SettingValueResponseSchema);
 
 export type SettingsSliceResponse = z.infer<typeof SettingsSliceResponseSchema>;

@@ -111,6 +111,7 @@ const DOMAIN_ERROR_PREFIX = {
   supplier: "SUP_",
   evidence: "DOC_",
   iam: "IAM_",
+  comm: "COMM_",
 };
 
 /**
@@ -123,6 +124,7 @@ const DOMAIN_AUDIT_PREFIX = {
   supplier: "supplier.",
   evidence: ["document.", "evidence."],
   iam: "iam.",
+  comm: ["document.", "meeting.", "task.", "project.", "approval.", "announcement."],
 };
 
 /**
@@ -135,6 +137,7 @@ const DOMAIN_PERMISSION_PREFIX = {
   supplier: "sup.",
   evidence: "doc.",
   iam: "iam.",
+  comm: "comm.",
 };
 
 // ─── Rule Documentation ─────────────────────────────────────────────────────
@@ -308,7 +311,7 @@ const violations = [];
 // ── Load shared registries ─────────────────────────────────────────────────
 
 const errorsFile = resolve(ROOT, "packages/contracts/src/shared/errors.ts");
-const auditFile = resolve(ROOT, "packages/contracts/src/shared/audit.ts");
+const auditFile = resolve(ROOT, "packages/contracts/src/kernel/governance/audit/actions.ts");
 const permissionsFile = resolve(ROOT, "packages/contracts/src/shared/permissions.ts");
 
 const errorsContent = existsSync(errorsFile) ? readFileSync(errorsFile, "utf-8") : "";

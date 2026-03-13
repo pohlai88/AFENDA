@@ -131,24 +131,24 @@ invoice/
 
 Each directory has an `index.ts` barrel. This file governs them all.
 
-| Directory                              | Contents                                                             |
-| -------------------------------------- | -------------------------------------------------------------------- |
-| `shared/`                              | Cross-domain primitives (IDs, money, errors, pagination, envelope, headers, permissions, datetime) — see `shared/OWNERS.md` |
-| `kernel/identity/`                     | Party, person, organization, principal, role, membership, tenant, user entity schemas, auth commands + errors |
-| `kernel/governance/audit/`             | Audit log query schemas, audit action constants                      |
-| `kernel/governance/evidence/`          | Document entity + attach/register command schemas                    |
-| `kernel/governance/policy/`            | Policy context schema                                                |
-| `kernel/governance/settings/`          | ← stub (Sprint 4+)                                                   |
-| `kernel/execution/outbox/`             | Outbox event envelope schema                                         |
-| `kernel/execution/idempotency/`        | Idempotency request-key schema                                       |
-| `kernel/execution/numbering/`          | Sequence schema                                                      |
-| `kernel/registry/`                     | Capability, entity-def, field-def, view-def, action-def, flow-def, overlay-def schemas |
-| `erp/finance/ap/`                      | Invoice status + entity + command schemas                            |
-| `erp/finance/gl/`                      | Account type + journal entry + GL command schemas                    |
-| `erp/finance/ar/ assets/ consolidation/ costing/ fiscal/ fx/ intercompany/ lease/ reporting/ tax/ treasury/` | ← stub placeholders (not in Day-1 scope) |
-| `erp/supplier/`                        | Supplier status + entity + CRUD command schemas                      |
-| `erp/crm/ hr/ inventory/ manufacturing/ project/ purchasing/ sales/` | ← stub placeholders (future) |
-| `comm/notification/ email/ webhook/ inbox/ chatter/ sms/` | ← stub placeholders (Sprint 5+)          |
+| Directory                                                                                                    | Contents                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `shared/`                                                                                                    | Cross-domain primitives (IDs, money, errors, pagination, envelope, headers, permissions, datetime) — see `shared/OWNERS.md` |
+| `kernel/identity/`                                                                                           | Party, person, organization, principal, role, membership, tenant, user entity schemas, auth commands + errors               |
+| `kernel/governance/audit/`                                                                                   | Audit log query schemas, audit action constants                                                                             |
+| `kernel/governance/evidence/`                                                                                | Document entity + attach/register command schemas                                                                           |
+| `kernel/governance/policy/`                                                                                  | Policy context schema                                                                                                       |
+| `kernel/governance/settings/`                                                                                | ← stub (Sprint 4+)                                                                                                          |
+| `kernel/execution/outbox/`                                                                                   | Outbox event envelope schema                                                                                                |
+| `kernel/execution/idempotency/`                                                                              | Idempotency request-key schema                                                                                              |
+| `kernel/execution/numbering/`                                                                                | Sequence schema                                                                                                             |
+| `kernel/registry/`                                                                                           | Capability, entity-def, field-def, view-def, action-def, flow-def, overlay-def schemas                                      |
+| `erp/finance/ap/`                                                                                            | Invoice status + entity + command schemas                                                                                   |
+| `erp/finance/gl/`                                                                                            | Account type + journal entry + GL command schemas                                                                           |
+| `erp/finance/ar/ assets/ consolidation/ costing/ fiscal/ fx/ intercompany/ lease/ reporting/ tax/ treasury/` | ← stub placeholders (not in Day-1 scope)                                                                                    |
+| `erp/supplier/`                                                                                              | Supplier status + entity + CRUD command schemas                                                                             |
+| `erp/crm/ hr/ inventory/ manufacturing/ project/ purchasing/ sales/`                                         | ← stub placeholders (future)                                                                                                |
+| `comm/chatter/ projects/ tasks/ approvals/ announcements/ docs/ boardroom/ workflows/ shared/`               | Communication contracts live modules                                                                                        |
 
 ### `shared/` sub-files (cross-domain primitives only)
 

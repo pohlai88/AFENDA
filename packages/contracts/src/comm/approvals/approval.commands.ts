@@ -8,18 +8,29 @@ import {
   ApprovalUrgencySchema,
 } from "./approval-request.entity.js";
 
-// ─── Approval step definition used when creating a request ───────────────────
+/** Reusable string schemas */
+const TitleSchema = z.string().trim().min(1).max(500);
+const ReasonSchema = z.string().trim().max(500);
+const CommentSchema = z.string().trim().max(2000);
+
+/** Approval step definition used when creating a request */
 export const ApprovalStepInputSchema = z.object({
   assigneeId: PrincipalIdSchema,
   /** Optional label shown in UI step chain, e.g. "Finance Manager" */
   label: z.string().trim().min(1).max(200).optional(),
 });
 
-// ─── Commands ─────────────────────────────────────────────────────────────────
+/** Base schema for step-level commands */
+const StepCommandBase = z.object({
+  idempotencyKey: IdempotencyKeySchema,
+  approvalRequestId: ApprovalRequestIdSchema,
+  stepId: ApprovalStepIdSchema,
+});
 
+/** Commands */
 export const CreateApprovalRequestCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  title: z.string().trim().min(1).max(500),
+  title: TitleSchema,
   sourceEntityType: z.string().trim().min(1).max(128),
   sourceEntityId: EntityIdSchema,
   urgency: ApprovalUrgencySchema.optional(),
@@ -27,38 +38,29 @@ export const CreateApprovalRequestCommandSchema = z.object({
   steps: z.array(ApprovalStepInputSchema).min(1).max(10),
 });
 
-export const ApproveStepCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  stepId: ApprovalStepIdSchema,
-  comment: z.string().trim().max(2000).optional(),
+export const ApproveStepCommandSchema = StepCommandBase.extend({
+  comment: CommentSchema.optional(),
 });
 
-export const RejectStepCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  stepId: ApprovalStepIdSchema,
-  comment: z.string().trim().min(1).max(2000),
+export const RejectStepCommandSchema = StepCommandBase.extend({
+  comment: CommentSchema.min(1),
 });
 
-export const DelegateStepCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  stepId: ApprovalStepIdSchema,
+export const DelegateStepCommandSchema = StepCommandBase.extend({
   delegateToPrincipalId: PrincipalIdSchema,
-  reason: z.string().trim().max(500).optional(),
+  reason: ReasonSchema.optional(),
 });
 
 export const EscalateApprovalCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   approvalRequestId: ApprovalRequestIdSchema,
-  reason: z.string().trim().min(1).max(500),
+  reason: ReasonSchema.min(1),
 });
 
 export const WithdrawApprovalCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   approvalRequestId: ApprovalRequestIdSchema,
-  reason: z.string().trim().min(1).max(500).optional(),
+  reason: ReasonSchema.optional(),
 });
 
 export const CreateApprovalPolicyCommandSchema = z.object({
@@ -69,14 +71,25 @@ export const CreateApprovalPolicyCommandSchema = z.object({
   escalationAfterHours: z.number().int().positive().optional(),
 });
 
-export const SetDelegationCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  toPrincipalId: PrincipalIdSchema,
-  validFrom: DateSchema,
-  validUntil: DateSchema,
-  reason: z.string().trim().max(500).optional(),
-});
+export const SetDelegationCommandSchema = z
+  .object({
+    idempotencyKey: IdempotencyKeySchema,
+    toPrincipalId: PrincipalIdSchema,
+    validFrom: DateSchema,
+    validUntil: DateSchema,
+    reason: ReasonSchema.optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.validUntil <= data.validFrom) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "validUntil must be after validFrom.",
+        path: ["validUntil"],
+      });
+    }
+  });
 
+/** Types */
 export type ApprovalStepInput = z.infer<typeof ApprovalStepInputSchema>;
 export type CreateApprovalRequestCommand = z.infer<typeof CreateApprovalRequestCommandSchema>;
 export type ApproveStepCommand = z.infer<typeof ApproveStepCommandSchema>;

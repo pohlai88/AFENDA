@@ -21,6 +21,7 @@ import {
   COMM_ANNOUNCEMENT_ACKNOWLEDGED,
 } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { ensureScheduledAtInFuture } from "./create-persisted-announcement.js";
 
 // ── Context & result types ────────────────────────────────────────────────────
 
@@ -77,6 +78,20 @@ export async function createAnnouncement(
   if (!principalResult.ok) return principalResult;
   const principalId = principalResult.data;
   const orgId = ctx.activeContext.orgId;
+
+  if (params.scheduledAt) {
+    try {
+      ensureScheduledAtInFuture(params.scheduledAt);
+    } catch {
+      return {
+        ok: false,
+        error: {
+          code: "COMM_ANNOUNCEMENT_SCHEDULED_AT_MUST_BE_FUTURE",
+          message: "scheduledAt must be in the future",
+        },
+      };
+    }
+  }
 
   const announcementNumber = buildAnnouncementNumber();
 
@@ -243,6 +258,18 @@ export async function scheduleAnnouncement(
       error: {
         code: "COMM_ANNOUNCEMENT_INVALID_STATUS_TRANSITION",
         message: "Only draft announcements can be scheduled",
+      },
+    };
+  }
+
+  try {
+    ensureScheduledAtInFuture(params.scheduledAt);
+  } catch {
+    return {
+      ok: false,
+      error: {
+        code: "COMM_ANNOUNCEMENT_SCHEDULED_AT_MUST_BE_FUTURE",
+        message: "scheduledAt must be in the future",
       },
     };
   }

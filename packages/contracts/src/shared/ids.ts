@@ -12,6 +12,7 @@
  *   4. Single-domain IDs added here require a comment: why they are cross-cut.
  */
 import { z } from "zod";
+import { IdempotencyKeySchema as KernelIdempotencyKeySchema } from "../kernel/execution/idempotency/request-key.js";
 
 /**
  * Private base — single unbranded UUID source of truth.
@@ -39,6 +40,51 @@ export type EntityId = z.infer<typeof EntityIdSchema>;
  *   export const InvoiceIdSchema = brandedUuid("InvoiceId");
  */
 export const brandedUuid = <B extends string>(_brand: B) => uuid.brand<B>();
+
+/** Generate a UUID v4 string, preferring the platform implementation. */
+export function generateUuid(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+    const randomNibble = Math.floor(Math.random() * 16);
+    const value = character === "x" ? randomNibble : (randomNibble & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
+/** Boolean UUID guard for request parsing and adapter boundaries. */
+export function isUuid(value: unknown): value is Uuid {
+  return UuidSchema.safeParse(value).success;
+}
+
+/** Parse and validate a UUID string; throws ZodError on invalid input. */
+export function parseUuid(value: unknown): Uuid {
+  return UuidSchema.parse(value);
+}
+
+/** Parse helpers keep cross-cut ID validation call sites terse and consistent. */
+export function parseOrgId(value: unknown): OrgId {
+  return OrgIdSchema.parse(value);
+}
+
+export function parsePrincipalId(value: unknown): PrincipalId {
+  return PrincipalIdSchema.parse(value);
+}
+
+export function parseEntityId(value: unknown): EntityId {
+  return EntityIdSchema.parse(value);
+}
+
+export function parseIdempotencyKey(value: unknown): z.infer<typeof KernelIdempotencyKeySchema> {
+  return KernelIdempotencyKeySchema.parse(value);
+}
+
+/** Create a validated branded UUID using the target schema as the runtime guard. */
+export function createBrandedId<T extends string>(schema: z.ZodType<T>): T {
+  return schema.parse(generateUuid());
+}
 
 // ─── Tracing — used by headers, envelopes, outbox, audit ─────────────────────
 
@@ -75,6 +121,26 @@ export type PartyRoleId = z.infer<typeof PartyRoleIdSchema>;
 
 // ─── Domain IDs kept in shared because they are referenced across 3+ domains ──
 
+// cross-module comm/tasks identity used by tasks, checklist items, time entries, watchers, and workflow triggers
+export const CommTaskIdSchema = uuid.brand<"CommTaskId">();
+
+// cross-module comm/tasks identity used by checklist commands, queries, and audit/event payloads
+export const TaskChecklistItemIdSchema = uuid.brand<"TaskChecklistItemId">();
+
+// cross-module comm/tasks identity used by time entry commands, queries, and summaries
+export const TaskTimeEntryIdSchema = uuid.brand<"TaskTimeEntryId">();
+
+// cross-module comm/tasks identity used by watcher commands, queries, and notification flows
+export const TaskWatcherIdSchema = uuid.brand<"TaskWatcherId">();
+
+// cross-module comm/workflows identity used by workflow commands, queries, runs, and execution records
+export const CommWorkflowIdSchema = uuid.brand<"CommWorkflowId">();
+export type CommWorkflowId = z.infer<typeof CommWorkflowIdSchema>;
+
+// cross-module comm/workflows run identity used by workflow queries and execution state surfaces
+export const CommWorkflowRunIdSchema = uuid.brand<"CommWorkflowRunId">();
+export type CommWorkflowRunId = z.infer<typeof CommWorkflowRunIdSchema>;
+
 // cross-domain: referenced by invoice, gl (journal lines), evidence, audit
 export const InvoiceIdSchema = uuid.brand<"InvoiceId">();
 export type InvoiceId = z.infer<typeof InvoiceIdSchema>;
@@ -98,3 +164,42 @@ export type AccountId = z.infer<typeof AccountIdSchema>;
 // cross-domain: referenced by audit service, evidence trails, compliance queries
 export const AuditLogIdSchema = uuid.brand<"AuditLogId">();
 export type AuditLogId = z.infer<typeof AuditLogIdSchema>;
+
+/**
+ * Canonical convenience bundle for runtime-heavy callers.
+ * IdempotencyKeySchema remains canonically owned by kernel/execution to avoid root-barrel collisions.
+ */
+export const SharedIds = {
+  UuidSchema,
+  OrgIdSchema,
+  PrincipalIdSchema,
+  EntityIdSchema,
+  CommTaskIdSchema,
+  TaskChecklistItemIdSchema,
+  TaskTimeEntryIdSchema,
+  TaskWatcherIdSchema,
+  CommWorkflowIdSchema,
+  CommWorkflowRunIdSchema,
+  CorrelationIdSchema,
+  PartyIdSchema,
+  PersonIdSchema,
+  PartyRoleIdSchema,
+  InvoiceIdSchema,
+  SupplierIdSchema,
+  DocumentIdSchema,
+  JournalEntryIdSchema,
+  AccountIdSchema,
+  AuditLogIdSchema,
+  IdempotencyKeySchema: KernelIdempotencyKeySchema,
+  brandedUuid,
+  generateUuid,
+  isUuid,
+  parseUuid,
+  parseOrgId,
+  parsePrincipalId,
+  parseEntityId,
+  parseIdempotencyKey,
+  createBrandedId,
+};
+
+export default SharedIds;
