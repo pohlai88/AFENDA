@@ -17,6 +17,11 @@
  * Routes that require authentication check `req.ctx` and return 401 when absent.
  */
 
+<<<<<<< HEAD
+=======
+import type { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 import { resolvePrincipalContext } from "@afenda/core";
 import fp from "fastify-plugin";
 import { createRemoteJWKSet, jwtVerify } from "jose";
@@ -65,7 +70,11 @@ function extractEmailFromPayload(payload: Record<string, unknown>): string | nul
 
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
 export const authPlugin = fp(async (app: any) => {
+=======
+const authPluginImpl: FastifyPluginAsync = async (app) => {
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   app.decorateRequest("ctx", undefined);
   const jwksUrl = resolveJwksUrl();
   const jwks = jwksUrl ? createRemoteJWKSet(new URL(jwksUrl)) : null;
@@ -143,4 +152,12 @@ export const authPlugin = fp(async (app: any) => {
       );
     }
   });
+<<<<<<< HEAD
 }) as any;
+=======
+};
+
+export const authPlugin = fp(authPluginImpl as any, {
+  name: "afenda-auth-plugin",
+}) as FastifyPluginAsync;
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)

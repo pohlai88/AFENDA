@@ -41,21 +41,43 @@ async function resolveSession(): Promise<AuthSession | null> {
 
   const session = await getAfendaSession();
 
-  if (!session) {
+  if (session) {
+    return {
+      user: {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image,
+        tenantId: session.affiliation.orgId,
+        tenantSlug: session.affiliation.orgId,
+        portal: "app",
+        roles: session.affiliation.roles,
+        permissions: Array.from(session.affiliation.permissions),
+        requiresMfa: false,
+      },
+    };
+  }
+
+  if (!neonAuth) {
+    return null;
+  }
+
+  const rawSession = await neonAuth.getSession();
+  if (rawSession.error || !rawSession.data?.user || !rawSession.data.session) {
     return null;
   }
 
   return {
     user: {
-      id: session.user.id,
-      email: session.user.email,
-      name: session.user.name,
-      image: session.user.image,
-      tenantId: session.affiliation.orgId,
-      tenantSlug: session.affiliation.orgId,
+      id: rawSession.data.user.id,
+      email: rawSession.data.user.email,
+      name: rawSession.data.user.name ?? null,
+      image: rawSession.data.user.image ?? null,
+      tenantId: "",
+      tenantSlug: "",
       portal: "app",
-      roles: session.affiliation.roles,
-      permissions: Array.from(session.affiliation.permissions),
+      roles: [],
+      permissions: [],
       requiresMfa: false,
     },
   };

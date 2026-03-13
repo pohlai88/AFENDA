@@ -135,7 +135,7 @@ export class ApiAfendaAuthService implements AfendaAuthService {
     const json = (await res.json()) as
       | {
           ok: true;
-          data: { email: string; portal: string; message: string };
+          data: { email: string; portal: string; message: string; sessionGrant: string };
           correlationId?: string;
         }
       | { ok: false; code: string; message: string; correlationId?: string };
@@ -147,6 +147,7 @@ export class ApiAfendaAuthService implements AfendaAuthService {
       data: {
         email: json.data.email,
         portal: json.data.portal as Exclude<import("@afenda/contracts").PortalType, "app">,
+        sessionGrant: json.data.sessionGrant,
       },
     };
   }
@@ -158,7 +159,11 @@ export class ApiAfendaAuthService implements AfendaAuthService {
     });
 
     const json = (await res.json()) as
-      | { ok: true; data: { principalId: string; email: string }; correlationId?: string }
+      | {
+          ok: true;
+          data: { principalId: string; email: string; sessionGrant: string };
+          correlationId?: string;
+        }
       | { ok: false; code: string; message: string; correlationId?: string };
 
     if (!json.ok) return json;
@@ -167,6 +172,7 @@ export class ApiAfendaAuthService implements AfendaAuthService {
       data: {
         principalId: json.data.principalId,
         email: json.data.email,
+        sessionGrant: json.data.sessionGrant,
       },
     };
   }

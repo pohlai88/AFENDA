@@ -15,8 +15,46 @@ import type { AuthContextResponse, CapabilityResult, PortalType } from "@afenda/
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-/** Default org slug for API requests. TODO: from org context when available. */
-const DEFAULT_ORG = "demo";
+const ACTIVE_ORG_COOKIE_NAME = "active_org";
+
+let hasReportedMissingActiveOrg = false;
+
+function readBrowserCookie(name: string): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const encodedName = `${encodeURIComponent(name)}=`;
+  const cookiePair = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(encodedName));
+  if (!cookiePair) return undefined;
+  return decodeURIComponent(cookiePair.slice(encodedName.length));
+}
+
+async function reportMissingActiveOrgContext(details: {
+  location: "server" | "client";
+}): Promise<void> {
+  if (details.location === "client") {
+    if (hasReportedMissingActiveOrg) return;
+    hasReportedMissingActiveOrg = true;
+  }
+
+  try {
+    await fetch("/api/private/auth/telemetry", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        metric: "api_missing_org_header",
+        details,
+      }),
+      cache: "no-store",
+      keepalive: true,
+    });
+  } catch {
+    // Best-effort telemetry only.
+  }
+}
 
 /**
  * Get auth headers for API requests.
@@ -25,29 +63,37 @@ const DEFAULT_ORG = "demo";
  * - In dev mode without session: Sends x-dev-user-email for API bypass
  */
 export async function getApiHeaders(): Promise<Record<string, string>> {
-  const headers: Record<string, string> = {
-    "x-org-id": DEFAULT_ORG,
-  };
+  const headers: Record<string, string> = {};
 
   const isServer = typeof window === "undefined";
   const isDev = process.env.NODE_ENV !== "production";
+  let activeOrgId: string | undefined;
 
   if (isServer) {
     const { cookies } = await import("next/headers");
     const cookieStore = await cookies();
+    activeOrgId = cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value;
     const sessionToken =
       cookieStore.get("neon-auth.session")?.value ??
       cookieStore.get("__Secure-neon-auth.session")?.value;
 
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;
-      return headers;
-    }
-
-    if (isDev) {
+    } else if (isDev) {
       headers["x-dev-user-email"] = "admin@demo.afenda";
     }
+  } else {
+    activeOrgId = readBrowserCookie(ACTIVE_ORG_COOKIE_NAME);
   }
+
+  if (!activeOrgId) {
+    await reportMissingActiveOrgContext({
+      location: isServer ? "server" : "client",
+    });
+    throw new Error("Missing active organization context. Select an organization and retry.");
+  }
+
+  headers["x-org-id"] = activeOrgId;
 
   return headers;
 }
@@ -2163,6 +2209,1029 @@ export async function fetchTreasuryForecastVariance(
   return res.json();
 }
 
+// ── COMM: Tasks ────────────────────────────────────────────────────────────
+
+export interface TaskRow {
+  id: string;
+  orgId: string;
+  projectId: string | null;
+  parentTaskId: string | null;
+  taskNumber: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  taskType: string;
+  assigneeId: string | null;
+  reporterId: string;
+  dueDate: string | null;
+  startDate: string | null;
+  estimateMinutes: number | null;
+  actualMinutes: number | null;
+  completedAt: string | null;
+  completedByPrincipalId: string | null;
+  sortOrder: number;
+  contextEntityType: string | null;
+  contextEntityId: string | null;
+  slaBreachAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskListResponse {
+  data: TaskRow[];
+  cursor?: string | null;
+  hasMore?: boolean;
+  correlationId: string;
+}
+
+export interface TaskChecklistItemRow {
+  id: string;
+  orgId: string;
+  taskId: string;
+  text: string;
+  isChecked: boolean;
+  checkedAt: string | null;
+  checkedByPrincipalId: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskTimeEntryRow {
+  id: string;
+  orgId: string;
+  taskId: string;
+  principalId: string;
+  minutes: number;
+  entryDate: string;
+  description: string | null;
+  createdAt: string;
+}
+
+export interface CommCommentRow {
+  id: string;
+  orgId: string;
+  entityType:
+    | "task"
+    | "project"
+    | "approval_request"
+    | "document"
+    | "board_meeting"
+    | "announcement";
+  entityId: string;
+  parentCommentId: string | null;
+  authorPrincipalId: string;
+  body: string;
+  editedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommChatterMessageRow {
+  id: string;
+  orgId: string;
+  entityType: "task" | "project";
+  entityId: string;
+  parentMessageId: string | null;
+  authorPrincipalId: string;
+  body: string;
+  editedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommLabelRow {
+  id: string;
+  orgId: string;
+  name: string;
+  color: string;
+  createdByPrincipalId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommSavedViewRow {
+  id: string;
+  orgId: string;
+  principalId: string | null;
+  entityType:
+    | "task"
+    | "project"
+    | "approval_request"
+    | "board_meeting"
+    | "announcement"
+    | "document"
+    | "inbox_item";
+  name: string;
+  filters: Record<string, unknown>;
+  sortBy: unknown[];
+  columns: unknown[];
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommSubscriptionRow {
+  id: string;
+  orgId: string;
+  principalId: string;
+  entityType:
+    | "task"
+    | "project"
+    | "approval_request"
+    | "document"
+    | "board_meeting"
+    | "announcement";
+  entityId: string;
+  createdAt: string;
+}
+
+export interface CommInboxItemRow {
+  id: string;
+  orgId: string;
+  principalId: string;
+  eventType: string;
+  entityType:
+    | "task"
+    | "project"
+    | "approval_request"
+    | "document"
+    | "board_meeting"
+    | "announcement";
+  entityId: string;
+  title: string;
+  body: string | null;
+  isRead: boolean;
+  readAt: string | null;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface CommNotificationPreferenceRow {
+  id: string;
+  orgId: string;
+  principalId: string;
+  eventType: string;
+  channel: "in_app" | "email";
+  enabled: boolean;
+  mutedUntil: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** List tasks with cursor pagination. */
+export async function fetchTasks(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string | string[];
+  assigneeId?: string;
+  projectId?: string;
+}): Promise<TaskListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  // Handle status as array or string
+  if (params?.status) {
+    const statuses = Array.isArray(params.status) ? params.status : [params.status];
+    statuses.forEach((s) => query.append("status", s));
+  }
+
+  if (params?.assigneeId) query.set("assigneeId", params.assigneeId);
+  if (params?.projectId) query.set("projectId", params.projectId);
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/tasks${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Tasks API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get a single task by ID. */
+export async function fetchTask(id: string): Promise<ApiSuccess<TaskRow>> {
+  const res = await apiFetch(`/v1/tasks/${id}`);
+  if (!res.ok) throw new Error(`Task API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get checklist items for a task. */
+export async function fetchTaskChecklist(id: string): Promise<ApiSuccess<TaskChecklistItemRow[]>> {
+  const res = await apiFetch(`/v1/tasks/${id}/checklist`);
+  if (!res.ok) throw new Error(`Task checklist API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get time entries for a task. */
+export async function fetchTaskTimeEntries(id: string): Promise<ApiSuccess<TaskTimeEntryRow[]>> {
+  const res = await apiFetch(`/v1/tasks/${id}/time-entries`);
+  if (!res.ok) throw new Error(`Task time entries API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List comments for an entity. */
+export async function fetchComments(params: {
+  entityType: CommCommentRow["entityType"];
+  entityId: string;
+  limit?: number;
+}): Promise<ApiSuccess<CommCommentRow[]>> {
+  const query = new URLSearchParams({
+    entityType: params.entityType,
+    entityId: params.entityId,
+  });
+  if (params.limit) query.set("limit", String(params.limit));
+
+  const res = await apiFetch(`/v1/comments?${query.toString()}`);
+  if (!res.ok) throw new Error(`Comments API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Add a comment to an entity. */
+export async function addComment(command: {
+  entityType: CommCommentRow["entityType"];
+  entityId: string;
+  body: string;
+  parentCommentId?: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/add-comment", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Add comment failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List chatter messages for a supported entity context. */
+export async function fetchChatterMessages(params: {
+  entityType: CommChatterMessageRow["entityType"];
+  entityId: string;
+  limit?: number;
+}): Promise<ApiSuccess<CommChatterMessageRow[]>> {
+  const query = new URLSearchParams({
+    entityType: params.entityType,
+    entityId: params.entityId,
+  });
+  if (params.limit) query.set("limit", String(params.limit));
+
+  const res = await apiFetch(`/v1/chatter/messages?${query.toString()}`);
+  if (!res.ok) throw new Error(`Chatter messages API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Post a chatter message into an entity context thread. */
+export async function postChatterMessage(command: {
+  entityType: CommChatterMessageRow["entityType"];
+  entityId: string;
+  body: string;
+  parentMessageId?: string;
+}): Promise<ApiSuccess<{ messageId: string }>> {
+  const res = await apiFetch("/v1/commands/chatter/post-message", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Post chatter message failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Edit an existing comment. */
+export async function editComment(command: {
+  commentId: string;
+  body: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/edit-comment", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Edit comment failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Delete a comment. */
+export async function deleteComment(command: {
+  commentId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/delete-comment", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Delete comment failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List org labels or labels assigned to an entity. */
+export async function fetchLabels(params?: {
+  entityType?: CommCommentRow["entityType"];
+  entityId?: string;
+}): Promise<ApiSuccess<CommLabelRow[]>> {
+  const path =
+    params?.entityType && params?.entityId
+      ? `/v1/labels/entity?entityType=${encodeURIComponent(params.entityType)}&entityId=${encodeURIComponent(params.entityId)}`
+      : "/v1/labels";
+
+  const res = await apiFetch(path);
+  if (!res.ok) throw new Error(`Labels API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Create a new label. */
+export async function createLabel(command: {
+  name: string;
+  color: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-label", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create label failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Update an existing label. */
+export async function updateLabel(command: {
+  labelId: string;
+  name?: string;
+  color?: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/update-label", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update label failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Delete a label. */
+export async function deleteLabel(command: {
+  labelId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/delete-label", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Delete label failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Assign a label to an entity. */
+export async function assignLabel(command: {
+  labelId: string;
+  entityType: CommCommentRow["entityType"];
+  entityId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/assign-label", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Assign label failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Unassign a label from an entity. */
+export async function unassignLabel(command: {
+  labelId: string;
+  entityType: CommCommentRow["entityType"];
+  entityId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/unassign-label", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Unassign label failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List saved views visible to the current principal for an entity type. */
+export async function fetchSavedViews(params: {
+  entityType: CommSavedViewRow["entityType"];
+}): Promise<ApiSuccess<CommSavedViewRow[]>> {
+  const query = new URLSearchParams({ entityType: params.entityType });
+  const res = await apiFetch(`/v1/saved-views?${query.toString()}`);
+  if (!res.ok) throw new Error(`Saved views API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Save a new view (principal scoped by default, org shared when isOrgShared=true). */
+export async function saveView(command: {
+  entityType: CommSavedViewRow["entityType"];
+  name: string;
+  filters: Record<string, unknown>;
+  sortBy: unknown[];
+  columns: unknown[];
+  isDefault?: boolean;
+  isOrgShared?: boolean;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/save-view", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Save view failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Update an existing saved view. */
+export async function updateSavedView(command: {
+  viewId: string;
+  name?: string;
+  filters?: Record<string, unknown>;
+  sortBy?: unknown[];
+  columns?: unknown[];
+  isDefault?: boolean;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/update-saved-view", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update saved view failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Delete a saved view. */
+export async function deleteSavedView(command: {
+  viewId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/delete-saved-view", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Delete saved view failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List subscriptions for an entity. */
+export async function fetchSubscriptions(params: {
+  entityType: CommSubscriptionRow["entityType"];
+  entityId: string;
+}): Promise<ApiSuccess<CommSubscriptionRow[]>> {
+  const query = new URLSearchParams({ entityType: params.entityType, entityId: params.entityId });
+  const res = await apiFetch(`/v1/subscriptions?${query.toString()}`);
+  if (!res.ok) throw new Error(`Subscriptions API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Subscribe current principal to entity updates. */
+export async function subscribeEntity(command: {
+  entityType: CommSubscriptionRow["entityType"];
+  entityId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/subscribe-entity", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Subscribe failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Unsubscribe current principal from entity updates. */
+export async function unsubscribeEntity(command: {
+  entityType: CommSubscriptionRow["entityType"];
+  entityId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/unsubscribe-entity", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Unsubscribe failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List inbox items for current principal. */
+export async function fetchInboxItems(params?: {
+  limit?: number;
+  cursor?: string;
+  unreadOnly?: boolean;
+}): Promise<ApiSuccess<CommInboxItemRow[]>> {
+  const query = new URLSearchParams();
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (typeof params?.unreadOnly === "boolean") query.set("unreadOnly", String(params.unreadOnly));
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/inbox${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Inbox API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get unread inbox count for current principal. */
+export async function fetchInboxUnreadCount(): Promise<ApiSuccess<{ count: number }>> {
+  const res = await apiFetch("/v1/inbox/unread");
+  if (!res.ok) throw new Error(`Inbox unread API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Mark one inbox item as read. */
+export async function markInboxItemRead(command: {
+  itemId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/mark-inbox-item-read", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Mark inbox item read failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Mark all inbox items as read for current principal. */
+export async function markAllInboxRead(): Promise<ApiSuccess<{ count: number }>> {
+  const res = await apiFetch("/v1/commands/mark-all-inbox-read", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID() }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Mark all inbox read failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** List notification preferences for current principal. */
+export async function fetchNotificationPreferences(): Promise<
+  ApiSuccess<CommNotificationPreferenceRow[]>
+> {
+  const res = await apiFetch("/v1/inbox/preferences");
+  if (!res.ok)
+    throw new Error(`Notification preferences API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Upsert a notification preference row. */
+export async function upsertNotificationPreference(command: {
+  eventType: string;
+  channel: "in_app" | "email";
+  enabled: boolean;
+  mutedUntil?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/upsert-notification-preference", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(
+      body?.error?.message ?? `Upsert notification preference failed (${res.status})`,
+    );
+  }
+  return res.json();
+}
+
+/** Add checklist items to a task. */
+export async function addTaskChecklist(command: {
+  taskId: string;
+  items: string[];
+}): Promise<ApiSuccess<{ taskId?: string; addedCount?: number }>> {
+  const res = await apiFetch("/v1/commands/add-task-checklist", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Add task checklist failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Toggle a checklist item on a task. */
+export async function toggleTaskChecklistItem(command: {
+  taskId: string;
+  checklistItemId: string;
+  checked: boolean;
+}): Promise<ApiSuccess<{ checklistItemId?: string; checked?: boolean }>> {
+  const res = await apiFetch("/v1/commands/toggle-task-checklist-item", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Toggle checklist item failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Log a time entry for a task. */
+export async function logTaskTimeEntry(command: {
+  taskId: string;
+  minutes: number;
+  entryDate: string;
+  description?: string;
+}): Promise<ApiSuccess<{ timeEntryId: string }>> {
+  const res = await apiFetch("/v1/commands/log-task-time-entry", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Log task time entry failed (${res.status})`);
+  }
+  return res.json();
+}
+
+export interface ProjectRow {
+  id: string;
+  orgId: string;
+  projectNumber: string;
+  name: string;
+  description: string | null;
+  status: string;
+  visibility: string;
+  ownerId: string;
+  startDate: string | null;
+  targetDate: string | null;
+  completedAt: string | null;
+  color: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectListResponse {
+  data: ProjectRow[];
+  correlationId: string;
+}
+
+export interface ProjectMemberRow {
+  id: string;
+  orgId: string;
+  projectId: string;
+  principalId: string;
+  role: string;
+  joinedAt: string;
+}
+
+export interface ProjectMilestoneRow {
+  id: string;
+  orgId: string;
+  projectId: string;
+  milestoneNumber: string;
+  name: string;
+  description: string | null;
+  status: string;
+  targetDate: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectPhaseRow {
+  id: string;
+  orgId: string;
+  projectId: string;
+  name: string;
+  description: string | null;
+  sequenceOrder: number;
+  startDate: string | null;
+  targetEndDate: string | null;
+  actualEndDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** List projects. */
+export async function fetchProjects(params?: {
+  limit?: number;
+  status?: string | string[];
+  ownerId?: string;
+  visibility?: string;
+}): Promise<ProjectListResponse> {
+  const query = new URLSearchParams();
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  if (params?.status) {
+    const statuses = Array.isArray(params.status) ? params.status : [params.status];
+    statuses.forEach((status) => query.append("status", status));
+  }
+
+  if (params?.ownerId) query.set("ownerId", params.ownerId);
+  if (params?.visibility) query.set("visibility", params.visibility);
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/projects${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Projects API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get a single project by ID. */
+export async function fetchProject(id: string): Promise<ApiSuccess<ProjectRow>> {
+  const res = await apiFetch(`/v1/projects/${id}`);
+  if (!res.ok) throw new Error(`Project API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List tasks for a single project. */
+export async function fetchProjectTasks(
+  id: string,
+  params?: {
+    limit?: number;
+    status?: string | string[];
+    assigneeId?: string;
+  },
+): Promise<ApiSuccess<TaskRow[]>> {
+  const query = new URLSearchParams();
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  if (params?.status) {
+    const statuses = Array.isArray(params.status) ? params.status : [params.status];
+    statuses.forEach((status) => query.append("status", status));
+  }
+
+  if (params?.assigneeId) query.set("assigneeId", params.assigneeId);
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/projects/${id}/tasks${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Project tasks API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List project members. */
+export async function fetchProjectMembers(id: string): Promise<ApiSuccess<ProjectMemberRow[]>> {
+  const res = await apiFetch(`/v1/projects/${id}/members`);
+  if (!res.ok) throw new Error(`Project members API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List project milestones. */
+export async function fetchProjectMilestones(
+  id: string,
+): Promise<ApiSuccess<ProjectMilestoneRow[]>> {
+  const res = await apiFetch(`/v1/projects/${id}/milestones`);
+  if (!res.ok) throw new Error(`Project milestones API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List project phases. */
+export async function fetchProjectPhases(id: string): Promise<ApiSuccess<ProjectPhaseRow[]>> {
+  const res = await apiFetch(`/v1/projects/${id}/phases`);
+  if (!res.ok) throw new Error(`Project phases API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Create a new project. */
+export async function createProject(command: {
+  name: string;
+  description?: string | null;
+  visibility?: string;
+  startDate?: string | null;
+  targetDate?: string | null;
+  color?: string | null;
+}): Promise<ApiSuccess<{ id: string; projectNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-project", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create project failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Update project details. */
+export async function updateProject(command: {
+  projectId: string;
+  name?: string;
+  description?: string | null;
+  visibility?: string;
+  startDate?: string | null;
+  targetDate?: string | null;
+  color?: string | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/update-project", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Update project failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Transition a project status. */
+export async function transitionProjectStatus(command: {
+  projectId: string;
+  toStatus: string;
+  reason?: string;
+}): Promise<ApiSuccess<{ id: string; status: string }>> {
+  const res = await apiFetch("/v1/commands/transition-project-status", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Transition project status failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Archive a project. */
+export async function archiveProject(command: {
+  projectId: string;
+  reason?: string;
+}): Promise<ApiSuccess<{ id: string; status: string }>> {
+  const res = await apiFetch("/v1/commands/archive-project", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Archive project failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Add a member to a project. */
+export async function addProjectMember(command: {
+  projectId: string;
+  principalId: string;
+  role: string;
+}): Promise<ApiSuccess<{ id: string; principalId: string }>> {
+  const res = await apiFetch("/v1/commands/add-project-member", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Add project member failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Remove a member from a project. */
+export async function removeProjectMember(command: {
+  projectId: string;
+  principalId: string;
+}): Promise<ApiSuccess<{ id: string; principalId: string }>> {
+  const res = await apiFetch("/v1/commands/remove-project-member", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Remove project member failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Create a project milestone. */
+export async function createProjectMilestone(command: {
+  projectId: string;
+  name: string;
+  description?: string;
+  targetDate: string;
+}): Promise<ApiSuccess<{ id: string; milestoneNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-project-milestone", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create project milestone failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Mark a milestone complete. */
+export async function completeProjectMilestone(
+  milestoneId: string,
+): Promise<ApiSuccess<{ id: string; status: string }>> {
+  const res = await apiFetch("/v1/commands/complete-project-milestone", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), milestoneId }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Complete project milestone failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Create a new task. */
+export async function createTask(command: {
+  title: string;
+  description?: string | null;
+  priority?: string;
+  projectId?: string | null;
+  dueDate?: string | null;
+  estimateMinutes?: number | null;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-task", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create task failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Assign a task to a user. */
+export async function assignTask(command: {
+  taskId: string;
+  assigneeId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/assign-task", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Assign task failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Transition task status. */
+export async function transitionTaskStatus(command: {
+  taskId: string;
+  toStatus: string;
+  reason?: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/transition-task-status", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Transition task status failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Bulk assign multiple tasks. */
+export async function bulkAssignTasks(command: {
+  taskIds: string[];
+  assigneeId: string;
+}): Promise<ApiSuccess<{ processedCount: number }>> {
+  const res = await apiFetch("/v1/commands/bulk-assign-tasks", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Bulk assign failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Bulk transition multiple tasks to new status. */
+export async function bulkTransitionTaskStatus(command: {
+  taskIds: string[];
+  toStatus: string;
+  reason?: string;
+}): Promise<ApiSuccess<{ processedCount: number }>> {
+  const res = await apiFetch("/v1/commands/bulk-transition-task-status", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Bulk transition failed (${res.status})`);
+  }
+  return res.json();
+}
+
 // ── Treasury: Wave 3.5 — AP Due Payment Projections ──────────────────────────
 
 export interface ApDuePaymentProjectionRow {
@@ -2313,6 +3382,437 @@ export async function fetchDocuments(params?: {
   const qs = query.toString();
   const res = await apiFetch(`/v1/documents${qs ? `?${qs}` : ""}`);
   if (!res.ok) throw new Error(`Documents API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// ── COMM: Approvals ──────────────────────────────────────────────────────────
+
+export interface ApprovalRequestRow {
+  id: string;
+  orgId: string;
+  approvalNumber: string;
+  title: string;
+  sourceEntityType: string | null;
+  sourceEntityId: string | null;
+  requestedByPrincipalId: string;
+  status: string;
+  urgency: string;
+  currentStepIndex: number;
+  dueDate: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApprovalStepRow {
+  id: string;
+  approvalRequestId: string;
+  stepIndex: number;
+  assigneeId: string;
+  delegatedToId: string | null;
+  status: string;
+  comment: string | null;
+  actedAt: string | null;
+  createdAt: string;
+}
+
+export interface ApprovalPolicyRow {
+  id: string;
+  orgId: string;
+  name: string;
+  description: string | null;
+  entityType: string;
+  conditions: unknown;
+  steps: unknown;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApprovalStatusHistoryRow {
+  id: string;
+  approvalRequestId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  changedByPrincipalId: string | null;
+  comment: string | null;
+  occurredAt: string;
+}
+
+export interface ApprovalListResponse {
+  data: ApprovalRequestRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}
+
+export interface ApprovalPoliciesListResponse {
+  data: ApprovalPolicyRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}
+
+/** List approval requests (all) with optional filters. */
+export async function fetchApprovals(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+  requestedByMe?: boolean;
+  sourceEntityType?: string;
+}): Promise<ApprovalListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  if (params?.requestedByMe) query.set("requestedByMe", "true");
+  if (params?.sourceEntityType) query.set("sourceEntityType", params.sourceEntityType);
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/approvals${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Approvals API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get a single approval request by ID (includes steps + history). */
+export async function fetchApproval(id: string): Promise<
+  ApiSuccess<{
+    request: ApprovalRequestRow;
+    steps: ApprovalStepRow[];
+    history: ApprovalStatusHistoryRow[];
+  }>
+> {
+  const res = await apiFetch(`/v1/approvals/${id}`);
+  if (!res.ok) throw new Error(`Approval API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List approvals pending the current principal's action. */
+export async function fetchPendingApprovals(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<ApprovalListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/approvals/pending${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Pending approvals API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List approval policies. */
+export async function fetchApprovalPolicies(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<ApprovalPoliciesListResponse> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/approvals/policies${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`Approval policies API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Create a new approval request. */
+export async function createApprovalRequest(command: {
+  title: string;
+  sourceEntityType?: string;
+  sourceEntityId?: string;
+  urgency?: string;
+  dueDate?: string;
+  steps: { assigneeId: string }[];
+}): Promise<ApiSuccess<{ id: string; approvalNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-approval-request", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create approval request failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Approve a step. */
+export async function approveStep(command: {
+  approvalRequestId: string;
+  stepId: string;
+  comment?: string;
+}): Promise<ApiSuccess<{ approvalRequestId: string }>> {
+  const res = await apiFetch("/v1/commands/approve-step", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Approve step failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Reject a step. */
+export async function rejectStep(command: {
+  approvalRequestId: string;
+  stepId: string;
+  comment: string;
+}): Promise<ApiSuccess<{ approvalRequestId: string }>> {
+  const res = await apiFetch("/v1/commands/reject-step", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Reject step failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Delegate a step to another principal. */
+export async function delegateStep(command: {
+  approvalRequestId: string;
+  stepId: string;
+  delegateToPrincipalId: string;
+  comment?: string;
+}): Promise<ApiSuccess<{ approvalRequestId: string }>> {
+  const res = await apiFetch("/v1/commands/delegate-step", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Delegate step failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Escalate an approval. */
+export async function escalateApproval(command: {
+  approvalRequestId: string;
+  comment?: string;
+}): Promise<ApiSuccess<{ approvalRequestId: string }>> {
+  const res = await apiFetch("/v1/commands/escalate-approval", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Escalate approval failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Withdraw an approval. */
+export async function withdrawApproval(command: {
+  approvalRequestId: string;
+  comment?: string;
+}): Promise<ApiSuccess<{ approvalRequestId: string }>> {
+  const res = await apiFetch("/v1/commands/withdraw-approval", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Withdraw approval failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Create an approval policy. */
+export async function createApprovalPolicy(command: {
+  name: string;
+  description?: string;
+  entityType: string;
+  conditions: Record<string, unknown>;
+  steps: { assigneeId: string }[];
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/create-approval-policy", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create approval policy failed (${res.status})`);
+  }
+  return res.json();
+}
+
+// ── Announcements ─────────────────────────────────────────────────────────────
+
+export interface AnnouncementRow {
+  id: string;
+  orgId: string;
+  announcementNumber: string;
+  title: string;
+  body: string;
+  status: string;
+  audienceType: string;
+  audienceIds: string[];
+  scheduledAt: string | null;
+  publishedAt: string | null;
+  publishedByPrincipalId: string | null;
+  createdByPrincipalId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AnnouncementReadRow {
+  id: string;
+  orgId: string;
+  announcementId: string;
+  principalId: string;
+  acknowledgedAt: string | null;
+  createdAt: string;
+}
+
+export interface AnnouncementAudienceOptions {
+  teams: Array<{ id: string; label: string }>;
+  roles: Array<{ id: string; label: string }>;
+}
+
+export interface AnnouncementAckSummary {
+  announcementId: string;
+  targetedCount: number;
+  acknowledgedCount: number;
+  pendingCount: number;
+  progressPercent: number;
+}
+
+/** List announcements with cursor pagination. */
+export async function fetchAnnouncements(params?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+  myAnnouncements?: boolean;
+}): Promise<{
+  data: AnnouncementRow[];
+  cursor: string | null;
+  hasMore: boolean;
+  correlationId: string;
+}> {
+  const query = new URLSearchParams();
+  if (params?.cursor) query.set("cursor", params.cursor);
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.status) query.set("status", params.status);
+  if (params?.myAnnouncements) query.set("myAnnouncements", String(params.myAnnouncements));
+
+  const qs = query.toString();
+  const res = await apiFetch(`/v1/announcements${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get a single announcement by ID. */
+export async function fetchAnnouncement(id: string): Promise<ApiSuccess<AnnouncementRow>> {
+  const res = await apiFetch(`/v1/announcements/${id}`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List reads for an announcement. */
+export async function fetchAnnouncementReads(
+  announcementId: string,
+): Promise<ApiSuccess<{ data: AnnouncementReadRow[] }>> {
+  const res = await apiFetch(`/v1/announcements/${announcementId}/reads`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Get acknowledgement summary for an announcement. */
+export async function fetchAnnouncementAckSummary(
+  announcementId: string,
+): Promise<ApiSuccess<AnnouncementAckSummary>> {
+  const res = await apiFetch(`/v1/announcements/${announcementId}/ack-summary`);
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** List available announcement audience targets for team/role selection. */
+export async function fetchAnnouncementAudienceOptions(): Promise<
+  ApiSuccess<AnnouncementAudienceOptions>
+> {
+  const res = await apiFetch("/v1/announcement-audience-options");
+  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+/** Create a new announcement. */
+export async function createAnnouncement(command: {
+  title: string;
+  body: string;
+  audienceType: string;
+  audienceIds?: string[];
+  scheduledAt?: string;
+}): Promise<ApiSuccess<{ id: string; announcementNumber: string }>> {
+  const res = await apiFetch("/v1/commands/create-announcement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Create announcement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Publish an announcement. */
+export async function publishAnnouncement(command: {
+  announcementId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/publish-announcement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Publish announcement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Schedule an announcement. */
+export async function scheduleAnnouncement(command: {
+  announcementId: string;
+  scheduledAt: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/schedule-announcement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Schedule announcement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Archive an announcement. */
+export async function archiveAnnouncement(command: {
+  announcementId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/archive-announcement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Archive announcement failed (${res.status})`);
+  }
+  return res.json();
+}
+
+/** Acknowledge an announcement. */
+export async function acknowledgeAnnouncement(command: {
+  announcementId: string;
+}): Promise<ApiSuccess<{ id: string }>> {
+  const res = await apiFetch("/v1/commands/acknowledge-announcement", {
+    method: "POST",
+    body: JSON.stringify({ idempotencyKey: crypto.randomUUID(), ...command }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? `Acknowledge announcement failed (${res.status})`);
+  }
   return res.json();
 }
 

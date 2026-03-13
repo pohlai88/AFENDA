@@ -91,6 +91,11 @@ import { hrSubmitInterviewFeedbackRoutes } from "./routes/erp/hr/submit-feedback
 import { hrTerminateEmploymentRoutes } from "./routes/erp/hr/terminate-employment.js";
 import { hrFinalizeSeparationRoutes } from "./routes/erp/hr/finalize-separation.js";
 import { hrTransferEmployeeRoutes } from "./routes/erp/hr/transfer-employee.js";
+import { commTaskRoutes } from "./routes/comm/tasks.js";
+import { commProjectRoutes } from "./routes/comm/projects.js";
+import { commApprovalRoutes } from "./routes/comm/approvals.js";
+import { commAnnouncementRoutes } from "./routes/comm/announcements.js";
+import { commSharedRoutes } from "./routes/comm/shared.js";
 // Supplier sub-entity routes (templates — uncomment when implemented)
 // import { supplierSiteRoutes } from "./routes/erp/supplier/supplier-site.js";
 // import { supplierBankAccountRoutes } from "./routes/erp/supplier/supplier-bank-account.js";
@@ -137,10 +142,10 @@ export async function buildApp() {
   //   6. rateLimit         → onRequest: keys by req.ctx.principalId (set by step 5)
   //   7. idempotencyPlugin → preHandler: dedup writes
 
-  await app.register(dbPlugin);
+  await app.register(dbPlugin as any);
 
   // ── OpenAPI spec + Scalar docs UI ──────────────────────────────────────────
-  await app.register(swaggerPlugin);
+  await app.register(swaggerPlugin as any);
 
   // ── CORS ───────────────────────────────────────────────────────────────────
   if (!isDev && env.ALLOWED_ORIGINS.length === 0) {
@@ -183,7 +188,7 @@ export async function buildApp() {
   });
 
   // ── Auth (onRequest — must be after correlationId + orgSlug hooks) ─────────
-  await app.register(authPlugin);
+  await app.register(authPlugin as any);
 
   // ── OTel enrichment (after auth — stamps org/principal/correlationId on span)
   await app.register(otelEnrichmentPlugin);
@@ -200,7 +205,7 @@ export async function buildApp() {
   });
 
   // ── Idempotency ────────────────────────────────────────────────────────────
-  await app.register(idempotencyPlugin);
+  await app.register(idempotencyPlugin as any);
 
   // ── Error envelope (Stripe-inspired) ──────────────────────────────────────
   app.setErrorHandler((err: Error & { statusCode?: number }, req, reply) => {
@@ -351,6 +356,11 @@ export async function buildApp() {
   await app.register(hrSubmitInterviewFeedbackRoutes, { prefix: "/v1" });
   await app.register(hrTerminateEmploymentRoutes, { prefix: "/v1" });
   await app.register(hrTransferEmployeeRoutes, { prefix: "/v1" });
+  await app.register(commTaskRoutes, { prefix: "/v1" });
+  await app.register(commProjectRoutes, { prefix: "/v1" });
+  await app.register(commApprovalRoutes, { prefix: "/v1" });
+  await app.register(commAnnouncementRoutes, { prefix: "/v1" });
+  await app.register(commSharedRoutes, { prefix: "/v1" });
   // Supplier sub-entity routes (templates — uncomment when implemented)
   // await app.register(supplierSiteRoutes, { prefix: "/v1" });
   // await app.register(supplierBankAccountRoutes, { prefix: "/v1" });

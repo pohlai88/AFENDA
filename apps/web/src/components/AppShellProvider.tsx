@@ -2,10 +2,12 @@
 
 import { AppShell } from "@afenda/ui";
 import type { AppShellBreadcrumbItem } from "@afenda/ui";
-import { usePathname } from "next/navigation";
+import type { AppShellOrganization } from "@afenda/ui";
+import { Building2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { defaultNavigation, navigationHandlers } from "@/lib/navigation";
 import { isPublicFacingPath } from "@/lib/shell-paths";
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 const BREADCRUMB_LABEL_MAP: Record<string, string> = {
   ap: "AP",
@@ -70,8 +72,68 @@ export function AppShellProvider({
   children: ReactNode;
   title?: string;
 }) {
+  const router = useRouter();
   const pathname = usePathname();
   const resolvedPathname = pathname || "/";
+
+  const [organizations, setOrganizations] = useState<AppShellOrganization[]>(
+    defaultNavigation.organizations,
+  );
+  const [organizationIdByName, setOrganizationIdByName] = useState<Record<string, string>>({});
+
+  const loadTenantContext = useCallback(async () => {
+    try {
+      const response = await fetch("/api/private/auth/tenant-context", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as {
+        enabled?: boolean;
+        organizations?: Array<{ id?: string; name?: string; slug?: string }>;
+      };
+
+      if (!data.enabled || !Array.isArray(data.organizations)) {
+        return;
+      }
+
+      const mappedOrganizations: AppShellOrganization[] = [];
+      const nameToId: Record<string, string> = {};
+
+      for (const organization of data.organizations) {
+        if (!organization?.id || !organization.name) {
+          continue;
+        }
+
+        const displayName = organization.slug
+          ? `${organization.name} (${organization.slug})`
+          : organization.name;
+
+        mappedOrganizations.push({
+          name: displayName,
+          logo: Building2,
+        });
+
+        nameToId[displayName] = organization.id;
+      }
+
+      if (mappedOrganizations.length > 0) {
+        setOrganizations(mappedOrganizations);
+        setOrganizationIdByName(nameToId);
+      }
+    } catch {
+      // Keep default shell data on transient fetch failures.
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadTenantContext();
+  }, [loadTenantContext]);
+
   if (isPublicFacingPath(resolvedPathname)) {
     return <>{children}</>;
   }
@@ -81,13 +143,37 @@ export function AppShellProvider({
     [resolvedPathname]
   );
 
+  const handleOrganizationChange = useCallback(
+    async (organization: AppShellOrganization) => {
+      const organizationId = organizationIdByName[organization.name];
+      if (!organizationId) {
+        return;
+      }
+
+      const response = await fetch("/api/private/auth/tenant-context", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ organizationId }),
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      router.refresh();
+    },
+    [organizationIdByName, router],
+  );
+
   return (
     <AppShell
       topTitle={title}
       topBreadcrumbs={topBreadcrumbs}
       currentPathname={resolvedPathname}
       sidebar={{
-        organizations: defaultNavigation.organizations,
+        organizations,
         teams: defaultNavigation.teams,
         members: defaultNavigation.members,
         notifications: defaultNavigation.notifications,
@@ -95,7 +181,7 @@ export function AppShellProvider({
         projects: defaultNavigation.projects,
         user: defaultNavigation.user,
       }}
-      onOrganizationChange={navigationHandlers.onOrganizationChange}
+      onOrganizationChange={handleOrganizationChange}
       onTeamChange={navigationHandlers.onTeamChange}
       onMemberSelect={navigationHandlers.onMemberSelect}
       onAddMember={navigationHandlers.onAddMember}

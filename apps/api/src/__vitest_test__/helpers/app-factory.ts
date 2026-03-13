@@ -29,8 +29,14 @@ export async function createTestApp(): Promise<FastifyInstance> {
   process.env["NODE_ENV"] = "development";
   process.env["API_PORT"] = "19876";
   process.env["ALLOWED_ORIGINS"] = "";
+  process.env["S3_ENDPOINT"] = process.env["S3_ENDPOINT"] ?? "http://localhost:9000";
+  process.env["S3_REGION"] = process.env["S3_REGION"] ?? "auto";
+  process.env["S3_BUCKET"] = process.env["S3_BUCKET"] ?? "afenda-test-bucket";
+  process.env["S3_ACCESS_KEY_ID"] = process.env["S3_ACCESS_KEY_ID"] ?? "minio";
+  process.env["S3_SECRET_ACCESS_KEY"] = process.env["S3_SECRET_ACCESS_KEY"] ?? "minio12345";
   process.env["AUTH_CHALLENGE_SECRET"] =
-    process.env["AUTH_CHALLENGE_SECRET"] ?? "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456";
+    process.env["AUTH_CHALLENGE_SECRET"] ??
+    "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456";
 
   // Dynamic import — env vars must be set before this line
   const { buildApp } = await import("../../index.js");
@@ -66,6 +72,11 @@ export async function resetDb(app: FastifyInstance) {
   // TRUNCATE in dependency order — children first
   await app.db.execute(/* sql */ `
     TRUNCATE
+      comm_project_status_history,
+      comm_project_phase,
+      comm_project_milestone,
+      comm_project_member,
+      comm_project,
       forecast_variance,
       liquidity_forecast_bucket_lineage,
       liquidity_forecast_bucket,

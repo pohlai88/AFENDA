@@ -1,5 +1,7 @@
 import type { PortalType } from "@afenda/contracts";
 import { getPortalDefaultCallbackUrl, getPortalHomePath } from "./portal-routing";
+import { buildSelectOrganizationRedirect } from "@/lib/auth/tenant-context";
+import { isTenantRoutingV2Enabled } from "@/lib/feature-flags";
 
 export function normalizeCallbackUrl(callbackUrl?: string | null): string | undefined {
   if (!callbackUrl) return undefined;
@@ -10,7 +12,11 @@ export function normalizeCallbackUrl(callbackUrl?: string | null): string | unde
 export function resolveOrganizationPostSignInRedirect(
   callbackUrl?: string | null,
 ): string {
-  return normalizeCallbackUrl(callbackUrl) ?? "/app";
+  if (!isTenantRoutingV2Enabled()) {
+    return normalizeCallbackUrl(callbackUrl) ?? "/app";
+  }
+
+  return buildSelectOrganizationRedirect(normalizeCallbackUrl(callbackUrl) ?? "/app");
 }
 
 export function resolvePortalPostSignInRedirect(

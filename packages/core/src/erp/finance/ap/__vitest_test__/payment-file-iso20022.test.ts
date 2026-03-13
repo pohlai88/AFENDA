@@ -13,29 +13,25 @@ import {
   type PaymentRunForExport,
   type DebtorAccount,
 } from "../calculators/payment-file-iso20022";
-import {
-  AP_TEST_DEBTOR,
-  createIsoPaymentItem,
-  createIsoPaymentRun,
-} from "./ap-test-builders";
+import { AP_TEST_DEBTOR, createIsoPaymentItem, createIsoPaymentRun } from "./ap-test-builders";
 
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "__fixtures__", "golden");
 const ISO20022_GOLDEN_FIXTURE = readFileSync(
   join(FIXTURES_DIR, "payment-file-iso20022.xml"),
-  "utf8"
+  "utf8",
 );
 const ISO20022_EUR_GOLDEN_FIXTURE = readFileSync(
   join(FIXTURES_DIR, "payment-file-iso20022-eur.xml"),
-  "utf8"
+  "utf8",
 );
 const ISO20022_GBP_GOLDEN_FIXTURE = readFileSync(
   join(FIXTURES_DIR, "payment-file-iso20022-gbp.xml"),
-  "utf8"
+  "utf8",
 );
 
 function makeRun(
   items: PaymentRunForExport["items"] = [],
-  overrides: Partial<PaymentRunForExport> = {}
+  overrides: Partial<PaymentRunForExport> = {},
 ): PaymentRunForExport {
   return createIsoPaymentRun(items, overrides);
 }
@@ -47,10 +43,10 @@ function makeItem(overrides: Partial<PaymentRunForExport["items"][number]> = {})
 const DEBTOR: DebtorAccount = AP_TEST_DEBTOR;
 
 function normalizeIsoContent(content: string): string {
-  return content.replace(
-    /<CreDtTm>[^<]+<\/CreDtTm>/,
-    "<CreDtTm>__CREATED_AT__</CreDtTm>"
-  );
+  return content
+    .replace(/\r\n/g, "\n")
+    .replace(/<CreDtTm>[^<]+<\/CreDtTm>/, "<CreDtTm>__CREATED_AT__</CreDtTm>")
+    .trimEnd();
 }
 
 describe("generateISO20022PaymentFile", () => {
@@ -103,10 +99,12 @@ describe("generateISO20022PaymentFile", () => {
             remittanceInfo: "INV-2026-002 & credit",
           }),
         ]),
-        DEBTOR
+        DEBTOR,
       );
 
-      expect(normalizeIsoContent(result.content)).toBe(ISO20022_GOLDEN_FIXTURE);
+      expect(normalizeIsoContent(result.content)).toBe(
+        normalizeIsoContent(ISO20022_GOLDEN_FIXTURE),
+      );
     });
   });
 
@@ -152,7 +150,10 @@ describe("generateISO20022PaymentFile", () => {
 
     it("contains correct control sum (decimal format)", () => {
       // 500000 minor units = $5,000.00
-      const result = generateISO20022PaymentFile(makeRun([makeItem({ amountMinor: 500000n })]), DEBTOR);
+      const result = generateISO20022PaymentFile(
+        makeRun([makeItem({ amountMinor: 500000n })]),
+        DEBTOR,
+      );
       expect(result.content).toContain("<CtrlSum>5000.00</CtrlSum>");
     });
 
@@ -227,23 +228,20 @@ describe("generateISO20022PaymentFile", () => {
     it("correctly formats 100 cents as 1.00", () => {
       const result = generateISO20022PaymentFile(
         makeRun([makeItem({ amountMinor: 100n })]),
-        DEBTOR
+        DEBTOR,
       );
       expect(result.content).toContain("1.00");
     });
 
     it("correctly formats 1 cent as 0.01", () => {
-      const result = generateISO20022PaymentFile(
-        makeRun([makeItem({ amountMinor: 1n })]),
-        DEBTOR
-      );
+      const result = generateISO20022PaymentFile(makeRun([makeItem({ amountMinor: 1n })]), DEBTOR);
       expect(result.content).toContain("0.01");
     });
 
     it("correctly formats 123456789 cents as 1234567.89", () => {
       const result = generateISO20022PaymentFile(
         makeRun([makeItem({ amountMinor: 123456789n })]),
-        DEBTOR
+        DEBTOR,
       );
       expect(result.content).toContain("1234567.89");
     });
@@ -264,14 +262,15 @@ describe("generateISO20022PaymentFile", () => {
       expect(result.totalAmountMinor).toBe(sumMinor);
 
       // Control sum should appear in XML as decimal
-      const decimalSum = (sumMinor / 100n).toString() + "." + String(sumMinor % 100n).padStart(2, "0");
+      const decimalSum =
+        (sumMinor / 100n).toString() + "." + String(sumMinor % 100n).padStart(2, "0");
       expect(result.content).toContain(`<CtrlSum>${decimalSum}</CtrlSum>`);
     });
 
     it("transaction count matches item count", () => {
       for (const itemCount of [0, 1, 5, 10, 25]) {
         const items = Array.from({ length: itemCount }, (_, i) =>
-          makeItem({ id: `i${i}`, invoiceNumber: `INV-${i}` })
+          makeItem({ id: `i${i}`, invoiceNumber: `INV-${i}` }),
         );
         const result = generateISO20022PaymentFile(makeRun(items), DEBTOR);
         expect(result.transactionCount).toBe(itemCount);
@@ -280,10 +279,7 @@ describe("generateISO20022PaymentFile", () => {
     });
 
     it("XML is well-formed — document structure is valid", () => {
-      const items = [
-        makeItem(),
-        makeItem({ id: "i2", supplierName: "Test<>&\"'Unit" }),
-      ];
+      const items = [makeItem(), makeItem({ id: "i2", supplierName: "Test<>&\"'Unit" })];
       const result = generateISO20022PaymentFile(makeRun(items), DEBTOR);
 
       // Check for required root and main structure elements
@@ -297,9 +293,7 @@ describe("generateISO20022PaymentFile", () => {
     });
 
     it("no unescaped special characters in text content", () => {
-      const items = [
-        makeItem({ supplierName: "A&B<C>D\"E'F" }),
-      ];
+      const items = [makeItem({ supplierName: "A&B<C>D\"E'F" })];
       const result = generateISO20022PaymentFile(makeRun(items), DEBTOR);
 
       // After escaping, raw special chars should not appear in contexts where they matter
@@ -337,7 +331,7 @@ describe("generateISO20022PaymentFile", () => {
           invoiceId: `inv-${i}`,
           invoiceNumber: `INV-${String(i).padStart(4, "0")}`,
           amountMinor: BigInt(10000 * (i + 1)),
-        })
+        }),
       );
       const result = generateISO20022PaymentFile(makeRun(items), DEBTOR);
 
@@ -438,7 +432,7 @@ describe("generateISO20022PaymentFile", () => {
         };
         const result = generateISO20022PaymentFile(
           makeRun([makeItem({ currencyCode: currency })], { currencyCode: currency }),
-          debtor
+          debtor,
         );
         expect(result.content).toContain(currency);
       }
@@ -463,7 +457,7 @@ describe("generateISO20022PaymentFile", () => {
         };
         const result = generateISO20022PaymentFile(
           makeRun([makeItem({ supplierIBAN: iban, supplierBIC: bic })]),
-          debtor
+          debtor,
         );
         expect(result.content).toContain(iban);
         expect(result.content).toContain(country);
@@ -484,8 +478,10 @@ describe("generateISO20022PaymentFile", () => {
           currency,
         };
         const result = generateISO20022PaymentFile(
-          makeRun([makeItem({ amountMinor: amount, currencyCode: currency })], { currencyCode: currency }),
-          debtor
+          makeRun([makeItem({ amountMinor: amount, currencyCode: currency })], {
+            currencyCode: currency,
+          }),
+          debtor,
         );
         expect(result.totalAmountMinor).toBe(amount);
       }

@@ -4,6 +4,7 @@ import type { AfendaAuthenticatedUser } from "../afenda-auth.types";
 
 export interface VerifyMfaChallengeResult {
   user: AfendaAuthenticatedUser | null;
+  sessionGrant: string | null;
 }
 
 export async function verifyMfaChallenge(input: {
@@ -15,5 +16,8 @@ export async function verifyMfaChallenge(input: {
   const service = getAfendaAuthService();
   const result = await service.verifyMfaChallenge(input);
 
-  return { user: mapVerifyMfaResultToUser(result, "app") };
+  return {
+    user: mapVerifyMfaResultToUser(result, "app"),
+    sessionGrant: result.ok ? result.data.sessionGrant : null,
+  };
 }

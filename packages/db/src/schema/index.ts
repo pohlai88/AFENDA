@@ -20,6 +20,8 @@ export * from "./kernel/index";
 // ── ERP (finance, supplier) ──────────────────────────────────────────────────
 export * from "./erp/index";
 
+// ── COMM (tasks, comments, views, subscriptions) ─────────────────────────────
+export * from "./comm/index";
+
 // ── Relations (powers db.query.* relational API) ─────────────────────────────
 export * from "./relations/index";
-

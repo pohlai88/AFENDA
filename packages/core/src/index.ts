@@ -20,6 +20,7 @@ export type {
 // ── Pillar re-exports ────────────────────────────────────────────────────────
 export * from "./kernel/index";
 export * from "./erp/index";
+export * from "./comm/index";
 
 // ── Projection layer (portal interactions) ──────────────────────────────────
 export * from "./projections/index";

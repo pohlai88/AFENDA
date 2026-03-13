@@ -84,6 +84,19 @@ export const userMenuRoutes: Record<UserMenuRouteKey, string> = {
  * Update this file directly to change ERP and BoardRoom navigation.
  */
 export const erpNavigationDomains: NavigationDomainConfig[] = [
+  {
+    key: "comm",
+    title: "COMM",
+    url: "/comm",
+    icon: "users",
+    items: [
+      { title: "Hub", url: "/comm", icon: "presentation" },
+      { title: "My Tasks", url: "/comm/tasks/my", icon: "users" },
+      { title: "Team Board", url: "/comm/tasks/board", icon: "presentation" },
+      { title: "All Tasks", url: "/comm/tasks", icon: "folder" },
+      { title: "Projects", url: "/comm/projects", icon: "briefcase" },
+    ],
+  },
   { key: "crm", title: "CRM", url: "/crm", icon: "users" },
   {
     key: "finance",

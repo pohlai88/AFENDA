@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getEffectiveActiveOrganizationId } from "@/lib/auth/tenant-context";
+import { isTenantRoutingV2Enabled } from "@/lib/feature-flags";
 
 /** Session depends on cookies — force dynamic (Neon Auth). */
 export const dynamic = "force-dynamic";
@@ -20,6 +22,13 @@ export default async function ErpLayout({
 
   if (!session?.user) {
     redirect("/auth/signin");
+  }
+
+  if (isTenantRoutingV2Enabled()) {
+    const activeOrgId = await getEffectiveActiveOrganizationId();
+    if (!activeOrgId) {
+      redirect("/auth/select-organization?callback=/app");
+    }
   }
 
   return <>{children}</>;

@@ -20,13 +20,10 @@ import {
 } from "./ap-test-builders";
 
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), "__fixtures__", "golden");
-const NACHA_GOLDEN_FIXTURE = readFileSync(
-  join(FIXTURES_DIR, "payment-file-nacha.ach"),
-  "utf8"
-);
+const NACHA_GOLDEN_FIXTURE = readFileSync(join(FIXTURES_DIR, "payment-file-nacha.ach"), "utf8");
 const NACHA_SAVINGS_GOLDEN_FIXTURE = readFileSync(
   join(FIXTURES_DIR, "payment-file-nacha-savings.ach"),
-  "utf8"
+  "utf8",
 );
 
 const ORIGINATOR: NACHAOriginatorInfo = AP_TEST_ORIGINATOR;
@@ -38,7 +35,10 @@ function makeItem(overrides: Partial<NACHAPaymentItem> = {}): NACHAPaymentItem {
 }
 
 function normalizeNachaContent(content: string): string {
-  return content.replace(/^(.{23})\d{6}\d{4}/, "$1DATE__TIME");
+  return content
+    .replace(/\r\n/g, "\n")
+    .replace(/^(.{23})\d{6}\d{4}/, "$1DATE__TIME")
+    .trimEnd();
 }
 
 describe("generateNACHAFile", () => {
@@ -51,7 +51,11 @@ describe("generateNACHAFile", () => {
     });
 
     it("returns correct transaction count", () => {
-      const items = [makeItem(), makeItem({ invoiceNumber: "INV-002" }), makeItem({ invoiceNumber: "INV-003" })];
+      const items = [
+        makeItem(),
+        makeItem({ invoiceNumber: "INV-002" }),
+        makeItem({ invoiceNumber: "INV-003" }),
+      ];
       const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
       expect(result.transactionCount).toBe(3);
     });
@@ -90,10 +94,12 @@ describe("generateNACHAFile", () => {
           }),
         ],
         ORIGINATOR,
-        EFFECTIVE_DATE
+        EFFECTIVE_DATE,
       );
 
-      expect(normalizeNachaContent(result.content)).toBe(NACHA_GOLDEN_FIXTURE);
+      expect(normalizeNachaContent(result.content)).toBe(
+        normalizeNachaContent(NACHA_GOLDEN_FIXTURE),
+      );
     });
   });
 
@@ -101,7 +107,11 @@ describe("generateNACHAFile", () => {
 
   describe("fixed-width record line length", () => {
     it("all non-padding lines are exactly 94 characters", () => {
-      const result = generateNACHAFile([makeItem(), makeItem({ invoiceNumber: "INV-002" })], ORIGINATOR, EFFECTIVE_DATE);
+      const result = generateNACHAFile(
+        [makeItem(), makeItem({ invoiceNumber: "INV-002" })],
+        ORIGINATOR,
+        EFFECTIVE_DATE,
+      );
       const lines = result.content.split("\n");
       for (const line of lines) {
         expect(line.length, `Line must be 94 chars: "${line}"`).toBe(94);
@@ -148,7 +158,11 @@ describe("generateNACHAFile", () => {
     });
 
     it("entry detail records start with '6'", () => {
-      const result = generateNACHAFile([makeItem(), makeItem({ invoiceNumber: "INV-002" })], ORIGINATOR, EFFECTIVE_DATE);
+      const result = generateNACHAFile(
+        [makeItem(), makeItem({ invoiceNumber: "INV-002" })],
+        ORIGINATOR,
+        EFFECTIVE_DATE,
+      );
       const lines = result.content.split("\n");
       const entries = lines.filter((l) => l[0] === "6");
       expect(entries).toHaveLength(2);
@@ -168,7 +182,7 @@ describe("generateNACHAFile", () => {
     it("total line count is always a multiple of 10", () => {
       for (const itemCount of [1, 2, 5, 9, 10, 11]) {
         const items = Array.from({ length: itemCount }, (_, i) =>
-          makeItem({ invoiceNumber: `INV-${i}` })
+          makeItem({ invoiceNumber: `INV-${i}` }),
         );
         const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
         const lineCount = result.content.split("\n").length;
@@ -181,7 +195,11 @@ describe("generateNACHAFile", () => {
 
   describe("amount encoding", () => {
     it("encodes amount as 10-digit zero-padded cents in entry record", () => {
-      const result = generateNACHAFile([makeItem({ amountMinor: 500000n })], ORIGINATOR, EFFECTIVE_DATE);
+      const result = generateNACHAFile(
+        [makeItem({ amountMinor: 500000n })],
+        ORIGINATOR,
+        EFFECTIVE_DATE,
+      );
       const lines = result.content.split("\n");
       const entryLine = lines.find((l) => l[0] === "6")!;
       // Entry format: 1(type) + 2(txCode) + 9(routing) + 1(check) + 17(acct) + 10(amount) ...
@@ -212,7 +230,7 @@ describe("generateNACHAFile", () => {
       const result = generateNACHAFile(
         [makeItem({ amountMinor: 100_000_000n })], // $1,000,000.00
         ORIGINATOR,
-        EFFECTIVE_DATE
+        EFFECTIVE_DATE,
       );
       expect(result.totalAmountMinor).toBe(100_000_000n);
     });
@@ -223,8 +241,8 @@ describe("generateNACHAFile", () => {
         generateNACHAFile(
           [makeItem({ supplierName: "A Very Long Supplier Name Exceeds Limit Inc." })],
           ORIGINATOR,
-          EFFECTIVE_DATE
-        )
+          EFFECTIVE_DATE,
+        ),
       ).not.toThrow();
     });
   });
@@ -247,7 +265,7 @@ describe("generateNACHAFile", () => {
     it("entry detail count in batch control matches item count", () => {
       for (const itemCount of [1, 2, 5, 10, 15]) {
         const items = Array.from({ length: itemCount }, (_, i) =>
-          makeItem({ invoiceNumber: `INV-${i}` })
+          makeItem({ invoiceNumber: `INV-${i}` }),
         );
         const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
         const lines = result.content.split("\n");
@@ -276,7 +294,7 @@ describe("generateNACHAFile", () => {
     it("total line count is always multiple of 10 (blocking factor)", () => {
       for (const itemCount of [0, 1, 2, 5, 9, 10, 11, 19, 20, 21]) {
         const items = Array.from({ length: itemCount }, (_, i) =>
-          makeItem({ invoiceNumber: `INV-${i}` })
+          makeItem({ invoiceNumber: `INV-${i}` }),
         );
         const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
         const lineCount = result.content.split("\n").length;
@@ -286,9 +304,7 @@ describe("generateNACHAFile", () => {
     });
 
     it("record type progression follows NACHA structure", () => {
-      const items = Array.from({ length: 3 }, (_, i) =>
-        makeItem({ invoiceNumber: `INV-${i}` })
-      );
+      const items = Array.from({ length: 3 }, (_, i) => makeItem({ invoiceNumber: `INV-${i}` }));
       const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
       const lines = result.content.split("\n");
 
@@ -343,9 +359,7 @@ describe("generateNACHAFile", () => {
 
       expect(result1.transactionCount).toBe(result2.transactionCount);
       expect(result1.totalAmountMinor).toBe(result2.totalAmountMinor);
-      expect(normalizeNachaContent(result1.content)).toBe(
-        normalizeNachaContent(result2.content)
-      );
+      expect(normalizeNachaContent(result1.content)).toBe(normalizeNachaContent(result2.content));
     });
 
     it("handles large transaction sets without data loss", () => {
@@ -353,7 +367,7 @@ describe("generateNACHAFile", () => {
         makeItem({
           invoiceNumber: `INV-${String(i).padStart(5, "0")}`,
           amountMinor: BigInt(50000 * (i + 1)),
-        })
+        }),
       );
       const result = generateNACHAFile(items, ORIGINATOR, EFFECTIVE_DATE);
 
@@ -372,7 +386,7 @@ describe("generateNACHAFile", () => {
         const result = generateNACHAFile(
           [makeItem({ amountMinor: amount })],
           ORIGINATOR,
-          EFFECTIVE_DATE
+          EFFECTIVE_DATE,
         );
         expect(result.totalAmountMinor).toBe(amount);
       }
@@ -397,12 +411,8 @@ describe("generateNACHAFile", () => {
     });
 
     it("account type field is set correctly for savings accounts", () => {
-      const savingsItems = [
-        makeItem({ accountType: "savings", amountMinor: 100000n }),
-      ];
-      const checkingItems = [
-        makeItem({ accountType: "checking", amountMinor: 100000n }),
-      ];
+      const savingsItems = [makeItem({ accountType: "savings", amountMinor: 100000n })];
+      const checkingItems = [makeItem({ accountType: "checking", amountMinor: 100000n })];
 
       const savingsResult = generateNACHAFile(savingsItems, ORIGINATOR, EFFECTIVE_DATE);
       const checkingResult = generateNACHAFile(checkingItems, ORIGINATOR, EFFECTIVE_DATE);

@@ -153,6 +153,7 @@ export const PermissionValues = [
   "erp.finance.treasury.intercompany-transfer.manage",
   "erp.finance.treasury.intercompany-transfer.settle",
 
+<<<<<<< HEAD
   // Treasury — Wave 4.2 Netting + Internal Interest
   "erp.finance.treasury.netting-session.read",
   "erp.finance.treasury.netting-session.manage",
@@ -172,6 +173,48 @@ export const PermissionValues = [
   "erp.finance.treasury.bank-connector.manage",
   "erp.finance.treasury.market-data-feed.read",
   "erp.finance.treasury.market-data-feed.manage",
+=======
+  // COMM — shared
+  "comm.comment.create",
+  "comm.comment.read",
+  "comm.comment.delete",
+  "comm.label.create",
+  "comm.label.delete",
+  "comm.saved-view.create",
+  "comm.saved-view.delete",
+  "comm.subscription.create",
+  "comm.subscription.delete",
+
+  // COMM — tasks
+  "comm.task.create",
+  "comm.task.read",
+  "comm.task.update",
+  "comm.task.assign",
+  "comm.task.complete",
+  "comm.task.archive",
+  "comm.task.bulk-assign",
+  "comm.task.bulk-transition",
+
+  // COMM — approvals
+  "comm.approval.create",
+  "comm.approval.read",
+  "comm.approval.approve",
+  "comm.approval.reject",
+  "comm.approval.delegate",
+  "comm.approval.escalate",
+  "comm.approval.withdraw",
+  "comm.approval-policy.read",
+  "comm.approval-policy.write",
+  "comm.approval-delegation.write",
+
+  // COMM — announcements
+  "comm.announcement.create",
+  "comm.announcement.publish",
+  "comm.announcement.schedule",
+  "comm.announcement.archive",
+  "comm.announcement.acknowledge",
+  "comm.announcement.read",
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 ] as const;
 
 export type Permission = (typeof PermissionValues)[number];
@@ -188,4 +231,5 @@ export const PERMISSION_SCOPES = {
   audit: PermissionValues.filter((p) => p.startsWith("audit.")),
   admin: PermissionValues.filter((p) => p.startsWith("admin.")),
   treasury: PermissionValues.filter((p) => p.startsWith("treasury.")),
+  comm: PermissionValues.filter((p) => p.startsWith("comm.")),
 } as const;

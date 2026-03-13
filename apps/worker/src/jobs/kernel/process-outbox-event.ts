@@ -195,6 +195,141 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "GL.JOURNAL_REVERSED":
       await helpers.addJob("handle_journal_reversed", payload);
       break;
+    case "COMM.TASK_CREATED":
+      await helpers.addJob("handle_task_created", payload);
+      break;
+    case "COMM.TASK_UPDATED":
+      await helpers.addJob("handle_task_updated", payload);
+      break;
+    case "COMM.TASK_ASSIGNED":
+      await helpers.addJob("handle_task_assigned", payload);
+      break;
+    case "COMM.TASKS_BULK_ASSIGNED":
+      await helpers.addJob("handle_tasks_bulk_assigned", payload);
+      break;
+    case "COMM.TASK_STATUS_CHANGED":
+      await helpers.addJob("handle_task_status_changed", payload);
+      break;
+    case "COMM.TASKS_BULK_TRANSITIONED":
+      await helpers.addJob("handle_tasks_bulk_transitioned", payload);
+      break;
+    case "COMM.TASK_COMPLETED":
+      await helpers.addJob("handle_task_completed", payload);
+      break;
+    case "COMM.TASK_ARCHIVED":
+      await helpers.addJob("handle_task_archived", payload);
+      break;
+    case "COMM.TASK_CHECKLIST_ADDED":
+      await helpers.addJob("handle_task_checklist_added", payload);
+      break;
+    case "COMM.TASK_CHECKLIST_TOGGLED":
+      await helpers.addJob("handle_task_checklist_toggled", payload);
+      break;
+    case "COMM.TASK_CHECKLIST_REMOVED":
+      await helpers.addJob("handle_task_checklist_removed", payload);
+      break;
+    case "COMM.TASK_TIME_LOGGED":
+      await helpers.addJob("handle_task_time_logged", payload);
+      break;
+    case "COMM.PROJECT_CREATED":
+      await helpers.addJob("handle_project_created", payload);
+      break;
+    case "COMM.PROJECT_UPDATED":
+      await helpers.addJob("handle_project_updated", payload);
+      break;
+    case "COMM.PROJECT_STATUS_CHANGED":
+      await helpers.addJob("handle_project_status_changed", payload);
+      break;
+    case "COMM.PROJECT_MEMBER_ADDED":
+      await helpers.addJob("handle_project_member_added", payload);
+      break;
+    case "COMM.PROJECT_MEMBER_REMOVED":
+      await helpers.addJob("handle_project_member_removed", payload);
+      break;
+    case "COMM.PROJECT_MILESTONE_CREATED":
+      await helpers.addJob("handle_project_milestone_created", payload);
+      break;
+    case "COMM.PROJECT_MILESTONE_COMPLETED":
+      await helpers.addJob("handle_project_milestone_completed", payload);
+      break;
+    case "COMM.APPROVAL_REQUESTED":
+      await helpers.addJob("handle_approval_requested", payload);
+      break;
+    case "COMM.APPROVAL_STEP_APPROVED":
+      await helpers.addJob("handle_approval_step_approved", payload);
+      break;
+    case "COMM.APPROVAL_APPROVED":
+      await helpers.addJob("handle_approval_approved", payload);
+      break;
+    case "COMM.APPROVAL_STEP_REJECTED":
+      await helpers.addJob("handle_approval_step_rejected", payload);
+      break;
+    case "COMM.APPROVAL_STEP_DELEGATED":
+      await helpers.addJob("handle_approval_step_delegated", payload);
+      break;
+    case "COMM.APPROVAL_ESCALATED":
+      await helpers.addJob("handle_approval_escalated", payload);
+      break;
+    case "COMM.APPROVAL_WITHDRAWN":
+      await helpers.addJob("handle_approval_withdrawn", payload);
+      break;
+    case "COMM.ANNOUNCEMENT_PUBLISHED":
+      await helpers.addJob("handle_announcement_published", payload);
+      break;
+    case "COMM.ANNOUNCEMENT_SCHEDULED":
+      await helpers.addJob("handle_announcement_scheduled", payload);
+      break;
+    case "COMM.ANNOUNCEMENT_ACKNOWLEDGED":
+      await helpers.addJob("handle_announcement_acknowledged", payload);
+      break;
+    case "COMM.ANNOUNCEMENT_ARCHIVED":
+      await helpers.addJob("handle_announcement_archived", payload);
+      break;
+    case "COMM.COMMENT_CREATED":
+      await helpers.addJob("handle_comment_created", payload);
+      break;
+    case "COMM.LABEL_CREATED":
+      await helpers.addJob("handle_label_created", payload);
+      break;
+    case "COMM.LABEL_UPDATED":
+      await helpers.addJob("handle_label_updated", payload);
+      break;
+    case "COMM.LABEL_DELETED":
+      await helpers.addJob("handle_label_deleted", payload);
+      break;
+    case "COMM.LABEL_ASSIGNED":
+      await helpers.addJob("handle_label_assigned", payload);
+      break;
+    case "COMM.LABEL_UNASSIGNED":
+      await helpers.addJob("handle_label_unassigned", payload);
+      break;
+    case "COMM.SAVED_VIEW_CREATED":
+      await helpers.addJob("handle_saved_view_created", payload);
+      break;
+    case "COMM.SAVED_VIEW_UPDATED":
+      await helpers.addJob("handle_saved_view_updated", payload);
+      break;
+    case "COMM.SAVED_VIEW_DELETED":
+      await helpers.addJob("handle_saved_view_deleted", payload);
+      break;
+    case "COMM.SUBSCRIPTION_CREATED":
+      await helpers.addJob("handle_subscription_created", payload);
+      break;
+    case "COMM.SUBSCRIPTION_DELETED":
+      await helpers.addJob("handle_subscription_deleted", payload);
+      break;
+    case "COMM.COMMENT_MENTIONS_CREATED":
+      await helpers.addJob("handle_comment_mentions_created", payload);
+      break;
+    case "COMM.INBOX_ITEM_READ":
+      await helpers.addJob("handle_inbox_item_read", payload);
+      break;
+    case "COMM.INBOX_ALL_READ":
+      await helpers.addJob("handle_inbox_all_read", payload);
+      break;
+    case "COMM.NOTIFICATION_PREFERENCE_UPDATED":
+      await helpers.addJob("handle_notification_preference_updated", payload);
+      break;
     case "PURCHASING.PURCHASE_ORDER_CREATED":
       // No async side effects for draft PO creation
       break;

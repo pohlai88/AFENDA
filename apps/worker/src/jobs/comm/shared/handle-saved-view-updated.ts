@@ -1,0 +1,23 @@
+import type { Task } from "graphile-worker";
+
+export const handleSavedViewUpdated: Task = async (payload, helpers) => {
+  const event = payload as {
+    type: string;
+    correlationId: string;
+    payload: {
+      savedViewId: string;
+      entityType: string;
+      principalId: string | null;
+    };
+  };
+
+  if (event.type !== "COMM.SAVED_VIEW_UPDATED") {
+    helpers.logger.warn(`handle_saved_view_updated received unexpected event type: ${event.type}`);
+    return;
+  }
+
+  helpers.logger.info(
+    `saved view updated: savedViewId=${event.payload.savedViewId} entityType=${event.payload.entityType} ` +
+      `principalId=${event.payload.principalId ?? "org"} correlationId=${event.correlationId}`,
+  );
+};

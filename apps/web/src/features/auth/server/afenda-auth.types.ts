@@ -76,11 +76,13 @@ export type VerifyInviteTokenResult = AuthFlowResult<{
 export type AcceptInviteResult = AuthFlowResult<{
   email: string;
   portal: Exclude<PortalType, "app">;
+  sessionGrant: string;
 }>;
 
 export type VerifyMfaResult = AuthFlowResult<{
   principalId: string;
   email: string;
+  sessionGrant: string;
 }>;
 
 // ── Session user ───────────────────────────────────────────────────────────────

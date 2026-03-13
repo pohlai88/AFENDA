@@ -42,6 +42,25 @@ export function AfendaMark({
 }: AfendaMarkProps) {
   const isAnimated = variant === "animated";
 
+  if (!isAnimated) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+        role="img"
+        aria-label="AFENDA"
+      >
+        <circle cx="5" cy="12" r="2" fill={color} />
+        <circle cx="12" cy="12" r="2" fill={color} />
+        <circle cx="19" cy="12" r="2.5" stroke={color} strokeWidth="1.5" fill="none" />
+      </svg>
+    );
+  }
+
   return (
     <motion.svg
       width={size}
@@ -52,9 +71,9 @@ export function AfendaMark({
       className={className}
       role="img"
       aria-label="AFENDA"
-      initial={isAnimated ? "hidden" : "visible"}
+      initial="hidden"
       whileInView="visible"
-      whileHover={isAnimated ? "hover" : undefined}
+      whileHover="hover"
       viewport={{ once: true, margin: "-20px" }}
     >
       {/* Dot 1 */}
@@ -68,7 +87,7 @@ export function AfendaMark({
           visible: { scale: 1, opacity: 1 },
           hover: { scale: 1.2, fill: hoverColor },
         }}
-        transition={isAnimated ? springTransition : { duration: 0 }}
+        transition={springTransition}
       />
       {/* Dot 2 */}
       <motion.circle
@@ -85,7 +104,7 @@ export function AfendaMark({
             transition: { delay: 0.05, ...springTransition },
           },
         }}
-        transition={isAnimated ? springTransition : { duration: 0 }}
+        transition={springTransition}
       />
       {/* Audit Ring — r=2.5 so outer edge (3.25px) optically matches 4px solid dots */}
       <motion.circle
@@ -105,11 +124,7 @@ export function AfendaMark({
             transition: { delay: 0.1, ...springTransition },
           },
         }}
-        transition={
-          isAnimated
-            ? { ...springTransition, pathLength: { duration: 0.8 } }
-            : { duration: 0 }
-        }
+        transition={{ ...springTransition, pathLength: { duration: 0.8 } }}
       />
     </motion.svg>
   );

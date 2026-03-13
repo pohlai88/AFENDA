@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export default function SignInWithCodeLoading() {
   return (
     <div className="mx-auto w-full max-w-md space-y-4 p-6">
@@ -9,5 +10,19 @@ export default function SignInWithCodeLoading() {
       </div>
       <div className="h-10 w-32 animate-pulse rounded bg-muted" />
     </div>
+=======
+import { Skeleton } from "@afenda/ui";
+
+export default function SignInWithCodeLoading() {
+  return (
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-xl items-center px-4 py-12">
+      <div className="w-full space-y-4 rounded-lg border p-6">
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </main>
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   );
 }

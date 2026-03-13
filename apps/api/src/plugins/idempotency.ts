@@ -15,6 +15,11 @@
  *   3. onError: `releaseIdempotency()` deletes the pending row so retries work.
  */
 
+<<<<<<< HEAD
+=======
+import type { FastifyPluginAsync } from "fastify";
+import fp from "fastify-plugin";
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 import { IdempotencyKeyHeader, type OrgId, type IdempotencyKey } from "@afenda/contracts";
 import fp from "fastify-plugin";
 import {
@@ -47,7 +52,11 @@ interface IdempotencyMeta {
   requestHash: string;
 }
 
+<<<<<<< HEAD
 export const idempotencyPlugin = fp(async (app: any) => {
+=======
+const idempotencyPluginImpl: FastifyPluginAsync = async (app) => {
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   // ── preHandler: claim idempotency key ──────────────────────────────────────
   app.addHook("preHandler", async (req: any, reply: any) => {
     const key =
@@ -56,7 +65,7 @@ export const idempotencyPlugin = fp(async (app: any) => {
 
     if (!key) return; // not an idempotent request
 
-    const orgId = req.orgId;
+    const orgId = req.orgId ?? req.ctx?.activeContext?.orgId;
     if (!orgId) return; // org not resolved yet
 
     const command = `${req.method}:${req.routeOptions.url ?? req.url}`;
@@ -159,4 +168,12 @@ export const idempotencyPlugin = fp(async (app: any) => {
       app.log.warn({ err }, "Failed to release idempotency key (non-fatal)");
     }
   });
+<<<<<<< HEAD
 }) as any;
+=======
+};
+
+export const idempotencyPlugin = fp(idempotencyPluginImpl as any, {
+  name: "idempotency-plugin",
+}) as FastifyPluginAsync;
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)

@@ -26,8 +26,8 @@ const mockUpdateWhere = vi.fn();
 const mockUpdateSet = vi.fn(() => ({ where: mockUpdateWhere }));
 const mockUpdate = vi.fn(() => ({ set: mockUpdateSet }));
 
-const mockSelectWhereResult: unknown[] = [];
-const mockSelectWhere = vi.fn(() => mockSelectWhereResult);
+let selectResultQueue: unknown[][] = [];
+const mockSelectWhere = vi.fn(async () => selectResultQueue.shift() ?? []);
 const mockSelectFrom = vi.fn(() => ({ where: mockSelectWhere }));
 const mockSelect = vi.fn(() => ({ from: mockSelectFrom }));
 
@@ -99,9 +99,15 @@ const CTX = { activeContext: { orgId: ORG_ID } };
 const POLICY_CTX = { principalId: PRINCIPAL_A };
 
 beforeEach(() => {
+<<<<<<< HEAD
   vi.resetAllMocks();
 
   // Rebuild default mock graph so each test starts from identical state.
+=======
+  vi.clearAllMocks();
+  // Default: empty result for select queries
+  selectResultQueue = [];
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   mockInsertReturning.mockResolvedValue([{ id: SESSION_ID }]);
   mockInsertValues.mockReturnValue({ returning: mockInsertReturning });
   mockInsert.mockReturnValue({ values: mockInsertValues });
@@ -119,7 +125,7 @@ beforeEach(() => {
 
 describe("openReconciliationSession", () => {
   it("opens a new session when no existing session for the statement", async () => {
-    mockSelectWhere.mockResolvedValueOnce([]); // no existing session
+    selectResultQueue = [[]]; // no existing session
 
     const result = await openReconciliationSession(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       bankAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" as any,
@@ -130,7 +136,7 @@ describe("openReconciliationSession", () => {
   });
 
   it("blocks opening a second session for the same statement", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID }]); // existing session
+    selectResultQueue = [[{ id: SESSION_ID }]]; // existing session
 
     const result = await openReconciliationSession(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       bankAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" as any,
@@ -148,10 +154,8 @@ describe("openReconciliationSession", () => {
 
 describe("addReconciliationMatch", () => {
   it("blocks adding match when amount exceeds statement line amount", async () => {
-    // First query: find the session
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID, status: "open" }]);
-    // Second query: check for existing match on the line
-    mockSelectWhere.mockResolvedValueOnce([]);
+    // First query: find the session; second query: check for existing match on the line
+    selectResultQueue = [[{ id: SESSION_ID, status: "open" }], []];
 
     const result = await addReconciliationMatch(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,
@@ -169,7 +173,7 @@ describe("addReconciliationMatch", () => {
   });
 
   it("blocks adding match to a closed session", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID, status: "closed" }]);
+    selectResultQueue = [[{ id: SESSION_ID, status: "closed" }]];
 
     const result = await addReconciliationMatch(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,
@@ -187,8 +191,8 @@ describe("addReconciliationMatch", () => {
   });
 
   it("blocks matching a line already matched in another match record", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID, status: "open" }]); // session found
-    mockSelectWhere.mockResolvedValueOnce([{ id: MATCH_ID }]); // existing active match for the line
+    // First query: session found; second query: existing active match for the line
+    selectResultQueue = [[{ id: SESSION_ID, status: "open" }], [{ id: MATCH_ID }]];
 
     const result = await addReconciliationMatch(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,
@@ -210,7 +214,7 @@ describe("addReconciliationMatch", () => {
 
 describe("closeReconciliationSession", () => {
   it("closes an open session", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID, status: "open" }]);
+    selectResultQueue = [[{ id: SESSION_ID, status: "open" }]];
 
     const result = await closeReconciliationSession(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,
@@ -220,7 +224,7 @@ describe("closeReconciliationSession", () => {
   });
 
   it("blocks closing an already-closed session", async () => {
-    mockSelectWhere.mockResolvedValueOnce([{ id: SESSION_ID, status: "closed" }]);
+    selectResultQueue = [[{ id: SESSION_ID, status: "closed" }]];
 
     const result = await closeReconciliationSession(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,
@@ -233,7 +237,7 @@ describe("closeReconciliationSession", () => {
   });
 
   it("returns not-found when session does not exist", async () => {
-    mockSelectWhere.mockResolvedValueOnce([]);
+    selectResultQueue = [[]];
 
     const result = await closeReconciliationSession(mockDb, CTX, POLICY_CTX, CORRELATION_ID, {
       sessionId: SESSION_ID,

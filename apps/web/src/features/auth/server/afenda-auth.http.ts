@@ -55,12 +55,17 @@ export class HttpAfendaAuthService implements AfendaAuthService {
       throw new AuthAdapterError("Credential verification failed", { status: response.status });
     }
 
-    const user = (await response.json()) as { id?: string; email?: string };
+    const user = (await response.json()) as {
+      id?: string;
+      email?: string;
+      requiresMfa?: boolean;
+    };
     return {
       ok: true,
       data: {
         principalId: user.id ?? "",
         email: user.email ?? "",
+        requiresMfa: user.requiresMfa,
       },
     };
   }
@@ -81,12 +86,17 @@ export class HttpAfendaAuthService implements AfendaAuthService {
       throw new AuthAdapterError("MFA verification failed", { status: response.status });
     }
 
-    const user = (await response.json()) as { id?: string; email?: string };
+    const user = (await response.json()) as {
+      id?: string;
+      email?: string;
+      sessionGrant?: string;
+    };
     return {
       ok: true,
       data: {
         principalId: user.id ?? "",
         email: user.email ?? "",
+        sessionGrant: user.sessionGrant ?? "",
       },
     };
   }
@@ -157,12 +167,20 @@ export class HttpAfendaAuthService implements AfendaAuthService {
       throw new AuthAdapterError("Invite acceptance failed", { status: response.status });
     }
 
-    const user = (await response.json()) as { email?: string; portal?: string };
+    const user = (await response.json()) as {
+      email?: string;
+      portal?: string;
+      sessionGrant?: string;
+    };
     return {
       ok: true,
       data: {
         email: user.email ?? "",
-        portal: (user.portal ?? "supplier") as Exclude<import("@afenda/contracts").PortalType, "app">,
+        portal: (user.portal ?? "supplier") as Exclude<
+          import("@afenda/contracts").PortalType,
+          "app"
+        >,
+        sessionGrant: user.sessionGrant ?? "",
       },
     };
   }
@@ -179,7 +197,11 @@ export class HttpAfendaAuthService implements AfendaAuthService {
       throw new AuthAdapterError("Reset token verification failed", { status: response.status });
     }
 
-    const body = (await response.json()) as { valid?: boolean; email?: string; expiresAt?: string | null };
+    const body = (await response.json()) as {
+      valid?: boolean;
+      email?: string;
+      expiresAt?: string | null;
+    };
 
     if (!body.valid || !body.email) {
       return {

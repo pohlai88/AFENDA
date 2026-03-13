@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export default function OrganizationsSettingsLoading() {
   return (
     <div>
@@ -12,6 +13,17 @@ export default function OrganizationsSettingsLoading() {
             <div className="h-24 animate-pulse rounded border border-border bg-muted" />
           </div>
         ))}
+=======
+import { Skeleton } from "@afenda/ui";
+
+export default function OrganizationsSettingsLoading() {
+  return (
+    <div className="space-y-6 p-6">
+      <Skeleton className="h-8 w-64" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-56 w-full" />
+        <Skeleton className="h-56 w-full" />
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
       </div>
     </div>
   );

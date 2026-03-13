@@ -44,6 +44,7 @@ import { handleTreasuryLiquiditySourceFeedEvent } from "./jobs/erp/finance/treas
 import { handleTreasuryFxRateSnapshotEvent } from "./jobs/erp/finance/treasury/handle-fx-rate-snapshot.js";
 import { handleTreasuryApDuePaymentProjectionEvent } from "./jobs/erp/finance/treasury/handle-ap-due-payment-projection.js";
 import { handleTreasuryArExpectedReceiptProjectionEvent } from "./jobs/erp/finance/treasury/handle-ar-expected-receipt-projection.js";
+<<<<<<< HEAD
 import { handleTreasuryInternalBankAccountEvent } from "./jobs/erp/finance/treasury/handle-internal-bank-account.js";
 import { handleTreasuryIntercompanyTransferEvent } from "./jobs/erp/finance/treasury/handle-intercompany-transfer.js";
 import { handleIntercompanyTransferSettled } from "./jobs/erp/finance/treasury/handle-intercompany-transfer-settled.js";
@@ -55,6 +56,53 @@ import { handleTreasuryLimitBreached } from "./jobs/erp/finance/treasury/handle-
 import { handleBankConnectorSyncRequested } from "./jobs/erp/finance/treasury/handle-bank-connector-sync-requested.js";
 import { handleMarketDataRefreshRequested } from "./jobs/erp/finance/treasury/handle-market-data-refresh-requested.js";
 import { handleTreasuryPostingRequested } from "./jobs/erp/finance/treasury/handle-treasury-posting-requested.js";
+=======
+import { handleTaskCreated } from "./jobs/comm/tasks/handle-task-created.js";
+import { handleTaskUpdated } from "./jobs/comm/tasks/handle-task-updated.js";
+import { handleTaskAssigned } from "./jobs/comm/tasks/handle-task-assigned.js";
+import { handleTasksBulkAssigned } from "./jobs/comm/tasks/handle-tasks-bulk-assigned.js";
+import { handleTaskStatusChanged } from "./jobs/comm/tasks/handle-task-status-changed.js";
+import { handleTasksBulkTransitioned } from "./jobs/comm/tasks/handle-tasks-bulk-status-changed.js";
+import { handleTaskCompleted } from "./jobs/comm/tasks/handle-task-completed.js";
+import { handleTaskArchived } from "./jobs/comm/tasks/handle-task-archived.js";
+import { handleTaskChecklistAdded } from "./jobs/comm/tasks/handle-task-checklist-added.js";
+import { handleTaskChecklistToggled } from "./jobs/comm/tasks/handle-task-checklist-toggled.js";
+import { handleTaskChecklistRemoved } from "./jobs/comm/tasks/handle-task-checklist-removed.js";
+import { handleTaskTimeLogged } from "./jobs/comm/tasks/handle-task-time-logged.js";
+import { handleProjectCreated } from "./jobs/comm/projects/handle-project-created.js";
+import { handleProjectUpdated } from "./jobs/comm/projects/handle-project-updated.js";
+import { handleProjectStatusChanged } from "./jobs/comm/projects/handle-project-status-changed.js";
+import { handleProjectMemberAdded } from "./jobs/comm/projects/handle-project-member-added.js";
+import { handleProjectMemberRemoved } from "./jobs/comm/projects/handle-project-member-removed.js";
+import { handleProjectMilestoneCreated } from "./jobs/comm/projects/handle-project-milestone-created.js";
+import { handleProjectMilestoneCompleted } from "./jobs/comm/projects/handle-project-milestone-completed.js";
+import { handleApprovalRequested } from "./jobs/comm/approvals/handle-approval-requested.js";
+import { handleApprovalStepApproved } from "./jobs/comm/approvals/handle-approval-step-approved.js";
+import { handleApprovalApproved } from "./jobs/comm/approvals/handle-approval-approved.js";
+import { handleApprovalStepRejected } from "./jobs/comm/approvals/handle-approval-step-rejected.js";
+import { handleApprovalStepDelegated } from "./jobs/comm/approvals/handle-approval-step-delegated.js";
+import { handleApprovalEscalated } from "./jobs/comm/approvals/handle-approval-escalated.js";
+import { handleApprovalWithdrawn } from "./jobs/comm/approvals/handle-approval-withdrawn.js";
+import { handleAnnouncementPublished } from "./jobs/comm/announcements/handle-announcement-published.js";
+import { handleAnnouncementScheduled } from "./jobs/comm/announcements/handle-announcement-scheduled.js";
+import { handleAnnouncementAcknowledged } from "./jobs/comm/announcements/handle-announcement-acknowledged.js";
+import { handleAnnouncementArchived } from "./jobs/comm/announcements/handle-announcement-archived.js";
+import { handleCommentCreated } from "./jobs/comm/shared/handle-comment-created.js";
+import { handleLabelCreated } from "./jobs/comm/shared/handle-label-created.js";
+import { handleLabelUpdated } from "./jobs/comm/shared/handle-label-updated.js";
+import { handleLabelDeleted } from "./jobs/comm/shared/handle-label-deleted.js";
+import { handleLabelAssigned } from "./jobs/comm/shared/handle-label-assigned.js";
+import { handleLabelUnassigned } from "./jobs/comm/shared/handle-label-unassigned.js";
+import { handleSavedViewCreated } from "./jobs/comm/shared/handle-saved-view-created.js";
+import { handleSavedViewUpdated } from "./jobs/comm/shared/handle-saved-view-updated.js";
+import { handleSavedViewDeleted } from "./jobs/comm/shared/handle-saved-view-deleted.js";
+import { handleSubscriptionCreated } from "./jobs/comm/shared/handle-subscription-created.js";
+import { handleSubscriptionDeleted } from "./jobs/comm/shared/handle-subscription-deleted.js";
+import { handleCommentMentionsCreated } from "./jobs/comm/shared/handle-comment-mentions-created.js";
+import { handleInboxItemRead } from "./jobs/comm/shared/handle-inbox-item-read.js";
+import { handleInboxAllRead } from "./jobs/comm/shared/handle-inbox-all-read.js";
+import { handleNotificationPreferenceUpdated } from "./jobs/comm/shared/handle-notification-preference-updated.js";
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 
 // ── Validate environment ─────────────────────────────────────────────────────
 const env = validateEnv(WorkerEnvSchema);
@@ -121,6 +169,7 @@ const taskList = {
   handle_treasury_ap_due_payment_projection_event: handleTreasuryApDuePaymentProjectionEvent,
   handle_treasury_ar_expected_receipt_projection_event:
     handleTreasuryArExpectedReceiptProjectionEvent,
+<<<<<<< HEAD
   // Wave 4.1 — In-house Banking + Intercompany Transfers
   handle_treasury_internal_bank_account_event: handleTreasuryInternalBankAccountEvent,
   handle_treasury_intercompany_transfer_event: handleTreasuryIntercompanyTransferEvent,
@@ -137,8 +186,55 @@ const taskList = {
   handle_market_data_refresh_requested: handleMarketDataRefreshRequested,
   // Wave 5.2 — Treasury Accounting Bridge
   handle_treasury_posting_requested: handleTreasuryPostingRequested,
+=======
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   handle_journal_posted: handleJournalPosted,
   handle_journal_reversed: handleJournalReversed,
+  handle_task_created: handleTaskCreated,
+  handle_task_updated: handleTaskUpdated,
+  handle_task_assigned: handleTaskAssigned,
+  handle_tasks_bulk_assigned: handleTasksBulkAssigned,
+  handle_task_status_changed: handleTaskStatusChanged,
+  handle_tasks_bulk_transitioned: handleTasksBulkTransitioned,
+  handle_task_completed: handleTaskCompleted,
+  handle_task_archived: handleTaskArchived,
+  handle_task_checklist_added: handleTaskChecklistAdded,
+  handle_task_checklist_toggled: handleTaskChecklistToggled,
+  handle_task_checklist_removed: handleTaskChecklistRemoved,
+  handle_task_time_logged: handleTaskTimeLogged,
+  handle_project_created: handleProjectCreated,
+  handle_project_updated: handleProjectUpdated,
+  handle_project_status_changed: handleProjectStatusChanged,
+  handle_project_member_added: handleProjectMemberAdded,
+  handle_project_member_removed: handleProjectMemberRemoved,
+  handle_project_milestone_created: handleProjectMilestoneCreated,
+  handle_project_milestone_completed: handleProjectMilestoneCompleted,
+  handle_approval_requested: handleApprovalRequested,
+  handle_approval_step_approved: handleApprovalStepApproved,
+  handle_approval_approved: handleApprovalApproved,
+  handle_approval_step_rejected: handleApprovalStepRejected,
+  handle_approval_step_delegated: handleApprovalStepDelegated,
+  handle_approval_escalated: handleApprovalEscalated,
+  handle_approval_withdrawn: handleApprovalWithdrawn,
+  handle_announcement_published: handleAnnouncementPublished,
+  handle_announcement_scheduled: handleAnnouncementScheduled,
+  handle_announcement_acknowledged: handleAnnouncementAcknowledged,
+  handle_announcement_archived: handleAnnouncementArchived,
+  handle_comment_created: handleCommentCreated,
+  handle_label_created: handleLabelCreated,
+  handle_label_updated: handleLabelUpdated,
+  handle_label_deleted: handleLabelDeleted,
+  handle_label_assigned: handleLabelAssigned,
+  handle_label_unassigned: handleLabelUnassigned,
+  handle_saved_view_created: handleSavedViewCreated,
+  handle_saved_view_updated: handleSavedViewUpdated,
+  handle_saved_view_deleted: handleSavedViewDeleted,
+  handle_subscription_created: handleSubscriptionCreated,
+  handle_subscription_deleted: handleSubscriptionDeleted,
+  handle_comment_mentions_created: handleCommentMentionsCreated,
+  handle_inbox_item_read: handleInboxItemRead,
+  handle_inbox_all_read: handleInboxAllRead,
+  handle_notification_preference_updated: handleNotificationPreferenceUpdated,
 } as const;
 
 const runner = await run({

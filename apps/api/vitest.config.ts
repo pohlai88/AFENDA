@@ -1,6 +1,16 @@
 import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+
+const fromRoot = (relativePath: string) => fileURLToPath(new URL(relativePath, import.meta.url));
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@afenda/contracts": fromRoot("../../packages/contracts/src/index.ts"),
+      "@afenda/core": fromRoot("../../packages/core/src/index.ts"),
+      "@afenda/db": fromRoot("../../packages/db/src/index.ts"),
+    },
+  },
   test: {
     include: ["src/**/*.test.ts"],
     exclude: ["**/node_modules/**", "**/dist/**"],

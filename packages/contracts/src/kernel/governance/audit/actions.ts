@@ -144,6 +144,7 @@ export const AuditActionValues = [
   "treasury.intercompany-transfer.approved",
   "treasury.intercompany-transfer.rejected",
   "treasury.intercompany-transfer.settled",
+<<<<<<< HEAD
   // Treasury — Wave 4.2 Netting + Internal Interest
   "treasury.netting-session.create",
   "treasury.netting-session.add-items",
@@ -165,6 +166,68 @@ export const AuditActionValues = [
   "treasury.market-data-feed.created",
   "treasury.market-data-feed.activated",
   "treasury.market-data-feed.refresh-requested",
+=======
+
+  // COMM — shared
+  "comment.created",
+  "comment.edited",
+  "comment.deleted",
+  "mention.created",
+  "label.created",
+  "label.updated",
+  "label.deleted",
+  "label.assigned",
+  "label.unassigned",
+  "saved_view.created",
+  "saved_view.deleted",
+  "subscription.created",
+  "subscription.deleted",
+  "inbox_item.read",
+  "inbox_item.read_all",
+  "notification_preference.updated",
+
+  // COMM — tasks
+  "task.created",
+  "task.updated",
+  "task.assigned",
+  "task.status_changed",
+  "task.completed",
+  "task.archived",
+  "task.checklist_added",
+  "task.checklist_toggled",
+  "task.time_logged",
+  "task.bulk_assigned",
+  "task.bulk_transitioned",
+
+  // COMM — projects
+  "project.created",
+  "project.updated",
+  "project.status_changed",
+  "project.archived",
+  "project.member_added",
+  "project.member_removed",
+  "project.milestone_created",
+  "project.milestone_completed",
+
+  // COMM — approvals
+  "approval.requested",
+  "approval.step_approved",
+  "approval.step_rejected",
+  "approval.step_delegated",
+  "approval.escalated",
+  "approval.withdrawn",
+  "approval.auto_approved",
+  "approval_policy.created",
+  "approval_policy.updated",
+  "approval_delegation.created",
+
+  // COMM — announcements
+  "announcement.created",
+  "announcement.published",
+  "announcement.scheduled",
+  "announcement.archived",
+  "announcement.acknowledged",
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 ] as const;
 
 export type AuditAction = (typeof AuditActionValues)[number];
@@ -218,6 +281,7 @@ export const AuditEntityTypeValues = [
   "forecast_variance",
   "internal_bank_account",
   "intercompany_transfer",
+<<<<<<< HEAD
   "fx_exposure",
   "hedge_designation",
   "revaluation_event",
@@ -225,6 +289,30 @@ export const AuditEntityTypeValues = [
   "bank_connector_execution",
   "market_data_feed",
   "market_data_observation",
+=======
+
+  // COMM
+  "task",
+  "task_checklist_item",
+  "task_time_entry",
+  "project",
+  "project_member",
+  "project_milestone",
+  "project_phase",
+  "comment",
+  "label",
+  "label_assignment",
+  "saved_view",
+  "subscription",
+  "inbox_item",
+  "notification_preference",
+  "approval_request",
+  "approval_step",
+  "approval_policy",
+  "approval_delegation",
+  "announcement",
+  "announcement_read",
+>>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
 ] as const;
 
 export type AuditEntityType = (typeof AuditEntityTypeValues)[number];
