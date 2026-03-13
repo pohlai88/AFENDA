@@ -274,6 +274,46 @@ const SYNC_PAIRS = [
     excludeFromContract: [],
     excludeFromDb: ["id", "orgId", "status", "createdAt", "updatedAt"],
   },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-compensation.ts",
+    dbTable: "hrm_compensation_structures",
+    contractFile: "packages/contracts/src/erp/hr/compensation.entity.ts",
+    contractSchema: "HrmCompensationStructureSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-compensation.ts",
+    dbTable: "hrm_employee_compensation_packages",
+    contractFile: "packages/contracts/src/erp/hr/compensation.entity.ts",
+    contractSchema: "HrmEmployeeCompensationPackageSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-compensation.ts",
+    dbTable: "hrm_salary_change_history",
+    contractFile: "packages/contracts/src/erp/hr/compensation.entity.ts",
+    contractSchema: "HrmSalaryChangeHistorySchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-compensation.ts",
+    dbTable: "hrm_benefit_plans",
+    contractFile: "packages/contracts/src/erp/hr/compensation.entity.ts",
+    contractSchema: "HrmBenefitPlanSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
+  {
+    dbFile: "packages/db/src/schema/erp/hrm/hrm-compensation.ts",
+    dbTable: "hrm_benefit_enrollments",
+    contractFile: "packages/contracts/src/erp/hr/compensation.entity.ts",
+    contractSchema: "HrmBenefitEnrollmentSchema",
+    excludeFromContract: [],
+    excludeFromDb: ["id", "orgId", "createdAt", "updatedAt"],
+  },
 
   // ─── IAM ─────────────────────────────────────────────────────────────
   {

@@ -49,7 +49,8 @@ export async function fetchEmployeeProfile(employeeId: string) {
 
 export async function fetchEmploymentTimeline(employmentId: string) {
   const res = await hrmFetch(`/v1/hrm/employments/${employmentId}/timeline`);
-  if (!res.ok) throw new Error(`HR employment timeline API error ${res.status}: ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`HR employment timeline API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
@@ -85,7 +86,8 @@ export async function fetchRequisition(requisitionId: string) {
 
 export async function fetchCandidatePipeline(candidateId: string) {
   const res = await hrmFetch(`/v1/hrm/candidates/${candidateId}/pipeline`);
-  if (!res.ok) throw new Error(`HR candidate pipeline API error ${res.status}: ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`HR candidate pipeline API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
@@ -97,13 +99,15 @@ export async function fetchApplication(applicationId: string) {
 
 export async function fetchOnboardingChecklist(planId: string) {
   const res = await hrmFetch(`/v1/hrm/onboarding-plans/${planId}`);
-  if (!res.ok) throw new Error(`HR onboarding checklist API error ${res.status}: ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`HR onboarding checklist API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
 export async function fetchPendingOnboarding() {
   const res = await hrmFetch("/v1/hrm/onboarding/pending");
-  if (!res.ok) throw new Error(`HR pending onboarding API error ${res.status}: ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`HR pending onboarding API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
@@ -130,7 +134,8 @@ export async function fetchAttendanceRecords(params?: {
   if (typeof params?.offset === "number") query.set("offset", String(params.offset));
   const qs = query.toString();
   const res = await hrmFetch(`/v1/hrm/attendance/records${qs ? `?${qs}` : ""}`);
-  if (!res.ok) throw new Error(`HR attendance records API error ${res.status}: ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`HR attendance records API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
@@ -169,5 +174,68 @@ export async function fetchLeaveBalances(params?: {
   const qs = query.toString();
   const res = await hrmFetch(`/v1/hrm/leave/balances${qs ? `?${qs}` : ""}`);
   if (!res.ok) throw new Error(`HR leave balances API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchCompensationStructures(params?: { limit?: number; offset?: number }) {
+  const query = new URLSearchParams();
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/compensation/structures${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR compensation structures API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchCompensationPackages(params?: {
+  employmentId?: string;
+  currentOnly?: boolean;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.employmentId) query.set("employmentId", params.employmentId);
+  if (typeof params?.currentOnly === "boolean")
+    query.set("currentOnly", String(params.currentOnly));
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/compensation/packages${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR compensation packages API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchSalaryHistory(params?: {
+  employmentId?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.employmentId) query.set("employmentId", params.employmentId);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/compensation/salary-history${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`HR salary history API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchBenefitEnrollments(params?: {
+  employmentId?: string;
+  enrollmentStatus?: "active" | "suspended" | "terminated" | "pending";
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.employmentId) query.set("employmentId", params.employmentId);
+  if (params?.enrollmentStatus) query.set("enrollmentStatus", params.enrollmentStatus);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/benefit/enrollments${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR benefit enrollments API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }

@@ -56,6 +56,23 @@ const groups = [
       { label: "Leave Balances", href: "/hr/leave/balances" },
     ],
   },
+  {
+    title: "Compensation",
+    href: "/hr/compensation/structures",
+    links: [
+      { label: "Structures", href: "/hr/compensation/structures" },
+      { label: "Packages", href: "/hr/compensation/packages" },
+      { label: "Salary History", href: "/hr/compensation/salary-history" },
+    ],
+  },
+  {
+    title: "Benefits",
+    href: "/hr/benefits/plans",
+    links: [
+      { label: "Plans", href: "/hr/benefits/plans" },
+      { label: "Enrollments", href: "/hr/benefits/enrollments" },
+    ],
+  },
 ];
 
 export default function HrmHomePage() {
@@ -79,7 +96,8 @@ export default function HrmHomePage() {
       <div className="mb-6 space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Human Resources</h1>
         <p className="text-sm text-muted-foreground">
-          Workforce truth-first workspace for people, organization, recruitment, onboarding/offboarding, attendance, and leave.
+          Workforce truth-first workspace for people, organization, recruitment,
+          onboarding/offboarding, attendance, leave, compensation, and benefits.
         </p>
       </div>
 

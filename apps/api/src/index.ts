@@ -101,6 +101,15 @@ import { hrCreateRosterAssignmentRoutes } from "./routes/erp/hr/create-roster-as
 import { hrCreateLeaveRequestRoutes } from "./routes/erp/hr/create-leave-request.js";
 import { hrApproveLeaveRequestRoutes } from "./routes/erp/hr/approve-leave-request.js";
 import { hrRecalculateLeaveBalanceRoutes } from "./routes/erp/hr/recalculate-leave-balance.js";
+import { hrCreateCompensationStructureRoutes } from "./routes/erp/hr/create-compensation-structure.js";
+import { hrAssignCompensationPackageRoutes } from "./routes/erp/hr/assign-compensation-package.js";
+import { hrProcessSalaryChangeRoutes } from "./routes/erp/hr/process-salary-change.js";
+import { hrCreateBenefitPlanRoutes } from "./routes/erp/hr/create-benefit-plan.js";
+import { hrEnrollBenefitRoutes } from "./routes/erp/hr/enroll-benefit.js";
+import { hrListCompensationStructuresRoutes } from "./routes/erp/hr/list-compensation-structures.js";
+import { hrListCompensationPackagesRoutes } from "./routes/erp/hr/list-compensation-packages.js";
+import { hrListSalaryHistoryRoutes } from "./routes/erp/hr/list-salary-history.js";
+import { hrListBenefitEnrollmentsRoutes } from "./routes/erp/hr/list-benefit-enrollments.js";
 // Supplier sub-entity routes (templates — uncomment when implemented)
 // import { supplierSiteRoutes } from "./routes/erp/supplier/supplier-site.js";
 // import { supplierBankAccountRoutes } from "./routes/erp/supplier/supplier-bank-account.js";
@@ -369,6 +378,15 @@ export async function buildApp() {
   await app.register(hrCreateLeaveRequestRoutes, { prefix: "/v1" });
   await app.register(hrApproveLeaveRequestRoutes, { prefix: "/v1" });
   await app.register(hrRecalculateLeaveBalanceRoutes, { prefix: "/v1" });
+  await app.register(hrCreateCompensationStructureRoutes, { prefix: "/v1" });
+  await app.register(hrAssignCompensationPackageRoutes, { prefix: "/v1" });
+  await app.register(hrProcessSalaryChangeRoutes, { prefix: "/v1" });
+  await app.register(hrCreateBenefitPlanRoutes, { prefix: "/v1" });
+  await app.register(hrEnrollBenefitRoutes, { prefix: "/v1" });
+  await app.register(hrListCompensationStructuresRoutes, { prefix: "/v1" });
+  await app.register(hrListCompensationPackagesRoutes, { prefix: "/v1" });
+  await app.register(hrListSalaryHistoryRoutes, { prefix: "/v1" });
+  await app.register(hrListBenefitEnrollmentsRoutes, { prefix: "/v1" });
   await app.register(hrSubmitApplicationRoutes, { prefix: "/v1" });
   await app.register(hrSubmitInterviewFeedbackRoutes, { prefix: "/v1" });
   await app.register(hrTerminateEmploymentRoutes, { prefix: "/v1" });

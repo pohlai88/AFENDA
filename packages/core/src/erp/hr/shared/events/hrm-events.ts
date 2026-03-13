@@ -28,6 +28,11 @@ export const HRM_EVENTS = {
   LEAVE_REQUEST_CREATED: "hrm.leave.request.created",
   LEAVE_REQUEST_REVIEWED: "hrm.leave.request.reviewed",
   LEAVE_BALANCE_RECALCULATED: "hrm.leave.balance.recalculated",
+  COMPENSATION_STRUCTURE_CREATED: "hrm.compensation.structure.created",
+  COMPENSATION_PACKAGE_ASSIGNED: "hrm.compensation.package.assigned",
+  SALARY_CHANGE_PROCESSED: "hrm.compensation.salary.changed",
+  BENEFIT_PLAN_CREATED: "hrm.benefit.plan.created",
+  BENEFIT_ENROLLED: "hrm.benefit.enrolled",
 } as const;
 
 export type HrmEventName = (typeof HRM_EVENTS)[keyof typeof HRM_EVENTS];
