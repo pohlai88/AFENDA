@@ -7,8 +7,9 @@
     "dbaeumer.vscode-eslint",
 
     // ── TypeScript ────────────────────────────────────────────────────────────
-    // Uses the workspace TypeScript version (set via typescript.tsdk in settings)
-    "ms-vscode.vscode-typescript-next",
+    // NOTE: Do NOT add ms-vscode.vscode-typescript-next (TS nightly) — the
+    // project pins TypeScript 5.9.3 via catalog and typescript.tsdk in settings.
+    // The nightly language service would conflict with the pinned workspace TS.
 
     // ── Styling ───────────────────────────────────────────────────────────────
     // Tailwind v4 IntelliSense: class completions, hover docs, linting
@@ -34,13 +35,25 @@
     // Path IntelliSense for import completions
     "christian-kohler.path-intellisense",
     // Spell checking for source code and markdown
-    "streetsidesoftware.code-spell-checker"
+    "streetsidesoftware.code-spell-checker",
+
+    // ── Infrastructure & Data ─────────────────────────────────────────────────
+    // Docker: compose file editing, container management (local Postgres via
+    // docker-compose.dev.yml)
+    "ms-azuretools.vscode-docker",
+    // YAML: schema validation for pnpm-workspace.yaml and docker-compose.dev.yml
+    "redhat.vscode-yaml",
+    // SQLTools: syntax highlighting + editing for Drizzle SQL migrations
+    // in packages/db/drizzle/
+    "mtxr.sqltools"
   ],
 
   // Extensions that conflict with this project's setup (disable if installed).
   "unwantedRecommendations": [
     // Conflicts with Prettier — do not use both simultaneously
     "hookyqr.beautify",
-    "esbenp.prettier-vscode-nightly"
+    "esbenp.prettier-vscode-nightly",
+    // TypeScript nightly conflicts with pinned TS 5.9.3 + typescript.tsdk setting
+    "ms-vscode.vscode-typescript-next"
   ]
 }

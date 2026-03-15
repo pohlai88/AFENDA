@@ -6,17 +6,18 @@
       "name": "Debug: API",
       "type": "node",
       "request": "launch",
+      // tsx is the runtime; VS Code node debugger injects --inspect automatically.
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
-      "args": ["--inspect", "src/index.ts"],
+      // OTel MUST be loaded via --import BEFORE any module resolution so it can
+      // monkey-patch http, pg, etc. Mirrors: tsx watch --import ./src/otel-preload.ts
+      "runtimeArgs": ["--import", "${workspaceFolder}/apps/api/src/otel-preload.ts"],
+      "program": "${workspaceFolder}/apps/api/src/index.ts",
       "cwd": "${workspaceFolder}/apps/api",
       "env": { "NODE_ENV": "development" },
       "sourceMaps": true,
       "smartStep": true,
       "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
-      "resolveSourceMapLocations": [
-        "${workspaceFolder}/apps/api/**",
-        "!**/node_modules/**"
-      ],
+      "resolveSourceMapLocations": ["${workspaceFolder}/apps/api/**", "!**/node_modules/**"],
       "presentation": { "group": "servers", "order": 1 }
     },
 
@@ -26,7 +27,7 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
-      "args": ["--inspect", "src/index.ts"],
+      "program": "${workspaceFolder}/apps/worker/src/index.ts",
       "cwd": "${workspaceFolder}/apps/worker",
       "env": { "NODE_ENV": "development" },
       "sourceMaps": true,
@@ -43,7 +44,8 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["--inspect"],
+      // Do NOT add "runtimeArgs": ["--inspect"] — VS Code's node debugger injects
+      // --inspect automatically; adding it explicitly causes a port conflict.
       "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
       "args": ["dev"],
       "cwd": "${workspaceFolder}/apps/web",
@@ -69,7 +71,9 @@
       "cwd": "${workspaceFolder}",
       "sourceMaps": true,
       "smartStep": true,
-      "console": "integratedTerminal",
+      // internalConsole: console.log statements appear in the Debug Console
+      // alongside variable inspection (integratedTerminal hides them there).
+      "console": "internalConsole",
       "skipFiles": ["<node_internals>/**"],
       "presentation": { "group": "tests", "order": 1 }
     },
@@ -84,7 +88,7 @@
       "cwd": "${workspaceFolder}",
       "sourceMaps": true,
       "smartStep": true,
-      "console": "integratedTerminal",
+      "console": "internalConsole",
       "skipFiles": ["<node_internals>/**"],
       "presentation": { "group": "tests", "order": 2 }
     }
