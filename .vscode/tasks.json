@@ -1,0 +1,202 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // ── Development ──────────────────────────────────────────────────────────
+    {
+      "label": "dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build",
+      "isBackground": true,
+      "presentation": {
+        "label": "dev",
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "ready on"
+        }
+      }
+    },
+
+    // ── Type checking ─────────────────────────────────────────────────────────
+    {
+      "label": "typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": {
+        "label": "typecheck",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": "$tsc"
+    },
+
+    // ── Linting ───────────────────────────────────────────────────────────────
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "group": "build",
+      "presentation": {
+        "label": "lint",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": "$eslint-stylish"
+    },
+
+    // ── Testing ───────────────────────────────────────────────────────────────
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "pnpm test",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": {
+        "label": "test",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "test:coverage",
+      "type": "shell",
+      "command": "pnpm test:coverage",
+      "group": "test",
+      "presentation": {
+        "label": "test:coverage",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+
+    // ── CI Gates ─────────────────────────────────────────────────────────────
+    {
+      "label": "check:all (CI gates)",
+      "type": "shell",
+      "command": "pnpm check:all",
+      "group": "build",
+      "presentation": {
+        "label": "check:all",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+
+    // ── Pre-PR: full verification ─────────────────────────────────────────────
+    {
+      "label": "verify (typecheck + test + check:all)",
+      "dependsOn": ["typecheck", "test", "check:all (CI gates)"],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "presentation": {
+        "label": "verify",
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+
+    // ── Build ─────────────────────────────────────────────────────────────────
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": "build",
+      "presentation": {
+        "label": "build",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": "$tsc"
+    },
+
+    // ── Database ─────────────────────────────────────────────────────────────
+    {
+      "label": "db:generate",
+      "type": "shell",
+      "command": "pnpm db:generate",
+      "group": "none",
+      "presentation": {
+        "label": "db:generate",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "db:migrate",
+      "type": "shell",
+      "command": "pnpm db:migrate",
+      "group": "none",
+      "presentation": {
+        "label": "db:migrate",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "db:studio",
+      "type": "shell",
+      "command": "pnpm db:studio",
+      "isBackground": true,
+      "group": "none",
+      "presentation": {
+        "label": "db:studio",
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+
+    // ── Scaffolding ───────────────────────────────────────────────────────────
+    {
+      "label": "scaffold",
+      "type": "shell",
+      // Usage: pass pillar/module and entity name as input
+      "command": "node tools/scaffold.mjs ${input:scaffoldTarget} ${input:entityName}",
+      "group": "none",
+      "presentation": {
+        "label": "scaffold",
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ],
+
+  "inputs": [
+    {
+      "id": "scaffoldTarget",
+      "type": "promptString",
+      "description": "Scaffold target (e.g. erp/finance/ap)",
+      "default": "erp/finance/ap"
+    },
+    {
+      "id": "entityName",
+      "type": "promptString",
+      "description": "Entity name in kebab-case (e.g. invoice)",
+      "default": "invoice"
+    }
+  ]
+}

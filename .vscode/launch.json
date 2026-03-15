@@ -1,0 +1,101 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // ── API (Fastify + tsx) ───────────────────────────────────────────────────
+    {
+      "name": "Debug: API",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": ["--inspect", "src/index.ts"],
+      "cwd": "${workspaceFolder}/apps/api",
+      "env": { "NODE_ENV": "development" },
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/apps/api/**",
+        "!**/node_modules/**"
+      ],
+      "presentation": { "group": "servers", "order": 1 }
+    },
+
+    // ── Worker (Graphile Worker + tsx) ───────────────────────────────────────
+    {
+      "name": "Debug: Worker",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": ["--inspect", "src/index.ts"],
+      "cwd": "${workspaceFolder}/apps/worker",
+      "env": { "NODE_ENV": "development" },
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "presentation": { "group": "servers", "order": 2 }
+    },
+
+    // ── Next.js Web App ───────────────────────────────────────────────────────
+    // Launches `next dev` with Node inspector enabled.
+    // For client-side debugging, use the browser DevTools.
+    {
+      "name": "Debug: Next.js (server)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--inspect"],
+      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+      "cwd": "${workspaceFolder}/apps/web",
+      "env": { "NODE_ENV": "development" },
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"],
+      "serverReadyAction": {
+        "pattern": "Local:\\s+(https?://[^ ]+)",
+        "uriFormat": "%s",
+        "action": "openExternally"
+      },
+      "presentation": { "group": "servers", "order": 3 }
+    },
+
+    // ── Vitest: run current file ──────────────────────────────────────────────
+    {
+      "name": "Debug: Vitest (current file)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/vitest",
+      "args": ["run", "${relativeFile}", "--reporter=verbose"],
+      "cwd": "${workspaceFolder}",
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "tests", "order": 1 }
+    },
+
+    // ── Vitest: run all tests ─────────────────────────────────────────────────
+    {
+      "name": "Debug: Vitest (all)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/vitest",
+      "args": ["run", "--reporter=verbose"],
+      "cwd": "${workspaceFolder}",
+      "sourceMaps": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "tests", "order": 2 }
+    }
+  ],
+
+  // ── Compound: spin up full stack for debugging ────────────────────────────
+  "compounds": [
+    {
+      "name": "Debug: Full Stack (API + Worker)",
+      "configurations": ["Debug: API", "Debug: Worker"],
+      "presentation": { "group": "servers", "order": 10 }
+    }
+  ]
+}

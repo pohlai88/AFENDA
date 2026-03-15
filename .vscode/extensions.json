@@ -1,0 +1,46 @@
+{
+  // Extensions recommended for every developer working on this monorepo.
+  // VS Code will prompt to install any missing ones on first open.
+  "recommendations": [
+    // ── Formatting & Linting ──────────────────────────────────────────────────
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+
+    // ── TypeScript ────────────────────────────────────────────────────────────
+    // Uses the workspace TypeScript version (set via typescript.tsdk in settings)
+    "ms-vscode.vscode-typescript-next",
+
+    // ── Styling ───────────────────────────────────────────────────────────────
+    // Tailwind v4 IntelliSense: class completions, hover docs, linting
+    "bradlc.vscode-tailwindcss",
+
+    // ── Testing ───────────────────────────────────────────────────────────────
+    "vitest.explorer",
+    "ms-playwright.playwright",
+
+    // ── Git & GitHub ─────────────────────────────────────────────────────────
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+
+    // ── AI ────────────────────────────────────────────────────────────────────
+    "github.copilot",
+    "github.copilot-chat",
+
+    // ── Developer Experience ──────────────────────────────────────────────────
+    // Error Lens: shows ESLint/TypeScript errors inline on the offending line
+    "usernamehw.errorlens",
+    // .env file syntax highlighting and secret masking
+    "mikestead.dotenv",
+    // Path IntelliSense for import completions
+    "christian-kohler.path-intellisense",
+    // Spell checking for source code and markdown
+    "streetsidesoftware.code-spell-checker"
+  ],
+
+  // Extensions that conflict with this project's setup (disable if installed).
+  "unwantedRecommendations": [
+    // Conflicts with Prettier — do not use both simultaneously
+    "hookyqr.beautify",
+    "esbenp.prettier-vscode-nightly"
+  ]
+}

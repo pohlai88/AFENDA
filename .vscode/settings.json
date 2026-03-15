@@ -1,9 +1,29 @@
 {
-  "files.associations": {
-    "*.md": "markdown"
+  // ── Editor core ─────────────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.trimAutoWhitespace": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.stickyScroll.enabled": true,
+  "editor.codeActionsOnSave": {
+    // ESLint auto-fix on save (explicit = only when you save, not on auto-save)
+    "source.fixAll.eslint": "explicit"
   },
-  "workbench.iconTheme": "vs-seti",
+
+  // ── Language-specific overrides ──────────────────────────────────────────────
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
   "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "on",
     "editor.quickSuggestions": {
       "other": "off",
@@ -11,9 +31,27 @@
       "strings": "off"
     }
   },
-  // ── Tailwind CSS IntelliSense ──────────────────────────────────────────────
-  // Surfaces canonical-class hints inline; mirrors what pnpm lint catches.
+
+  // ── TypeScript ───────────────────────────────────────────────────────────────
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.quoteStyle": "double",
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.inlayHints.parameterNames.enabled": "literals",
+  "typescript.inlayHints.variableTypes.enabled": false,
+  "typescript.inlayHints.returnTypes.enabled": false,
+
+  // ── ESLint (flat config — eslint.config.js at root) ─────────────────────────
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+  // auto-detect working directory per package.json in the monorepo
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+
+  // ── Tailwind CSS IntelliSense (v4: point at CSS entry, not config file) ──────
   "tailwindCSS.validate": true,
+  "tailwindCSS.experimental.configFile": "apps/web/src/app/globals.css",
   "tailwindCSS.lint.cssConflict": "warning",
   "tailwindCSS.lint.invalidApply": "error",
   "tailwindCSS.lint.invalidScreen": "error",
@@ -21,18 +59,60 @@
   "tailwindCSS.lint.invalidConfigPath": "error",
   "tailwindCSS.lint.invalidTailwindDirective": "error",
   "tailwindCSS.lint.recommendedVariantOrder": "warning",
-  // ── Prettier (format on save auto-sorts Tailwind class names) ─────────────
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 
-  // ── Terminal: force UTF-8 (code page 65001) in every PowerShell session ──
-  // Prevents pnpm/turbo box-drawing chars from appearing as "ÔÄ»" garbage.
+  // ── File associations ────────────────────────────────────────────────────────
+  "files.associations": {
+    "*.md": "markdown",
+    "*.css": "tailwindcss"
+  },
+
+  // ── Encoding & line endings (match Prettier: endOfLine=lf) ──────────────────
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+
+  // ── Explorer: hide build artifacts and caches ────────────────────────────────
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/*.tsbuildinfo": true
+  },
+
+  // ── Search: exclude generated/lockfile content ────────────────────────────────
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.turbo": true,
+    "**/dist": true,
+    "**/.next": true,
+    "**/pnpm-lock.yaml": true,
+    "**/*.tsbuildinfo": true,
+    "**/*.js.map": true
+  },
+
+  // ── File nesting (cleaner Explorer for monorepo) ────────────────────────────
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml, .npmrc, .nvmrc, .node-version",
+    "tsconfig.json": "tsconfig.*.json",
+    "turbo.json": ".turboignore, turbo.json",
+    "vitest.workspace.ts": "vitest.config.ts",
+    "*.env": ".env.*, .env.local, .env.example, .env.production",
+    "next.config.ts": "postcss.config.mjs, middleware.ts, instrumentation.ts",
+    "eslint.config.js": ".eslintignore, .eslintrc*",
+    ".prettierrc": ".prettierignore, prettier.config.*"
+  },
+
+  // ── Package manager ──────────────────────────────────────────────────────────
+  "npm.packageManager": "pnpm",
+
+  // ── Terminal: force UTF-8 (code page 65001) in every PowerShell session ──────
+  // Prevents pnpm/turbo box-drawing chars from rendering as "├──" garbage.
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
@@ -44,14 +124,17 @@
       ]
     }
   },
-
-  // ── File encoding: always read/write UTF-8; never silently re-encode ──
-  "files.encoding": "utf8",
-  "files.autoGuessEncoding": false,
-
-  // ── Reduce TS/extension noise (e.g. total-typescript as-const on intentional const) ──
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+  "terminal.integrated.env.windows": {
+    // Enable colour output from turborepo, vitest, eslint
+    "FORCE_COLOR": "1"
   },
-  "eslint.validate": ["javascript", "typescript", "typescriptreact"]
+
+  // ── Workbench ────────────────────────────────────────────────────────────────
+  "workbench.iconTheme": "vs-seti",
+  "workbench.editor.enablePreview": false,
+
+  // ── Vitest extension ─────────────────────────────────────────────────────────
+  "vitest.enable": true,
+  "vitest.workspaceConfig": "${workspaceFolder}/vitest.workspace.ts",
+  "testing.openTesting": "neverOpen"
 }
