@@ -47,7 +47,7 @@
       // Do NOT add "runtimeArgs": ["--inspect"] — VS Code's node debugger injects
       // --inspect automatically; adding it explicitly causes a port conflict.
       "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
-      "args": ["dev"],
+      "args": ["dev", "--port", "3000"],
       "cwd": "${workspaceFolder}/apps/web",
       "env": { "NODE_ENV": "development" },
       "sourceMaps": true,
@@ -97,8 +97,8 @@
   // ── Compound: spin up full stack for debugging ────────────────────────────
   "compounds": [
     {
-      "name": "Debug: Full Stack (API + Worker)",
-      "configurations": ["Debug: API", "Debug: Worker"],
+      "name": "Debug: Full Stack (API + Worker + Web)",
+      "configurations": ["Debug: API", "Debug: Worker", "Debug: Next.js (server)"],
       "presentation": { "group": "servers", "order": 10 }
     }
   ]

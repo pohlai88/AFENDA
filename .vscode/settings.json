@@ -83,12 +83,25 @@
     "**/*.tsbuildinfo": true
   },
 
+  // ── File watching: reduce churn from generated output in the monorepo ─────
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.turbo/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/coverage/**": true,
+    "**/*.tsbuildinfo": true
+  },
+
   // ── Search: exclude generated/lockfile content ────────────────────────────────
   "search.exclude": {
     "**/node_modules": true,
     "**/.turbo": true,
     "**/dist": true,
     "**/.next": true,
+    "**/coverage": true,
     "**/pnpm-lock.yaml": true,
     "**/*.tsbuildinfo": true,
     "**/*.js.map": true
@@ -100,7 +113,7 @@
   "explorer.fileNesting.patterns": {
     "package.json": "pnpm-lock.yaml, pnpm-workspace.yaml, .npmrc, .nvmrc, .node-version",
     "tsconfig.json": "tsconfig.*.json",
-    "turbo.json": ".turboignore, turbo.json",
+    "turbo.json": ".turboignore",
     "vitest.workspace.ts": "vitest.config.ts",
     "*.env": ".env.*, .env.local, .env.example, .env.production",
     "next.config.ts": "postcss.config.mjs, middleware.ts, instrumentation.ts",
