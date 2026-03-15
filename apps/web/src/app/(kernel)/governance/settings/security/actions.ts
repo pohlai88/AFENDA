@@ -5,6 +5,13 @@ import QRCode from "qrcode";
 
 import { auth } from "@/auth";
 import {
+  changeNeonEmail,
+  deleteNeonUser,
+  getNeonAccountInfo,
+  listNeonAccounts,
+  updateNeonUser,
+} from "@/lib/auth/server";
+import {
   changePassword as changePasswordApi,
   confirmTotpSetup,
   disableMfa,
@@ -14,7 +21,7 @@ import {
 async function requireSession() {
   const session = await auth();
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
   return session;
 }
@@ -62,4 +69,84 @@ export async function confirmTotpSetupAction(secret: string, code: string): Prom
 export async function disableMfaAction(): Promise<void> {
   await requireSession();
   await disableMfa();
+}
+
+type AccountInfoPayload = {
+  email: string | null;
+  emailVerified: boolean;
+  name: string | null;
+  image: string | null;
+  accountId: string | null;
+  providers: string[];
+};
+
+export async function getAccountLifecycleInfoAction(): Promise<AccountInfoPayload> {
+  const session = await requireSession();
+
+  const [accountInfo, accounts] = await Promise.all([
+    getNeonAccountInfo(),
+    listNeonAccounts(),
+  ]);
+
+  return {
+    email: session.user.email ?? null,
+    emailVerified: Boolean(session.user.emailVerified),
+    name: session.user.name ?? null,
+    image: session.user.image ?? null,
+    accountId: (accountInfo.data as { accountId?: string } | null)?.accountId ?? null,
+    providers: (accounts.data as Array<{ provider?: string }> | null)?.flatMap((account) =>
+      typeof account.provider === "string" && account.provider.length > 0
+        ? [account.provider]
+        : [],
+    ) ?? [],
+  };
+}
+
+export async function updateProfileAction(input: {
+  name?: string;
+  image?: string;
+}): Promise<void> {
+  await requireSession();
+
+  const normalizedName = input.name?.trim();
+  const normalizedImage = input.image?.trim();
+
+  const response = await updateNeonUser({
+    name: normalizedName || undefined,
+    image: normalizedImage || undefined,
+  });
+
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
+}
+
+export async function changeEmailAction(input: {
+  newEmail: string;
+  callbackURL?: string;
+}): Promise<void> {
+  await requireSession();
+
+  const nextEmail = input.newEmail.trim().toLowerCase();
+  if (!nextEmail) {
+    throw new Error("New email is required.");
+  }
+
+  const response = await changeNeonEmail({
+    newEmail: nextEmail,
+    callbackURL: input.callbackURL,
+  });
+
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
+}
+
+export async function deleteAccountAction(): Promise<void> {
+  await requireSession();
+
+  const response = await deleteNeonUser();
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
 }

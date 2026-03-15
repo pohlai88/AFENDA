@@ -3,8 +3,8 @@
 
 Quick reference guide to agent resources in this workspace.
 
-**Generated:** 2026-03-11  
-**Total Skills:** 46
+**Generated:** 2026-03-14  
+**Total Skills:** 47
 
 ---
 
@@ -17,7 +17,7 @@ Quick reference guide to agent resources in this workspace.
 | **Database & ORM** | [drizzle](#drizzle), [neon-postgres](#neon-postgres) |
 | **Infrastructure & Logging** | [pino-logging-setup](#pino-logging-setup) |
 | **Validation & Forms** | [form-builder](#form-builder), [zod](#zod) |
-| **UI** | [accessibility](#accessibility), [shadcn-ui](#shadcn-ui), [shadcn-ui-stitch](#shadcn-ui-stitch), [tailwind-v4-shadcn](#tailwind-v4-shadcn), [framer-motion-animator](#framer-motion-animator), [frontend-builder](#frontend-builder), [react-patterns](#react-patterns), [tailwind-css-patterns](#tailwind-css-patterns), [tailwindcss-advanced-layouts](#tailwindcss-advanced-layouts), [tailwindcss-animations](#tailwindcss-animations), [tanstack-query-best-practices](#tanstack-query-best-practices), [ui-design-system](#ui-design-system), [vercel-composition-patterns](#vercel-composition-patterns), [vercel-react-best-practices](#vercel-react-best-practices) |
+| **UI** | [accessibility](#accessibility), [afenda-design-system-enforcement](#afenda-design-system-enforcement), [shadcn-ui](#shadcn-ui), [shadcn-ui-stitch](#shadcn-ui-stitch), [tailwind-v4-shadcn](#tailwind-v4-shadcn), [framer-motion-animator](#framer-motion-animator), [frontend-builder](#frontend-builder), [react-patterns](#react-patterns), [tailwind-css-patterns](#tailwind-css-patterns), [tailwindcss-advanced-layouts](#tailwindcss-advanced-layouts), [tailwindcss-animations](#tailwindcss-animations), [tanstack-query-best-practices](#tanstack-query-best-practices), [ui-design-system](#ui-design-system), [vercel-composition-patterns](#vercel-composition-patterns), [vercel-react-best-practices](#vercel-react-best-practices) |
 | **Testing** | [react-testing-patterns](#react-testing-patterns), [vitest](#vitest) |
 | **Tools & Meta** | [create-rule](#create-rule), [find-skills](#find-skills), [typescript-advanced-types](#typescript-advanced-types) |
 | **Security (ClawSec)** | [claw-release](#claw-release), [clawsec-clawhub-checker](#clawsec-clawhub-checker), [clawsec-feed](#clawsec-feed), [clawsec-suite](#clawsec-suite), [clawtributor](#clawtributor), [openclaw-audit-watchdog](#openclaw-audit-watchdog), [prompt-agent](#prompt-agent), [soul-guardian](#soul-guardian) |
@@ -57,6 +57,7 @@ Quick reference guide to agent resources in this workspace.
 ### UI
 
 - **accessibility** – WCAG compliance & a11y patterns
+- **afenda-design-system-enforcement** – Enforces AFENDA token usage, semantic lane mapping, theme parity, and shadcn-based styling
 - **shadcn-ui** – shadcn/ui components — Radix UI + Tailwind CSS, theming, forms, charts (developer-kit)
 - **shadcn-ui-stitch** – Google Labs shadcn/ui — MCP tools, component discovery, blocks, customization
 - **tailwind-v4-shadcn** – Tailwind CSS v4 + shadcn/ui — @theme inline, CSS variables, dark mode, component composition

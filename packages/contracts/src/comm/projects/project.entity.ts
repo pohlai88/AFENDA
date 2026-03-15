@@ -2,6 +2,12 @@ import { z } from "zod";
 import { DateSchema, UtcDateTimeSchema } from "../../shared/datetime.js";
 import { OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../../shared/ids.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
+import {
+  ProjectColorSchema,
+  ProjectDescriptionSchema,
+  ProjectNameSchema,
+  ProjectReasonSchema,
+} from "./project.shared.js";
 
 // ─── ID Brands ────────────────────────────────────────────────────────────────
 
@@ -37,16 +43,6 @@ export const ProjectVisibilitySchema = z.enum(ProjectVisibilityValues);
 export const ProjectMemberRoleSchema = z.enum(ProjectMemberRoleValues);
 export const ProjectMilestoneStatusSchema = z.enum(ProjectMilestoneStatusValues);
 
-// ─── Reusable Field Schemas ───────────────────────────────────────────────────
-
-const NameSchema = z.string().trim().min(1).max(200);
-const DescriptionSchema = z.string().trim().max(20_000);
-const ReasonSchema = z.string().trim().max(500);
-const ColorSchema = z
-  .string()
-  .trim()
-  .regex(/^#[0-9A-Fa-f]{6}$/);
-
 // ─── Project Schema ───────────────────────────────────────────────────────────
 
 export const ProjectSchema = z
@@ -54,15 +50,15 @@ export const ProjectSchema = z
     id: CommProjectIdSchema,
     orgId: OrgIdSchema,
     projectNumber: z.string().trim().min(1).max(64),
-    name: NameSchema,
-    description: DescriptionSchema.nullable().default(null),
+    name: ProjectNameSchema,
+    description: ProjectDescriptionSchema.nullable().default(null),
     status: ProjectStatusSchema,
     visibility: ProjectVisibilitySchema,
     ownerId: PrincipalIdSchema,
     startDate: DateSchema.nullable().default(null),
     targetDate: DateSchema.nullable().default(null),
     completedAt: UtcDateTimeSchema.nullable().default(null),
-    color: ColorSchema.nullable().default(null),
+    color: ProjectColorSchema.nullable().default(null),
     createdAt: UtcDateTimeSchema,
     updatedAt: UtcDateTimeSchema,
   })
@@ -101,8 +97,8 @@ export const ProjectMilestoneSchema = z.object({
   orgId: OrgIdSchema,
   projectId: CommProjectIdSchema,
   milestoneNumber: z.string().trim().min(1).max(64),
-  name: NameSchema,
-  description: DescriptionSchema.nullable().default(null),
+  name: ProjectNameSchema,
+  description: ProjectDescriptionSchema.nullable().default(null),
   status: ProjectMilestoneStatusSchema,
   targetDate: DateSchema,
   completedAt: UtcDateTimeSchema.nullable().default(null),
@@ -117,7 +113,7 @@ export const ProjectPhaseSchema = z.object({
   orgId: OrgIdSchema,
   projectId: CommProjectIdSchema,
   name: z.string().trim().min(1).max(120),
-  description: DescriptionSchema.nullable().default(null),
+  description: ProjectDescriptionSchema.nullable().default(null),
   sequenceOrder: z.number().int().positive(),
   startDate: DateSchema.nullable().default(null),
   targetEndDate: DateSchema.nullable().default(null),
@@ -137,7 +133,7 @@ export const ProjectStatusHistorySchema = z
     toStatus: ProjectStatusSchema,
     changedByPrincipalId: PrincipalIdSchema,
     changedAt: UtcDateTimeSchema,
-    reason: ReasonSchema.nullable().default(null),
+    reason: ProjectReasonSchema.nullable().default(null),
   })
   .superRefine((data, ctx) => {
     if (["cancelled", "archived"].includes(data.toStatus) && !data.reason) {

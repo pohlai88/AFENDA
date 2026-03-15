@@ -5,12 +5,8 @@ import NewMeetingForm from "./NewMeetingForm";
 export default async function NewMeetingPage() {
   const session = await auth();
   if (!session?.user?.id) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
-  return (
-    <NewMeetingForm
-      defaultChairId={session.user.id}
-    />
-  );
+  return <NewMeetingForm defaultChairId={session.user.id} />;
 }

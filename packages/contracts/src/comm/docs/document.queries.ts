@@ -7,7 +7,7 @@ import {
   CommQueryTextSchema,
   CommSearchLimitSchema,
 } from "../shared/query.js";
-import { makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
+import { makeCommDetailResponseSchema, makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
 import {
   CollaboratorRoleSchema,
   CommDocumentCollaboratorSchema,
@@ -70,6 +70,7 @@ export const ListCommDocumentCollaboratorsQuerySchema = z.object({
   cursor: PrincipalIdSchema.optional(),
 });
 
+export const GetCommDocumentResponseSchema = makeCommDetailResponseSchema(CommDocumentSchema);
 export const ListCommDocumentsResponseSchema = makeCommListResponseSchema(CommDocumentSchema);
 export const SearchCommDocumentsResponseSchema = makeCommSearchResponseSchema(CommDocumentSchema);
 export const ListCommDocumentVersionsResponseSchema =
@@ -78,6 +79,7 @@ export const ListCommDocumentCollaboratorsResponseSchema = makeCommListResponseS
   CommDocumentCollaboratorSchema,
 );
 
+export type GetCommDocumentResponse = z.infer<typeof GetCommDocumentResponseSchema>;
 export type GetCommDocumentQuery = z.infer<typeof GetCommDocumentQuerySchema>;
 export type GetCommDocumentBySlugQuery = z.infer<typeof GetCommDocumentBySlugQuerySchema>;
 export type ListCommDocumentsQuery = z.infer<typeof ListCommDocumentsQuerySchema>;

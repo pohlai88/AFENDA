@@ -13,6 +13,7 @@ import {
 } from "../shared/query.js";
 import {
   CommSummaryGroupSchema,
+  makeCommDetailResponseSchema,
   makeCommListResponseSchema,
   makeCommSummaryResponseSchema,
 } from "../shared/response.js";
@@ -93,6 +94,8 @@ export const SummarizeWorkflowRunsDataSchema = z.object({
   groups: z.array(CommSummaryGroupSchema),
 });
 
+export const GetWorkflowResponseSchema = makeCommDetailResponseSchema(WorkflowSchema);
+export const GetWorkflowRunResponseSchema = makeCommDetailResponseSchema(WorkflowRunSchema);
 export const ListWorkflowsResponseSchema = makeCommListResponseSchema(WorkflowSchema);
 export const ListWorkflowRunsResponseSchema = makeCommListResponseSchema(WorkflowRunSchema);
 export const SummarizeWorkflowsResponseSchema = makeCommSummaryResponseSchema(
@@ -108,6 +111,8 @@ export type SummarizeWorkflowsQuery = z.infer<typeof SummarizeWorkflowsQuerySche
 export type GetWorkflowRunQuery = z.infer<typeof GetWorkflowRunQuerySchema>;
 export type ListWorkflowRunsQuery = z.infer<typeof ListWorkflowRunsQuerySchema>;
 export type SummarizeWorkflowRunsQuery = z.infer<typeof SummarizeWorkflowRunsQuerySchema>;
+export type GetWorkflowResponse = z.infer<typeof GetWorkflowResponseSchema>;
+export type GetWorkflowRunResponse = z.infer<typeof GetWorkflowRunResponseSchema>;
 export type ListWorkflowsResponse = z.infer<typeof ListWorkflowsResponseSchema>;
 export type ListWorkflowRunsResponse = z.infer<typeof ListWorkflowRunsResponseSchema>;
 export type SummarizeWorkflowsData = z.infer<typeof SummarizeWorkflowsDataSchema>;

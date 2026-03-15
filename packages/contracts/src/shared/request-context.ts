@@ -1,5 +1,3 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-
 import { CorrelationIdHeader, OrgIdHeader } from "./headers.js";
 import { type Clock, SystemClock } from "./clock.js";
 
@@ -64,7 +62,38 @@ export const NoopSecretsProvider: SecretsProvider = {
   },
 };
 
-const als = new AsyncLocalStorage<RequestContext>();
+type ContextStorage<T> = {
+  run<R>(value: T, fn: () => Promise<R> | R): Promise<R>;
+  getStore(): T | undefined;
+};
+
+function createInMemoryContextStorage<T>(): ContextStorage<T> {
+  const stack: T[] = [];
+
+  return {
+    async run<R>(value: T, fn: () => Promise<R> | R): Promise<R> {
+      stack.push(value);
+      try {
+        return await fn();
+      } finally {
+        stack.pop();
+      }
+    },
+    getStore(): T | undefined {
+      return stack[stack.length - 1];
+    },
+  };
+}
+
+let storage: ContextStorage<RequestContext> = createInMemoryContextStorage<RequestContext>();
+
+/**
+ * Allows runtime packages (api/core/worker) to provide async-safe context storage.
+ * Contracts defaults to an in-memory implementation to remain runtime-agnostic.
+ */
+export function configureRequestContextStorage(nextStorage: ContextStorage<RequestContext>): void {
+  storage = nextStorage;
+}
 
 export function createRequestContext(opts?: Partial<RequestContext>): RequestContext {
   return {
@@ -83,11 +112,11 @@ export async function runWithRequestContext<T>(
   ctx: RequestContext,
   fn: () => Promise<T> | T,
 ): Promise<T> {
-  return als.run(ctx, fn);
+  return storage.run(ctx, fn);
 }
 
 export function getRequestContext(): RequestContext {
-  const ctx = als.getStore();
+  const ctx = storage.getStore();
   if (!ctx) {
     throw new Error(
       "RequestContext not available. Ensure attachContextMiddleware or runWithRequestContext was used.",
@@ -156,7 +185,7 @@ export function attachContextMiddleware(opts?: {
         principalId,
       });
 
-      als.run(ctx, () => {
+      void storage.run(ctx, () => {
         req.context = ctx;
         res.on("finish", () => {
           try {
@@ -186,6 +215,7 @@ export function ctxCorrelationId(): string | undefined {
 }
 
 export const SharedRequestContext = {
+  configureRequestContextStorage,
   createRequestContext,
   runWithRequestContext,
   getRequestContext,

@@ -13,7 +13,7 @@ import { COMM_AGENDA_ITEM_ADDED } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
 
 export interface BoardMeetingPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type AgendaItemServiceResult<T> =

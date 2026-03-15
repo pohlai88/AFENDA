@@ -9,6 +9,19 @@
 import { z } from "zod";
 import { OrgIdSchema, PrincipalIdSchema, UuidSchema } from "../../shared/ids.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
+import {
+  MeetingChairIdSchema,
+  MeetingDescriptionSchema,
+  MeetingDurationSchema,
+  MeetingLocationSchema,
+  MeetingNumberSchema,
+  MeetingQuorumRequiredSchema,
+  MeetingScheduledAtDefaultSchema,
+  MeetingSecretaryIdSchema,
+  MeetingTitleSchema,
+  addChairSecretaryIssue,
+  addMeetingStatusIssues,
+} from "./meeting.shared.js";
 
 /** ID brand */
 export const BoardMeetingIdSchema = UuidSchema.brand<"BoardMeetingId">();
@@ -25,26 +38,20 @@ export const MeetingStatusValues = [
 
 export const MeetingStatusSchema = z.enum(MeetingStatusValues);
 
-/** Reusable string schemas */
-const MeetingNumberSchema = z.string().trim().min(1).max(64);
-const TitleSchema = z.string().trim().min(1).max(300);
-const DescriptionSchema = z.string().trim().max(10_000);
-const LocationSchema = z.string().trim().max(300);
-
 export const BoardMeetingSchema = z
   .object({
     id: BoardMeetingIdSchema,
     orgId: OrgIdSchema,
     meetingNumber: MeetingNumberSchema,
-    title: TitleSchema,
-    description: DescriptionSchema.nullable().default(null),
+    title: MeetingTitleSchema,
+    description: MeetingDescriptionSchema.nullable().default(null),
     status: MeetingStatusSchema,
-    scheduledAt: UtcDateTimeSchema.nullable().default(null),
-    duration: z.number().int().min(0).max(1440), // minutes, max 24h
-    location: LocationSchema.nullable().default(null),
-    chairId: PrincipalIdSchema,
-    secretaryId: PrincipalIdSchema.nullable().default(null),
-    quorumRequired: z.number().int().min(0),
+    scheduledAt: MeetingScheduledAtDefaultSchema,
+    duration: MeetingDurationSchema, // minutes, max 24h
+    location: MeetingLocationSchema.nullable().default(null),
+    chairId: MeetingChairIdSchema,
+    secretaryId: MeetingSecretaryIdSchema.default(null),
+    quorumRequired: MeetingQuorumRequiredSchema,
     startedAt: UtcDateTimeSchema.nullable().default(null),
     adjournedAt: UtcDateTimeSchema.nullable().default(null),
     createdByPrincipalId: PrincipalIdSchema,
@@ -52,34 +59,8 @@ export const BoardMeetingSchema = z
     updatedAt: UtcDateTimeSchema,
   })
   .superRefine((data, ctx) => {
-    if (data.secretaryId && data.secretaryId === data.chairId) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Secretary cannot be the same as Chair.",
-        path: ["secretaryId"],
-      });
-    }
-    if (data.status === "scheduled" && !data.scheduledAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Scheduled meetings must include scheduledAt.",
-        path: ["scheduledAt"],
-      });
-    }
-    if (data.status === "in_progress" && !data.startedAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Meetings in progress must include startedAt.",
-        path: ["startedAt"],
-      });
-    }
-    if (data.status === "adjourned" && !data.adjournedAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Adjourned meetings must include adjournedAt.",
-        path: ["adjournedAt"],
-      });
-    }
+    addChairSecretaryIssue(data, ctx);
+    addMeetingStatusIssues(data, ctx);
   });
 
 /** Types */

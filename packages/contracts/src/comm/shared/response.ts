@@ -34,6 +34,12 @@ export const makeCommSearchResponseSchema = <T extends z.ZodTypeAny>(item: T) =>
     correlationId: CorrelationIdSchema,
   });
 
+export const makeCommDetailResponseSchema = <T extends z.ZodTypeAny>(item: T) =>
+  z.object({
+    data: item,
+    correlationId: CorrelationIdSchema,
+  });
+
 export const makeCommSummaryResponseSchema = <T extends z.ZodTypeAny>(summary: T) =>
   z.object({
     data: summary,
@@ -51,6 +57,10 @@ export type CommListResponse<T> = {
 export type CommSearchResponse<T> = {
   data: T[];
   meta: CommSearchMeta;
+  correlationId: string;
+};
+export type CommDetailResponse<T> = {
+  data: T;
   correlationId: string;
 };
 export type CommSummaryResponse<T> = {

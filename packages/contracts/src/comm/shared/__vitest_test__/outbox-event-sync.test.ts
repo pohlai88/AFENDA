@@ -4,12 +4,14 @@ import { ApprovalEventTypes } from "../../approvals/approval.events.js";
 import { ProjectEventTypes } from "../../projects/project.events.js";
 import { TaskEventTypes } from "../../tasks/task.events.js";
 import { ChatterEventTypes } from "../../chatter/chatter.events.js";
+import { AnnouncementEventTypes } from "../../announcements/announcement.events.js";
 
 const COMM_EVENT_TYPES = [
   ...ApprovalEventTypes,
   ...ProjectEventTypes,
   ...TaskEventTypes,
   ...ChatterEventTypes,
+  ...AnnouncementEventTypes,
 ] as const;
 
 describe("Comm event type outbox sync", () => {

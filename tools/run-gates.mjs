@@ -17,27 +17,28 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 /**
  * Ordered list of gate scripts to run. Add new gates here.
- * 
+ *
  * Gates are organized by tier for clarity:
- *   - Phase 1: Static Correctness (9 gates)
+ *   - Phase 1: Static Correctness (10 gates)
  *   - Phase 1: Truth Correctness (8 gates)
  *   - Phase 2: Runtime & Security (4 gates)
  *   - Phase 2: UI Shell (1 gate)
- * 
- * Total: 22 gates
+ *
+ * Total: 23 gates
  */
 const GATES = [
-  // ── Phase 1: Static Correctness (9) ────────────────────────────────────
+  // ── Phase 1: Static Correctness (10) ───────────────────────────────────
   resolve(__dirname, "gates/boundaries.mjs"),
   resolve(__dirname, "gates/module-boundaries.mjs"),
   resolve(__dirname, "gates/catalog.mjs"),
   resolve(__dirname, "gates/test-location.mjs"),
+  resolve(__dirname, "gates/vitest-config-convention.mjs"),
   resolve(__dirname, "gates/token-compliance.mjs"),
   resolve(__dirname, "gates/import-alias-validation.mjs"),
   resolve(__dirname, "gates/shadcn-enforcement.mjs"),
   resolve(__dirname, "gates/brand-usage.mjs"),
   resolve(__dirname, "gates/owners-lint.mjs"),
-  
+
   // ── Phase 1: Truth Correctness (8) ─────────────────────────────────────
   resolve(__dirname, "gates/schema-invariants.mjs"),
   resolve(__dirname, "gates/migration-lint.mjs"),
@@ -47,7 +48,7 @@ const GATES = [
   resolve(__dirname, "gates/domain-completeness.mjs"),
   resolve(__dirname, "gates/route-registry-sync.mjs"),
   resolve(__dirname, "gates/ui-meta.mjs"),
-  
+
   // ── Phase 2: Runtime & Security (4) ────────────────────────────────────
   resolve(__dirname, "gates/org-isolation.mjs"),
   resolve(__dirname, "gates/audit-enforcement.mjs"),
@@ -55,6 +56,7 @@ const GATES = [
   resolve(__dirname, "gates/page-states.mjs"),
 
   // ── Phase 2: UI Shell ──────────────────────────────────────────────────
+  resolve(__dirname, "gates/auth-design-system.mjs"),
   resolve(__dirname, "gates/ui-shell.mjs"),
 ];
 

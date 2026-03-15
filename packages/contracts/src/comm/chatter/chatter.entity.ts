@@ -2,6 +2,7 @@ import { z } from "zod";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 import { EntityIdSchema, OrgIdSchema, PrincipalIdSchema } from "../../shared/ids.js";
 import { CommCommentIdSchema } from "../shared/comment.js";
+import { CommChatterMessageBodyTextSchema } from "./chatter.shared.js";
 
 /** ID */
 export const CommChatterMessageIdSchema = CommCommentIdSchema;
@@ -18,7 +19,7 @@ export const CommChatterMessageSchema = z.object({
   entityId: EntityIdSchema,
   parentMessageId: CommChatterMessageIdSchema.nullable().default(null),
   authorPrincipalId: PrincipalIdSchema,
-  body: z.string().trim().min(1).max(20_000),
+  body: CommChatterMessageBodyTextSchema,
   editedAt: UtcDateTimeSchema.nullable().default(null),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,

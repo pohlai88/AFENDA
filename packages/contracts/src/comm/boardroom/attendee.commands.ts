@@ -3,6 +3,11 @@ import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request
 import { PrincipalIdSchema } from "../../shared/ids.js";
 import { BoardMeetingIdSchema } from "./meeting.entity.js";
 import { AttendeeStatusSchema, BoardMeetingAttendeeIdSchema } from "./attendee.entity.js";
+import {
+  AttendeeNullableRoleOptionalSchema,
+  AttendeeNullableRoleSchema,
+  withAttendeeUpdateRefinement,
+} from "./attendee.shared.js";
 
 /** Base schema for attendee commands */
 const AttendeeCommandBase = z.object({
@@ -13,41 +18,28 @@ const AttendeeCommandBase = z.object({
 export const AddAttendeeCommandSchema = AttendeeCommandBase.extend({
   meetingId: BoardMeetingIdSchema,
   principalId: PrincipalIdSchema,
-  role: z.string().trim().max(64).nullable().default(null),
+  role: AttendeeNullableRoleSchema.default(null),
+});
+
+const AttendeeUpdateBaseSchema = AttendeeCommandBase.extend({
+  attendeeId: BoardMeetingAttendeeIdSchema,
 });
 
 /** Update attendee status */
-export const UpdateAttendeeStatusCommandSchema = AttendeeCommandBase.extend({
-  attendeeId: BoardMeetingAttendeeIdSchema,
+export const UpdateAttendeeStatusCommandSchema = AttendeeUpdateBaseSchema.extend({
   status: AttendeeStatusSchema,
 });
 
 /** Update attendee (status and/or role) */
-export const UpdateAttendeeCommandSchema = AttendeeCommandBase.extend({
-  attendeeId: BoardMeetingAttendeeIdSchema,
-  status: AttendeeStatusSchema.optional(),
-  role: z.string().trim().max(64).nullable().optional(),
-}).superRefine((data, ctx) => {
-  if (data.status === undefined && data.role === undefined) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "At least one of status or role must be provided.",
-      path: [],
-    });
-  }
-  if (data.role !== null && data.role !== undefined && data.role.length === 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Role must be non-empty if provided.",
-      path: ["role"],
-    });
-  }
-});
+export const UpdateAttendeeCommandSchema = withAttendeeUpdateRefinement(
+  AttendeeUpdateBaseSchema.extend({
+    status: AttendeeStatusSchema.optional(),
+    role: AttendeeNullableRoleOptionalSchema,
+  }),
+);
 
 /** Remove attendee */
-export const RemoveAttendeeCommandSchema = AttendeeCommandBase.extend({
-  attendeeId: BoardMeetingAttendeeIdSchema,
-});
+export const RemoveAttendeeCommandSchema = AttendeeUpdateBaseSchema;
 
 /** Types */
 export type AddAttendeeCommand = z.infer<typeof AddAttendeeCommandSchema>;

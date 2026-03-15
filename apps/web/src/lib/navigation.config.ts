@@ -61,7 +61,7 @@ export const userMenuRoutes: Record<UserMenuRouteKey, string> = {
   integrations: "/governance/settings/features",
   auditLog: "/governance/audit/logs",
   rolesPermissions: "/governance/settings/access",
-  logout: "/auth/signout",
+  logout: "/",
 };
 
 /**

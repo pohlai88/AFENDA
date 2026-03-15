@@ -14,7 +14,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { getCommentById } from "./comment.queries";
 
 export interface CommCommentPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommCommentServiceError = {

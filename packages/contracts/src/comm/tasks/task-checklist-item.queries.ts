@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CommTaskIdSchema, TaskChecklistItemIdSchema } from "../../shared/ids.js";
 import { CommQueryTextSchema } from "../shared/query.js";
-import { makeCommListResponseSchema } from "../shared/response.js";
+import { makeCommDetailResponseSchema, makeCommListResponseSchema } from "../shared/response.js";
 import { TaskChecklistItemSchema } from "./task-checklist-item.entity.js";
 
 export const ListTaskChecklistItemsQuerySchema = z
@@ -31,10 +31,13 @@ export const SearchTaskChecklistItemsQuerySchema = z.object({
   query: CommQueryTextSchema,
 });
 
+export const GetTaskChecklistItemResponseSchema =
+  makeCommDetailResponseSchema(TaskChecklistItemSchema);
 export const ListTaskChecklistItemsResponseSchema =
   makeCommListResponseSchema(TaskChecklistItemSchema);
 
 export type ListTaskChecklistItemsQuery = z.infer<typeof ListTaskChecklistItemsQuerySchema>;
 export type GetTaskChecklistItemQuery = z.infer<typeof GetTaskChecklistItemQuerySchema>;
 export type SearchTaskChecklistItemsQuery = z.infer<typeof SearchTaskChecklistItemsQuerySchema>;
+export type GetTaskChecklistItemResponse = z.infer<typeof GetTaskChecklistItemResponseSchema>;
 export type ListTaskChecklistItemsResponse = z.infer<typeof ListTaskChecklistItemsResponseSchema>;

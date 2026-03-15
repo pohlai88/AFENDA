@@ -6,12 +6,9 @@ import {
   TaskChecklistItemIdSchema,
 } from "../../shared/ids.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
+import { TaskChecklistItemTextSchema } from "./task-checklist-item.shared.js";
 
 // ─── ID Brand ────────────────────────────────────────────────────────────────
-
-// ─── Reusable Field Schema ────────────────────────────────────────────────────
-
-const TextSchema = z.string().trim().min(1).max(500);
 
 // ─── Entity ───────────────────────────────────────────────────────────────────
 
@@ -20,7 +17,7 @@ export const TaskChecklistItemSchema = z
     id: TaskChecklistItemIdSchema,
     orgId: OrgIdSchema,
     taskId: CommTaskIdSchema,
-    text: TextSchema,
+    text: TaskChecklistItemTextSchema,
     isChecked: z.boolean(),
     checkedAt: UtcDateTimeSchema.nullable().default(null),
     checkedByPrincipalId: PrincipalIdSchema.nullable().default(null),

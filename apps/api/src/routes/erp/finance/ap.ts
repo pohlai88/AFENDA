@@ -1,5 +1,5 @@
-/**
- * Invoice routes — submission, approval, rejection, void, list, get-by-id.
+﻿/**
+ * Invoice routes â€” submission, approval, rejection, void, list, get-by-id.
  *
  * Follows the Sprint 0 evidence.ts pattern:
  *   - ZodTypeProvider for automatic validation + OpenAPI generation
@@ -18,6 +18,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../helpers/responses.js";
+import { serializeDate } from "../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../helpers/context.js";
 import {
   CreateInvoiceCommandSchema,
   SubmitDraftInvoiceCommandSchema,
@@ -55,7 +57,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const InvoiceResponseSchema = makeSuccessSchema(
   z.object({
@@ -129,20 +131,8 @@ const ActionResponseSchema = makeSuccessSchema(z.object({ id: z.string().uuid() 
 
 const BulkInvoiceResponseSchema = makeSuccessSchema(BulkInvoiceResultSchema);
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Context builders moved to helpers/context.ts (shared across routes)
 
 /**
  * Serialise an invoice row for JSON transport.
@@ -176,28 +166,29 @@ function serialiseInvoice(row: {
     status: row.status,
     dueDate: row.dueDate,
     submittedByPrincipalId: row.submittedByPrincipalId,
-    submittedAt: row.submittedAt?.toISOString() ?? null,
+    submittedAt: serializeDate(row.submittedAt),
     poReference: row.poReference,
-    paidAt: row.paidAt?.toISOString() ?? null,
+    paidAt: serializeDate(row.paidAt),
     paidByPrincipalId: row.paidByPrincipalId,
     paymentReference: row.paymentReference,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function invoiceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create invoice (draft) ──────────────────────────────────────────────────
+  // â”€â”€ Create invoice (draft) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-invoice",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Create a draft invoice. Add lines via create-invoice-line, then submit via submit-draft-invoice.",
+        description:
+          "Create a draft invoice. Add lines via create-invoice-line, then submit via submit-draft-invoice.",
         tags: ["Invoices"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: CreateInvoiceCommandSchema,
@@ -217,8 +208,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await createInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           supplierId: req.body.supplierId,
@@ -249,7 +240,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Submit draft invoice ────────────────────────────────────────────────────
+  // â”€â”€ Submit draft invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/submit-draft-invoice",
     {
@@ -277,8 +268,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await submitDraftInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceId,
       );
@@ -308,7 +299,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Submit invoice (create + submit in one) ─────────────────────────────────
+  // â”€â”€ Submit invoice (create + submit in one) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/submit-invoice",
     {
@@ -334,8 +325,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await submitInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           supplierId: req.body.supplierId,
@@ -366,13 +357,13 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Approve invoice ────────────────────────────────────────────────────────
+  // â”€â”€ Approve invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/approve-invoice",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Approve a submitted invoice. SoD: submitter ≠ approver.",
+        description: "Approve a submitted invoice. SoD: submitter â‰  approver.",
         tags: ["Invoices"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: ApproveInvoiceCommandSchema,
@@ -395,8 +386,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await approveInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceId,
         req.body.reason,
@@ -418,7 +409,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Reject invoice ─────────────────────────────────────────────────────────
+  // â”€â”€ Reject invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/reject-invoice",
     {
@@ -447,8 +438,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await rejectInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceId,
         req.body.reason,
@@ -470,7 +461,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Void invoice ───────────────────────────────────────────────────────────
+  // â”€â”€ Void invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/void-invoice",
     {
@@ -499,8 +490,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await voidInvoice(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceId,
         req.body.reason,
@@ -522,13 +513,14 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Bulk approve invoices ──────────────────────────────────────────────────
+  // â”€â”€ Bulk approve invoices â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/invoices/bulk-approve",
     {
       config: { rateLimit: { max: 10, timeWindow: "1 minute" } },
       schema: {
-        description: "Approve multiple submitted invoices in a single request. Idempotent per batch.",
+        description:
+          "Approve multiple submitted invoices in a single request. Idempotent per batch.",
         tags: ["Invoices"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: BulkApproveInvoiceCommandSchema,
@@ -548,8 +540,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await bulkApproveInvoices(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceIds as InvoiceId[],
         req.body.reason,
@@ -566,7 +558,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Bulk reject invoices ───────────────────────────────────────────────────
+  // â”€â”€ Bulk reject invoices â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/invoices/bulk-reject",
     {
@@ -592,8 +584,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await bulkRejectInvoices(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceIds as InvoiceId[],
         req.body.reason,
@@ -610,7 +602,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Bulk void invoices ─────────────────────────────────────────────────────
+  // â”€â”€ Bulk void invoices â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/invoices/bulk-void",
     {
@@ -636,8 +628,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await bulkVoidInvoices(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.invoiceIds as InvoiceId[],
         req.body.reason,
@@ -654,7 +646,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Mark paid ──────────────────────────────────────────────────────────────
+  // â”€â”€ Mark paid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/mark-paid",
     {
@@ -683,8 +675,8 @@ export async function invoiceRoutes(app: FastifyInstance) {
 
       const result = await markPaid(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           invoiceId: req.body.invoiceId,
@@ -711,7 +703,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List invoices ──────────────────────────────────────────────────────────
+  // â”€â”€ List invoices â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoices",
     {
@@ -750,7 +742,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get invoice by ID ──────────────────────────────────────────────────────
+  // â”€â”€ Get invoice by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoices/:invoiceId",
     {
@@ -791,7 +783,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get invoice status history ─────────────────────────────────────────────
+  // â”€â”€ Get invoice status history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoices/:invoiceId/history",
     {
@@ -822,7 +814,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
       return {
         data: history.map((h) => ({
           ...h,
-          occurredAt: h.occurredAt.toISOString(),
+          occurredAt: serializeDate(h.occurredAt)!,
         })),
         correlationId: req.correlationId,
       };
@@ -830,7 +822,7 @@ export async function invoiceRoutes(app: FastifyInstance) {
   );
 }
 
-// ── Error code → HTTP status mapping ─────────────────────────────────────────
+// â”€â”€ Error code â†’ HTTP status mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function mapErrorStatus(code: string) {
   switch (code) {

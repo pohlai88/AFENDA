@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -38,8 +38,10 @@ import {
   requireOrg,
   requireAuth,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../helpers/context.js";
 
-// ── Response schemas ──────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AnnouncementMutationResponseSchema = makeSuccessSchema(
   z.object({ id: z.string().uuid(), announcementNumber: z.string().optional() }),
@@ -110,43 +112,33 @@ const AnnouncementAudienceOptionsResponseSchema = makeSuccessSchema(
   }),
 );
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommAnnouncementPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serializeAnnouncement(row: AnnouncementRow) {
   return {
     ...row,
     audienceIds: row.audienceIds,
-    scheduledAt: row.scheduledAt?.toISOString() ?? null,
-    publishedAt: row.publishedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    scheduledAt: serializeDate(row.scheduledAt),
+    publishedAt: serializeDate(row.publishedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
 function serializeRead(row: AnnouncementReadRow) {
   return {
     ...row,
-    acknowledgedAt: row.acknowledgedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
+    acknowledgedAt: serializeDate(row.acknowledgedAt),
+    createdAt: serializeDate(row.createdAt)!,
   };
 }
 
-// ── Routes ────────────────────────────────────────────────────────────────────
+// â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function commAnnouncementRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Queries ────────────────────────────────────────────────────────────────
+  // â”€â”€ Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   typed.get(
     "/announcements",
@@ -293,7 +285,7 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: {
           acknowledged: Boolean(row?.acknowledgedAt),
-          readAt: row?.acknowledgedAt?.toISOString() ?? null,
+          readAt: serializeDate(row?.acknowledgedAt),
           readId: row?.id ?? null,
         },
         correlationId: req.correlationId,
@@ -368,7 +360,7 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Commands ───────────────────────────────────────────────────────────────
+  // â”€â”€ Commands â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   typed.post(
     "/commands/create-announcement",
@@ -392,8 +384,8 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       const result = await createAnnouncement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -435,8 +427,8 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       const result = await publishAnnouncement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -479,8 +471,8 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       const result = await scheduleAnnouncement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -523,8 +515,8 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       const result = await archiveAnnouncement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -567,8 +559,8 @@ export async function commAnnouncementRoutes(app: FastifyInstance) {
 
       const result = await acknowledgeAnnouncement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );

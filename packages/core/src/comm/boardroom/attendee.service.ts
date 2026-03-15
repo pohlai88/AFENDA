@@ -18,7 +18,7 @@ import { COMM_ATTENDEE_ADDED, COMM_ATTENDEE_STATUS_UPDATED } from "@afenda/contr
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
 
 export interface BoardMeetingPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type AttendeeServiceResult<T> =

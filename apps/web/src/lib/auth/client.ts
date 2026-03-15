@@ -1,172 +1,274 @@
-/**
- * Neon Auth Client SDK for React Components
- *
- * Official pattern from https://neon.com/docs/auth/quick-start/nextjs
- *
- * Usage in Client Components:
- *   'use client';
- *   import { authClient, useAuth, signIn, signOut } from '@/lib/auth/client';
- *   export default function Header() {
- *     const { user } = useAuth();
- *     return user ? (
- *       <button onClick={() => signOut()}>Sign out {user.name}</button>
- *     ) : (
- *       <a href="/signin">Sign in</a>
- *     );
- *   }
- */
-
 "use client";
 
 import { createAuthClient } from "@neondatabase/auth/next";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Neon Auth Client Instance
-// ─────────────────────────────────────────────────────────────────────────────
+export const neonAuthClient = createAuthClient();
 
-/**
- * Neon Auth client for browser-side auth operations.
- *
- * Endpoint is configured via NEXT_PUBLIC_NEON_AUTH_URL from env
- * (must be the same as NEON_AUTH_BASE_URL on server).
- *
- * Neon Auth provides React hooks for auth state management.
- */
-export const authClient = createAuthClient();
+export const {
+  emailOtp,
+  getSession,
+  linkSocial,
+  listAccounts,
+  listSessions,
+  organization,
+  requestPasswordReset,
+  revokeOtherSessions,
+  revokeSession,
+  revokeSessions,
+  resetPassword,
+  sendVerificationEmail,
+  signIn,
+  signOut,
+  signUp,
+  unlinkAccount,
+  useActiveOrganization,
+  useListOrganizations,
+  useSession,
+  verifyEmail,
+} = neonAuthClient;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// React Hooks
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * React hook: Get current user session.
- * Triggers re-render on auth state change (login, logout, session refresh).
- *
- * Returns:
- *   user: Current user | null if not authenticated
- *   session: Full session object (includes dates, provider info, etc.)
- *   isLoading: true while session is being fetched
- *   error: Error object if session fetch failed
- *
- * Example:
- *   const { user, isLoading, error } = useAuth();
- *   if (isLoading) return <Skeleton />;
- *   if (error) return <ErrorAlert error={error} />;
- *   if (!user) return <SignInForm />;
- *   return <Dashboard user={user} />;
- */
-export const useAuth = () => {
-  const sessionState = authClient.useSession();
-
-  return {
-    user: sessionState.data?.user ?? null,
-    session: sessionState.data ?? null,
-    isLoading: sessionState.isPending || sessionState.isRefetching,
-  };
+export type ClientFacadeResult<TData> = {
+  data: TData | null;
+  error: {
+    message: string;
+  } | null;
 };
 
-// Alias for downstream compatibility.
-export const useSession_ = authClient.useSession;
+type OrganizationRole = "admin" | "member" | "owner";
+type VerificationOtpType = "sign-in" | "email-verification" | "forget-password";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Authentication Methods
-// ─────────────────────────────────────────────────────────────────────────────
+function hasMethod<TObject extends object>(
+  value: TObject | null | undefined,
+  key: string,
+): boolean {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
 
-/**
- * Sign in with email and password.
- *
- * Usage:
- *   const handleSignIn = async (email, password) => {
- *     try {
- *       await signIn.email({ email, password });
- *       // Session cookie is automatically set by Neon Auth
- *       // Redirect happens via route handler or manually
- *     } catch (err) {
- *       setError(err.message);
- *     }
- *   };
- */
-export const signIn = authClient.signIn.email;
+  const method = (value as Record<string, unknown>)[key];
+  return typeof method === "function";
+}
 
-/**
- * Sign in with OAuth provider (Google, GitHub, etc.)
- *
- * Neon Auth provides built-in Google + GitHub support.
- * Custom providers can be configured in console.
- *
- * Usage:
- *   await authClient.signIn.social({
- *     provider: 'google',
- *     callbackURL: '/dashboard',
- *   });
- */
-export const signInOAuth = authClient.signIn.social;
+export const neonClientCapabilities = {
+  organization: {
+    list: hasMethod(organization, "list"),
+    setActive: hasMethod(organization, "setActive"),
+    create: hasMethod(organization, "create"),
+    inviteMember: hasMethod(organization, "inviteMember"),
+  },
+  emailOtp: {
+    sendVerificationOtp: hasMethod(emailOtp, "sendVerificationOtp"),
+    verifyEmail: hasMethod(emailOtp, "verifyEmail"),
+  },
+  signIn: {
+    emailOtp: hasMethod(signIn, "emailOtp"),
+  },
+} as const;
 
-/**
- * Sign out and clear session cookie.
- *
- * Usage:
- *   await signOut();
- *   router.push('/');
- */
-export const signOut = authClient.signOut;
+function toClientFacadeError(error: unknown, fallback: string): { message: string } {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) {
+      return { message };
+    }
+  }
 
-/**
- * Sign up new user with email and password.
- *
- * Usage:
- *   await signUp({
- *     name: 'John Doe',
- *     email: 'john@example.com',
- *     password: 'secure-password',
- *   });
- */
-export const signUp = authClient.signUp.email;
+  return { message: fallback };
+}
 
-/**
- * Request password reset (initiates email flow).
- *
- * Two modes:
- * - 'link': User receives reset link in email (default)
- * - 'code': User receives reset code to enter in form
- *
- * Configure via AUTH_PASSWORD_RESET_DELIVERY env var.
- *
- * Usage:
- *   await resetPassword({ email: 'user@example.com' });
- *   // Email is sent with reset link or code
- */
-export const resetPassword = authClient.resetPassword;
+async function runClientFacade<TData>(
+  execute: () => Promise<{ data?: TData; error?: unknown }>,
+  fallbackMessage: string,
+): Promise<ClientFacadeResult<TData>> {
+  try {
+    const response = await execute();
+    if (response.error) {
+      return {
+        data: null,
+        error: toClientFacadeError(response.error, fallbackMessage),
+      };
+    }
 
-/**
- * Change user profile (name, image, etc.)
- *
- * Does NOT change email or password (use separate endpoints).
- *
- * Usage:
- *   await updateProfile({
- *     name: 'Jane Doe',
- *     image: 'https://example.com/avatar.jpg',
- *   });
- */
-export const updateProfile = authClient.updateUser;
+    return {
+      data: response.data ?? null,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: toClientFacadeError(error, fallbackMessage),
+    };
+  }
+}
 
-/**
- * Verify email address (for new signups or email changes).
- *
- * Delegates to Neon Auth verification endpoint.
- */
-export const verifyEmail = authClient.verifyEmail;
+function toOrganizationSlug(name: string): string {
+  const normalized = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
-/**
- * Get current session (low-level; prefer useAuth hook).
- *
- * Direct access to the current browser session.
- */
-export const getSession = authClient.getSession;
+  return normalized || "organization";
+}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Type Exports
-// ─────────────────────────────────────────────────────────────────────────────
+function toOrganizationRole(role?: string): OrganizationRole {
+  const normalized = role?.trim().toLowerCase();
+  if (normalized === "admin" || normalized === "owner" || normalized === "member") {
+    return normalized;
+  }
 
-export type { User, Session } from "better-auth";
+  return "member";
+}
+
+export async function getNeonClientAccountInfo() {
+  return runClientFacade(() => neonAuthClient.accountInfo(), "Unable to load account information.");
+}
+
+export async function updateNeonClientUserProfile(input: { name?: string; image?: string }) {
+  return runClientFacade(() => neonAuthClient.updateUser(input), "Unable to update user profile.");
+}
+
+export async function changeNeonClientPassword(input: {
+  currentPassword: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}) {
+  return runClientFacade(() => neonAuthClient.changePassword(input), "Unable to change password.");
+}
+
+export async function createNeonClientOrganization(input: { name: string; slug?: string }) {
+  const slug = input.slug?.trim() || toOrganizationSlug(input.name);
+  return runClientFacade(
+    () => organization.create({ name: input.name, slug }),
+    "Unable to create organization.",
+  );
+}
+
+export async function listNeonClientOrganizations() {
+  return runClientFacade(() => organization.list(), "Unable to list organizations.");
+}
+
+export async function updateNeonClientOrganization(input: {
+  organizationId: string;
+  name?: string;
+  slug?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  return runClientFacade(
+    () =>
+      organization.update({
+        organizationId: input.organizationId,
+        data: {
+          name: input.name,
+          slug: input.slug,
+          metadata: input.metadata,
+        },
+      }),
+    "Unable to update organization.",
+  );
+}
+
+export async function deleteNeonClientOrganization(input: { organizationId: string }) {
+  return runClientFacade(() => organization.delete(input), "Unable to delete organization.");
+}
+
+export async function inviteNeonClientOrganizationMember(input: {
+  organizationId: string;
+  email: string;
+  role?: string;
+}) {
+  return runClientFacade(
+    () =>
+      organization.inviteMember({
+        organizationId: input.organizationId,
+        email: input.email,
+        role: toOrganizationRole(input.role),
+      }),
+    "Unable to invite organization member.",
+  );
+}
+
+export async function listNeonClientOrganizationMembers(input: { organizationId: string }) {
+  return runClientFacade(
+    () =>
+      organization.listMembers({
+        query: {
+          organizationId: input.organizationId,
+        },
+      }),
+    "Unable to list organization members.",
+  );
+}
+
+export async function updateNeonClientOrganizationMemberRole(input: {
+  organizationId: string;
+  memberId: string;
+  role: string;
+}) {
+  return runClientFacade(
+    () =>
+      organization.updateMemberRole({
+        organizationId: input.organizationId,
+        memberId: input.memberId,
+        role: toOrganizationRole(input.role),
+      }),
+    "Unable to update organization member role.",
+  );
+}
+
+export async function removeNeonClientOrganizationMember(input: {
+  organizationId: string;
+  memberId: string;
+}) {
+  return runClientFacade(
+    () =>
+      organization.removeMember({
+        organizationId: input.organizationId,
+        memberIdOrEmail: input.memberId,
+      }),
+    "Unable to remove organization member.",
+  );
+}
+
+export async function listNeonClientUserInvitations() {
+  return runClientFacade(
+    () => organization.listUserInvitations(),
+    "Unable to list organization invitations.",
+  );
+}
+
+export async function acceptNeonClientInvitation(input: { invitationId: string }) {
+  return runClientFacade(
+    () => organization.acceptInvitation(input),
+    "Unable to accept organization invitation.",
+  );
+}
+
+export async function rejectNeonClientInvitation(input: { invitationId: string }) {
+  return runClientFacade(
+    () => organization.rejectInvitation(input),
+    "Unable to reject organization invitation.",
+  );
+}
+
+export async function setNeonClientActiveOrganization(input: { organizationId: string }) {
+  return runClientFacade(() => organization.setActive(input), "Unable to set active organization.");
+}
+
+export async function sendNeonClientVerificationOtp(input: {
+  email: string;
+  type: VerificationOtpType;
+}) {
+  return runClientFacade(
+    () => emailOtp.sendVerificationOtp(input),
+    "Unable to send verification code.",
+  );
+}
+
+export async function verifyNeonClientEmailOtp(input: { email: string; otp: string }) {
+  return runClientFacade(() => emailOtp.verifyEmail(input), "Unable to verify email code.");
+}
+
+export async function signInWithNeonClientEmailOtp(input: { email: string; otp: string }) {
+  return runClientFacade(() => signIn.emailOtp(input), "Unable to sign in with email code.");
+}

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PrincipalIdSchema } from "../../shared/ids.js";
 import { CommListLimitSchema } from "../shared/query.js";
-import { makeCommListResponseSchema } from "../shared/response.js";
+import { makeCommDetailResponseSchema, makeCommListResponseSchema } from "../shared/response.js";
 import {
   AttendeeStatusSchema,
   BoardMeetingAttendeeIdSchema,
@@ -9,22 +9,43 @@ import {
 } from "./attendee.entity.js";
 import { BoardMeetingIdSchema } from "./meeting.entity.js";
 
-export const GetBoardAttendeeQuerySchema = z.object({
+const BoardAttendeeByIdQuerySchema = z.object({
   attendeeId: BoardMeetingAttendeeIdSchema,
 });
 
-export const ListBoardAttendeesQuerySchema = z.object({
+const BoardAttendeesByMeetingQuerySchema = z.object({
   meetingId: BoardMeetingIdSchema,
-  status: AttendeeStatusSchema.optional(),
-  principalId: PrincipalIdSchema.optional(),
-  limit: CommListLimitSchema,
-  cursor: BoardMeetingAttendeeIdSchema.optional(),
 });
 
+const BoardAttendeeFilterQuerySchema = z.object({
+  status: AttendeeStatusSchema.optional(),
+  principalId: PrincipalIdSchema.optional(),
+});
+
+function makePaginationSchema<T extends z.ZodTypeAny>(cursorSchema: T) {
+  return z.object({
+    limit: CommListLimitSchema,
+    cursor: cursorSchema.optional(),
+  });
+}
+
+const AttendeesListPaginationSchema = makePaginationSchema(BoardMeetingAttendeeIdSchema);
+
+export const GetBoardAttendeeQuerySchema = BoardAttendeeByIdQuerySchema;
+
+export const ListBoardAttendeesQuerySchema = BoardAttendeesByMeetingQuerySchema.extend({
+  ...BoardAttendeeFilterQuerySchema.shape,
+  ...AttendeesListPaginationSchema.shape,
+});
+
+export const GetBoardAttendeeResponseSchema = makeCommDetailResponseSchema(
+  BoardMeetingAttendeeSchema,
+);
 export const ListBoardAttendeesResponseSchema = makeCommListResponseSchema(
   BoardMeetingAttendeeSchema,
 );
 
 export type GetBoardAttendeeQuery = z.infer<typeof GetBoardAttendeeQuerySchema>;
 export type ListBoardAttendeesQuery = z.infer<typeof ListBoardAttendeesQuerySchema>;
+export type GetBoardAttendeeResponse = z.infer<typeof GetBoardAttendeeResponseSchema>;
 export type ListBoardAttendeesResponse = z.infer<typeof ListBoardAttendeesResponseSchema>;

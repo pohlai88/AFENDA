@@ -200,9 +200,13 @@ export const AuditActionValues = [
 
   // COMM — announcements
   "announcement.created",
+  "announcement.updated",
   "announcement.published",
   "announcement.scheduled",
+  "announcement.rescheduled",
+  "announcement.unscheduled",
   "announcement.archived",
+  "announcement.unarchived",
   "announcement.acknowledged",
 
   // COMM — docs

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { acknowledgeAuthIncident } from "@/features/auth/server/incident/auth-incident.service";
 
 interface RouteContext {
@@ -19,6 +20,15 @@ export async function POST(_request: Request, context: RouteContext) {
   const ok = await acknowledgeAuthIncident({
     incidentId,
     actorUserId: session.user.id,
+  });
+
+  await publishAuthAuditEvent("auth.ops.incident_acknowledged", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      incidentId,
+      ok,
+    },
   });
 
   return NextResponse.json({ ok });

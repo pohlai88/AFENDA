@@ -1,5 +1,5 @@
-/**
- * Audit log routes — list audit logs & get entity audit trail.
+﻿/**
+ * Audit log routes â€” list audit logs & get entity audit trail.
  *
  * Follows the Sprint 1 pattern:
  *   - ZodTypeProvider for automatic validation + OpenAPI generation
@@ -13,6 +13,7 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { ApiErrorResponseSchema, requireOrg, requireAuth } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
 import {
   AuditLogFilterSchema,
   CursorParamsSchema,
@@ -22,7 +23,7 @@ import {
 } from "@afenda/contracts";
 import { listAuditLogs, getAuditTrail } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AuditLogListSchema = z.object({
   data: z.array(
@@ -60,7 +61,7 @@ const AuditTrailSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Serialise ────────────────────────────────────────────────────────────────
+// â”€â”€ Serialise â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialiseAuditRow(row: {
   id: string;
@@ -81,17 +82,17 @@ function serialiseAuditRow(row: {
     entityType: row.entityType,
     entityId: row.entityId,
     correlationId: row.correlationId,
-    occurredAt: row.occurredAt.toISOString(),
+    occurredAt: serializeDate(row.occurredAt)!,
     details: row.details,
   };
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function auditRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── List audit logs ────────────────────────────────────────────────────────
+  // â”€â”€ List audit logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/audit-logs",
     {
@@ -140,7 +141,7 @@ export async function auditRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get audit trail for a specific entity ──────────────────────────────────
+  // â”€â”€ Get audit trail for a specific entity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/audit-logs/:entityType/:entityId",
     {

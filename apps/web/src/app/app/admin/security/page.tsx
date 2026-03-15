@@ -14,7 +14,7 @@ export default async function AdminSecurityPage() {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const snapshot = await getAuthGovernanceSnapshot();
@@ -22,9 +22,7 @@ export default async function AdminSecurityPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Security Operations
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Security Operations</h1>
         <p className="text-sm text-muted-foreground">
           Auth governance, challenge review, and anomaly monitoring.
         </p>
@@ -37,22 +35,10 @@ export default async function AdminSecurityPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
-        <MetricCard
-          title="Active Challenges"
-          value={snapshot.metrics.activeChallenges}
-        />
-        <MetricCard
-          title="Pending Audit Events"
-          value={snapshot.metrics.pendingAuditEvents}
-        />
-        <MetricCard
-          title="Failed Audit Events"
-          value={snapshot.metrics.failedAuditEvents}
-        />
-        <MetricCard
-          title="Sign-in Failures (24h)"
-          value={snapshot.metrics.recentSigninFailures}
-        />
+        <MetricCard title="Active Challenges" value={snapshot.metrics.activeChallenges} />
+        <MetricCard title="Pending Audit Events" value={snapshot.metrics.pendingAuditEvents} />
+        <MetricCard title="Failed Audit Events" value={snapshot.metrics.failedAuditEvents} />
+        <MetricCard title="Sign-in Failures (24h)" value={snapshot.metrics.recentSigninFailures} />
       </div>
 
       <Card>
@@ -61,9 +47,7 @@ export default async function AdminSecurityPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {snapshot.anomalies.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
-              No active anomalies.
-            </div>
+            <div className="text-sm text-muted-foreground">No active anomalies.</div>
           ) : (
             snapshot.anomalies.map((finding) => (
               <AnomalyCard key={finding.code} finding={finding} />
@@ -79,9 +63,7 @@ function MetricCard({ title, value }: { title: string; value: number }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-semibold">{value}</div>

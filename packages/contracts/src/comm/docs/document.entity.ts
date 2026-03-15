@@ -4,6 +4,13 @@ import { UtcDateTimeSchema } from "../../shared/datetime.js";
 
 // ─── ID Brands ────────────────────────────────────────────────────────────────
 
+/**
+ * Knowledge base document ID.
+ *
+ * Domain-specific to comm/docs (wiki pages, SOPs, templates, policies).
+ * NOT to be confused with shared/DocumentIdSchema, which represents
+ * evidence/attachment documents across multiple domains (AP, supplier onboarding).
+ */
 export const CommDocumentIdSchema = UuidSchema.brand<"CommDocumentId">();
 export const CommDocumentVersionIdSchema = UuidSchema.brand<"CommDocumentVersionId">();
 

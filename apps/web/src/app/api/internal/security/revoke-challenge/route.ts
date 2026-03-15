@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { revokeSecurityChallenge } from "@/features/auth/server/ops/auth-ops.service";
 
 export async function POST(request: Request) {
@@ -38,6 +39,17 @@ export async function POST(request: Request) {
     reason:
       typeof body.reason === "string" ? body.reason : "manual_review",
     actorUserId: session.user.id,
+  });
+
+  await publishAuthAuditEvent("auth.ops.challenge_revoked", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      challengeId: challengeId ?? null,
+      reason: typeof body.reason === "string" ? body.reason : "manual_review",
+      target: rawToken ? "rawToken" : "challengeId",
+      ok,
+    },
   });
 
   return NextResponse.json({ ok });

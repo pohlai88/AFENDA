@@ -9,24 +9,22 @@ import type {
   AnnouncementReadId,
   CreateAnnouncementCommand,
   PublishAnnouncementCommand,
+  UpdateAnnouncementCommand,
   ScheduleAnnouncementCommand,
   ArchiveAnnouncementCommand,
+  UnscheduleAnnouncementCommand,
+  UnarchiveAnnouncementCommand,
   AcknowledgeAnnouncementCommand,
+  CommAnnouncementEvent,
 } from "@afenda/contracts";
-import {
-  COMM_ANNOUNCEMENT_CREATED,
-  COMM_ANNOUNCEMENT_PUBLISHED,
-  COMM_ANNOUNCEMENT_SCHEDULED,
-  COMM_ANNOUNCEMENT_ARCHIVED,
-  COMM_ANNOUNCEMENT_ACKNOWLEDGED,
-} from "@afenda/contracts";
+import { AnnouncementOutboxRecordSchema, CommAnnouncementEvents } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
 import { ensureScheduledAtInFuture } from "./create-persisted-announcement.js";
 
 // ── Context & result types ────────────────────────────────────────────────────
 
 export interface CommAnnouncementPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommAnnouncementServiceError = {
@@ -55,6 +53,59 @@ function requirePrincipal(
     };
   }
   return { ok: true, data: policyCtx.principalId };
+}
+
+function normalizeUtcString(value: unknown): string | null {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  return null;
+}
+
+function normalizeAudienceIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "string" ? item : null))
+    .filter((item): item is string => item !== null);
+}
+
+function buildAnnouncementSnapshot(announcement: Record<string, unknown>) {
+  return {
+    title: String(announcement.title ?? ""),
+    body: String(announcement.body ?? ""),
+    status: String(announcement.status ?? "draft"),
+    audienceType: String(announcement.audienceType ?? "org"),
+    audienceIds: normalizeAudienceIds(announcement.audienceIds),
+    scheduledAt: normalizeUtcString(announcement.scheduledAt),
+  };
+}
+
+const ANNOUNCEMENT_OUTBOX_CREATED_AT_FALLBACK = "1970-01-01T00:00:00.000Z";
+
+async function emitAnnouncementOutboxEvent(
+  tx: any,
+  input: {
+    orgId: string;
+    eventName: CommAnnouncementEvent;
+    correlationId: CorrelationId;
+    payload: Record<string, unknown>;
+    occurredAt: string | null;
+  },
+): Promise<void> {
+  AnnouncementOutboxRecordSchema.parse({
+    id: randomUUID(),
+    eventName: input.eventName,
+    payload: input.payload,
+    createdAt: input.occurredAt ?? ANNOUNCEMENT_OUTBOX_CREATED_AT_FALLBACK,
+  });
+
+  await tx.insert(outboxEvent).values({
+    orgId: input.orgId,
+    type: input.eventName,
+    version: "1",
+    correlationId: input.correlationId,
+    payload: input.payload,
+  });
 }
 
 async function loadAnnouncement(db: DbClient, orgId: string, announcementId: AnnouncementId) {
@@ -121,11 +172,11 @@ export async function createAnnouncement(
         })
         .returning();
 
-      await tx.insert(outboxEvent).values({
+      await emitAnnouncementOutboxEvent(tx, {
         orgId,
-        type: COMM_ANNOUNCEMENT_CREATED,
-        version: "1",
+        eventName: CommAnnouncementEvents.Created,
         correlationId,
+        occurredAt: normalizeUtcString((announcement as Record<string, unknown>).createdAt),
         payload: {
           announcementId: announcement!.id,
           announcementNumber,
@@ -208,18 +259,135 @@ export async function publishAnnouncement(
         )
         .returning();
 
-      await tx.insert(outboxEvent).values({
+      await emitAnnouncementOutboxEvent(tx, {
         orgId,
-        type: COMM_ANNOUNCEMENT_PUBLISHED,
-        version: "1",
+        eventName: CommAnnouncementEvents.Published,
         correlationId,
+        occurredAt: normalizeUtcString((updated as Record<string, unknown>).updatedAt),
         payload: {
           announcementId: params.announcementId,
           announcementNumber: existing.announcementNumber,
           orgId,
           title: existing.title,
           audienceType: existing.audienceType,
-          audienceIds: existing.audienceIds,
+          audienceIds: normalizeAudienceIds(existing.audienceIds),
+          correlationId,
+        },
+      });
+
+      return updated!;
+    },
+  )) as any;
+
+  return { ok: true, data: { id: result.id as AnnouncementId } };
+}
+
+// ── updateAnnouncement ────────────────────────────────────────────────────────
+
+export async function updateAnnouncement(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  policyCtx: CommAnnouncementPolicyContext,
+  correlationId: CorrelationId,
+  params: UpdateAnnouncementCommand,
+): Promise<CommAnnouncementServiceResult<{ id: AnnouncementId }>> {
+  const principalResult = requirePrincipal(policyCtx);
+  if (!principalResult.ok) return principalResult;
+  const principalId = principalResult.data;
+  const orgId = ctx.activeContext.orgId;
+
+  const existing = await loadAnnouncement(db, orgId, params.announcementId);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { code: "COMM_ANNOUNCEMENT_NOT_FOUND", message: "Announcement not found" },
+    };
+  }
+
+  if (existing.status === "archived") {
+    return {
+      ok: false,
+      error: {
+        code: "COMM_ANNOUNCEMENT_ALREADY_ARCHIVED",
+        message: "Cannot update an archived announcement",
+      },
+    };
+  }
+
+  const hasAnyUpdatableField =
+    params.title !== undefined ||
+    params.body !== undefined ||
+    params.audienceType !== undefined ||
+    params.audienceIds !== undefined;
+  if (!hasAnyUpdatableField) {
+    return {
+      ok: false,
+      error: {
+        code: "SHARED_VALIDATION_ERROR",
+        message: "At least one updatable field is required",
+      },
+    };
+  }
+
+  if ((params.audienceType !== undefined) !== (params.audienceIds !== undefined)) {
+    return {
+      ok: false,
+      error: {
+        code: "SHARED_VALIDATION_ERROR",
+        message: "audienceType and audienceIds must be provided together",
+      },
+    };
+  }
+
+  const previous = buildAnnouncementSnapshot(existing as Record<string, unknown>);
+  const updateSet: Record<string, unknown> = {
+    updatedAt: sql`now()`,
+  };
+
+  if (params.title !== undefined) updateSet.title = params.title;
+  if (params.body !== undefined) updateSet.body = params.body;
+  if (params.audienceType !== undefined) updateSet.audienceType = params.audienceType;
+  if (params.audienceIds !== undefined) updateSet.audienceIds = params.audienceIds;
+
+  const result = (await withAudit(
+    db,
+    ctx,
+    {
+      actorPrincipalId: principalId,
+      action: "announcement.updated" as const,
+      entityType: "announcement" as const,
+      correlationId,
+      details: {
+        announcementNumber: existing.announcementNumber,
+        hasTitleUpdate: params.title !== undefined,
+        hasBodyUpdate: params.body !== undefined,
+        hasAudienceUpdate: params.audienceType !== undefined,
+      },
+    },
+    async (tx) => {
+      const [updated] = await tx
+        .update(commAnnouncement)
+        .set(updateSet as any)
+        .where(
+          and(eq(commAnnouncement.orgId, orgId), eq(commAnnouncement.id, params.announcementId)),
+        )
+        .returning();
+
+      const current = buildAnnouncementSnapshot(updated as unknown as Record<string, unknown>);
+      const updatedAt = normalizeUtcString((updated as Record<string, unknown>).updatedAt);
+
+      await emitAnnouncementOutboxEvent(tx, {
+        orgId,
+        eventName: CommAnnouncementEvents.Updated,
+        correlationId,
+        occurredAt: updatedAt,
+        payload: {
+          announcementId: params.announcementId,
+          announcementNumber: existing.announcementNumber,
+          orgId,
+          previous,
+          current,
+          updatedAt,
           correlationId,
         },
       });
@@ -252,15 +420,18 @@ export async function scheduleAnnouncement(
       error: { code: "COMM_ANNOUNCEMENT_NOT_FOUND", message: "Announcement not found" },
     };
   }
-  if (existing.status !== "draft") {
+  if (existing.status !== "draft" && existing.status !== "scheduled") {
     return {
       ok: false,
       error: {
         code: "COMM_ANNOUNCEMENT_INVALID_STATUS_TRANSITION",
-        message: "Only draft announcements can be scheduled",
+        message: "Only draft or scheduled announcements can be scheduled",
       },
     };
   }
+
+  const previousScheduledAt = normalizeUtcString(existing.scheduledAt);
+  const isReschedule = existing.status === "scheduled" && previousScheduledAt !== null;
 
   try {
     ensureScheduledAtInFuture(params.scheduledAt);
@@ -279,10 +450,14 @@ export async function scheduleAnnouncement(
     ctx,
     {
       actorPrincipalId: principalId,
-      action: "announcement.scheduled" as const,
+      action: isReschedule ? "announcement.rescheduled" : "announcement.scheduled",
       entityType: "announcement" as const,
       correlationId,
-      details: { announcementNumber: existing.announcementNumber, scheduledAt: params.scheduledAt },
+      details: {
+        announcementNumber: existing.announcementNumber,
+        previousScheduledAt,
+        scheduledAt: params.scheduledAt,
+      },
     },
     async (tx) => {
       const [updated] = await tx
@@ -297,16 +472,101 @@ export async function scheduleAnnouncement(
         )
         .returning();
 
-      await tx.insert(outboxEvent).values({
+      const updatedAt = normalizeUtcString(updated!.updatedAt);
+      await emitAnnouncementOutboxEvent(tx, {
         orgId,
-        type: COMM_ANNOUNCEMENT_SCHEDULED,
-        version: "1",
+        eventName: isReschedule
+          ? CommAnnouncementEvents.Rescheduled
+          : CommAnnouncementEvents.Scheduled,
         correlationId,
+        occurredAt: updatedAt,
         payload: {
-          announcementId: params.announcementId,
-          announcementNumber: existing.announcementNumber,
+          announcementId: updated!.id,
+          announcementNumber: updated!.announcementNumber,
           orgId,
-          scheduledAt: params.scheduledAt,
+          previousScheduledAt,
+          scheduledAt: normalizeUtcString(updated!.scheduledAt),
+          updatedAt,
+          correlationId,
+        },
+      });
+
+      return updated!;
+    },
+  )) as any;
+
+  return { ok: true, data: { id: result.id as AnnouncementId } };
+}
+
+// ── unscheduleAnnouncement ───────────────────────────────────────────────────
+
+export async function unscheduleAnnouncement(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  policyCtx: CommAnnouncementPolicyContext,
+  correlationId: CorrelationId,
+  params: UnscheduleAnnouncementCommand,
+): Promise<CommAnnouncementServiceResult<{ id: AnnouncementId }>> {
+  const principalResult = requirePrincipal(policyCtx);
+  if (!principalResult.ok) return principalResult;
+  const principalId = principalResult.data;
+  const orgId = ctx.activeContext.orgId;
+
+  const existing = await loadAnnouncement(db, orgId, params.announcementId);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { code: "COMM_ANNOUNCEMENT_NOT_FOUND", message: "Announcement not found" },
+    };
+  }
+
+  const previousScheduledAt = normalizeUtcString(existing.scheduledAt);
+  if (existing.status !== "scheduled" || previousScheduledAt === null) {
+    return {
+      ok: false,
+      error: {
+        code: "COMM_ANNOUNCEMENT_INVALID_STATUS_TRANSITION",
+        message: "Only scheduled announcements can be unscheduled",
+      },
+    };
+  }
+
+  const result = (await withAudit(
+    db,
+    ctx,
+    {
+      actorPrincipalId: principalId,
+      action: "announcement.unscheduled" as const,
+      entityType: "announcement" as const,
+      correlationId,
+      details: { announcementNumber: existing.announcementNumber, previousScheduledAt },
+    },
+    async (tx) => {
+      const [updated] = await tx
+        .update(commAnnouncement)
+        .set({
+          status: "draft",
+          scheduledAt: null,
+          updatedAt: sql`now()`,
+        })
+        .where(
+          and(eq(commAnnouncement.orgId, orgId), eq(commAnnouncement.id, params.announcementId)),
+        )
+        .returning();
+
+      const updatedAt = normalizeUtcString(updated!.updatedAt);
+      await emitAnnouncementOutboxEvent(tx, {
+        orgId,
+        eventName: CommAnnouncementEvents.Unscheduled,
+        correlationId,
+        occurredAt: updatedAt,
+        payload: {
+          announcementId: updated!.id,
+          announcementNumber: updated!.announcementNumber,
+          orgId,
+          previousScheduledAt,
+          status: "draft",
+          updatedAt,
           correlationId,
         },
       });
@@ -377,15 +637,93 @@ export async function archiveAnnouncement(
         )
         .returning();
 
-      await tx.insert(outboxEvent).values({
+      await emitAnnouncementOutboxEvent(tx, {
         orgId,
-        type: COMM_ANNOUNCEMENT_ARCHIVED,
-        version: "1",
+        eventName: CommAnnouncementEvents.Archived,
         correlationId,
+        occurredAt: normalizeUtcString((updated as Record<string, unknown>).updatedAt),
         payload: {
           announcementId: params.announcementId,
           announcementNumber: existing.announcementNumber,
           orgId,
+          correlationId,
+        },
+      });
+
+      return updated!;
+    },
+  )) as any;
+
+  return { ok: true, data: { id: result.id as AnnouncementId } };
+}
+
+// ── unarchiveAnnouncement ────────────────────────────────────────────────────
+
+export async function unarchiveAnnouncement(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  policyCtx: CommAnnouncementPolicyContext,
+  correlationId: CorrelationId,
+  params: UnarchiveAnnouncementCommand,
+): Promise<CommAnnouncementServiceResult<{ id: AnnouncementId }>> {
+  const principalResult = requirePrincipal(policyCtx);
+  if (!principalResult.ok) return principalResult;
+  const principalId = principalResult.data;
+  const orgId = ctx.activeContext.orgId;
+
+  const existing = await loadAnnouncement(db, orgId, params.announcementId);
+  if (!existing) {
+    return {
+      ok: false,
+      error: { code: "COMM_ANNOUNCEMENT_NOT_FOUND", message: "Announcement not found" },
+    };
+  }
+
+  if (existing.status !== "archived") {
+    return {
+      ok: false,
+      error: {
+        code: "COMM_ANNOUNCEMENT_INVALID_STATUS_TRANSITION",
+        message: "Only archived announcements can be unarchived",
+      },
+    };
+  }
+
+  const result = (await withAudit(
+    db,
+    ctx,
+    {
+      actorPrincipalId: principalId,
+      action: "announcement.unarchived" as const,
+      entityType: "announcement" as const,
+      correlationId,
+      details: { announcementNumber: existing.announcementNumber, previousStatus: "archived" },
+    },
+    async (tx) => {
+      const [updated] = await tx
+        .update(commAnnouncement)
+        .set({
+          status: "draft",
+          updatedAt: sql`now()`,
+        })
+        .where(
+          and(eq(commAnnouncement.orgId, orgId), eq(commAnnouncement.id, params.announcementId)),
+        )
+        .returning();
+
+      const updatedAt = normalizeUtcString(updated!.updatedAt);
+      await emitAnnouncementOutboxEvent(tx, {
+        orgId,
+        eventName: CommAnnouncementEvents.Unarchived,
+        correlationId,
+        occurredAt: updatedAt,
+        payload: {
+          announcementId: updated!.id,
+          announcementNumber: updated!.announcementNumber,
+          orgId,
+          previousStatus: "archived",
+          status: "draft",
+          updatedAt,
           correlationId,
         },
       });
@@ -457,11 +795,11 @@ export async function acknowledgeAnnouncement(
         })
         .returning();
 
-      await tx.insert(outboxEvent).values({
+      await emitAnnouncementOutboxEvent(tx, {
         orgId,
-        type: COMM_ANNOUNCEMENT_ACKNOWLEDGED,
-        version: "1",
+        eventName: CommAnnouncementEvents.Acknowledged,
         correlationId,
+        occurredAt: normalizeUtcString((read as Record<string, unknown>).acknowledgedAt),
         payload: {
           announcementId: params.announcementId,
           announcementNumber: existing.announcementNumber,

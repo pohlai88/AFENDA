@@ -4,6 +4,7 @@ import { CommTaskIdSchema, PrincipalIdSchema, TaskTimeEntryIdSchema } from "../.
 import { applyDateOrderRefinement, CommListLimitSchema } from "../shared/query.js";
 import {
   CommSummaryGroupSchema,
+  makeCommDetailResponseSchema,
   makeCommListResponseSchema,
   makeCommSummaryResponseSchema,
 } from "../shared/response.js";
@@ -61,6 +62,7 @@ export const SummarizeOrgTimeEntriesQuerySchema = z
     });
   });
 
+export const GetTaskTimeEntryResponseSchema = makeCommDetailResponseSchema(TaskTimeEntrySchema);
 export const ListTaskTimeEntriesResponseSchema = makeCommListResponseSchema(TaskTimeEntrySchema);
 export const SummarizeTaskTimeEntriesDataSchema = z.object({
   totalCount: z.number().int().nonnegative(),
@@ -83,6 +85,7 @@ export type ListTaskTimeEntriesQuery = z.infer<typeof ListTaskTimeEntriesQuerySc
 export type GetTaskTimeEntryQuery = z.infer<typeof GetTaskTimeEntryQuerySchema>;
 export type SummarizeTaskTimeEntriesQuery = z.infer<typeof SummarizeTaskTimeEntriesQuerySchema>;
 export type SummarizeOrgTimeEntriesQuery = z.infer<typeof SummarizeOrgTimeEntriesQuerySchema>;
+export type GetTaskTimeEntryResponse = z.infer<typeof GetTaskTimeEntryResponseSchema>;
 export type ListTaskTimeEntriesResponse = z.infer<typeof ListTaskTimeEntriesResponseSchema>;
 export type SummarizeTaskTimeEntriesData = z.infer<typeof SummarizeTaskTimeEntriesDataSchema>;
 export type SummarizeOrgTimeEntriesData = z.infer<typeof SummarizeOrgTimeEntriesDataSchema>;

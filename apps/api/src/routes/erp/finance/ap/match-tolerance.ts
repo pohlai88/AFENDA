@@ -1,10 +1,10 @@
-/**
- * Match Tolerance routes — create, update, deactivate, list, get by ID.
+﻿/**
+ * Match Tolerance routes â€” create, update, deactivate, list, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreateMatchToleranceCommandSchema,
   UpdateMatchToleranceCommandSchema,
@@ -34,7 +36,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MatchToleranceRowSchema = z.object({
   id: z.string().uuid(),
@@ -62,20 +64,7 @@ const MatchToleranceListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialiseMatchTolerance(row: {
   id: string;
@@ -110,8 +99,8 @@ function serialiseMatchTolerance(row: {
     isActive: row.isActive,
     effectiveFrom: row.effectiveFrom,
     effectiveTo: row.effectiveTo,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -126,12 +115,12 @@ function mapErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function matchToleranceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create match tolerance ─────────────────────────────────────────────────
+  // â”€â”€ Create match tolerance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-match-tolerance",
     {
@@ -161,8 +150,8 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
 
       const result = await createMatchTolerance(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           scope: req.body.scope,
@@ -175,9 +164,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
           currencyCode: req.body.currencyCode,
           priority: req.body.priority,
           effectiveFrom,
-          effectiveTo: req.body.effectiveTo
-            ? String(req.body.effectiveTo).slice(0, 10)
-            : undefined,
+          effectiveTo: req.body.effectiveTo ? String(req.body.effectiveTo).slice(0, 10) : undefined,
         },
       );
 
@@ -199,7 +186,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Update match tolerance ───────────────────────────────────────────────────
+  // â”€â”€ Update match tolerance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/update-match-tolerance",
     {
@@ -227,8 +214,8 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
 
       const result = await updateMatchTolerance(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           matchToleranceId: req.body.matchToleranceId,
@@ -237,9 +224,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
           tolerancePercent: req.body.tolerancePercent,
           maxAmountMinor: req.body.maxAmountMinor,
           priority: req.body.priority,
-          effectiveTo: req.body.effectiveTo
-            ? String(req.body.effectiveTo).slice(0, 10)
-            : undefined,
+          effectiveTo: req.body.effectiveTo ? String(req.body.effectiveTo).slice(0, 10) : undefined,
         },
       );
 
@@ -258,7 +243,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Deactivate match tolerance ──────────────────────────────────────────────
+  // â”€â”€ Deactivate match tolerance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/deactivate-match-tolerance",
     {
@@ -286,8 +271,8 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
 
       const result = await deactivateMatchTolerance(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           matchToleranceId: req.body.matchToleranceId,
@@ -310,7 +295,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List match tolerances ─────────────────────────────────────────────────────
+  // â”€â”€ List match tolerances â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/match-tolerances",
     {
@@ -349,7 +334,7 @@ export async function matchToleranceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get match tolerance by ID ─────────────────────────────────────────────────
+  // â”€â”€ Get match tolerance by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/match-tolerances/:id",
     {

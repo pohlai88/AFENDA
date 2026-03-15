@@ -6,6 +6,11 @@ import {
   PrincipalIdSchema,
 } from "../../shared/ids.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
+import {
+  WorkflowDescriptionSchema,
+  WorkflowNameSchema,
+  WorkflowRunErrorSchema,
+} from "./workflow.shared.js";
 
 // ─── Workflow IDs ─────────────────────────────────────────────────────────────
 
@@ -94,8 +99,8 @@ export type WorkflowAction = z.infer<typeof WorkflowActionSchema>;
 export const WorkflowSchema = z.object({
   id: CommWorkflowIdSchema,
   orgId: OrgIdSchema,
-  name: z.string().min(1).max(200),
-  description: z.string().max(2000).nullable(),
+  name: WorkflowNameSchema,
+  description: WorkflowDescriptionSchema.nullable(),
   status: z.enum(WorkflowStatusValues),
   trigger: WorkflowTriggerSchema,
   actions: z.array(WorkflowActionSchema).min(1).max(10),
@@ -123,13 +128,13 @@ export const WorkflowRunSchema = z.object({
   triggerPayload: z.record(z.string(), z.unknown()),
   startedAt: UtcDateTimeSchema,
   completedAt: UtcDateTimeSchema.nullable(),
-  error: z.string().nullable(),
+  error: WorkflowRunErrorSchema.nullable(),
   executedActions: z.array(
     z.object({
       actionType: z.enum(WorkflowActionTypeValues),
       status: z.enum(["pending", "completed", "failed"]),
       result: z.unknown().optional(),
-      error: z.string().optional(),
+      error: WorkflowRunErrorSchema.optional(),
     }),
   ),
   createdAt: UtcDateTimeSchema,

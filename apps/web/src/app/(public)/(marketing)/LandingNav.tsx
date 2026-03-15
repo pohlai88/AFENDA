@@ -28,25 +28,27 @@ export function LandingNav() {
   return (
     <nav
       className={`mk-nav ${
-        scrolled
-          ? "mk-nav-scrolled"
-          : "bg-transparent border-b border-transparent"
+        scrolled ? "mk-nav-scrolled" : "border-b border-transparent bg-transparent"
       }`}
     >
       <div className="mk-container">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="#" className="flex items-center group">
-            <AfendaLogo size="sm" showTagline={false} className="group-hover:opacity-80 transition-opacity" />
+          <a href="#" className="group flex items-center">
+            <AfendaLogo
+              size="sm"
+              showTagline={false}
+              className="transition-opacity group-hover:opacity-80"
+            />
           </a>
 
           {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden items-center gap-8 md:flex">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm text-slate-500 hover:text-slate-200 transition-colors tracking-wide"
+                className="text-sm tracking-wide text-slate-500 transition-colors hover:text-slate-200"
               >
                 {link.label}
               </a>
@@ -54,14 +56,14 @@ export function LandingNav() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/auth/signin">
-              <Button variant="ghost" className="hidden sm:inline-flex text-sm px-4">
-                Sign In
+            <Link href="/app">
+              <Button variant="ghost" className="hidden px-4 text-sm sm:inline-flex">
+                Workspace
               </Button>
             </Link>
-            <Link href="/auth/signup">
-              <Button variant="default" className="text-sm px-4 py-2 gap-1.5">
-                Get Started
+            <Link href="/app">
+              <Button variant="default" className="gap-1.5 px-4 py-2 text-sm">
+                Open App
               </Button>
             </Link>
           </div>

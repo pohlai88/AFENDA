@@ -1,6 +1,8 @@
 /**
  * Barrel — comm pillar
  */
+export * from "./errors.js";
+export * from "./permissions.js";
 export * from "./shared/index.js";
 export * from "./chatter/index.js";
 export * from "./projects/index.js";

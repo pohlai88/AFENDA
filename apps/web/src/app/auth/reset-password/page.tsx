@@ -1,54 +1,34 @@
-import { ResetPasswordClientPage } from "./reset-password-client";
-import { verifyResetToken } from "@/features/auth/server/tokens/auth-token.service";
-import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
-import {
-  buildChallengeExpiry,
-  createAuthChallenge,
-} from "@/features/auth/server/challenge/auth-challenge.service";
+import { ResetPasswordPanel } from "@/app/auth/_components/ResetPasswordPanel";
+import { resolveSafeRedirectPath } from "@/lib/auth/redirects";
+import { isNeonAuthConfigured } from "@/lib/auth/server";
 
-interface ResetPasswordPageProps {
-  searchParams: Promise<{ token?: string }>;
+export const dynamic = "force-dynamic";
+
+type ResetPasswordPageProps = {
+  searchParams: Promise<{
+    next?: string;
+    token?: string;
+  }>;
+};
+
+function toInitialError(token: string | undefined): string | undefined {
+  if (!token || token === "INVALID_TOKEN") {
+    return "This password reset link is invalid or has expired.";
+  }
+
+  return undefined;
 }
 
-export default async function ResetPasswordPage({
-  searchParams,
-}: ResetPasswordPageProps) {
+export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
   const params = await searchParams;
-  const token = params.token ?? "";
-  const hasAuthDb = Boolean(process.env.DATABASE_URL);
-
-  const result = hasAuthDb && token
-    ? await verifyResetToken(token)
-    : { valid: false, token, email: undefined, expiresAt: undefined };
-
-  if (hasAuthDb && result.valid) {
-    await createAuthChallenge({
-      type: "reset",
-      rawToken: result.token,
-      email: result.email,
-      expiresAt: result.expiresAt ?? buildChallengeExpiry(30),
-      maxAttempts: 5,
-    });
-  }
-
-  if (hasAuthDb) {
-    await publishAuthAuditEvent(
-      result.valid ? "auth.reset.token_verified" : "auth.reset.token_invalid",
-      {
-        email: result.email,
-        metadata: {
-          tokenPresent: Boolean(token),
-          expiresAt: result.expiresAt ?? null,
-        },
-      },
-    );
-  }
+  const nextPath = resolveSafeRedirectPath(params.next, "/app");
 
   return (
-    <ResetPasswordClientPage
-      token={result.token}
-      email={result.email}
-      valid={result.valid}
+    <ResetPasswordPanel
+      nextPath={nextPath}
+      token={params.token}
+      initialError={toInitialError(params.token)}
+      isAuthConfigured={isNeonAuthConfigured}
     />
   );
 }

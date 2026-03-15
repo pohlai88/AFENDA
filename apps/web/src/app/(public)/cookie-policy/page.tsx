@@ -16,8 +16,7 @@ export const revalidate = 2592000; // monthly ISR
 
 export const metadata: Metadata = {
   title: "Cookie Policy — AFENDA",
-  description:
-    "Cookie usage and data storage policies for AFENDA authentication and security.",
+  description: "Cookie usage and data storage policies for AFENDA authentication and security.",
   alternates: { canonical: "/cookie-policy" },
   openGraph: {
     title: "Cookie Policy — AFENDA",
@@ -30,21 +29,21 @@ export const metadata: Metadata = {
 
 const cookieData = [
   {
-    name: "neon-auth.session",
+    name: "session",
     purpose: "Stores session token for user authentication",
     category: "Strictly Necessary",
     duration: "8 hours (expires on logout or timeout)",
     icon: Shield,
   },
   {
-    name: "neon-auth.csrf-token",
+    name: "csrf-token",
     purpose: "CSRF protection for authentication requests",
     category: "Strictly Necessary",
     duration: "Session (cleared when browser closes)",
     icon: Shield,
   },
   {
-    name: "neon-auth.callback-url",
+    name: "callback-url",
     purpose: "Temporary redirect URL during login flow",
     category: "Strictly Necessary",
     duration: "Session (cleared after redirect)",
@@ -75,8 +74,8 @@ export default function CookiePolicyPage() {
             <section className="space-y-4 text-sm">
               <h3 className="font-semibold">What Are Cookies?</h3>
               <p className="text-muted-foreground">
-                Cookies are small text files stored by your browser when you visit a website.
-                They help websites remember your login state, preferences, and security settings.
+                Cookies are small text files stored by your browser when you visit a website. They
+                help websites remember your login state, preferences, and security settings.
               </p>
               <p className="text-muted-foreground">
                 AFENDA uses <strong>strictly necessary cookies only</strong>. We do not use
@@ -87,10 +86,11 @@ export default function CookiePolicyPage() {
             <Separator />
 
             <section className="space-y-4">
-              <h3 className="font-semibold text-sm">Cookies We Use</h3>
+              <h3 className="text-sm font-semibold">Cookies We Use</h3>
               <p className="text-sm text-muted-foreground">
-                All cookies listed below are <strong>essential for authentication and
-                security</strong>. The platform cannot function without them.
+                All cookies listed below are{" "}
+                <strong>essential for authentication and security</strong>. The platform cannot
+                function without them.
               </p>
 
               <div className="grid gap-4">
@@ -105,33 +105,31 @@ export default function CookiePolicyPage() {
                               <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                             </div>
                             <div className="flex-1">
-                              <CardTitle className="text-sm font-mono">
-                                {cookie.name}
-                              </CardTitle>
+                              <CardTitle className="font-mono text-sm">{cookie.name}</CardTitle>
                               <Badge variant="secondary" className="mt-1 text-xs">
-                              {cookie.category}
-                            </Badge>
+                                {cookie.category}
+                              </Badge>
+                            </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2 text-xs">
-                        <div>
-                          <span className="font-semibold">Purpose:</span>{" "}
-                          <span className="text-muted-foreground">{cookie.purpose}</span>
-                        </div>
-                        <div>
-                          <span className="font-semibold">Duration:</span>{" "}
-                          <span className="text-muted-foreground">{cookie.duration}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-xs">
+                          <div>
+                            <span className="font-semibold">Purpose:</span>{" "}
+                            <span className="text-muted-foreground">{cookie.purpose}</span>
+                          </div>
+                          <div>
+                            <span className="font-semibold">Duration:</span>{" "}
+                            <span className="text-muted-foreground">{cookie.duration}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 ) : (
                   <Card className="border-muted">
                     <CardContent className="py-8">
                       <div className="text-center text-sm text-muted-foreground">
-                        <Info className="h-8 w-8 mx-auto mb-2" />
+                        <Info className="mx-auto mb-2 h-8 w-8" />
                         <p>No data available</p>
                       </div>
                     </CardContent>
@@ -145,14 +143,14 @@ export default function CookiePolicyPage() {
             <section className="space-y-4 text-sm">
               <h3 className="font-semibold">Why No Consent Banner?</h3>
               <p className="text-muted-foreground">
-                Under GDPR Article 6(1)(b) and similar privacy regulations, <strong>strictly
-                necessary cookies</strong> do not require user consent because they are
-                essential for the service to function. Without these cookies, authentication
+                Under GDPR Article 6(1)(b) and similar privacy regulations,{" "}
+                <strong>strictly necessary cookies</strong> do not require user consent because they
+                are essential for the service to function. Without these cookies, authentication
                 would fail and the platform could not operate securely.
               </p>
               <p className="text-muted-foreground">
-                If we introduce analytics or marketing cookies in the future, we will display
-                a consent banner and update this policy accordingly.
+                If we introduce analytics or marketing cookies in the future, we will display a
+                consent banner and update this policy accordingly.
               </p>
             </section>
 
@@ -165,22 +163,22 @@ export default function CookiePolicyPage() {
               </p>
               <ul className="list-inside list-disc space-y-1 text-muted-foreground">
                 <li>
-                  <strong>Clear existing cookies:</strong> Most browsers allow you to delete
-                  cookies through Settings → Privacy → Clear Browsing Data.
+                  <strong>Clear existing cookies:</strong> Most browsers allow you to delete cookies
+                  through Settings → Privacy → Clear Browsing Data.
                 </li>
                 <li>
-                  <strong>Block cookies:</strong> You can block all cookies, but this will
-                  prevent you from signing in to AFENDA.
+                  <strong>Block cookies:</strong> You can block all cookies, but this will prevent
+                  you from signing in to AFENDA.
                 </li>
                 <li>
-                  <strong>Sign out:</strong> Session management will be available when new
-                  auth is scaffolded.
+                  <strong>Sign out:</strong> Session management will be available when new auth is
+                  scaffolded.
                 </li>
               </ul>
-              <p className="text-muted-foreground text-xs mt-4">
+              <p className="mt-4 text-xs text-muted-foreground">
                 For more information on cookie management:
               </p>
-              <ul className="list-inside list-disc space-y-1 text-muted-foreground text-xs">
+              <ul className="list-inside list-disc space-y-1 text-xs text-muted-foreground">
                 <li>
                   <a
                     href="https://support.google.com/chrome/answer/95647"
@@ -219,8 +217,8 @@ export default function CookiePolicyPage() {
             <section className="space-y-4 text-sm">
               <h3 className="font-semibold">Updates to This Policy</h3>
               <p className="text-muted-foreground">
-                We may update this Cookie Policy as we add features or services. Changes will
-                be posted on this page with a revised "Last Updated" date.
+                We may update this Cookie Policy as we add features or services. Changes will be
+                posted on this page with a revised "Last Updated" date.
               </p>
               <p className="text-muted-foreground">
                 <strong>Last Updated:</strong> March 9, 2026

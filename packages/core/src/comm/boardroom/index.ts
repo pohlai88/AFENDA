@@ -15,10 +15,7 @@ export type {
   BoardMeetingServiceError,
   BoardMeetingServiceResult,
 } from "./meeting.service.js";
-export type {
-  BoardMeetingRow,
-  BoardMeetingListParams,
-} from "./meeting.queries.js";
+export type { BoardMeetingRow, BoardMeetingListParams } from "./meeting.queries.js";
 export type { AgendaItemServiceResult } from "./agenda-item.service.js";
 export type { BoardAgendaItemRow } from "./agenda-item.queries.js";
 export type { AttendeeServiceResult } from "./attendee.service.js";
@@ -52,6 +49,8 @@ export const {
   updateAttendeeStatus,
   listAttendeesByMeeting,
   proposeResolution,
+  updateResolution,
+  withdrawResolution,
   castVote,
   listResolutionsByMeeting,
   listVotesByResolution,

@@ -1,10 +1,10 @@
-/**
- * Invoice Line routes — create, update, delete, list by invoice, get by ID.
+﻿/**
+ * Invoice Line routes â€” create, update, delete, list by invoice, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreateInvoiceLineCommandSchema,
   UpdateInvoiceLineCommandSchema,
@@ -33,7 +35,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const InvoiceLineRowSchema = z.object({
   id: z.string().uuid(),
@@ -50,20 +52,7 @@ const InvoiceLineRowSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialiseInvoiceLine(row: {
   id: string;
@@ -90,8 +79,8 @@ function serialiseInvoiceLine(row: {
     amountMinor: String(row.amountMinor),
     glAccountId: row.glAccountId,
     taxCode: row.taxCode,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -109,12 +98,12 @@ function mapErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function invoiceLineRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create invoice line ────────────────────────────────────────────────────
+  // â”€â”€ Create invoice line â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-invoice-line",
     {
@@ -143,8 +132,8 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
 
       const result = await createInvoiceLine(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           invoiceId: req.body.invoiceId,
@@ -175,7 +164,7 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Update invoice line ─────────────────────────────────────────────────────
+  // â”€â”€ Update invoice line â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/update-invoice-line",
     {
@@ -204,8 +193,8 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
 
       const result = await updateInvoiceLine(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           id: req.body.id,
@@ -232,7 +221,7 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Delete invoice line ────────────────────────────────────────────────────
+  // â”€â”€ Delete invoice line â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/delete-invoice-line",
     {
@@ -261,8 +250,8 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
 
       const result = await deleteInvoiceLine(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body.id,
       );
@@ -282,7 +271,7 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List lines by invoice ───────────────────────────────────────────────────
+  // â”€â”€ List lines by invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoices/:invoiceId/lines",
     {
@@ -306,11 +295,7 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const lines = await listInvoiceLines(
-        app.db,
-        orgId as OrgId,
-        req.params.invoiceId,
-      );
+      const lines = await listInvoiceLines(app.db, orgId as OrgId, req.params.invoiceId);
 
       return {
         data: lines.map(serialiseInvoiceLine),
@@ -319,7 +304,7 @@ export async function invoiceLineRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get invoice line by ID ───────────────────────────────────────────────────
+  // â”€â”€ Get invoice line by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoice-lines/:id",
     {

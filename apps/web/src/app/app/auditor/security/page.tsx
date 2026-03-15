@@ -8,7 +8,7 @@ export default async function AuditorSecurityPage() {
   try {
     await assertAuditorReadAccess();
   } catch {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const snapshot = await getAuthGovernanceSnapshot();
@@ -16,27 +16,16 @@ export default async function AuditorSecurityPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Auditor Security View
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Auditor Security View</h1>
         <p className="text-sm text-muted-foreground">
           Read-only access to auth governance and evidence health.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Metric
-          title="Active Challenges"
-          value={snapshot.metrics.activeChallenges}
-        />
-        <Metric
-          title="Pending Audit Events"
-          value={snapshot.metrics.pendingAuditEvents}
-        />
-        <Metric
-          title="Failed Audit Events"
-          value={snapshot.metrics.failedAuditEvents}
-        />
+        <Metric title="Active Challenges" value={snapshot.metrics.activeChallenges} />
+        <Metric title="Pending Audit Events" value={snapshot.metrics.pendingAuditEvents} />
+        <Metric title="Failed Audit Events" value={snapshot.metrics.failedAuditEvents} />
       </div>
 
       <Card>
@@ -45,15 +34,10 @@ export default async function AuditorSecurityPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {snapshot.recentIncidents.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
-              No recent incidents.
-            </div>
+            <div className="text-sm text-muted-foreground">No recent incidents.</div>
           ) : (
             snapshot.recentIncidents.map((incident) => (
-              <div
-                key={incident.id}
-                className="rounded-md border p-3"
-              >
+              <div key={incident.id} className="rounded-md border p-3">
                 <div className="font-medium">{incident.title}</div>
                 <div className="text-sm text-muted-foreground">
                   {incident.code} · {incident.severity} · {incident.status}
@@ -71,9 +55,7 @@ function Metric({ title, value }: { title: string; value: number }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-semibold">{value}</div>

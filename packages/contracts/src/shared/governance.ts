@@ -1,4 +1,4 @@
-import { PermissionValues } from "./permissions.js";
+import { PermissionValues } from "../all-permissions.js";
 
 export type SeedPermissionRow = { key: string };
 

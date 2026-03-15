@@ -13,12 +13,21 @@ import type {
   OrgId,
   PrincipalId,
   ProposeResolutionCommand,
+  ResolutionStatus,
+  UpdateResolutionCommand,
+  WithdrawResolutionCommand,
 } from "@afenda/contracts";
-import { COMM_RESOLUTION_PROPOSED, COMM_VOTE_CAST } from "@afenda/contracts";
+import {
+  COMM_RESOLUTION_PROPOSED,
+  COMM_RESOLUTION_UPDATED,
+  COMM_RESOLUTION_WITHDRAWN,
+  COMM_VOTE_CAST,
+} from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { getResolutionStateGuardError } from "./resolution.guards.js";
 
 export interface BoardMeetingPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type ResolutionServiceResult<T> =
@@ -37,7 +46,7 @@ function requirePrincipal(
   return { ok: true, data: policyCtx.principalId };
 }
 
-const VOTING_OPEN_STATUSES = ["proposed", "discussed"] as const;
+const RESOLUTION_WITHDRAWN_STATUS: ResolutionStatus = "tabled";
 
 export async function proposeResolution(
   db: DbClient,
@@ -54,12 +63,7 @@ export async function proposeResolution(
   const [meeting] = await db
     .select()
     .from(commBoardMeeting)
-    .where(
-      and(
-        eq(commBoardMeeting.orgId, orgId),
-        eq(commBoardMeeting.id, params.meetingId),
-      ),
-    );
+    .where(and(eq(commBoardMeeting.orgId, orgId), eq(commBoardMeeting.id, params.meetingId)));
 
   if (!meeting) {
     return { ok: false, error: { code: "COMM_MEETING_NOT_FOUND", message: "Meeting not found" } };
@@ -109,6 +113,174 @@ export async function proposeResolution(
   return { ok: true, data: { id: result.id as BoardResolutionId } };
 }
 
+export async function updateResolution(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  policyCtx: BoardMeetingPolicyContext,
+  correlationId: CorrelationId,
+  params: UpdateResolutionCommand,
+): Promise<ResolutionServiceResult<{ id: BoardResolutionId }>> {
+  const principalResult = requirePrincipal(policyCtx);
+  if (!principalResult.ok) return principalResult;
+
+  const orgId = ctx.activeContext.orgId as OrgId;
+
+  const [resolution] = await db
+    .select()
+    .from(commBoardResolution)
+    .where(
+      and(eq(commBoardResolution.orgId, orgId), eq(commBoardResolution.id, params.resolutionId)),
+    );
+
+  if (!resolution) {
+    return {
+      ok: false,
+      error: { code: "COMM_RESOLUTION_NOT_FOUND", message: "Resolution not found" },
+    };
+  }
+
+  const guardError = getResolutionStateGuardError(resolution.status as ResolutionStatus, "update");
+  if (guardError) {
+    return { ok: false, error: guardError };
+  }
+
+  const result = await withAudit<{ id: string; status: string }>(
+    db,
+    ctx,
+    {
+      actorPrincipalId: principalResult.data,
+      action: "meeting.resolution_proposed",
+      entityType: "board_resolution" as const,
+      correlationId,
+      details: {
+        ...(params.title !== undefined ? { title: params.title } : {}),
+        ...(params.description !== undefined ? { description: params.description } : {}),
+      },
+    },
+    async (tx) => {
+      const [row] = await tx
+        .update(commBoardResolution)
+        .set({
+          ...(params.title !== undefined ? { title: params.title } : {}),
+          ...(params.description !== undefined ? { description: params.description } : {}),
+          updatedAt: sql`now()`,
+        })
+        .where(
+          and(
+            eq(commBoardResolution.orgId, orgId),
+            eq(commBoardResolution.id, params.resolutionId),
+          ),
+        )
+        .returning({
+          id: commBoardResolution.id,
+          status: commBoardResolution.status,
+        });
+
+      await tx.insert(outboxEvent).values({
+        orgId,
+        type: COMM_RESOLUTION_UPDATED,
+        version: "1",
+        correlationId,
+        payload: {
+          resolutionId: row!.id,
+          status: row!.status,
+          orgId,
+          correlationId,
+        },
+      });
+
+      return row!;
+    },
+  );
+
+  return { ok: true, data: { id: result.id as BoardResolutionId } };
+}
+
+export async function withdrawResolution(
+  db: DbClient,
+  ctx: OrgScopedContext,
+  policyCtx: BoardMeetingPolicyContext,
+  correlationId: CorrelationId,
+  params: WithdrawResolutionCommand,
+): Promise<ResolutionServiceResult<{ id: BoardResolutionId }>> {
+  const principalResult = requirePrincipal(policyCtx);
+  if (!principalResult.ok) return principalResult;
+
+  const orgId = ctx.activeContext.orgId as OrgId;
+
+  const [resolution] = await db
+    .select()
+    .from(commBoardResolution)
+    .where(
+      and(eq(commBoardResolution.orgId, orgId), eq(commBoardResolution.id, params.resolutionId)),
+    );
+
+  if (!resolution) {
+    return {
+      ok: false,
+      error: { code: "COMM_RESOLUTION_NOT_FOUND", message: "Resolution not found" },
+    };
+  }
+
+  const guardError = getResolutionStateGuardError(
+    resolution.status as ResolutionStatus,
+    "withdraw",
+  );
+  if (guardError) {
+    return { ok: false, error: guardError };
+  }
+
+  const result = await withAudit<{ id: string; status: string }>(
+    db,
+    ctx,
+    {
+      actorPrincipalId: principalResult.data,
+      action: "meeting.resolution_proposed",
+      entityType: "board_resolution" as const,
+      correlationId,
+      details: {
+        reason: params.reason ?? null,
+      },
+    },
+    async (tx) => {
+      const [row] = await tx
+        .update(commBoardResolution)
+        .set({
+          status: RESOLUTION_WITHDRAWN_STATUS,
+          updatedAt: sql`now()`,
+        })
+        .where(
+          and(
+            eq(commBoardResolution.orgId, orgId),
+            eq(commBoardResolution.id, params.resolutionId),
+          ),
+        )
+        .returning({
+          id: commBoardResolution.id,
+          status: commBoardResolution.status,
+        });
+
+      await tx.insert(outboxEvent).values({
+        orgId,
+        type: COMM_RESOLUTION_WITHDRAWN,
+        version: "1",
+        correlationId,
+        payload: {
+          resolutionId: row!.id,
+          status: row!.status,
+          reason: params.reason ?? null,
+          orgId,
+          correlationId,
+        },
+      });
+
+      return row!;
+    },
+  );
+
+  return { ok: true, data: { id: result.id as BoardResolutionId } };
+}
+
 export async function castVote(
   db: DbClient,
   ctx: OrgScopedContext,
@@ -125,21 +297,22 @@ export async function castVote(
     .select()
     .from(commBoardResolution)
     .where(
-      and(
-        eq(commBoardResolution.orgId, orgId),
-        eq(commBoardResolution.id, params.resolutionId),
-      ),
+      and(eq(commBoardResolution.orgId, orgId), eq(commBoardResolution.id, params.resolutionId)),
     );
 
   if (!resolution) {
-    return { ok: false, error: { code: "COMM_RESOLUTION_NOT_FOUND", message: "Resolution not found" } };
-  }
-
-  if (!VOTING_OPEN_STATUSES.includes(resolution.status as (typeof VOTING_OPEN_STATUSES)[number])) {
     return {
       ok: false,
-      error: { code: "COMM_RESOLUTION_VOTING_CLOSED", message: "Voting is closed for this resolution" },
+      error: { code: "COMM_RESOLUTION_NOT_FOUND", message: "Resolution not found" },
     };
+  }
+
+  const guardError = getResolutionStateGuardError(
+    resolution.status as ResolutionStatus,
+    "cast_vote",
+  );
+  if (guardError) {
+    return { ok: false, error: guardError };
   }
 
   const [existingVote] = await db
@@ -155,7 +328,10 @@ export async function castVote(
   if (existingVote) {
     return {
       ok: false,
-      error: { code: "COMM_RESOLUTION_ALREADY_VOTED", message: "You have already voted on this resolution" },
+      error: {
+        code: "COMM_RESOLUTION_ALREADY_VOTED",
+        message: "You have already voted on this resolution",
+      },
     };
   }
 

@@ -30,7 +30,7 @@ import type {
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface CommApprovalPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommApprovalServiceError = {

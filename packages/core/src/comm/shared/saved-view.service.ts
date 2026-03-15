@@ -14,7 +14,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { getSavedViewById } from "./saved-view.queries";
 
 export interface CommSavedViewPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommSavedViewServiceError = {
@@ -31,7 +31,7 @@ async function clearDefaultInScope(
   db: DbClient,
   orgId: string,
   entityType: SaveViewCommand["entityType"] | UpdateSavedViewCommand["viewId"],
-  principalId: PrincipalId | null,
+  principalId: PrincipalId | null | undefined,
 ) {
   const scopePredicate = principalId
     ? eq(commSavedView.principalId, principalId)

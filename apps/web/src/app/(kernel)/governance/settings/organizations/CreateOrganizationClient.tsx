@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -11,27 +13,76 @@ import {
   CardTitle,
   Input,
   Label,
+  Spinner,
+  toast,
 } from "@afenda/ui";
-import {
-  createOrganizationAction,
-  type CreateOrganizationResult,
-} from "@/app/auth/_actions/create-organization";
 import { Building2 } from "lucide-react";
 
-const INITIAL_STATE: CreateOrganizationResult = { ok: false, error: "" };
+import { createNeonClientOrganization, neonClientCapabilities } from "@/lib/auth/client";
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+}
 
 /**
  * Create organization (Neon Auth auth.organization.create) — Settings > Organizations.
  */
-export function CreateOrganizationClient() {
-  const router = useRouter();
-  const [state, formAction, isPending] = useActionState(createOrganizationAction, INITIAL_STATE);
+export function CreateOrganizationClient({
+  onMutationSuccess,
+}: {
+  onMutationSuccess?: () => void;
+}) {
+  const canCreateOrganization = neonClientCapabilities.organization.create;
 
-  useEffect(() => {
-    if (state?.ok) {
-      router.refresh();
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!canCreateOrganization) {
+      setError("Organization creation is unavailable in this environment.");
+      return;
     }
-  }, [state?.ok, router]);
+
+    const normalizedName = name.trim();
+    const normalizedSlug = slug.trim();
+
+    if (!normalizedName) {
+      setError("Organization name is required.");
+      return;
+    }
+
+    startTransition(async () => {
+      const response = await createNeonClientOrganization({
+        name: normalizedName,
+        slug: normalizedSlug || undefined,
+      });
+
+      if (response.error) {
+        setError(getErrorMessage(response.error, "Unable to create organization."));
+        return;
+      }
+
+      setSuccess(`Organization \"${normalizedName}\" created.`);
+      setName("");
+      setSlug("");
+      toast.success("Organization created.");
+      onMutationSuccess?.();
+    });
+  }
 
   return (
     <section>
@@ -46,50 +97,66 @@ export function CreateOrganizationClient() {
             New organization
           </CardTitle>
           <CardDescription className="text-xs">
-            Name is required. Slug is optional and used in URLs (e.g. my-org).
+            Create a new Neon organization for your account.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form action={formAction} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="create-org-name">Name</Label>
+        <CardContent className="space-y-4">
+          {!canCreateOrganization ? (
+            <Alert>
+              <AlertTitle>Organization creation unavailable</AlertTitle>
+              <AlertDescription>
+                Neon organization.create is not available in this environment.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          {success ? (
+            <Alert>
+              <AlertTitle>Organization created</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Unable to create organization</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <form className="space-y-3" onSubmit={handleSubmit}>
+            <div className="space-y-1.5">
+              <Label htmlFor="organization-create-name">Organization name</Label>
               <Input
-                id="create-org-name"
-                name="name"
-                type="text"
-                placeholder="My Organization"
+                id="organization-create-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Acme Holdings"
+                disabled={!canCreateOrganization || isPending}
                 required
-                maxLength={160}
-                disabled={isPending}
-                autoComplete="organization"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="create-org-slug">Slug (optional)</Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="organization-create-slug">Slug (optional)</Label>
               <Input
-                id="create-org-slug"
-                name="slug"
-                type="text"
-                placeholder="my-org"
-                maxLength={64}
-                disabled={isPending}
-                className="font-mono text-sm"
+                id="organization-create-slug"
+                value={slug}
+                onChange={(event) => setSlug(event.target.value)}
+                placeholder="acme-holdings"
+                disabled={!canCreateOrganization || isPending}
               />
-              <p className="text-xs text-muted-foreground">
-                Lowercase letters, numbers, and hyphens only.
-              </p>
             </div>
-            {state && !state.ok && state.error && (
-              <p className="text-sm text-destructive">{state.error}</p>
-            )}
-            {state?.ok && (
-              <p className="text-sm text-primary">
-                Organization created successfully.
-                {state.data?.name && ` "${state.data.name}"`}
-              </p>
-            )}
-            <Button type="submit" size="sm" disabled={isPending}>
-              {isPending ? "Creating…" : "Create organization"}
+
+            <Button type="submit" size="sm" disabled={!canCreateOrganization || isPending}>
+              {isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="size-4" />
+                  Creating...
+                </span>
+              ) : (
+                "Create organization"
+              )}
             </Button>
           </form>
         </CardContent>

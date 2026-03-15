@@ -9,15 +9,12 @@ import {
   CommProjectMilestoneIdSchema,
 } from "./project.entity.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
-
-// ─── Reusable Field Schemas ───────────────────────────────────────────────────
-
-const NameSchema = z.string().trim().min(1).max(200);
-const DescriptionSchema = z.string().trim().max(20_000);
-const ColorSchema = z
-  .string()
-  .trim()
-  .regex(/^#[0-9A-Fa-f]{6}$/);
+import {
+  ProjectColorSchema,
+  ProjectDescriptionSchema,
+  ProjectNameSchema,
+  ProjectReasonSchema,
+} from "./project.shared.js";
 
 // ─── Base Command Schema ──────────────────────────────────────────────────────
 
@@ -43,33 +40,33 @@ function refineDateRange(
 // ─── Project Commands ─────────────────────────────────────────────────────────
 
 export const CreateProjectCommandSchema = ProjectCommandBase.extend({
-  name: NameSchema,
-  description: DescriptionSchema.nullable().optional().default(null),
+  name: ProjectNameSchema,
+  description: ProjectDescriptionSchema.nullable().optional().default(null),
   visibility: ProjectVisibilitySchema.optional(),
   startDate: DateSchema.nullable().optional().default(null),
   targetDate: DateSchema.nullable().optional().default(null),
-  color: ColorSchema.nullable().optional().default(null),
+  color: ProjectColorSchema.nullable().optional().default(null),
 }).superRefine(refineDateRange);
 
 export const UpdateProjectCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
-  name: NameSchema.optional(),
-  description: DescriptionSchema.nullable().optional(),
+  name: ProjectNameSchema.optional(),
+  description: ProjectDescriptionSchema.nullable().optional(),
   visibility: ProjectVisibilitySchema.optional(),
   startDate: DateSchema.nullable().optional(),
   targetDate: DateSchema.nullable().optional(),
-  color: ColorSchema.nullable().optional(),
+  color: ProjectColorSchema.nullable().optional(),
 }).superRefine(refineDateRange);
 
 export const TransitionProjectStatusCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
   toStatus: ProjectStatusSchema,
-  reason: z.string().trim().min(1).max(500).optional(),
+  reason: ProjectReasonSchema.min(1).optional(),
 });
 
 export const ArchiveProjectCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
-  reason: z.string().trim().min(1).max(500).optional(),
+  reason: ProjectReasonSchema.min(1).optional(),
 });
 
 export const DeleteProjectCommandSchema = ProjectCommandBase.extend({
@@ -93,8 +90,8 @@ export const RemoveProjectMemberCommandSchema = ProjectCommandBase.extend({
 
 export const CreateProjectMilestoneCommandSchema = ProjectCommandBase.extend({
   projectId: CommProjectIdSchema,
-  name: NameSchema,
-  description: DescriptionSchema.nullable().optional().default(null),
+  name: ProjectNameSchema,
+  description: ProjectDescriptionSchema.nullable().optional().default(null),
   targetDate: DateSchema,
 });
 

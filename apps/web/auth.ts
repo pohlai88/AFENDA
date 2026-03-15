@@ -1,11 +1,8 @@
 import type { NextRequest } from "next/server";
 import { redirect } from "next/navigation";
 
-import {
-  auth as neonAuth,
-  getSession as getAfendaSession,
-  isNeonAuthConfigured,
-} from "./src/lib/auth/server";
+import { resolveSafeRedirectPath } from "./src/lib/auth/redirects";
+import { getNeonServerAuth, getNeonSession, listNeonOrganizations } from "./src/lib/auth/server";
 
 type AuthPortal = "app" | "supplier" | "customer" | "contractor" | "franchisee" | "investor";
 
@@ -24,63 +21,160 @@ export interface AuthSessionUser {
 
 export interface AuthSession {
   user: AuthSessionUser;
+  activeOrganization: {
+    id: string;
+    name: string | null;
+    slug: string | null;
+    permissions: string[];
+  } | null;
 }
 
 type AuthedRequest = NextRequest & { auth: AuthSession | null };
 type RouteHandler = (request: AuthedRequest) => Response | Promise<Response>;
 type WrappedRouteHandler = (request: NextRequest) => Promise<Response>;
 
-function resolveTransitionRedirect(value: unknown, fallback: string): string {
-  if (typeof value !== "string") return fallback;
-  if (!value.startsWith("/")) return fallback;
-  return value;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }
 
-async function resolveSession(): Promise<AuthSession | null> {
-  if (!isNeonAuthConfigured) return null;
-
-  const session = await getAfendaSession();
-
-  if (session) {
-    return {
-      user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        image: session.user.image,
-        tenantId: session.affiliation.orgId,
-        tenantSlug: session.affiliation.orgId,
-        portal: "app",
-        roles: session.affiliation.roles,
-        permissions: Array.from(session.affiliation.permissions),
-        requiresMfa: false,
-      },
-    };
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
   }
 
-  if (!neonAuth) {
-    return null;
-  }
+  return value.filter((item): item is string => typeof item === "string");
+}
 
-  const rawSession = await neonAuth.getSession();
-  if (rawSession.error || !rawSession.data?.user || !rawSession.data.session) {
+function toAuthPortal(value: unknown): AuthPortal {
+  switch (value) {
+    case "supplier":
+    case "customer":
+    case "contractor":
+    case "franchisee":
+    case "investor":
+      return value;
+    default:
+      return "app";
+  }
+}
+
+function toStringOrNull(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function normalizeActiveOrganization(value: unknown): {
+  id: string;
+  name: string | null;
+  slug: string | null;
+  permissions: string[];
+} | null {
+  if (!isRecord(value) || typeof value.id !== "string" || !value.id.trim()) {
     return null;
   }
 
   return {
-    user: {
-      id: rawSession.data.user.id,
-      email: rawSession.data.user.email,
-      name: rawSession.data.user.name ?? null,
-      image: rawSession.data.user.image ?? null,
-      tenantId: "",
-      tenantSlug: "",
-      portal: "app",
-      roles: [],
-      permissions: [],
-      requiresMfa: false,
-    },
+    id: value.id,
+    name: toStringOrNull(value.name),
+    slug: toStringOrNull(value.slug),
+    permissions: toStringArray(value.permissions),
   };
+}
+
+function toAuthSession(neonSession: unknown): AuthSession | null {
+  if (!isRecord(neonSession) || !isRecord(neonSession.user)) {
+    return null;
+  }
+
+  const user = neonSession.user;
+  const session = isRecord(neonSession.session) ? neonSession.session : null;
+  if (typeof user.id !== "string" || typeof user.email !== "string") {
+    return null;
+  }
+
+  const activeOrganization =
+    normalizeActiveOrganization(neonSession.activeOrganization) ??
+    normalizeActiveOrganization(user.activeOrganization) ??
+    (typeof session?.activeOrganizationId === "string" && session.activeOrganizationId.trim()
+      ? {
+          id: session.activeOrganizationId,
+          name: null,
+          slug: null,
+          permissions: [],
+        }
+      : null);
+
+  const normalizedUserPermissions = toStringArray(user.permissions);
+  const effectivePermissions =
+    normalizedUserPermissions.length > 0
+      ? normalizedUserPermissions
+      : (activeOrganization?.permissions ?? []);
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      name: typeof user.name === "string" ? user.name : null,
+      image: typeof user.image === "string" ? user.image : null,
+      tenantId:
+        typeof user.tenantId === "string" && user.tenantId.trim()
+          ? user.tenantId
+          : (activeOrganization?.id ?? ""),
+      tenantSlug:
+        typeof user.tenantSlug === "string" && user.tenantSlug.trim()
+          ? user.tenantSlug
+          : (activeOrganization?.slug ?? ""),
+      portal: toAuthPortal(user.portal),
+      roles: toStringArray(user.roles),
+      permissions: effectivePermissions,
+      requiresMfa: typeof user.requiresMfa === "boolean" ? user.requiresMfa : undefined,
+    },
+    activeOrganization,
+  };
+}
+
+async function resolveSession(): Promise<AuthSession | null> {
+  const neonSession = await getNeonSession();
+  const session = toAuthSession(neonSession);
+  if (!session?.user) {
+    return null;
+  }
+
+  if (session.activeOrganization?.id) {
+    return session;
+  }
+
+  const organizationsResponse = await listNeonOrganizations();
+  if (organizationsResponse.error || organizationsResponse.data.length === 0) {
+    return session;
+  }
+
+  if (organizationsResponse.data.length === 1) {
+    const organization = organizationsResponse.data[0];
+    if (!organization) {
+      return session;
+    }
+
+    return {
+      ...session,
+      user: {
+        ...session.user,
+        tenantId: session.user.tenantId || organization.id,
+        tenantSlug: session.user.tenantSlug || organization.slug || "",
+        permissions:
+          session.user.permissions.length > 0
+            ? session.user.permissions
+            : (organization.permissions ?? []),
+      },
+      activeOrganization: {
+        id: organization.id,
+        name: organization.name ?? null,
+        slug: organization.slug ?? null,
+        permissions: organization.permissions ?? [],
+      },
+    };
+  }
+
+  return session;
 }
 
 export function auth(): Promise<AuthSession | null>;
@@ -112,66 +206,22 @@ export async function signIn(
   _provider?: string,
   options?: Record<string, unknown>,
 ): Promise<never> {
-  const fallback = process.env.NODE_ENV === "production" ? "/auth/signin" : "/app";
-  const destination = resolveTransitionRedirect(
+  const fallback = "/app";
+  const destination = resolveSafeRedirectPath(
     options?.callbackUrl ?? options?.redirectTo,
     fallback,
   );
-
-  if (!isNeonAuthConfigured || !neonAuth) {
-    redirect(destination);
-  }
-
-  // Use absolute callback URL so Neon Auth redirects back to this app (required for
-  // cookie to be set on our origin and for trusted-origin validation).
-  const absoluteCallbackURL = `${getBaseUrl()}${destination.startsWith("/") ? destination : `/${destination}`}`;
-
-  if (_provider === "google" || _provider === "github") {
-    const result = await neonAuth.signIn.social({
-      provider: _provider,
-      callbackURL: absoluteCallbackURL,
-      disableRedirect: true,
-    });
-
-    if (result.error) {
-      throw new Error(result.error.message ?? "Unable to sign in with social provider.");
-    }
-
-    redirect(result.data?.url ?? destination);
-  }
-
-  if (_provider === undefined || _provider === "credentials") {
-    const email = typeof options?.email === "string" ? options.email : "";
-    const password = typeof options?.password === "string" ? options.password : "";
-
-    const result = await neonAuth.signIn.email({
-      email,
-      password,
-      callbackURL: absoluteCallbackURL,
-    });
-
-    if (result.error) {
-      const error = new Error(result.error.message ?? "Invalid email or password.");
-      (error as Error & { code?: string; type?: string }).code = "CredentialsSignin";
-      (error as Error & { code?: string; type?: string }).type = "CredentialsSignin";
-      throw error;
-    }
-
-    redirect(destination);
-  }
 
   redirect(destination);
 }
 
 export async function signOut(options?: Record<string, unknown>): Promise<never> {
-  const destination = resolveTransitionRedirect(
-    options?.redirectTo,
-    "/auth/signin?signedOut=success",
-  );
-
-  if (isNeonAuthConfigured && neonAuth) {
-    await neonAuth.signOut();
+  const neonServerAuth = getNeonServerAuth();
+  if (neonServerAuth) {
+    await neonServerAuth.signOut();
   }
+
+  const destination = resolveSafeRedirectPath(options?.redirectTo, "/");
 
   redirect(destination);
 }

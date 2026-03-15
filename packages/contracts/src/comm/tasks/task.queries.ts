@@ -10,13 +10,13 @@ import {
 } from "../shared/query.js";
 import {
   CommSummaryGroupSchema,
+  makeCommDetailResponseSchema,
   makeCommListResponseSchema,
   makeCommSearchResponseSchema,
   makeCommSummaryResponseSchema,
 } from "../shared/response.js";
 import { TaskPrioritySchema, TaskSchema, TaskStatusSchema, TaskTypeSchema } from "./task.entity.js";
-
-const ContextEntityTypeSchema = z.string().trim().min(1).max(128);
+import { TaskContextEntityTypeSchema } from "./task.shared.js";
 
 export const GetTaskQuerySchema = z.object({
   taskId: CommTaskIdSchema,
@@ -30,7 +30,7 @@ export const ListTasksQuerySchema = z
     priority: TaskPrioritySchema.optional(),
     taskType: TaskTypeSchema.optional(),
     parentTaskId: CommTaskIdSchema.optional(),
-    contextEntityType: ContextEntityTypeSchema.optional(),
+    contextEntityType: TaskContextEntityTypeSchema.optional(),
     contextEntityId: EntityIdSchema.optional(),
     dueBefore: DateSchema.optional(),
     dueAfter: DateSchema.optional(),
@@ -65,6 +65,7 @@ export const SummarizeTasksDataSchema = z.object({
   groups: z.array(CommSummaryGroupSchema),
 });
 
+export const GetTaskResponseSchema = makeCommDetailResponseSchema(TaskSchema);
 export const ListTasksResponseSchema = makeCommListResponseSchema(TaskSchema);
 export const SearchTasksResponseSchema = makeCommSearchResponseSchema(TaskSchema);
 export const SummarizeTasksResponseSchema = makeCommSummaryResponseSchema(SummarizeTasksDataSchema);
@@ -73,6 +74,7 @@ export type GetTaskQuery = z.infer<typeof GetTaskQuerySchema>;
 export type ListTasksQuery = z.infer<typeof ListTasksQuerySchema>;
 export type SearchTasksQuery = z.infer<typeof SearchTasksQuerySchema>;
 export type SummarizeTasksQuery = z.infer<typeof SummarizeTasksQuerySchema>;
+export type GetTaskResponse = z.infer<typeof GetTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof ListTasksResponseSchema>;
 export type SearchTasksResponse = z.infer<typeof SearchTasksResponseSchema>;
 export type SummarizeTasksData = z.infer<typeof SummarizeTasksDataSchema>;

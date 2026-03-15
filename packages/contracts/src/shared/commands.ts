@@ -15,7 +15,7 @@
  */
 
 import { z } from "zod";
-import { IdempotencyKeySchema as KernelIdempotencyKeySchema } from "../kernel/execution/idempotency/request-key.js";
+import { IdempotencyKeySchema } from "./idempotency.js";
 import { OrgIdSchema, PrincipalIdSchema, UuidSchema } from "./ids.js";
 
 /* -------------------------------------------------------------------------- */
@@ -24,9 +24,9 @@ import { OrgIdSchema, PrincipalIdSchema, UuidSchema } from "./ids.js";
 
 /**
  * Canonical idempotency key schema.
- * Kept in kernel/execution but re-exported here for convenience.
+ * Kept in shared/idempotency and re-exported here for convenience.
  */
-export const SharedIdempotencyKeySchema = KernelIdempotencyKeySchema;
+export const SharedIdempotencyKeySchema = IdempotencyKeySchema;
 export type SharedIdempotencyKey = z.infer<typeof SharedIdempotencyKeySchema>;
 
 /* -------------------------------------------------------------------------- */

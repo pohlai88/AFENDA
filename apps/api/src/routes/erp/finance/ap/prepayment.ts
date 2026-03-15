@@ -1,10 +1,10 @@
-/**
- * Prepayment routes — create, list, get by ID.
+﻿/**
+ * Prepayment routes â€” create, list, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreatePrepaymentCommandSchema,
   ApplyPrepaymentCommandSchema,
@@ -34,7 +36,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PrepaymentRowSchema = z.object({
   id: z.string().uuid(),
@@ -59,20 +61,7 @@ const PrepaymentListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialisePrepayment(row: {
   id: string;
@@ -101,8 +90,8 @@ function serialisePrepayment(row: {
     paymentDate: row.paymentDate,
     paymentReference: row.paymentReference,
     status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -119,12 +108,12 @@ function mapErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function prepaymentRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create prepayment ───────────────────────────────────────────────────────
+  // â”€â”€ Create prepayment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-prepayment",
     {
@@ -154,8 +143,8 @@ export async function prepaymentRoutes(app: FastifyInstance) {
 
       const result = await createPrepayment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           supplierId: req.body.supplierId,
@@ -186,7 +175,7 @@ export async function prepaymentRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Apply prepayment to invoice ─────────────────────────────────────────────
+  // â”€â”€ Apply prepayment to invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/apply-prepayment",
     {
@@ -197,9 +186,7 @@ export async function prepaymentRoutes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: ApplyPrepaymentCommandSchema,
         response: {
-          200: makeSuccessSchema(
-            z.object({ applicationId: z.string().uuid() }),
-          ),
+          200: makeSuccessSchema(z.object({ applicationId: z.string().uuid() })),
           400: ApiErrorResponseSchema,
           401: ApiErrorResponseSchema,
           403: ApiErrorResponseSchema,
@@ -216,8 +203,8 @@ export async function prepaymentRoutes(app: FastifyInstance) {
 
       const result = await applyPrepayment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           prepaymentId: req.body.prepaymentId,
@@ -244,7 +231,7 @@ export async function prepaymentRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Void prepayment ─────────────────────────────────────────────────────────
+  // â”€â”€ Void prepayment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/void-prepayment",
     {
@@ -272,8 +259,8 @@ export async function prepaymentRoutes(app: FastifyInstance) {
 
       const result = await voidPrepayment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           prepaymentId: req.body.prepaymentId,
@@ -299,7 +286,7 @@ export async function prepaymentRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List prepayments ────────────────────────────────────────────────────────
+  // â”€â”€ List prepayments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/prepayments",
     {
@@ -338,7 +325,7 @@ export async function prepaymentRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get prepayment by ID ─────────────────────────────────────────────────────
+  // â”€â”€ Get prepayment by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/prepayments/:id",
     {

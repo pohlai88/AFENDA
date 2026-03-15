@@ -12,13 +12,19 @@ import {
   CommQueryTextSchema,
   CommSearchLimitSchema,
 } from "../shared/query.js";
-import { makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
+import {
+  makeCommDetailResponseSchema,
+  makeCommListResponseSchema,
+  makeCommSearchResponseSchema,
+} from "../shared/response.js";
 import { UtcDateTimeSchema } from "../../shared/datetime.js";
 
+/** Get single announcement */
 export const GetAnnouncementQuerySchema = z.object({
   announcementId: AnnouncementIdSchema,
 });
 
+/** List announcements with filters + pagination */
 export const ListAnnouncementsQuerySchema = z
   .object({
     status: AnnouncementStatusSchema.optional(),
@@ -37,6 +43,7 @@ export const ListAnnouncementsQuerySchema = z
     });
   });
 
+/** Search announcements by text + filters */
 export const SearchAnnouncementsQuerySchema = z.object({
   query: CommQueryTextSchema,
   status: AnnouncementStatusSchema.optional(),
@@ -44,18 +51,24 @@ export const SearchAnnouncementsQuerySchema = z.object({
   limit: CommSearchLimitSchema,
 });
 
+/** List reads for a given announcement */
 export const ListAnnouncementReadsQuerySchema = z.object({
   announcementId: AnnouncementIdSchema,
   limit: CommListLimitSchema,
   cursor: AnnouncementReadIdSchema.optional(),
 });
 
+/** Response schemas */
+export const GetAnnouncementResponseSchema = makeCommDetailResponseSchema(AnnouncementSchema);
 export const ListAnnouncementsResponseSchema = makeCommListResponseSchema(AnnouncementSchema);
 export const SearchAnnouncementsResponseSchema = makeCommSearchResponseSchema(AnnouncementSchema);
 
+/** Types */
 export type GetAnnouncementQuery = z.infer<typeof GetAnnouncementQuerySchema>;
 export type ListAnnouncementsQuery = z.infer<typeof ListAnnouncementsQuerySchema>;
 export type SearchAnnouncementsQuery = z.infer<typeof SearchAnnouncementsQuerySchema>;
 export type ListAnnouncementReadsQuery = z.infer<typeof ListAnnouncementReadsQuerySchema>;
+
+export type GetAnnouncementResponse = z.infer<typeof GetAnnouncementResponseSchema>;
 export type ListAnnouncementsResponse = z.infer<typeof ListAnnouncementsResponseSchema>;
 export type SearchAnnouncementsResponse = z.infer<typeof SearchAnnouncementsResponseSchema>;

@@ -1,14 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -17,104 +13,102 @@ import {
   CardTitle,
   Input,
   Label,
+  Spinner,
 } from "@afenda/ui";
-import { deleteUserAction } from "@/app/auth/_actions/delete-user";
 import { Trash2 } from "lucide-react";
 
-const CONFIRM_TEXT = "DELETE";
+import { deleteAccountAction } from "./actions";
 
 /**
  * Delete account (Neon Auth) — Security settings. Irreversible; requires typing DELETE to confirm.
  */
 export function DeleteAccountClient() {
-  const [open, setOpen] = useState(false);
-  const [confirmValue, setConfirmValue] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [confirmation, setConfirmation] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const canDelete = confirmValue === CONFIRM_TEXT;
+  const canDelete = confirmation.trim().toUpperCase() === "DELETE";
 
-  async function handleDelete() {
-    if (!canDelete) return;
-    setStatus("loading");
+  function handleDeleteAccount(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setError(null);
-    const result = await deleteUserAction();
-    if (result.ok) {
-      setOpen(false);
+    setSuccess(null);
+
+    if (!canDelete) {
+      setError("Type DELETE to confirm account removal.");
       return;
     }
-    setStatus("error");
-    setError(result.error);
-  }
 
-  function handleOpenChange(next: boolean) {
-    if (!next) {
-      setConfirmValue("");
-      setError(null);
-      setStatus("idle");
-    }
-    setOpen(next);
+    startTransition(async () => {
+      try {
+        await deleteAccountAction();
+        setSuccess("Account deletion completed. You can now close this session.");
+      } catch (deleteError) {
+        const message =
+          deleteError instanceof Error && deleteError.message
+            ? deleteError.message
+            : "Delete-account flow failed.";
+        setError(message);
+      }
+    });
   }
 
   return (
     <section>
-      <h2 className="mb-0.5 text-sm font-semibold text-foreground">
-        Delete account
-      </h2>
+      <h2 className="mb-0.5 text-sm font-semibold text-foreground">Delete account</h2>
       <p className="mb-4 text-xs text-muted-foreground">
         Permanently delete your account and all associated data. This cannot be undone.
       </p>
       <Card className="border-destructive/50">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2 text-destructive">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium text-destructive">
             <Trash2 className="h-4 w-4" />
             Danger zone
           </CardTitle>
           <CardDescription className="text-xs">
-            Once you delete your account, you will be signed out and will need to create a new account to use the service again.
+            This action permanently removes your user account.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <AlertDialog open={open} onOpenChange={handleOpenChange}>
-            <Button variant="destructive" size="sm" onClick={() => setOpen(true)}>
-              Delete my account
-            </Button>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete account?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action is irreversible. All your account data will be permanently removed. Type <strong>{CONFIRM_TEXT}</strong> below to confirm.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="grid gap-2 py-2">
-                <Label htmlFor="delete-confirm">Type {CONFIRM_TEXT} to confirm</Label>
-                <Input
-                  id="delete-confirm"
-                  value={confirmValue}
-                  onChange={(e) => setConfirmValue(e.target.value)}
-                  placeholder={CONFIRM_TEXT}
-                  className="font-mono"
-                  autoComplete="off"
-                  disabled={status === "loading"}
-                />
-              </div>
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
+        <CardContent className="space-y-4">
+          {success ? (
+            <Alert>
+              <AlertTitle>Account deleted</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Delete failed</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <form className="space-y-3" onSubmit={handleDeleteAccount}>
+            <div className="space-y-1.5">
+              <Label htmlFor="security-delete-confirmation">Type DELETE to confirm</Label>
+              <Input
+                id="security-delete-confirmation"
+                value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)}
+                placeholder="DELETE"
+                disabled={isPending}
+                required
+              />
+            </div>
+
+            <Button type="submit" variant="destructive" size="sm" disabled={!canDelete || isPending}>
+              {isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="size-4" />
+                  Deleting...
+                </span>
+              ) : (
+                "Delete account"
               )}
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={status === "loading"}>
-                  Cancel
-                </AlertDialogCancel>
-                <Button
-                  variant="destructive"
-                  disabled={!canDelete || status === "loading"}
-                  onClick={handleDelete}
-                >
-                  {status === "loading" ? "Deleting…" : "Delete account"}
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </section>

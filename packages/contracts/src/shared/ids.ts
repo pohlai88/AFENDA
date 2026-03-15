@@ -12,7 +12,7 @@
  *   4. Single-domain IDs added here require a comment: why they are cross-cut.
  */
 import { z } from "zod";
-import { IdempotencyKeySchema as KernelIdempotencyKeySchema } from "../kernel/execution/idempotency/request-key.js";
+import { IdempotencyKeySchema } from "./idempotency.js";
 
 /**
  * Private base — single unbranded UUID source of truth.
@@ -77,8 +77,8 @@ export function parseEntityId(value: unknown): EntityId {
   return EntityIdSchema.parse(value);
 }
 
-export function parseIdempotencyKey(value: unknown): z.infer<typeof KernelIdempotencyKeySchema> {
-  return KernelIdempotencyKeySchema.parse(value);
+export function parseIdempotencyKey(value: unknown): z.infer<typeof IdempotencyKeySchema> {
+  return IdempotencyKeySchema.parse(value);
 }
 
 /** Create a validated branded UUID using the target schema as the runtime guard. */
@@ -149,7 +149,17 @@ export type InvoiceId = z.infer<typeof InvoiceIdSchema>;
 export const SupplierIdSchema = uuid.brand<"SupplierId">();
 export type SupplierId = z.infer<typeof SupplierIdSchema>;
 
-// cross-domain: referenced by invoice commands, evidence attach, supplier onboarding
+/**
+ * Evidence documents and attachments.
+ *
+ * cross-domain: referenced by kernel/governance/evidence (evidence attachments),
+ * erp/supplier (supplier onboarding documents), erp/finance/ap (invoice evidence).
+ *
+ * NOTE: This is DIFFERENT from CommDocumentIdSchema (comm/docs module),
+ * which represents knowledge base articles and wiki pages.
+ * DocumentIdSchema = evidence/attachments across domains.
+ * CommDocumentIdSchema = internal knowledge base (single domain).
+ */
 export const DocumentIdSchema = uuid.brand<"DocumentId">();
 export type DocumentId = z.infer<typeof DocumentIdSchema>;
 
@@ -167,7 +177,7 @@ export type AuditLogId = z.infer<typeof AuditLogIdSchema>;
 
 /**
  * Canonical convenience bundle for runtime-heavy callers.
- * IdempotencyKeySchema remains canonically owned by kernel/execution to avoid root-barrel collisions.
+ * IdempotencyKeySchema is sourced from shared/idempotency.
  */
 export const SharedIds = {
   UuidSchema,
@@ -190,7 +200,7 @@ export const SharedIds = {
   JournalEntryIdSchema,
   AccountIdSchema,
   AuditLogIdSchema,
-  IdempotencyKeySchema: KernelIdempotencyKeySchema,
+  IdempotencyKeySchema,
   brandedUuid,
   generateUuid,
   isUuid,

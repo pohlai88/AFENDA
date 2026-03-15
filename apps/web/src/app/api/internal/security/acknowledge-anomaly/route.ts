@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { acknowledgeAnomaly } from "@/features/auth/server/ops/anomaly-ack.service";
 
 const VALID_CODES = new Set([
@@ -44,6 +45,15 @@ export async function POST(request: Request) {
     typeof body.note === "string" ? body.note : undefined;
 
   await acknowledgeAnomaly(anomalyCode, session.user.id, note);
+
+  await publishAuthAuditEvent("auth.ops.anomaly_acknowledged", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      anomalyCode,
+      note: note ?? null,
+    },
+  });
 
   return NextResponse.json({
     ok: true,

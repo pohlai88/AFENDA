@@ -3,7 +3,7 @@ import { z } from "zod";
 import { nowUtc as clockNowUtc } from "./clock.js";
 import { UtcDateTimeSchema } from "./datetime.js";
 import { AuditLogIdSchema, generateUuid } from "./ids.js";
-import { IdempotencyKeySchema as KernelIdempotencyKeySchema } from "../kernel/execution/idempotency/request-key.js";
+import { IdempotencyKeySchema } from "./idempotency.js";
 
 export const AuditActorTypeValues = ["user", "service", "system"] as const;
 export const AuditActorTypeSchema = z.enum(AuditActorTypeValues);
@@ -24,7 +24,7 @@ export const AuditFieldsSchema = z.object({
   resourceId: z.string().min(1).optional(),
   targetPrincipalId: z.string().min(1).optional(),
   correlationId: z.string().min(1).optional(),
-  idempotencyKey: KernelIdempotencyKeySchema.optional(),
+  idempotencyKey: IdempotencyKeySchema.optional(),
   traceId: z.string().min(1).optional(),
   reasonCode: z.string().min(1).optional(),
   reasonText: z.string().min(1).optional(),

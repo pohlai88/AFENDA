@@ -25,6 +25,7 @@ import { otelEnrichmentPlugin } from "./plugins/otel.js";
 
 // Helpers
 import { ERR } from "./helpers/responses.js";
+import { createBoundedCache } from "./helpers/cache.js";
 
 // Routes
 import { authRoutes } from "./routes/kernel/auth.js";
@@ -100,9 +101,6 @@ import { commDocumentRoutes } from "./routes/comm/docs.js";
 import { commBoardMeetingRoutes } from "./routes/comm/boardroom/meeting.js";
 import { commSharedRoutes } from "./routes/comm/shared.js";
 import { commWorkflowRoutes } from "./routes/comm/workflows.js";
-// Supplier sub-entity routes (templates — uncomment when implemented)
-// import { supplierSiteRoutes } from "./routes/erp/supplier/supplier-site.js";
-// import { supplierBankAccountRoutes } from "./routes/erp/supplier/supplier-bank-account.js";
 
 // Type augmentations (side-effect import — registers Fastify generics)
 import "./types.js";
@@ -165,7 +163,8 @@ export async function buildApp() {
   await app.register(headersPlugin as any);
 
   // ── Org slug → UUID resolution (ADR-0003) ─────────────────────────────────
-  const orgCache = new Map<string, string>(); // slug → UUID
+  // Bounded cache with LRU eviction (max 1000 entries, prevents memory leak)
+  const orgCache = createBoundedCache<string, string>(1000);
 
   app.addHook("onRequest", async (req) => {
     const host = req.hostname ?? "";
@@ -363,9 +362,6 @@ export async function buildApp() {
   await app.register(commBoardMeetingRoutes, { prefix: "/v1" });
   await app.register(commSharedRoutes, { prefix: "/v1" });
   await app.register(commWorkflowRoutes, { prefix: "/v1" });
-  // Supplier sub-entity routes (templates — uncomment when implemented)
-  // await app.register(supplierSiteRoutes, { prefix: "/v1" });
-  // await app.register(supplierBankAccountRoutes, { prefix: "/v1" });
 
   return app;
 }

@@ -2,14 +2,10 @@ import { describe, expect, it } from "vitest";
 import { isPublicFacingPath } from "../shell-paths";
 
 describe("isPublicFacingPath", () => {
-  it("returns true for auth root and children (paths reserved for future auth)", () => {
-    expect(isPublicFacingPath("/auth")).toBe(true);
-    expect(isPublicFacingPath("/auth/signin")).toBe(true);
-    expect(isPublicFacingPath("/auth/reset-password/status")).toBe(true);
-  });
-
   it("returns true for marketing root and children", () => {
     expect(isPublicFacingPath("/")).toBe(true); // Root is marketing landing page
+    expect(isPublicFacingPath("/auth")).toBe(true);
+    expect(isPublicFacingPath("/auth/sign-in")).toBe(true);
     expect(isPublicFacingPath("/marketing")).toBe(true);
     expect(isPublicFacingPath("/marketing/pricing")).toBe(true);
   });

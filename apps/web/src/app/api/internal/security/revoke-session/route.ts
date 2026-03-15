@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { revokeUserSession } from "@/features/auth/server/ops/session-revocation.service";
 
 export async function POST(request: Request) {
@@ -33,6 +34,15 @@ export async function POST(request: Request) {
     typeof body.reason === "string" ? body.reason : undefined;
 
   await revokeUserSession(targetUserId, session.user.id, reason);
+
+  await publishAuthAuditEvent("auth.ops.session_revoked", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      targetUserId,
+      reason: reason ?? null,
+    },
+  });
 
   return NextResponse.json({
     ok: true,

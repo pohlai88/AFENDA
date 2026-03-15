@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -44,6 +44,8 @@ import {
   requireAuth,
   requireOrg,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../helpers/context.js";
 
 const ProjectSchema = z.object({
   id: z.string().uuid(),
@@ -158,22 +160,12 @@ const ProjectMilestoneMutationResponseSchema = makeSuccessSchema(
   }),
 );
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommProjectPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
-
 function formatProjectRow(row: ProjectRow) {
   return {
     ...row,
-    completedAt: row.completedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    completedAt: serializeDate(row.completedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -205,10 +197,10 @@ function formatProjectTaskRow(row: {
 }) {
   return {
     ...row,
-    completedAt: row.completedAt?.toISOString() ?? null,
-    slaBreachAt: row.slaBreachAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    completedAt: serializeDate(row.completedAt),
+    slaBreachAt: serializeDate(row.slaBreachAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -237,8 +229,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await createProject(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -281,8 +273,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await updateProject(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -326,8 +318,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await transitionProjectStatus(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -371,8 +363,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await archiveProject(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -417,8 +409,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await addProjectMember(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -468,8 +460,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await removeProjectMember(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -513,8 +505,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await createProjectMilestone(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -558,8 +550,8 @@ export async function commProjectRoutes(app: FastifyInstance) {
 
       const result = await completeProjectMilestone(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -681,7 +673,7 @@ export async function commProjectRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          joinedAt: row.joinedAt.toISOString(),
+          joinedAt: serializeDate(row.joinedAt)!,
         })),
         correlationId: req.correlationId,
       });
@@ -765,9 +757,9 @@ export async function commProjectRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          completedAt: row.completedAt?.toISOString() ?? null,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
+          completedAt: serializeDate(row.completedAt),
+          createdAt: serializeDate(row.createdAt)!,
+          updatedAt: serializeDate(row.updatedAt)!,
         })),
         correlationId: req.correlationId,
       });
@@ -796,9 +788,9 @@ export async function commProjectRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          actualEndDate: row.actualEndDate?.toISOString() ?? null,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
+          actualEndDate: serializeDate(row.actualEndDate),
+          createdAt: serializeDate(row.createdAt)!,
+          updatedAt: serializeDate(row.updatedAt)!,
         })),
         correlationId: req.correlationId,
       });

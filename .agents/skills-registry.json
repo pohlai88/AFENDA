@@ -1,6 +1,6 @@
 {
   "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
-  "generatedAt": "2026-03-11T16:01:54.342Z",
+  "generatedAt": "2026-03-14T22:51:29.859Z",
   "skills": [
     {
       "name": "accessibility",
@@ -9,6 +9,14 @@
       "description": "WCAG compliance & a11y patterns",
       "path": "skills/accessibility",
       "source": "KreerC/ACCESSIBILITY.md"
+    },
+    {
+      "name": "afenda-design-system-enforcement",
+      "category": "ui",
+      "priority": "high",
+      "description": "Enforces AFENDA token usage, semantic lane mapping, theme parity, and shadcn-based styling",
+      "path": "skills/afenda-design-system-enforcement",
+      "source": "local"
     },
     {
       "name": "claw-release",

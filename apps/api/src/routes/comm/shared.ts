@@ -75,6 +75,12 @@ import {
   requireAuth,
   requireOrg,
 } from "../../helpers/responses.js";
+import {
+  buildOrgScopedContext,
+  buildMinimalPolicyContext,
+  buildPolicyContext,
+} from "../../helpers/context.js";
+import { serializeDate } from "../../helpers/dates.js";
 
 const CommCommentSchema = z.object({
   id: z.string().uuid(),
@@ -123,16 +129,6 @@ const ChatterMessagesQueryWithCoercionSchema = ListChatterMessagesQuerySchema.ex
   limit: z.coerce.number().int().min(1).max(500).optional(),
 });
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommCommentPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
-
 function formatCommentRow(row: {
   id: string;
   orgId: string;
@@ -147,9 +143,9 @@ function formatCommentRow(row: {
 }) {
   return {
     ...row,
-    editedAt: row.editedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    editedAt: serializeDate(row.editedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -177,16 +173,16 @@ function formatChatterMessageRow(row: {
     parentMessageId: row.parentCommentId,
     authorPrincipalId: row.authorPrincipalId,
     body: row.body,
-    editedAt: row.editedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    editedAt: serializeDate(row.editedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
 function formatSavedViewRow(row: {
   id: string;
   orgId: string;
-  principalId: string | null;
+  principalId?: string | null | undefined;
   entityType: CommSavedViewEntityType;
   name: string;
   filters: Record<string, unknown>;
@@ -198,8 +194,8 @@ function formatSavedViewRow(row: {
 }) {
   return {
     ...row,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -213,7 +209,7 @@ function formatSubscriptionRow(row: {
 }) {
   return {
     ...row,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
   };
 }
 
@@ -233,9 +229,9 @@ function formatInboxItemRow(row: {
 }) {
   return {
     ...row,
-    readAt: row.readAt?.toISOString() ?? null,
-    occurredAt: row.occurredAt.toISOString(),
-    createdAt: row.createdAt.toISOString(),
+    readAt: serializeDate(row.readAt),
+    occurredAt: serializeDate(row.occurredAt)!,
+    createdAt: serializeDate(row.createdAt)!,
   };
 }
 
@@ -252,9 +248,9 @@ function formatNotificationPreferenceRow(row: {
 }) {
   return {
     ...row,
-    mutedUntil: row.mutedUntil?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    mutedUntil: serializeDate(row.mutedUntil),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -354,8 +350,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await addComment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -399,8 +395,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await postChatterMessage(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -472,8 +468,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await saveView(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -516,8 +512,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await updateSavedView(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -561,8 +557,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await deleteSavedView(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -641,8 +637,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await subscribeEntity(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -685,8 +681,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await unsubscribeEntity(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -815,8 +811,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await markInboxItemRead(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -859,8 +855,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await markAllInboxRead(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -902,8 +898,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await upsertNotificationPreference(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -946,8 +942,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await editComment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -991,8 +987,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await deleteComment(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -1035,8 +1031,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
+          createdAt: serializeDate(row.createdAt)!,
+          updatedAt: serializeDate(row.updatedAt)!,
         })),
         correlationId: req.correlationId,
       });
@@ -1069,8 +1065,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
+          createdAt: serializeDate(row.createdAt)!,
+          updatedAt: serializeDate(row.updatedAt)!,
         })),
         correlationId: req.correlationId,
       });
@@ -1099,8 +1095,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await createLabel(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -1143,8 +1139,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await updateLabel(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -1188,8 +1184,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await deleteLabel(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -1233,8 +1229,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await assignLabel(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -1278,8 +1274,8 @@ export async function commSharedRoutes(app: FastifyInstance) {
 
       const result = await unassignLabel(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );

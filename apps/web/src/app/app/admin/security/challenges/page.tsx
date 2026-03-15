@@ -10,7 +10,7 @@ export default async function AdminSecurityChallengesPage() {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const challenges = await getRecentSecurityChallenges(100);
@@ -18,15 +18,10 @@ export default async function AdminSecurityChallengesPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Link
-          href="/app/admin/security"
-          className="text-sm text-muted-foreground hover:underline"
-        >
+        <Link href="/app/admin/security" className="text-sm text-muted-foreground hover:underline">
           ← Security Ops
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          Auth Challenges
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Auth Challenges</h1>
         <p className="text-sm text-muted-foreground">
           Review MFA, invite, and reset challenge lifecycle.
         </p>
@@ -39,13 +34,9 @@ export default async function AdminSecurityChallengesPage() {
         <CardContent>
           <div className="space-y-3">
             {challenges.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No challenges found.
-              </div>
+              <div className="text-sm text-muted-foreground">No challenges found.</div>
             ) : (
-              challenges.map((item) => (
-                <ChallengeRow key={item.id} item={item} />
-              ))
+              challenges.map((item) => <ChallengeRow key={item.id} item={item} />)
             )}
           </div>
         </CardContent>

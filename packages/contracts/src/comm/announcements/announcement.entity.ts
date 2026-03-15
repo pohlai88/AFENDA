@@ -17,7 +17,7 @@ export const AnnouncementAudienceTypeSchema = z.enum(AnnouncementAudienceTypeVal
 const AnnouncementNumberSchema = z.string().trim().min(1).max(64);
 const TitleSchema = z.string().trim().min(1).max(500);
 const BodySchema = z.string().trim().min(1).max(50_000);
-const UuidArraySchema = z.array(UuidSchema).optional().default([]);
+const UuidArraySchema = z.array(UuidSchema).default([]);
 
 /** Shared audience validation — reused across Create, Update, and the core schema */
 function validateAudience(
@@ -43,6 +43,42 @@ function validateAudience(
   }
 }
 
+/** Shared status validation */
+function validateStatus(
+  data: {
+    status: string;
+    scheduledAt?: string | null;
+    publishedAt?: string | null;
+    publishedByPrincipalId?: string | null;
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (data.status === "scheduled" && !data.scheduledAt) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Scheduled announcements must include scheduledAt.",
+      path: ["scheduledAt"],
+    });
+  }
+
+  if (data.status === "published") {
+    if (!data.publishedAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Published announcements must include publishedAt.",
+        path: ["publishedAt"],
+      });
+    }
+    if (!data.publishedByPrincipalId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Published announcements must include publishedByPrincipalId.",
+        path: ["publishedByPrincipalId"],
+      });
+    }
+  }
+}
+
 /** Core announcement shape (server persisted) */
 export const AnnouncementSchema = z
   .object({
@@ -64,31 +100,7 @@ export const AnnouncementSchema = z
   })
   .superRefine((data, ctx) => {
     validateAudience(data, ctx);
-
-    if (data.status === "scheduled" && !data.scheduledAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Scheduled announcements must include scheduledAt.",
-        path: ["scheduledAt"],
-      });
-    }
-
-    if (data.status === "published") {
-      if (!data.publishedAt) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Published announcements must include publishedAt.",
-          path: ["publishedAt"],
-        });
-      }
-      if (!data.publishedByPrincipalId) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Published announcements must include publishedByPrincipalId.",
-          path: ["publishedByPrincipalId"],
-        });
-      }
-    }
+    validateStatus(data, ctx);
   });
 
 /** Create schema (client -> server). Server generates id, timestamps. */
@@ -108,14 +120,7 @@ export const AnnouncementCreateSchema = z
   })
   .superRefine((data, ctx) => {
     validateAudience(data, ctx);
-
-    if (data.status === "scheduled" && !data.scheduledAt) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Scheduled announcements must include scheduledAt.",
-        path: ["scheduledAt"],
-      });
-    }
+    validateStatus(data, ctx);
   });
 
 /** Update schema (partial updates allowed) */
@@ -133,8 +138,18 @@ export const AnnouncementUpdateSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.audienceType && data.audienceIds !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      validateAudience(data as any, ctx);
+      validateAudience({ audienceType: data.audienceType, audienceIds: data.audienceIds }, ctx);
+    }
+    if (data.status) {
+      validateStatus(
+        {
+          status: data.status,
+          scheduledAt: data.scheduledAt,
+          publishedAt: data.publishedAt,
+          publishedByPrincipalId: data.publishedByPrincipalId,
+        },
+        ctx,
+      );
     }
   });
 

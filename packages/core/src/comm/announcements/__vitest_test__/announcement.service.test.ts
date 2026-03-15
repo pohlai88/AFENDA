@@ -6,13 +6,17 @@ import type {
   PrincipalId,
   CreateAnnouncementCommand,
   PublishAnnouncementCommand,
+  UpdateAnnouncementCommand,
   ScheduleAnnouncementCommand,
+  ArchiveAnnouncementCommand,
+  UnscheduleAnnouncementCommand,
+  UnarchiveAnnouncementCommand,
   AcknowledgeAnnouncementCommand,
 } from "@afenda/contracts";
 
 const ORG_ID = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa" as OrgId;
 const PRINCIPAL_ID = "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb" as PrincipalId;
-const CORRELATION_ID = "cccccccc-cccc-4ccc-cccc-cccccccccccc" as CorrelationId;
+const CORRELATION_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc" as CorrelationId;
 const ANNOUNCEMENT_ID = "11111111-1111-4111-8111-111111111111" as AnnouncementId;
 
 let selectRows: Record<string, unknown>[] = [];
@@ -63,7 +67,19 @@ const mockInsert = vi.fn().mockImplementation((table: { __table?: string }) => {
 const mockUpdate = vi.fn().mockReturnValue({
   set: vi.fn().mockReturnValue({
     where: vi.fn().mockReturnValue({
-      returning: vi.fn().mockResolvedValue([{ id: ANNOUNCEMENT_ID }]),
+      returning: vi.fn().mockResolvedValue([
+        {
+          id: ANNOUNCEMENT_ID,
+          announcementNumber: "ANN-TEST001",
+          title: "Updated title",
+          body: "Updated body",
+          status: "scheduled",
+          audienceType: "org",
+          audienceIds: [],
+          scheduledAt: "2026-12-02T09:00:00.000Z",
+          updatedAt: "2026-03-14T12:00:00.000Z",
+        },
+      ]),
     }),
   }),
 });
@@ -109,11 +125,23 @@ import {
   acknowledgeAnnouncement,
   createAnnouncement,
   publishAnnouncement,
+  archiveAnnouncement,
+  updateAnnouncement,
   scheduleAnnouncement,
+  unscheduleAnnouncement,
+  unarchiveAnnouncement,
 } from "../announcement.service";
 
 function makeCtx() {
   return { activeContext: { orgId: ORG_ID } };
+}
+
+function findOutboxValuesByType(type: string) {
+  return insertedRecords.find(
+    (record) =>
+      record.table === "outboxEvent" &&
+      (record.values as { type?: string } | undefined)?.type === type,
+  )?.values as { payload?: Record<string, unknown> } | undefined;
 }
 
 describe("announcement.service", () => {
@@ -171,6 +199,38 @@ describe("announcement.service", () => {
     }
   });
 
+  it("emits created outbox payload with expected shape", async () => {
+    const command: CreateAnnouncementCommand = {
+      idempotencyKey: "idem-create-shape",
+      title: "Ops notice",
+      body: "Please review",
+      audienceType: "team",
+      audienceIds: ["33333333-3333-4333-8333-333333333333"],
+    };
+
+    const result = await createAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    const values = findOutboxValuesByType("COMM.ANNOUNCEMENT_CREATED");
+    expect(values).toBeDefined();
+    expect(values?.payload).toEqual(
+      expect.objectContaining({
+        announcementId: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        title: "Ops notice",
+        audienceType: "team",
+        audienceIds: ["33333333-3333-4333-8333-333333333333"],
+        correlationId: CORRELATION_ID,
+      }),
+    );
+  });
+
   it("returns COMM_ANNOUNCEMENT_SCHEDULED_AT_MUST_BE_FUTURE for schedule when scheduledAt is past", async () => {
     selectRows = [
       {
@@ -203,6 +263,108 @@ describe("announcement.service", () => {
     }
   });
 
+  it("emits COMM.ANNOUNCEMENT_RESCHEDULED when scheduling an already scheduled announcement", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST005",
+        title: "Scheduled",
+        status: "scheduled",
+        scheduledAt: "2026-12-01T09:00:00.000Z",
+      },
+    ];
+
+    const command: ScheduleAnnouncementCommand = {
+      idempotencyKey: "idem-sched-reschedule",
+      announcementId: ANNOUNCEMENT_ID,
+      scheduledAt: "2026-12-02T09:00:00.000Z",
+    };
+
+    const result = await scheduleAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(insertedRecords).toContainEqual(
+      expect.objectContaining({
+        table: "outboxEvent",
+        values: expect.objectContaining({ type: "COMM.ANNOUNCEMENT_RESCHEDULED" }),
+      }),
+    );
+  });
+
+  it("unschedules scheduled announcement and emits COMM.ANNOUNCEMENT_UNSCHEDULED", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST006",
+        title: "Scheduled",
+        status: "scheduled",
+        scheduledAt: "2026-12-03T09:00:00.000Z",
+      },
+    ];
+
+    const command: UnscheduleAnnouncementCommand = {
+      idempotencyKey: "idem-unsched-1",
+      announcementId: ANNOUNCEMENT_ID,
+    };
+
+    const result = await unscheduleAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(insertedRecords).toContainEqual(
+      expect.objectContaining({
+        table: "outboxEvent",
+        values: expect.objectContaining({ type: "COMM.ANNOUNCEMENT_UNSCHEDULED" }),
+      }),
+    );
+  });
+
+  it("unarchives archived announcement and emits COMM.ANNOUNCEMENT_UNARCHIVED", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST007",
+        title: "Archived",
+        status: "archived",
+      },
+    ];
+
+    const command: UnarchiveAnnouncementCommand = {
+      idempotencyKey: "idem-unarchive-1",
+      announcementId: ANNOUNCEMENT_ID,
+    };
+
+    const result = await unarchiveAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(insertedRecords).toContainEqual(
+      expect.objectContaining({
+        table: "outboxEvent",
+        values: expect.objectContaining({ type: "COMM.ANNOUNCEMENT_UNARCHIVED" }),
+      }),
+    );
+  });
+
   it("returns COMM_ANNOUNCEMENT_NOT_FOUND for publish when announcement is missing", async () => {
     selectRows = [];
 
@@ -223,6 +385,197 @@ describe("announcement.service", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("COMM_ANNOUNCEMENT_NOT_FOUND");
     }
+  });
+
+  it("emits published outbox payload with expected shape", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST010",
+        title: "Publish me",
+        status: "draft",
+        audienceType: "team",
+        audienceIds: ["33333333-3333-4333-8333-333333333333"],
+      },
+    ];
+
+    const command: PublishAnnouncementCommand = {
+      idempotencyKey: "idem-publish-shape",
+      announcementId: ANNOUNCEMENT_ID,
+    };
+
+    const result = await publishAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    const values = findOutboxValuesByType("COMM.ANNOUNCEMENT_PUBLISHED");
+    expect(values).toBeDefined();
+    expect(values?.payload).toEqual(
+      expect.objectContaining({
+        announcementId: ANNOUNCEMENT_ID,
+        announcementNumber: "ANN-TEST010",
+        orgId: ORG_ID,
+        title: "Publish me",
+        audienceType: "team",
+        audienceIds: ["33333333-3333-4333-8333-333333333333"],
+        correlationId: CORRELATION_ID,
+      }),
+    );
+  });
+
+  it("returns SHARED_VALIDATION_ERROR for update with empty patch", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST008",
+        title: "Current",
+        body: "Body",
+        status: "draft",
+        audienceType: "org",
+        audienceIds: [],
+      },
+    ];
+
+    const command: UpdateAnnouncementCommand = {
+      idempotencyKey: "idem-update-empty",
+      announcementId: ANNOUNCEMENT_ID,
+    };
+
+    const result = await updateAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("SHARED_VALIDATION_ERROR");
+    }
+  });
+
+  it("updates announcement and emits COMM.ANNOUNCEMENT_UPDATED", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST009",
+        title: "Old title",
+        body: "Old body",
+        status: "draft",
+        audienceType: "org",
+        audienceIds: [],
+        scheduledAt: null,
+      },
+    ];
+
+    const command: UpdateAnnouncementCommand = {
+      idempotencyKey: "idem-update-1",
+      announcementId: ANNOUNCEMENT_ID,
+      title: "New title",
+      body: "New body",
+      audienceType: "team",
+      audienceIds: ["33333333-3333-4333-8333-333333333333"],
+    };
+
+    const result = await updateAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(insertedRecords).toContainEqual(
+      expect.objectContaining({
+        table: "outboxEvent",
+        values: expect.objectContaining({ type: "COMM.ANNOUNCEMENT_UPDATED" }),
+      }),
+    );
+  });
+
+  it("fails fast when outbox payload validation fails and does not insert outbox record", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST012",
+        title: "Old title",
+        body: "Old body",
+        status: "draft",
+        audienceType: "org",
+        audienceIds: [],
+        scheduledAt: null,
+      },
+    ];
+
+    const command: UpdateAnnouncementCommand = {
+      idempotencyKey: "idem-update-invalid-outbox",
+      announcementId: ANNOUNCEMENT_ID,
+      title: "New title",
+      body: "New body",
+      audienceType: "team",
+      audienceIds: ["33333333-3333-4333-8333-333333333333"],
+    };
+
+    await expect(
+      updateAnnouncement(
+        mockDb as never,
+        makeCtx() as never,
+        { principalId: PRINCIPAL_ID },
+        "invalid-correlation-id" as CorrelationId,
+        command,
+      ),
+    ).rejects.toThrow();
+
+    const outboxWrite = insertedRecords.find((record) => record.table === "outboxEvent");
+    expect(outboxWrite).toBeUndefined();
+  });
+
+  it("emits archived outbox payload with expected shape", async () => {
+    selectRows = [
+      {
+        id: ANNOUNCEMENT_ID,
+        orgId: ORG_ID,
+        announcementNumber: "ANN-TEST011",
+        title: "Published already",
+        status: "published",
+      },
+    ];
+
+    const command: ArchiveAnnouncementCommand = {
+      idempotencyKey: "idem-archive-shape",
+      announcementId: ANNOUNCEMENT_ID,
+    };
+
+    const result = await archiveAnnouncement(
+      mockDb as never,
+      makeCtx() as never,
+      { principalId: PRINCIPAL_ID },
+      CORRELATION_ID,
+      command,
+    );
+
+    expect(result.ok).toBe(true);
+    const values = findOutboxValuesByType("COMM.ANNOUNCEMENT_ARCHIVED");
+    expect(values).toBeDefined();
+    expect(values?.payload).toEqual(
+      expect.objectContaining({
+        announcementId: ANNOUNCEMENT_ID,
+        announcementNumber: "ANN-TEST011",
+        orgId: ORG_ID,
+        correlationId: CORRELATION_ID,
+      }),
+    );
   });
 
   it("rejects acknowledge when announcement is not published", async () => {

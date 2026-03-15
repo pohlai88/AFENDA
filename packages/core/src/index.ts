@@ -17,6 +17,9 @@ export type {
   WarmUpOptions,
 } from "@afenda/db";
 
+// ── Shared adapters (moved from contracts) ──────────────────────────────────
+export * from "./shared/index";
+
 // ── Pillar re-exports ────────────────────────────────────────────────────────
 export * from "./kernel/index";
 export * from "./erp/index";

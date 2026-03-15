@@ -14,7 +14,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { getInboxItemById } from "./inbox.queries";
 
 export interface CommInboxPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommInboxServiceError = {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ListProjectMembersQuerySchema,
+  ListProjectMilestonesQuerySchema,
   ListProjectsQuerySchema,
   SearchProjectsQuerySchema,
 } from "../project.queries.js";
@@ -30,5 +31,16 @@ describe("project.queries", () => {
     });
 
     expect(parsed.limit).toBe(50);
+  });
+
+  it("rejects milestone list query when dueBefore is earlier than dueAfter", () => {
+    const result = ListProjectMilestonesQuerySchema.safeParse({
+      projectId: "11111111-1111-4111-8111-111111111111",
+      dueAfter: "2026-04-01",
+      dueBefore: "2026-03-01",
+      limit: 25,
+    });
+
+    expect(result.success).toBe(false);
   });
 });

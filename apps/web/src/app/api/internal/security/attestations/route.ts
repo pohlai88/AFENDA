@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { recordChainOfCustodyEvent } from "@/features/auth/server/compliance/chain-of-custody.service";
 import { createReviewAttestation } from "@/features/auth/server/compliance/review-attestation.service";
 
@@ -38,6 +39,19 @@ export async function POST(request: Request) {
     actorUserId: session.user.id,
     metadata: {
       framework: body.framework,
+      outcome: body.outcome,
+    },
+  });
+
+  await publishAuthAuditEvent("auth.ops.attestation_created", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      attestationId: row.id,
+      reviewType: body.reviewType,
+      framework: body.framework,
+      relatedEntityType: body.relatedEntityType,
+      relatedEntityId: body.relatedEntityId,
       outcome: body.outcome,
     },
   });

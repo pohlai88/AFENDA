@@ -1,4 +1,4 @@
-/**
+﻿/**
  * AP Aging Report API Routes
  */
 import type { FastifyInstance } from "fastify";
@@ -10,6 +10,7 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
 import {
   getAgingReport,
   getInvoicesByAgingBucket,
@@ -18,7 +19,7 @@ import {
 } from "@afenda/core";
 import type { OrgId } from "@afenda/contracts";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AgingBucketSchema = z.object({
   bucket: z.enum(["current", "1-30", "31-60", "61-90", "90+"]),
@@ -46,7 +47,7 @@ const AgingReportResponseSchema = makeSuccessSchema(
       totalInvoiceCount: z.number(),
       byBucket: z.array(AgingBucketSchema),
     }),
-  })
+  }),
 );
 
 const InvoiceAgingRowSchema = z.object({
@@ -64,16 +65,8 @@ const InvoiceAgingRowSchema = z.object({
 const InvoicesByBucketResponseSchema = makeSuccessSchema(
   z.object({
     invoices: z.array(InvoiceAgingRowSchema),
-  })
+  }),
 );
-
-// ── Helper to build org context ──────────────────────────────────────────────
-
-function buildCtx(orgId: OrgId) {
-  return {
-    activeContext: { orgId },
-  };
-}
 
 export default async function apAgingRoutes(app: FastifyInstance) {
   const typedApp = app.withTypeProvider<ZodTypeProvider>();
@@ -127,7 +120,7 @@ export default async function apAgingRoutes(app: FastifyInstance) {
 
       // Convert BigInts to strings for JSON serialization
       const response = {
-        asOfDate: result.data.asOfDate.toISOString().slice(0, 10),
+        asOfDate: serializeDate(result.data.asOfDate)!.slice(0, 10),
         suppliers: result.data.suppliers.map((s: SupplierAging) => ({
           supplierId: s.supplierId,
           supplierName: s.supplierName,
@@ -160,7 +153,7 @@ export default async function apAgingRoutes(app: FastifyInstance) {
         data: response,
         correlationId: req.correlationId,
       });
-    }
+    },
   );
 
   /**
@@ -206,6 +199,6 @@ export default async function apAgingRoutes(app: FastifyInstance) {
         data: { invoices },
         correlationId: req.correlationId,
       });
-    }
+    },
   );
 }

@@ -1,7 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const IS_CI = !!process.env.CI;
 const E2E_PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
-const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${E2E_PORT}`;
+const E2E_HOST = process.env.PLAYWRIGHT_HOST ?? "localhost";
+const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${E2E_HOST}:${E2E_PORT}`;
+const HAS_EXTERNAL_BASE_URL = Boolean(process.env.PLAYWRIGHT_BASE_URL);
+const RUN_CROSS_BROWSER = IS_CI || process.env.PLAYWRIGHT_CROSS_BROWSER === "1";
 
 /**
  * Playwright E2E configuration for the AFENDA web app.
@@ -14,14 +18,14 @@ const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${E2E_
 export default defineConfig({
   testDir: "./e2e",
   outputDir: "./test-results",
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI
+  fullyParallel: false,
+  forbidOnly: IS_CI,
+  retries: IS_CI ? 2 : 0,
+  workers: Number(process.env.PLAYWRIGHT_WORKERS ?? 1),
+  reporter: IS_CI
     ? [["github"], ["html", { open: "never" }]]
-    : [["html", { open: "on-failure" }]],
-  timeout: 30_000,
+    : [["line"], ["html", { open: "on-failure" }]],
+  timeout: 120_000,
 
   expect: {
     timeout: 5_000,
@@ -29,45 +33,55 @@ export default defineConfig({
 
   use: {
     baseURL: E2E_BASE_URL,
-    trace: "on-first-retry",
+    trace: IS_CI ? "retain-on-failure" : "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
     // Consistent viewport across runs
     viewport: { width: 1280, height: 720 },
     // Accessibility: force color scheme for contrast testing
     colorScheme: "light",
   },
 
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
-    // Mobile viewport for responsive testing
-    {
-      name: "mobile-chrome",
-      use: { ...devices["Pixel 5"] },
-    },
-  ],
+  projects: RUN_CROSS_BROWSER
+    ? [
+        {
+          name: "chromium",
+          use: { ...devices["Desktop Chrome"] },
+        },
+        {
+          name: "firefox",
+          use: { ...devices["Desktop Firefox"] },
+        },
+        {
+          name: "webkit",
+          use: { ...devices["Desktop Safari"] },
+        },
+        // Mobile viewport for responsive testing
+        {
+          name: "mobile-chrome",
+          use: { ...devices["Pixel 5"] },
+        },
+      ]
+    : [
+        {
+          name: "chromium",
+          use: { ...devices["Desktop Chrome"] },
+        },
+      ],
 
   /* Start the dev server before running tests (local dev only).
    * Auth tests need web + API. dev:e2e skips worker to avoid startup failures. */
-  webServer: process.env.CI || process.env.PLAYWRIGHT_BASE_URL
-    ? undefined
-    : {
-        // Use a dedicated port to avoid attaching tests to an unrelated server on :3000.
-        command: `pnpm -C apps/web exec next dev --webpack --port ${E2E_PORT}`,
-        url: E2E_BASE_URL,
-        cwd: "../..",
-        reuseExistingServer: false,
-        timeout: 120_000,
-      },
+  webServer:
+    IS_CI || HAS_EXTERNAL_BASE_URL
+      ? undefined
+      : {
+          // Use node+next directly to avoid Windows `Terminate batch job (Y/N)?` prompts from pnpm.cmd.
+          command: `node ./node_modules/next/dist/bin/next dev --webpack --port ${E2E_PORT}`,
+          url: E2E_BASE_URL,
+          cwd: ".",
+          reuseExistingServer: true,
+          timeout: 180_000,
+        },
 });

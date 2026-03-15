@@ -1,8 +1,15 @@
 import { auth } from "@/auth";
 import { fetchMfaStatus } from "@/lib/api-client";
+import { getAccountLifecycleInfoAction } from "./actions";
+import { AccountInfoClient } from "./AccountInfoClient";
 import { MfaSetupClient } from "./MfaSetupClient";
+import { UpdateProfileClient } from "./UpdateProfileClient";
+import { ChangeEmailClient } from "./ChangeEmailClient";
 import { ChangePasswordClient } from "./ChangePasswordClient";
 import { SendVerificationEmailClient } from "./SendVerificationEmailClient";
+import { OrganizationContextClient } from "./OrganizationContextClient";
+import { OrganizationInvitationsClient } from "./OrganizationInvitationsClient";
+import { SocialAccountsClient } from "./SocialAccountsClient";
 import { VerifyEmailWithOtpClient } from "./VerifyEmailWithOtpClient";
 import { ListSessionsClient } from "./ListSessionsClient";
 import { DeleteAccountClient } from "./DeleteAccountClient";
@@ -10,6 +17,7 @@ import { DeleteAccountClient } from "./DeleteAccountClient";
 /** Security settings — MFA enrollment + password change. */
 export default async function SecuritySettingsPage() {
   const session = await auth();
+  const accountLifecycleInfo = await getAccountLifecycleInfoAction();
   let mfaEnabled = false;
   try {
     const status = await fetchMfaStatus();
@@ -28,6 +36,24 @@ export default async function SecuritySettingsPage() {
       </div>
 
       <div className="max-w-lg space-y-10 px-8 py-6">
+        {/* ── Account info ── */}
+        <AccountInfoClient {...accountLifecycleInfo} />
+
+        <div className="border-t" />
+
+        {/* ── Profile update ── */}
+        <UpdateProfileClient
+          defaultName={accountLifecycleInfo.name}
+          defaultImage={accountLifecycleInfo.image}
+        />
+
+        <div className="border-t" />
+
+        {/* ── Change email ── */}
+        <ChangeEmailClient currentEmail={accountLifecycleInfo.email} />
+
+        <div className="border-t" />
+
         {/* ── Two-factor authentication ── */}
         <section>
           <h2 className="mb-0.5 text-sm font-semibold text-foreground">
@@ -46,6 +72,21 @@ export default async function SecuritySettingsPage() {
 
         {/* ── Verify email with code ── */}
         <VerifyEmailWithOtpClient defaultEmail={session?.user?.email} />
+
+        <div className="border-t" />
+
+        {/* ── Social account linking ── */}
+        <SocialAccountsClient />
+
+        <div className="border-t" />
+
+        {/* ── Organization context ── */}
+        <OrganizationContextClient />
+
+        <div className="border-t" />
+
+        {/* ── Organization invitations ── */}
+        <OrganizationInvitationsClient />
 
         <div className="border-t" />
 

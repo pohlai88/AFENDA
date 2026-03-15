@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/__vitest_test__/**/*.test.ts", "src/**/__vitest_test__/**/*.test.tsx"],
     exclude: ["**/node_modules/**", "**/dist/**"],
     passWithNoTests: true,
     testTimeout: 30_000,
@@ -25,7 +25,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/**/index.ts", "src/types.ts", "**/*.test.ts"],
+      exclude: ["src/**/index.ts", "src/types.ts", "**/__vitest_test__/**"],
       reporter: ["text", "html", "lcov"],
     },
   },

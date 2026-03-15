@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import {
   forceDeadLetterOutboxEvent,
 } from "@/features/auth/server/audit/audit-ops.service";
@@ -39,5 +40,16 @@ export async function POST(request: Request) {
     session.user.id,
     reason,
   );
+
+  await publishAuthAuditEvent("auth.ops.outbox_dead_letter", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      eventId,
+      reason: reason ?? null,
+      ok,
+    },
+  });
+
   return NextResponse.json({ ok });
 }

@@ -2,11 +2,10 @@ import { z } from "zod";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 import { DateSchema } from "../../shared/datetime.js";
 import { CommTaskIdSchema, TaskTimeEntryIdSchema } from "../../shared/ids.js";
-
-// ─── Reusable Field Schemas ────────────────────────────────────────────────────
-
-const MinutesSchema = z.number().int().positive();
-const DescriptionSchema = z.string().trim().max(2_000);
+import {
+  TaskTimeEntryDescriptionSchema,
+  TaskTimeEntryMinutesSchema,
+} from "./task-time-entry.shared.js";
 
 // ─── Base Command Schema ────────────────────────────────────────────────────
 
@@ -18,16 +17,16 @@ const TimeEntryCommandBase = z.object({
 
 export const LogTaskTimeEntryCommandSchema = TimeEntryCommandBase.extend({
   taskId: CommTaskIdSchema,
-  minutes: MinutesSchema,
+  minutes: TaskTimeEntryMinutesSchema,
   entryDate: DateSchema,
-  description: DescriptionSchema.optional(),
+  description: TaskTimeEntryDescriptionSchema.optional(),
 });
 
 export const UpdateTaskTimeEntryCommandSchema = TimeEntryCommandBase.extend({
   timeEntryId: TaskTimeEntryIdSchema,
-  minutes: MinutesSchema.optional(),
+  minutes: TaskTimeEntryMinutesSchema.optional(),
   entryDate: DateSchema.optional(),
-  description: DescriptionSchema.optional(),
+  description: TaskTimeEntryDescriptionSchema.optional(),
 }).superRefine((data, ctx) => {
   if (
     data.minutes === undefined &&

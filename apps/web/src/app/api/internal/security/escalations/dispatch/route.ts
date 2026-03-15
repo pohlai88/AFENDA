@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { dispatchOverdueEscalations } from "@/features/auth/server/execution/escalation.service";
 
 export async function POST() {
@@ -11,5 +12,14 @@ export async function POST() {
   }
 
   const result = await dispatchOverdueEscalations();
+
+  await publishAuthAuditEvent("auth.ops.escalations_dispatched", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      result,
+    },
+  });
+
   return NextResponse.json(result);
 }

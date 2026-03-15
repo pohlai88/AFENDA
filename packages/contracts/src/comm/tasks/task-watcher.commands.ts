@@ -2,6 +2,21 @@ import { z } from "zod";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 import { CommTaskIdSchema, PrincipalIdSchema, TaskWatcherIdSchema } from "../../shared/ids.js";
 
+function addDuplicateValuesIssue(
+  values: readonly string[],
+  path: string,
+  message: string,
+  ctx: z.RefinementCtx,
+) {
+  if (new Set(values).size !== values.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message,
+      path: [path],
+    });
+  }
+}
+
 // ─── Base Command Schema ──────────────────────────────────────────────────────
 
 const WatcherCommandBase = z.object({
@@ -27,14 +42,12 @@ export const BulkAddTaskWatchersCommandSchema = WatcherCommandBase.extend({
   /** IDs of the principals to subscribe. At most 50 per call. */
   principalIds: z.array(PrincipalIdSchema).min(1).max(50),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.principalIds);
-  if (unique.size !== data.principalIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate principalId values are not allowed.",
-      path: ["principalIds"],
-    });
-  }
+  addDuplicateValuesIssue(
+    data.principalIds,
+    "principalIds",
+    "Duplicate principalId values are not allowed.",
+    ctx,
+  );
 });
 
 /** Unsubscribe multiple watchers from a task in one operation. */
@@ -42,14 +55,12 @@ export const BulkRemoveTaskWatchersCommandSchema = WatcherCommandBase.extend({
   taskId: CommTaskIdSchema,
   watcherIds: z.array(TaskWatcherIdSchema).min(1).max(50),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.watcherIds);
-  if (unique.size !== data.watcherIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate watcherId values are not allowed.",
-      path: ["watcherIds"],
-    });
-  }
+  addDuplicateValuesIssue(
+    data.watcherIds,
+    "watcherIds",
+    "Duplicate watcherId values are not allowed.",
+    ctx,
+  );
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────

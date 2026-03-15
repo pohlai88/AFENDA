@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { dispatchReviewReminders } from "@/features/auth/server/execution/reminder.service";
 
 export async function POST() {
@@ -11,5 +12,14 @@ export async function POST() {
   }
 
   const result = await dispatchReviewReminders();
+
+  await publishAuthAuditEvent("auth.ops.review_reminders_dispatched", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      result,
+    },
+  });
+
   return NextResponse.json(result);
 }

@@ -31,7 +31,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { findCollaborator } from "./document.queries.js";
 
 export interface CommDocumentPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommDocumentServiceError = {
@@ -245,7 +245,10 @@ export async function updateDocument(
       action: "document.updated",
       entityType: "document" as const,
       correlationId,
-      details: { documentNumber: existing.documentNumber, title: params.title },
+      details: {
+        documentNumber: existing.documentNumber,
+        ...(params.title ? { title: params.title } : {}),
+      },
     },
     async (tx) => {
       const versionNumber = await nextVersionNumber(tx as DbClient, orgId, params.documentId);
@@ -265,12 +268,16 @@ export async function updateDocument(
         .where(and(eq(commDocument.orgId, orgId), eq(commDocument.id, params.documentId)))
         .returning();
 
+      if (!updated) {
+        throw new Error("Document update failed: row not found");
+      }
+
       await tx.insert(commDocumentVersion).values({
         orgId,
         documentId: params.documentId,
         versionNumber,
-        title: params.title,
-        body: params.body,
+        title: updated.title,
+        body: updated.body,
         createdByPrincipalId: principalId,
       });
 
@@ -288,7 +295,7 @@ export async function updateDocument(
         },
       });
 
-      return updated!;
+      return updated;
     },
   );
 

@@ -7,7 +7,7 @@ import {
   CommQueryTextSchema,
   CommSearchLimitSchema,
 } from "../shared/query.js";
-import { makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
+import { makeCommDetailResponseSchema, makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
 import {
   CommProjectMilestoneIdSchema,
@@ -65,7 +65,16 @@ export const ListProjectMilestonesQuerySchema = z.object({
   dueAfter: DateSchema.optional(),
   limit: CommListLimitSchema,
   cursor: CommProjectMilestoneIdSchema.optional(),
+}).superRefine((data, ctx) => {
+  applyDateOrderRefinement(data, ctx, {
+    fromKey: "dueAfter",
+    toKey: "dueBefore",
+    message: "dueBefore must be on or after dueAfter.",
+    path: ["dueBefore"],
+  });
 });
+
+export const GetProjectResponseSchema = makeCommDetailResponseSchema(ProjectSchema);
 
 export const ListProjectsResponseSchema = makeCommListResponseSchema(ProjectSchema);
 export const SearchProjectsResponseSchema = makeCommSearchResponseSchema(ProjectSchema);
@@ -73,6 +82,7 @@ export const ListProjectMembersResponseSchema = makeCommListResponseSchema(Proje
 export const ListProjectMilestonesResponseSchema =
   makeCommListResponseSchema(ProjectMilestoneSchema);
 
+export type GetProjectResponse = z.infer<typeof GetProjectResponseSchema>;
 export type GetProjectQuery = z.infer<typeof GetProjectQuerySchema>;
 export type ListProjectsQuery = z.infer<typeof ListProjectsQuerySchema>;
 export type SearchProjectsQuery = z.infer<typeof SearchProjectsQuerySchema>;

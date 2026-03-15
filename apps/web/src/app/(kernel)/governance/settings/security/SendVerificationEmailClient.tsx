@@ -1,28 +1,51 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@afenda/ui";
-import { sendVerificationEmailAction } from "@/app/auth/_actions/send-verification-email";
+import { useTransition } from "react";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Spinner, toast } from "@afenda/ui";
 import { Mail } from "lucide-react";
+
+import { sendVerificationEmail, useSession } from "@/lib/auth/client";
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+}
 
 /**
  * Send verification email (Neon Auth) — Security settings.
  */
 export function SendVerificationEmailClient() {
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [message, setMessage] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const [isPending, startTransition] = useTransition();
 
-  async function handleSend() {
-    setStatus("loading");
-    setMessage(null);
-    const result = await sendVerificationEmailAction("/app");
-    if (result.ok) {
-      setStatus("success");
-      setMessage(result.message);
-    } else {
-      setStatus("error");
-      setMessage(result.error);
+  function handleSendVerificationEmail() {
+    const email = session?.user?.email;
+    if (!email) {
+      toast.error("Verification email is unavailable without an account email.");
+      return;
     }
+
+    const callbackURL = `${window.location.origin}/auth/verify-email?next=${encodeURIComponent(window.location.pathname)}&email=${encodeURIComponent(email)}`;
+
+    startTransition(async () => {
+      const response = await sendVerificationEmail({
+        email,
+        callbackURL,
+      });
+
+      if (response.error) {
+        toast.error(getErrorMessage(response.error, "Unable to send verification email."));
+        return;
+      }
+
+      toast.success("Verification email sent.");
+    });
   }
 
   return (
@@ -38,24 +61,23 @@ export function SendVerificationEmailClient() {
             <Mail className="h-4 w-4" />
             Send verification email
           </CardTitle>
-          <CardDescription className="text-xs">
-            We will send a link to your registered email. Click the link to verify.
-          </CardDescription>
+          <CardDescription className="text-xs">Resend the verification link to your current account email.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {message && (
-            <p className={`text-sm ${status === "success" ? "text-primary" : "text-destructive"}`}>
-              {message}
-            </p>
-          )}
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleSend}
-            disabled={status === "loading"}
-          >
-            {status === "loading" ? "Sending…" : "Send verification email"}
+          <p className="text-sm text-muted-foreground">
+            {session?.user?.email
+              ? `Current verification target: ${session.user.email}.`
+              : "Sign in to load the account email for verification."}
+          </p>
+          <Button type="button" onClick={handleSendVerificationEmail} disabled={isPending || !session?.user?.email}>
+            {isPending ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner className="size-4" />
+                Sending verification...
+              </span>
+            ) : (
+              "Send verification email"
+            )}
           </Button>
         </CardContent>
       </Card>

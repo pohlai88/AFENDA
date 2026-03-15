@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import {
   retryFailedOutboxEvent,
 } from "@/features/auth/server/audit/audit-ops.service";
@@ -32,5 +33,15 @@ export async function POST(request: Request) {
   }
 
   const ok = await retryFailedOutboxEvent(eventId, session.user.id);
+
+  await publishAuthAuditEvent("auth.ops.outbox_retry", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      eventId,
+      ok,
+    },
+  });
+
   return NextResponse.json({ ok });
 }

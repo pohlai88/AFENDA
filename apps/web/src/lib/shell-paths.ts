@@ -16,6 +16,5 @@ const PUBLIC_EXACT = new Set([
 const PUBLIC_PREFIXES = ["/auth/", "/portal/", "/marketing/"];
 
 export function isPublicFacingPath(pathname: string): boolean {
-  return PUBLIC_EXACT.has(pathname)
-    || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+  return PUBLIC_EXACT.has(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 }

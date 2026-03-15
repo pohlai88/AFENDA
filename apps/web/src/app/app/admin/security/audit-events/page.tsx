@@ -10,7 +10,7 @@ export default async function AdminSecurityAuditEventsPage() {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const events = await getRecentSecurityAuditEvents(100);
@@ -18,15 +18,10 @@ export default async function AdminSecurityAuditEventsPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Link
-          href="/app/admin/security"
-          className="text-sm text-muted-foreground hover:underline"
-        >
+        <Link href="/app/admin/security" className="text-sm text-muted-foreground hover:underline">
           ← Security Ops
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          Auth Audit Events
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Auth Audit Events</h1>
         <p className="text-sm text-muted-foreground">
           Review pending, sent, and failed auth security events.
         </p>
@@ -39,13 +34,9 @@ export default async function AdminSecurityAuditEventsPage() {
         <CardContent>
           <div className="space-y-3">
             {events.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No audit events found.
-              </div>
+              <div className="text-sm text-muted-foreground">No audit events found.</div>
             ) : (
-              events.map((item) => (
-                <AuditEventRow key={item.id} item={item} />
-              ))
+              events.map((item) => <AuditEventRow key={item.id} item={item} />)
             )}
           </div>
         </CardContent>

@@ -21,13 +21,7 @@
 /* eslint-disable @afenda/no-hardcoded-colors */
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   motion,
@@ -103,8 +97,6 @@ const FEED_LINES = [
   { text: "APAC subsidiary sync — 0 delta", status: "ok" as const },
 ];
 
-
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /** A/B timer: randomly assign 8s or 12s, persist for session consistency */
@@ -137,8 +129,8 @@ interface Particle {
 function generateParticles(): Particle[] {
   return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
     id: i,
-    x: 50 + ((i * 13) % 20 - 10),
-    y: 50 + ((i * 7) % 30 - 15),
+    x: 50 + (((i * 13) % 20) - 10),
+    y: 50 + (((i * 7) % 30) - 15),
     angle: (i / PARTICLE_COUNT) * 360 + ((i * 17) % 30),
     distance: 120 + ((i * 11) % 280),
     size: 2 + ((i * 3) % 5),
@@ -161,10 +153,10 @@ function ConfettiBurst({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
+    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
       {/* Central flash */}
       <motion.div
-        className="absolute top-1/2 left-1/2 w-150 h-150 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="absolute top-1/2 left-1/2 h-150 w-150 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           background:
             "radial-gradient(circle, rgba(52,211,153,0.25) 0%, rgba(20,184,166,0.08) 40%, transparent 70%)",
@@ -204,7 +196,7 @@ function ConfettiBurst({ onComplete }: { onComplete: () => void }) {
 
       {/* Horizontal light sweep */}
       <motion.div
-        className="absolute top-0 bottom-0 w-1 left-1/2"
+        className="absolute top-0 bottom-0 left-1/2 w-1"
         style={{
           background: "linear-gradient(to bottom, transparent, rgba(52,211,153,0.4), transparent)",
         }}
@@ -233,7 +225,7 @@ function CountdownRing({
   const offset = circumference * (1 - progress);
 
   return (
-    <div className="relative flex items-center justify-center w-9 h-9">
+    <div className="relative flex h-9 w-9 items-center justify-center">
       <svg width="36" height="36" className="-rotate-90">
         {/* Track */}
         <circle
@@ -258,7 +250,9 @@ function CountdownRing({
           style={{ transition: "stroke-dashoffset 1s linear" }}
         />
       </svg>
-      <span className="absolute text-[9px] font-mono text-slate-500 tabular-nums">{secondsLeft}</span>
+      <span className="absolute font-mono text-[9px] text-slate-500 tabular-nums">
+        {secondsLeft}
+      </span>
     </div>
   );
 }
@@ -282,7 +276,7 @@ function TearEdgeLeak({ intensity }: { intensity: number }) {
   if (count <= 0) return null;
 
   return (
-    <div className="absolute right-0 top-0 bottom-0 w-4 pointer-events-none overflow-visible z-10">
+    <div className="pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-4 overflow-visible">
       {LEAK_PARTICLES.slice(0, count).map((p) => (
         <motion.div
           key={p.id}
@@ -419,7 +413,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
           e.preventDefault();
           onReveal();
         }}
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:rounded"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-black"
       >
         Skip to content
       </a>
@@ -440,7 +434,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
         }}
         exit={{ x: "-110%", rotateY: -35, scale: 0.85, opacity: 0 }}
         transition={{ duration: 0.7, ease: EASE }}
-        className="absolute inset-x-0 top-0 h-dvh flex flex-col items-center justify-center select-none touch-pan-y overflow-hidden"
+        className="absolute inset-x-0 top-0 flex h-dvh touch-pan-y flex-col items-center justify-center overflow-hidden select-none"
       >
         {/* Frosted glass — hero shows through as blurred ghost */}
         <motion.div
@@ -450,7 +444,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
 
         {/* Scan lines */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.025]"
+          className="pointer-events-none absolute inset-0 opacity-[0.025]"
           style={{
             backgroundImage:
               "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(148,163,184,0.5) 2px, rgba(148,163,184,0.5) 3px)",
@@ -459,7 +453,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
 
         {/* Grid texture */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.035]"
+          className="pointer-events-none absolute inset-0 opacity-[0.035]"
           style={{
             backgroundImage:
               "linear-gradient(to right, rgba(148,163,184,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(148,163,184,0.2) 1px, transparent 1px)",
@@ -468,19 +462,19 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
         />
 
         {/* Classification stamps */}
-        <div className="absolute top-5 left-5 sm:top-6 sm:left-6 flex items-center gap-2 pointer-events-none">
-          <Fingerprint className="w-4 h-4 text-slate-700/80" />
-          <span className="text-[8px] sm:text-[9px] font-mono text-slate-700/80 tracking-[0.22em] uppercase">
+        <div className="pointer-events-none absolute top-5 left-5 flex items-center gap-2 sm:top-6 sm:left-6">
+          <Fingerprint className="h-4 w-4 text-slate-700/80" />
+          <span className="font-mono text-[8px] tracking-[0.22em] text-slate-700/80 uppercase sm:text-[9px]">
             CLASSIFIED // AUTHORIZED_REVIEW_ONLY
           </span>
         </div>
-        <div className="absolute top-5 right-16 sm:top-6 sm:right-20 pointer-events-none hidden sm:block">
-          <span className="text-[9px] font-mono text-slate-800/60 tracking-[0.18em]">
+        <div className="pointer-events-none absolute top-5 right-16 hidden sm:top-6 sm:right-20 sm:block">
+          <span className="font-mono text-[9px] tracking-[0.18em] text-slate-800/60">
             DOC_REF: AFD-2026-001
           </span>
         </div>
-        <div className="absolute bottom-20 sm:bottom-6 left-5 sm:left-6 pointer-events-none">
-          <span className="text-[8px] sm:text-[9px] font-mono text-slate-800/50 tracking-[0.15em]">
+        <div className="pointer-events-none absolute bottom-20 left-5 sm:bottom-6 sm:left-6">
+          <span className="font-mono text-[8px] tracking-[0.15em] text-slate-800/50 sm:text-[9px]">
             AFENDA // TRUTH_ENGINE v4.1 // {timerSeconds === 8 ? "COHORT_A" : "COHORT_B"}
           </span>
         </div>
@@ -488,32 +482,32 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
         {/* ── Center provocation ── */}
         <motion.div
           style={{ opacity: contentOpacity }}
-          className="relative z-10 flex flex-col items-center text-center px-6 max-w-2xl pointer-events-none"
+          className="pointer-events-none relative z-10 flex max-w-2xl flex-col items-center px-6 text-center"
         >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="flex items-center gap-2.5 mb-8"
+            className="mb-8 flex items-center gap-2.5"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-pulse" />
-            <span className="text-emerald-500/40 font-mono text-[10px] sm:text-[11px] tracking-[0.3em] uppercase">
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500/60" />
+            <span className="font-mono text-[10px] tracking-[0.3em] text-emerald-500/40 uppercase sm:text-[11px]">
               System.Identify(Self)
             </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-pulse" />
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500/60" />
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
-            className="text-slate-200 text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tight leading-[1.15]"
+            className="text-2xl leading-[1.15] tracking-tight text-slate-200 sm:text-3xl md:text-4xl lg:text-5xl"
           >
             Most ledgers are just{" "}
             <span className="relative inline-block">
-              <span className="text-white font-semibold">opinions</span>
+              <span className="font-semibold text-white">opinions</span>
               <motion.span
-                className="absolute -bottom-1 left-0 right-0 h-px bg-linear-to-r from-transparent via-emerald-400/60 to-transparent"
+                className="absolute right-0 -bottom-1 left-0 h-px bg-linear-to-r from-transparent via-emerald-400/60 to-transparent"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
                 transition={{ duration: 0.6, delay: 0.9, ease: EASE }}
@@ -526,18 +520,18 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.2 }}
-            className="mt-6 sm:mt-8 text-slate-500 text-sm sm:text-base"
+            className="mt-6 text-sm text-slate-500 sm:mt-8 sm:text-base"
           >
             <span className="italic">Tear away to reveal the truth</span>
-            <span className="hidden sm:inline text-slate-700 mx-2">—</span>
-            <span className="hidden sm:inline text-slate-600 font-mono text-[11px] tracking-wider">
+            <span className="mx-2 hidden text-slate-700 sm:inline">—</span>
+            <span className="hidden font-mono text-[11px] tracking-wider text-slate-600 sm:inline">
               or wait {timerSeconds}s
             </span>
           </motion.p>
         </motion.div>
 
         {/* ── Tear strip — right edge (always visible) ── */}
-        <div className="absolute right-0 top-0 bottom-0 w-14 flex flex-col items-center justify-center pointer-events-none">
+        <div className="pointer-events-none absolute top-0 right-0 bottom-0 flex w-14 flex-col items-center justify-center">
           {/* Perforated tear line — always visible */}
           <div
             className="absolute inset-y-0 left-0 w-px"
@@ -560,10 +554,10 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
                 opacity: hintPhase === "gone" ? 0.3 : hintPhase === "fading" ? 0.4 : 0.6,
               }}
             >
-              <ChevronRight className="w-5 h-5 text-emerald-400/70 rotate-180" />
+              <ChevronRight className="h-5 w-5 rotate-180 text-emerald-400/70" />
             </motion.div>
             <span
-              className="text-[9px] font-mono text-emerald-500/30 tracking-[0.15em]"
+              className="font-mono text-[9px] tracking-[0.15em] text-emerald-500/30"
               style={{ writingMode: "vertical-lr" }}
             >
               TEAR_HERE
@@ -580,7 +574,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
                 opacity: hintPhase === "gone" ? 0.3 : hintPhase === "fading" ? 0.4 : 0.6,
               }}
             >
-              <ChevronRight className="w-5 h-5 text-emerald-400/70 rotate-180" />
+              <ChevronRight className="h-5 w-5 rotate-180 text-emerald-400/70" />
             </motion.div>
           </div>
         </div>
@@ -588,7 +582,7 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
         {/* Drag-activated glow (intensifies as user drags) */}
         <motion.div
           style={{ opacity: tearGlow }}
-          className="absolute right-0 top-0 bottom-0 w-14 pointer-events-none"
+          className="pointer-events-none absolute top-0 right-0 bottom-0 w-14"
         >
           <motion.div
             className="absolute inset-y-0 left-0 w-12"
@@ -603,9 +597,9 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
         {isDragging && <TearEdgeLeak intensity={dragProgressRef.current} />}
 
         {/* ── Bottom controls ── */}
-        <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 flex flex-col items-center gap-3 z-20">
+        <div className="absolute right-0 bottom-6 left-0 z-20 flex flex-col items-center gap-3 sm:bottom-8">
           {/* Drag progress bar */}
-          <div className="w-36 h-0.75 rounded-full bg-slate-800/60 overflow-hidden">
+          <div className="h-0.75 w-36 overflow-hidden rounded-full bg-slate-800/60">
             <motion.div
               className="h-full rounded-full bg-linear-to-r from-emerald-500/80 to-teal-400"
               style={{ scaleX: progressBar, transformOrigin: "left" }}
@@ -613,15 +607,15 @@ function Veil({ onReveal, reduced: _reduced }: { onReveal: () => void; reduced: 
           </div>
 
           {/* Reveal button + countdown ring */}
-          <div className="flex items-center gap-3 pointer-events-auto">
+          <div className="pointer-events-auto flex items-center gap-3">
             <Button
               ref={revealBtnRef}
               variant="outline"
               size="lg"
               onClick={() => onReveal()}
-              className="rounded-full border-slate-700/50 bg-slate-900/30 text-slate-300 px-7 backdrop-blur-sm hover:border-emerald-500/40 hover:bg-slate-800/50 hover:text-white shadow-[0_4px_20px_rgba(0,0,0,0.4)] focus-visible:ring-emerald-500 focus-visible:ring-offset-slate-950 transition-all"
+              className="rounded-full border-slate-700/50 bg-slate-900/30 px-7 text-slate-300 shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-sm transition-all hover:border-emerald-500/40 hover:bg-slate-800/50 hover:text-white focus-visible:ring-emerald-500 focus-visible:ring-offset-slate-950"
             >
-              <Eye className="w-4 h-4 mr-2 opacity-50" />
+              <Eye className="mr-2 h-4 w-4 opacity-50" />
               Reveal
             </Button>
             <CountdownRing secondsLeft={countdown} totalSeconds={timerSeconds} />
@@ -648,7 +642,7 @@ function FeedTicker({ reduced }: { reduced: boolean | null }) {
   const line = FEED_LINES[idx]!;
 
   return (
-    <div className="flex items-center gap-2 h-5 overflow-hidden">
+    <div className="flex h-5 items-center gap-2 overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={idx}
@@ -659,15 +653,15 @@ function FeedTicker({ reduced }: { reduced: boolean | null }) {
           className="flex items-center gap-2"
         >
           {line.status === "ok" ? (
-            <CheckCircle2 className="w-3 h-3 text-teal-500/70 shrink-0" />
+            <CheckCircle2 className="h-3 w-3 shrink-0 text-teal-500/70" />
           ) : line.status === "warn" ? (
-            <Activity className="w-3 h-3 text-amber-500/70 shrink-0" />
+            <Activity className="h-3 w-3 shrink-0 text-amber-500/70" />
           ) : (
-            <Zap className="w-3 h-3 text-cyan-500/70 shrink-0" />
+            <Zap className="h-3 w-3 shrink-0 text-cyan-500/70" />
           )}
-          <span className="text-[11px] text-slate-500 truncate">{line.text}</span>
+          <span className="truncate text-[11px] text-slate-500">{line.text}</span>
           <span
-            className={`text-[9px] font-mono tracking-wider shrink-0 ${
+            className={`shrink-0 font-mono text-[9px] tracking-wider ${
               line.status === "ok"
                 ? "text-teal-600"
                 : line.status === "warn"
@@ -704,18 +698,18 @@ function SystemStrip({ reduced, revealed }: { reduced: boolean | null; revealed:
       initial={reduced ? false : { opacity: 0, y: 24 }}
       animate={shouldAnimate || reduced ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8, delay: 0.5, ease: EASE }}
-      className="w-full max-w-4xl mx-auto"
+      className="mx-auto w-full max-w-4xl"
     >
-      <div className="rounded-2xl border border-slate-800/60 bg-[#080a10]/80 backdrop-blur-xl shadow-[0_20px_80px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.02)_inset] overflow-hidden">
-        <div className="h-9 bg-[#0c0f17] border-b border-slate-800/50 flex items-center px-4 gap-3">
+      <div className="overflow-hidden rounded-2xl border border-slate-800/60 bg-[#080a10]/80 shadow-[0_20px_80px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.02)_inset] backdrop-blur-xl">
+        <div className="flex h-9 items-center gap-3 border-b border-slate-800/50 bg-[#0c0f17] px-4">
           <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/60" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/60" />
-            <div className="w-2.5 h-2.5 rounded-full bg-[#28c840]/60" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]/60" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]/60" />
+            <div className="h-2.5 w-2.5 rounded-full bg-[#28c840]/60" />
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="flex items-center gap-1.5 text-[9px] font-mono text-slate-600 tracking-[0.15em]">
-              <Lock className="w-2.5 h-2.5 text-teal-600" />
+          <div className="flex flex-1 justify-center">
+            <div className="flex items-center gap-1.5 font-mono text-[9px] tracking-[0.15em] text-slate-600">
+              <Lock className="h-2.5 w-2.5 text-teal-600" />
               TRUTH_ENGINE — LIVE INTEGRITY MONITOR
             </div>
           </div>
@@ -724,15 +718,15 @@ function SystemStrip({ reduced, revealed }: { reduced: boolean | null; revealed:
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400/50" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-teal-400" />
             </span>
-            <span className="text-[9px] font-mono text-teal-500 tracking-wider">LIVE</span>
+            <span className="font-mono text-[9px] tracking-wider text-teal-500">LIVE</span>
           </div>
         </div>
 
-        <div className="px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-0 sm:justify-between">
+        <div className="flex flex-col items-start gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <div className="flex items-center gap-5 sm:gap-6">
             {metrics.map((m, i) => (
               <div key={m.label} className="flex flex-col">
-                <span className="text-[9px] font-mono text-slate-600 tracking-[0.15em] uppercase">
+                <span className="font-mono text-[9px] tracking-[0.15em] text-slate-600 uppercase">
                   {m.label}
                 </span>
                 <div className="flex items-baseline gap-1.5">
@@ -740,16 +734,16 @@ function SystemStrip({ reduced, revealed }: { reduced: boolean | null; revealed:
                     initial={reduced ? false : { opacity: 0, scale: 0.8 }}
                     animate={shouldAnimate || reduced ? { opacity: 1, scale: 1 } : {}}
                     transition={{ duration: 0.4, delay: 0.65 + i * 0.08, ease: EASE }}
-                    className="text-xl text-white font-semibold tracking-tight"
+                    className="text-xl font-semibold tracking-tight text-white"
                   >
                     {m.value}
                   </motion.span>
-                  <span className="text-[9px] font-mono text-slate-600">{m.sub}</span>
+                  <span className="font-mono text-[9px] text-slate-600">{m.sub}</span>
                 </div>
               </div>
             ))}
           </div>
-          <div className="hidden sm:block w-px h-10 bg-slate-800/60" />
+          <div className="hidden h-10 w-px bg-slate-800/60 sm:block" />
           <div className="flex items-center gap-2">
             {[
               { icon: Database, label: "GL" },
@@ -763,21 +757,21 @@ function SystemStrip({ reduced, revealed }: { reduced: boolean | null; revealed:
                   key={mod.label}
                   className="flex items-center gap-1.5 rounded-md border border-slate-800/50 bg-slate-900/40 px-2 py-1"
                 >
-                  <Icon className="w-3 h-3 text-teal-600" />
-                  <span className="text-[9px] font-mono text-slate-500 tracking-[0.12em]">
+                  <Icon className="h-3 w-3 text-teal-600" />
+                  <span className="font-mono text-[9px] tracking-[0.12em] text-slate-500">
                     {mod.label}
                   </span>
                 </div>
               );
             })}
           </div>
-          <div className="hidden sm:block w-px h-10 bg-slate-800/60" />
+          <div className="hidden h-10 w-px bg-slate-800/60 sm:block" />
           <div className="min-w-0 shrink">
             <FeedTicker reduced={reduced} />
           </div>
         </div>
 
-        <div className="h-px w-full bg-slate-800/40 relative overflow-hidden">
+        <div className="relative h-px w-full overflow-hidden bg-slate-800/40">
           {!reduced && (
             <motion.div
               className="absolute inset-y-0 w-24 bg-linear-to-r from-transparent via-teal-400/40 to-transparent"
@@ -812,18 +806,18 @@ function PillarCard({
       initial={reduced ? false : { opacity: 0, y: 18 }}
       animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: 0.75 + index * 0.1, ease: EASE }}
-      className="group relative rounded-xl border border-slate-800/50 bg-slate-900/20 backdrop-blur-sm p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/70 hover:bg-slate-900/40"
+      className="group relative rounded-xl border border-slate-800/50 bg-slate-900/20 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-700/70 hover:bg-slate-900/40"
     >
       <div className="flex items-start gap-4">
         <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-500/15 bg-teal-500/6 text-teal-400/80 transition-colors group-hover:border-teal-500/30 group-hover:bg-teal-500/10 group-hover:text-teal-400">
           <Icon className="h-5 w-5" />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <h3 className="text-sm text-slate-200 font-medium tracking-tight group-hover:text-white transition-colors">
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <h3 className="text-sm font-medium tracking-tight text-slate-200 transition-colors group-hover:text-white">
               {pillar.label}
             </h3>
-            <span className="text-[8px] font-mono text-teal-600 tracking-[0.15em] bg-teal-950/30 border border-teal-900/30 rounded px-1.5 py-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="shrink-0 rounded border border-teal-900/30 bg-teal-950/30 px-1.5 py-0.5 font-mono text-[8px] tracking-[0.15em] text-teal-600 opacity-0 transition-opacity group-hover:opacity-100">
               {pillar.badge}
             </span>
           </div>
@@ -883,22 +877,21 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
   return (
     <section
       id="hero-content"
-      className="relative min-h-screen overflow-hidden bg-[#030712] text-white flex flex-col"
+      className="relative flex min-h-screen flex-col overflow-hidden bg-[#030712] text-white"
     >
       {/* ── Atmosphere ── */}
       <div
-        className="absolute inset-0 bg-[linear-gradient(to_right,rgba(30,41,59,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,41,59,0.15)_1px,transparent_1px)] bg-size-[72px_72px] pointer-events-none"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(30,41,59,0.15)_1px,transparent_1px),linear-gradient(to_bottom,rgba(30,41,59,0.15)_1px,transparent_1px)] bg-size-[72px_72px]"
         style={{
-          maskImage:
-            "radial-gradient(ellipse 70% 50% at 50% 30%, #000 40%, transparent 100%)",
+          maskImage: "radial-gradient(ellipse 70% 50% at 50% 30%, #000 40%, transparent 100%)",
           WebkitMaskImage:
             "radial-gradient(ellipse 70% 50% at 50% 30%, #000 40%, transparent 100%)",
         }}
       />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-150 bg-emerald-500/5 blur-[160px] rounded-full pointer-events-none" />
-      <div className="absolute top-[15%] right-[15%] w-87.5 h-87.5 bg-cyan-500/3 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute top-[10%] left-[10%] w-62.5 h-62.5 bg-teal-500/3 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 inset-x-0 h-40 bg-linear-to-t from-[#030712] to-transparent pointer-events-none z-20" />
+      <div className="pointer-events-none absolute top-0 left-1/2 h-150 w-200 -translate-x-1/2 rounded-full bg-emerald-500/5 blur-[160px]" />
+      <div className="pointer-events-none absolute top-[15%] right-[15%] h-87.5 w-87.5 rounded-full bg-cyan-500/3 blur-[120px]" />
+      <div className="pointer-events-none absolute top-[10%] left-[10%] h-62.5 w-62.5 rounded-full bg-teal-500/3 blur-[100px]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-40 bg-linear-to-t from-[#030712] to-transparent" />
 
       {/* Screen reader */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -911,8 +904,8 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
       </AnimatePresence>
 
       {/* ── LAYER 0: Marketing hero ── */}
-      <div className="relative flex-1 flex items-center z-10">
-        <div className="mx-auto w-full max-w-5xl px-5 sm:px-6 lg:px-8 py-32 lg:py-24">
+      <div className="relative z-10 flex flex-1 items-center">
+        <div className="mx-auto w-full max-w-5xl px-5 py-32 sm:px-6 lg:px-8 lg:py-24">
           <div className="flex flex-col items-center text-center">
             {/* Badge */}
             <motion.div
@@ -920,7 +913,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.05, ease: EASE }}
             >
-              <Badge className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/6 px-4 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-emerald-300 backdrop-blur-md">
+              <Badge className="inline-flex items-center gap-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/6 px-4 py-1.5 font-mono text-[10px] tracking-[0.22em] text-emerald-300 uppercase backdrop-blur-md">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/50" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
@@ -934,7 +927,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               initial={reduced ? false : { opacity: 0, y: 16 }}
               animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.12, ease: EASE }}
-              className="mt-7 text-slate-500 text-sm sm:text-base font-mono tracking-wide"
+              className="mt-7 font-mono text-sm tracking-wide text-slate-500 sm:text-base"
             >
               Most ledgers are just opinions.
             </motion.p>
@@ -947,11 +940,11 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               className="mt-4"
             >
               <h1 className="flex flex-col items-center tracking-tighter">
-                <span className="flex items-center gap-4 text-[clamp(3.2rem,10vw,7rem)] leading-[0.85] text-white font-medium">
+                <span className="flex items-center gap-4 text-[clamp(3.2rem,10vw,7rem)] leading-[0.85] font-medium text-white">
                   <AfendaMark size={64} variant="animated" />
                   AFENDA
                 </span>
-                <span className="text-[clamp(1.1rem,3vw,1.8rem)] leading-[1.3] mt-3 text-slate-400 tracking-tight max-w-2xl">
+                <span className="mt-3 max-w-2xl text-[clamp(1.1rem,3vw,1.8rem)] leading-[1.3] tracking-tight text-slate-400">
                   Where numbers become{" "}
                   <span className="bg-linear-to-r from-emerald-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent">
                     canon
@@ -966,10 +959,9 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               initial={reduced ? false : { opacity: 0, y: 18 }}
               animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.28, ease: EASE }}
-              className="mt-6 max-w-xl text-base sm:text-lg text-slate-500 leading-relaxed"
+              className="mt-6 max-w-xl text-base leading-relaxed text-slate-500 sm:text-lg"
             >
-              Forensic-grade ERP. AI-ready. Every approval, posting, correction, and
-              reversal —{" "}
+              Forensic-grade ERP. AI-ready. Every approval, posting, correction, and reversal —{" "}
               <span className="text-slate-300">permanently traceable</span>.
             </motion.p>
 
@@ -978,11 +970,11 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               initial={reduced ? false : { opacity: 0, y: 18 }}
               animate={revealed || reduced ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.38, ease: EASE }}
-              className="mt-10 flex flex-col sm:flex-row items-center gap-3"
+              className="mt-10 flex flex-col items-center gap-3 sm:flex-row"
             >
               <Link
-                href="/auth/signup"
-                className="group relative h-12 overflow-hidden rounded-xl bg-emerald-500 px-8 text-sm font-semibold text-slate-950 shadow-[0_8px_30px_rgba(16,185,129,0.25)] transition-all hover:bg-emerald-400 hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)] inline-flex items-center justify-center"
+                href="/app"
+                className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-xl bg-emerald-500 px-8 text-sm font-semibold text-slate-950 shadow-[0_8px_30px_rgba(16,185,129,0.25)] transition-all hover:bg-emerald-400 hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)]"
               >
                 <span className="relative z-10 flex items-center">
                   Run it now
@@ -992,7 +984,7 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
               </Link>
               <Link
                 href="#features"
-                className="h-12 rounded-xl border border-slate-700/70 bg-slate-900/30 px-8 text-sm text-slate-300 backdrop-blur-md transition-colors hover:bg-slate-800 hover:text-white hover:border-slate-600 inline-flex items-center justify-center"
+                className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-700/70 bg-slate-900/30 px-8 text-sm text-slate-300 backdrop-blur-md transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-white"
               >
                 View architecture
                 <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
@@ -1009,21 +1001,21 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
 
       {/* ── Pillars ── */}
       <div className="relative z-10 border-t border-slate-800/40">
-        <div className="mx-auto max-w-5xl px-5 sm:px-6 lg:px-8 py-10 lg:py-12">
+        <div className="mx-auto max-w-5xl px-5 py-10 sm:px-6 lg:px-8 lg:py-12">
           <motion.div
             initial={reduced ? false : { opacity: 0 }}
             animate={revealed || reduced ? { opacity: 1 } : {}}
             transition={{ duration: 0.5, delay: 0.7, ease: EASE }}
             className="mb-8 flex items-center justify-center gap-3"
           >
-            <div className="h-px flex-1 max-w-16 bg-linear-to-r from-transparent to-emerald-500/20" />
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-400/60">
+            <div className="h-px max-w-16 flex-1 bg-linear-to-r from-transparent to-emerald-500/20" />
+            <p className="font-mono text-[10px] tracking-[0.2em] text-emerald-400/60 uppercase">
               Nothing is overwritten. Everything is remembered.
             </p>
-            <div className="h-px flex-1 max-w-16 bg-linear-to-l from-transparent to-emerald-500/20" />
+            <div className="h-px max-w-16 flex-1 bg-linear-to-l from-transparent to-emerald-500/20" />
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-4">
             {PILLARS.map((pillar, i) => (
               <PillarCard
                 key={pillar.label}
@@ -1036,8 +1028,6 @@ export function Hero({ onRevealComplete }: { onRevealComplete?: () => void } = {
           </div>
         </div>
       </div>
-
-
 
       {/* ── LAYER 1: The Veil ── */}
       <AnimatePresence>

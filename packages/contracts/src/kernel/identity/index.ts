@@ -1,6 +1,8 @@
 /**
  * Barrel — kernel/identity (IAM: party model, principals, roles, permissions)
  */
+export * from "./errors.js";
+export * from "./permissions.js";
 export * from "./role.entity.js";
 export * from "./role-type.js";
 export * from "./party.entity.js";

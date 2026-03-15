@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -41,8 +41,10 @@ import {
   requireOrg,
   requireAuth,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../helpers/context.js";
 
-// ── Response schemas ──────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ApprovalMutationResponseSchema = makeSuccessSchema(
   z.object({ id: z.string().uuid(), approvalNumber: z.string().optional() }),
@@ -127,42 +129,32 @@ const ApprovalPolicyListResponseSchema = makeSuccessSchema(
   }),
 );
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommApprovalPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serializeApproval(row: ApprovalRequestRow) {
   return {
     ...row,
-    resolvedAt: row.resolvedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    resolvedAt: serializeDate(row.resolvedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
 function serializeStep(row: ApprovalStepRow) {
   return {
     ...row,
-    actedAt: row.actedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    actedAt: serializeDate(row.actedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-// ── Routes ────────────────────────────────────────────────────────────────────
+// â”€â”€ Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function commApprovalRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Queries ────────────────────────────────────────────────────────────────
+  // â”€â”€ Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   typed.get(
     "/approvals",
@@ -279,8 +271,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
         data: {
           data: page.data.map((r) => ({
             ...r,
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
-            updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : r.updatedAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
+            updatedAt: r.updatedAt instanceof Date ? serializeDate(r.updatedAt)! : r.updatedAt,
           })),
           cursor: page.cursor,
           hasMore: page.hasMore,
@@ -337,7 +329,7 @@ export async function commApprovalRoutes(app: FastifyInstance) {
             toStatus: h.toStatus,
             changedByPrincipalId: h.changedByPrincipalId,
             reason: h.reason,
-            occurredAt: h.occurredAt instanceof Date ? h.occurredAt.toISOString() : h.occurredAt,
+            occurredAt: h.occurredAt instanceof Date ? serializeDate(h.occurredAt)! : h.occurredAt,
           })),
         },
         correlationId: req.correlationId,
@@ -345,7 +337,7 @@ export async function commApprovalRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Commands ───────────────────────────────────────────────────────────────
+  // â”€â”€ Commands â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   typed.post(
     "/commands/create-approval-request",
@@ -369,8 +361,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await createApprovalRequest(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -413,8 +405,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await approveStep(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -458,8 +450,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await rejectStep(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -503,8 +495,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await delegateStep(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -548,8 +540,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await escalateApproval(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -593,8 +585,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await withdrawApproval(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -637,8 +629,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await createApprovalPolicy(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -680,8 +672,8 @@ export async function commApprovalRoutes(app: FastifyInstance) {
 
       const result = await setDelegation(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );

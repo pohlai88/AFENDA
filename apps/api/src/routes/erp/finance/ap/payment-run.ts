@@ -1,10 +1,10 @@
-/**
- * PaymentRun routes — create, list, get by ID.
+﻿/**
+ * PaymentRun routes â€” create, list, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreatePaymentRunCommandSchema,
   ApprovePaymentRunCommandSchema,
@@ -36,7 +38,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PaymentRunRowSchema = z.object({
   id: z.string().uuid(),
@@ -69,20 +71,7 @@ const PaymentRunListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialisePaymentRun(row: {
   id: string;
@@ -120,24 +109,24 @@ function serialisePaymentRun(row: {
     itemCount: row.itemCount,
     status: row.status,
     approvedByPrincipalId: row.approvedByPrincipalId,
-    approvedAt: row.approvedAt?.toISOString() ?? null,
+    approvedAt: serializeDate(row.approvedAt),
     executedByPrincipalId: row.executedByPrincipalId,
-    executedAt: row.executedAt?.toISOString() ?? null,
+    executedAt: serializeDate(row.executedAt),
     bankReference: row.bankReference,
     reversedByPrincipalId: row.reversedByPrincipalId,
-    reversedAt: row.reversedAt?.toISOString() ?? null,
+    reversedAt: serializeDate(row.reversedAt),
     reversalReason: row.reversalReason,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function paymentRunRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create payment run ──────────────────────────────────────────────────────
+  // â”€â”€ Create payment run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-payment-run",
     {
@@ -148,9 +137,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: CreatePaymentRunCommandSchema,
         response: {
-          201: makeSuccessSchema(
-            z.object({ id: z.string().uuid(), runNumber: z.string() }),
-          ),
+          201: makeSuccessSchema(z.object({ id: z.string().uuid(), runNumber: z.string() })),
           400: ApiErrorResponseSchema,
           401: ApiErrorResponseSchema,
           403: ApiErrorResponseSchema,
@@ -165,8 +152,8 @@ export async function paymentRunRoutes(app: FastifyInstance) {
 
       const result = await createPaymentRun(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           description: req.body.description,
@@ -194,13 +181,13 @@ export async function paymentRunRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Approve payment run ─────────────────────────────────────────────────────
+  // â”€â”€ Approve payment run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/approve-payment-run",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Approve a payment run (DRAFT → APPROVED).",
+        description: "Approve a payment run (DRAFT â†’ APPROVED).",
         tags: ["Payment Runs"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: ApprovePaymentRunCommandSchema,
@@ -221,15 +208,14 @@ export async function paymentRunRoutes(app: FastifyInstance) {
 
       const result = await approvePaymentRun(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         { paymentRunId: req.body.id },
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: {
             code: result.error.code,
@@ -247,13 +233,13 @@ export async function paymentRunRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Execute payment run ─────────────────────────────────────────────────────
+  // â”€â”€ Execute payment run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/execute-payment-run",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Execute a payment run (APPROVED → EXECUTED). Marks all invoices as paid.",
+        description: "Execute a payment run (APPROVED â†’ EXECUTED). Marks all invoices as paid.",
         tags: ["Payment Runs"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: ExecutePaymentRunCommandSchema,
@@ -274,8 +260,8 @@ export async function paymentRunRoutes(app: FastifyInstance) {
 
       const result = await executePaymentRun(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           paymentRunId: req.body.id,
@@ -284,8 +270,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: {
             code: result.error.code,
@@ -303,7 +288,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List payment runs ───────────────────────────────────────────────────────
+  // â”€â”€ List payment runs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/payment-runs",
     {
@@ -342,7 +327,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Export payment run (ISO 20022 or NACHA) ───────────────────────────────────
+  // â”€â”€ Export payment run (ISO 20022 or NACHA) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/payment-runs/:paymentRunId/export",
     {
@@ -398,8 +383,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
           },
         });
         if (!result.ok) {
-          const status =
-            result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+          const status = result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
           return reply.status(status).send({
             error: {
               code: result.error.code,
@@ -411,10 +395,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
         }
         return reply
           .header("Content-Type", "application/xml")
-          .header(
-            "Content-Disposition",
-            `attachment; filename="${result.data.fileName}"`,
-          )
+          .header("Content-Disposition", `attachment; filename="${result.data.fileName}"`)
           .send(result.data.content);
       }
 
@@ -430,8 +411,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
         },
       });
       if (!result.ok) {
-        const status =
-          result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "AP_PAYMENT_RUN_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: {
             code: result.error.code,
@@ -443,15 +423,12 @@ export async function paymentRunRoutes(app: FastifyInstance) {
       }
       return reply
         .header("Content-Type", "text/plain; charset=us-ascii")
-        .header(
-          "Content-Disposition",
-          `attachment; filename="${result.data.fileName}"`,
-        )
+        .header("Content-Disposition", `attachment; filename="${result.data.fileName}"`)
         .send(result.data.content);
     },
   );
 
-  // ── Get payment run by ID ───────────────────────────────────────────────────
+  // â”€â”€ Get payment run by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/payment-runs/:paymentRunId",
     {
@@ -473,11 +450,7 @@ export async function paymentRunRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const run = await getPaymentRunById(
-        app.db,
-        orgId as OrgId,
-        req.params.paymentRunId,
-      );
+      const run = await getPaymentRunById(app.db, orgId as OrgId, req.params.paymentRunId);
 
       if (!run) {
         return reply.status(404).send({

@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+﻿import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -45,6 +45,8 @@ import {
   requireAuth,
   requireOrg,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import { buildOrgScopedContext, buildMinimalPolicyContext, buildPolicyContext } from "../../helpers/context.js";
 
 const DOCUMENT_READ_PERMISSION = "comm.document.read";
 const DOCUMENT_WRITE_PERMISSION = "comm.document.write";
@@ -125,36 +127,26 @@ const DocumentListResponseSchema = makeSuccessSchema(
   }),
 );
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommDocumentPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
-
 function serializeDocument(row: DocumentRow) {
   return {
     ...row,
-    publishedAt: row.publishedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    publishedAt: serializeDate(row.publishedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
 function serializeVersion(row: DocumentVersionRow) {
   return {
     ...row,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
   };
 }
 
 function serializeCollaborator(row: CollaboratorRow) {
   return {
     ...row,
-    addedAt: row.addedAt.toISOString(),
+    addedAt: serializeDate(row.addedAt)!,
   };
 }
 
@@ -469,8 +461,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await createDocument(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -509,8 +501,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await updateDocument(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -549,8 +541,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await publishDocument(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -589,8 +581,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await archiveDocument(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -629,8 +621,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await addDocumentCollaborator(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -669,8 +661,8 @@ export async function commDocumentRoutes(app: FastifyInstance) {
 
       const result = await removeDocumentCollaborator(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );

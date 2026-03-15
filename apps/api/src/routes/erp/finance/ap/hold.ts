@@ -1,10 +1,10 @@
-/**
- * Hold routes — create hold, release hold, get by ID, list by invoice.
+﻿/**
+ * Hold routes â€” create hold, release hold, get by ID, list by invoice.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreateHoldCommandSchema,
   ReleaseHoldCommandSchema,
@@ -24,15 +26,10 @@ import {
   type InvoiceId,
   type PrincipalId,
 } from "@afenda/contracts";
-import {
-  createHold,
-  releaseHold,
-  findHoldsByInvoice,
-  getHoldById,
-} from "@afenda/core";
+import { createHold, releaseHold, findHoldsByInvoice, getHoldById } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const HoldRowSchema = z.object({
   id: z.string().uuid(),
@@ -54,20 +51,8 @@ const HoldListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Context builders now in helpers/context.ts
 
 function serialiseHold(row: {
   id: string;
@@ -91,11 +76,11 @@ function serialiseHold(row: {
     holdReason: row.holdReason,
     status: row.status,
     createdByPrincipalId: row.createdByPrincipalId,
-    releasedAt: row.releasedAt?.toISOString() ?? null,
+    releasedAt: serializeDate(row.releasedAt),
     releasedByPrincipalId: row.releasedByPrincipalId,
     releaseReason: row.releaseReason,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -111,12 +96,12 @@ function mapHoldErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function holdRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create hold ────────────────────────────────────────────────────────────
+  // â”€â”€ Create hold â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-hold",
     {
@@ -144,8 +129,8 @@ export async function holdRoutes(app: FastifyInstance) {
 
       const result = await createHold(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           invoiceId: req.body.invoiceId,
@@ -172,7 +157,7 @@ export async function holdRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Release hold ──────────────────────────────────────────────────────────
+  // â”€â”€ Release hold â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/release-hold",
     {
@@ -200,8 +185,8 @@ export async function holdRoutes(app: FastifyInstance) {
 
       const result = await releaseHold(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           holdId: req.body.holdId,
@@ -224,7 +209,7 @@ export async function holdRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get hold by ID ──────────────────────────────────────────────────────────
+  // â”€â”€ Get hold by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/holds/:holdId",
     {
@@ -265,7 +250,7 @@ export async function holdRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List holds by invoice ───────────────────────────────────────────────────
+  // â”€â”€ List holds by invoice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/invoices/:invoiceId/holds",
     {

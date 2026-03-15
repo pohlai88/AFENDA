@@ -6,11 +6,7 @@ import {
   WorkflowActionSchema,
   WorkflowStatusValues,
 } from "./workflow.entity.js";
-
-// ─── Reusable Field Schemas ───────────────────────────────────────────────────
-
-const NameSchema = z.string().trim().min(1).max(200);
-const DescriptionSchema = z.string().trim().max(2_000);
+import { WorkflowDescriptionSchema, WorkflowNameSchema } from "./workflow.shared.js";
 
 // ─── Base Command Schema ──────────────────────────────────────────────────────
 
@@ -20,23 +16,7 @@ const WorkflowCommandBase = z.object({
   principalId: PrincipalIdSchema,
 });
 
-// ─── Commands ─────────────────────────────────────────────────────────────────
-
-export const CreateWorkflowCommandSchema = WorkflowCommandBase.extend({
-  name: NameSchema,
-  description: DescriptionSchema.optional(),
-  trigger: WorkflowTriggerSchema,
-  actions: z.array(WorkflowActionSchema).min(1).max(10),
-});
-
-export const UpdateWorkflowCommandSchema = WorkflowCommandBase.extend({
-  workflowId: CommWorkflowIdSchema,
-  name: NameSchema.optional(),
-  description: DescriptionSchema.optional(),
-  trigger: WorkflowTriggerSchema.optional(),
-  actions: z.array(WorkflowActionSchema).min(1).max(10).optional(),
-}).superRefine((data, ctx) => {
-  const { idempotencyKey: _k, orgId: _o, principalId: _p, workflowId: _id, ...fields } = data;
+function addNoFieldsForUpdateIssue(fields: Record<string, unknown>, ctx: z.RefinementCtx) {
   if (Object.values(fields).every((v) => v === undefined)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -44,6 +24,36 @@ export const UpdateWorkflowCommandSchema = WorkflowCommandBase.extend({
       path: [],
     });
   }
+}
+
+function addDuplicateWorkflowIdsIssue(workflowIds: readonly string[], ctx: z.RefinementCtx) {
+  if (new Set(workflowIds).size !== workflowIds.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Duplicate workflowId values are not allowed.",
+      path: ["workflowIds"],
+    });
+  }
+}
+
+// ─── Commands ─────────────────────────────────────────────────────────────────
+
+export const CreateWorkflowCommandSchema = WorkflowCommandBase.extend({
+  name: WorkflowNameSchema,
+  description: WorkflowDescriptionSchema.optional(),
+  trigger: WorkflowTriggerSchema,
+  actions: z.array(WorkflowActionSchema).min(1).max(10),
+});
+
+export const UpdateWorkflowCommandSchema = WorkflowCommandBase.extend({
+  workflowId: CommWorkflowIdSchema,
+  name: WorkflowNameSchema.optional(),
+  description: WorkflowDescriptionSchema.optional(),
+  trigger: WorkflowTriggerSchema.optional(),
+  actions: z.array(WorkflowActionSchema).min(1).max(10).optional(),
+}).superRefine((data, ctx) => {
+  const { idempotencyKey: _k, orgId: _o, principalId: _p, workflowId: _id, ...fields } = data;
+  addNoFieldsForUpdateIssue(fields, ctx);
 });
 
 export const ChangeWorkflowStatusCommandSchema = WorkflowCommandBase.extend({
@@ -65,7 +75,7 @@ export const ExecuteWorkflowCommandSchema = z.object({
 
 export const CloneWorkflowCommandSchema = WorkflowCommandBase.extend({
   sourceWorkflowId: CommWorkflowIdSchema,
-  newName: NameSchema,
+  newName: WorkflowNameSchema,
 });
 
 // ─── Bulk Commands ────────────────────────────────────────────────────────────
@@ -74,14 +84,7 @@ export const BulkChangeWorkflowStatusCommandSchema = WorkflowCommandBase.extend(
   workflowIds: z.array(CommWorkflowIdSchema).min(1).max(50),
   status: z.enum(WorkflowStatusValues),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.workflowIds);
-  if (unique.size !== data.workflowIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate workflowId values are not allowed.",
-      path: ["workflowIds"],
-    });
-  }
+  addDuplicateWorkflowIdsIssue(data.workflowIds, ctx);
 });
 
 /**
@@ -98,14 +101,7 @@ export const BulkExecuteWorkflowsCommandSchema = z
     triggerPayload: z.record(z.string(), z.unknown()),
   })
   .superRefine((data, ctx) => {
-    const unique = new Set(data.workflowIds);
-    if (unique.size !== data.workflowIds.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Duplicate workflowId values are not allowed.",
-        path: ["workflowIds"],
-      });
-    }
+    addDuplicateWorkflowIdsIssue(data.workflowIds, ctx);
   });
 
 // ─── Types ────────────────────────────────────────────────────────────────────

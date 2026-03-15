@@ -144,6 +144,7 @@ export {
   type QueryablePool as ReconciliationQueryablePool,
 } from "./reconciliation.js";
 export {
+  configureRequestContextStorage,
   createRequestContext,
   runWithRequestContext,
   getRequestContext,

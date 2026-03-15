@@ -75,6 +75,10 @@ export default tseslint.config(
 
       // Forbid console.* — use Pino logger instead
       "no-console": ["warn", { allow: ["warn", "error"] }],
+
+      // Reduce noise on intentional as const (e.g. ERR literal maps)
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
+      "@typescript-eslint/prefer-as-const": "off",
     },
   },
 

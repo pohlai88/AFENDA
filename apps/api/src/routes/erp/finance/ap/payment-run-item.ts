@@ -1,10 +1,10 @@
-/**
- * Payment Run Item routes — add item, list items, get by ID.
+﻿/**
+ * Payment Run Item routes â€” add item, list items, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,20 +16,18 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildPolicyContext } from "../../../../helpers/context.js";
 import {
   AddPaymentRunItemCommandSchema,
   type OrgId,
   type CorrelationId,
   type PrincipalId,
 } from "@afenda/contracts";
-import {
-  addPaymentRunItem,
-  listPaymentRunItems,
-  getPaymentRunItemById,
-} from "@afenda/core";
+import { addPaymentRunItem, listPaymentRunItems, getPaymentRunItemById } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PaymentRunItemRowSchema = z.object({
   id: z.string().uuid(),
@@ -49,16 +47,7 @@ const PaymentRunItemRowSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialiseItem(row: {
   id: string;
@@ -91,8 +80,8 @@ function serialiseItem(row: {
     status: row.status,
     paymentReference: row.paymentReference,
     errorMessage: row.errorMessage,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -115,12 +104,12 @@ function mapErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function paymentRunItemRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Add item to payment run ───────────────────────────────────────────────
+  // â”€â”€ Add item to payment run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/add-payment-run-item",
     {
@@ -152,7 +141,7 @@ export async function paymentRunItemRoutes(app: FastifyInstance) {
       const result = await addPaymentRunItem(
         app.db,
         ctx,
-        buildPolicyCtx(req),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           paymentRunId: req.body.paymentRunId,
@@ -180,7 +169,7 @@ export async function paymentRunItemRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List items in a payment run ─────────────────────────────────────────────
+  // â”€â”€ List items in a payment run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/payment-runs/:paymentRunId/items",
     {
@@ -205,11 +194,7 @@ export async function paymentRunItemRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const items = await listPaymentRunItems(
-        app.db,
-        orgId as OrgId,
-        req.params.paymentRunId,
-      );
+      const items = await listPaymentRunItems(app.db, orgId as OrgId, req.params.paymentRunId);
 
       return {
         data: items.map(serialiseItem),
@@ -218,7 +203,7 @@ export async function paymentRunItemRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get payment run item by ID ─────────────────────────────────────────────
+  // â”€â”€ Get payment run item by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/payment-run-items/:id",
     {

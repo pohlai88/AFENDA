@@ -17,7 +17,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { getLabelById } from "./label.queries";
 
 export interface CommLabelPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommLabelServiceError = {

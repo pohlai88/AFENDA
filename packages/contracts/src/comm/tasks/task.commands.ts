@@ -4,13 +4,12 @@ import { DateSchema } from "../../shared/datetime.js";
 import { CommTaskIdSchema, EntityIdSchema, PrincipalIdSchema } from "../../shared/ids.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
 import { TaskPrioritySchema, TaskStatusSchema, TaskTypeSchema } from "./task.entity.js";
-
-// ─── Reusable Field Schemas ───────────────────────────────────────────────────
-
-const TitleSchema = z.string().trim().min(1).max(500);
-const DescriptionSchema = z.string().trim().max(20_000);
-const ReasonSchema = z.string().trim().min(1).max(500);
-const ContextEntityTypeSchema = z.string().trim().min(1).max(128);
+import {
+  TaskContextEntityTypeSchema,
+  TaskDescriptionSchema,
+  TaskReasonSchema,
+  TaskTitleSchema,
+} from "./task.shared.js";
 
 // ─── Base Command Schema ──────────────────────────────────────────────────────
 
@@ -18,20 +17,70 @@ const TaskCommandBase = z.object({
   idempotencyKey: IdempotencyKeySchema,
 });
 
+const BulkTaskIdsSchema = z.array(CommTaskIdSchema).min(1).max(200);
+
+function addDateRangeIssue(
+  data: { startDate?: string | null; dueDate?: string | null },
+  ctx: z.RefinementCtx,
+) {
+  if (data.startDate && data.dueDate && data.dueDate < data.startDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "dueDate must be on or after startDate.",
+      path: ["dueDate"],
+    });
+  }
+}
+
+function addUniqueTaskIdsIssue(taskIds: readonly string[], ctx: z.RefinementCtx) {
+  if (new Set(taskIds).size !== taskIds.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Duplicate taskId values are not allowed.",
+      path: ["taskIds"],
+    });
+  }
+}
+
+function addContextPairIssue(
+  data: { contextEntityType?: string | null; contextEntityId?: string | null },
+  ctx: z.RefinementCtx,
+) {
+  const hasType = data.contextEntityType !== undefined && data.contextEntityType !== null;
+  const hasId = data.contextEntityId !== undefined && data.contextEntityId !== null;
+  if (hasType !== hasId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "contextEntityType and contextEntityId must be provided together.",
+      path: hasType ? ["contextEntityId"] : ["contextEntityType"],
+    });
+  }
+}
+
+function addNoFieldsToUpdateIssue(data: Record<string, unknown>, ctx: z.RefinementCtx) {
+  if (Object.values(data).every((v) => v === undefined)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "At least one field must be provided for update.",
+      path: [],
+    });
+  }
+}
+
 // ─── Task Lifecycle Commands ──────────────────────────────────────────────────
 
 export const CreateTaskCommandSchema = TaskCommandBase.extend({
   projectId: CommProjectIdSchema.optional(),
   parentTaskId: CommTaskIdSchema.optional(),
-  title: TitleSchema,
-  description: DescriptionSchema.optional(),
+  title: TaskTitleSchema,
+  description: TaskDescriptionSchema.optional(),
   priority: TaskPrioritySchema.optional(),
   taskType: TaskTypeSchema.optional(),
   assigneeId: PrincipalIdSchema.optional(),
   dueDate: DateSchema.optional(),
   startDate: DateSchema.optional(),
   estimateMinutes: z.number().int().positive().optional(),
-  contextEntityType: ContextEntityTypeSchema.optional(),
+  contextEntityType: TaskContextEntityTypeSchema.optional(),
   contextEntityId: EntityIdSchema.optional(),
 }).superRefine((data, ctx) => {
   if (data.parentTaskId !== undefined && data.parentTaskId === (data as any).id) {
@@ -41,37 +90,27 @@ export const CreateTaskCommandSchema = TaskCommandBase.extend({
       path: ["parentTaskId"],
     });
   }
-  if (data.startDate !== undefined && data.dueDate !== undefined && data.dueDate < data.startDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "dueDate must be on or after startDate.",
-      path: ["dueDate"],
-    });
-  }
+  addDateRangeIssue(data, ctx);
+  addContextPairIssue(data, ctx);
 });
 
 export const UpdateTaskCommandSchema = TaskCommandBase.extend({
   taskId: CommTaskIdSchema,
-  title: TitleSchema.optional(),
-  description: DescriptionSchema.nullable().optional(),
+  title: TaskTitleSchema.optional(),
+  description: TaskDescriptionSchema.nullable().optional(),
   priority: TaskPrioritySchema.optional(),
   taskType: TaskTypeSchema.optional(),
   dueDate: DateSchema.nullable().optional(),
   startDate: DateSchema.nullable().optional(),
   estimateMinutes: z.number().int().positive().nullable().optional(),
-  contextEntityType: ContextEntityTypeSchema.nullable().optional(),
+  contextEntityType: TaskContextEntityTypeSchema.nullable().optional(),
   contextEntityId: EntityIdSchema.nullable().optional(),
   sortOrder: z.number().int().optional(),
 }).superRefine((data, ctx) => {
   const { taskId: _taskId, idempotencyKey: _key, ...fields } = data;
-  const hasUpdate = Object.values(fields).some((v) => v !== undefined);
-  if (!hasUpdate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "At least one field must be provided for update.",
-      path: [],
-    });
-  }
+  addNoFieldsToUpdateIssue(fields, ctx);
+  addDateRangeIssue(data, ctx);
+  addContextPairIssue(data, ctx);
 });
 
 export const AssignTaskCommandSchema = TaskCommandBase.extend({
@@ -82,83 +121,55 @@ export const AssignTaskCommandSchema = TaskCommandBase.extend({
 export const TransitionTaskStatusCommandSchema = TaskCommandBase.extend({
   taskId: CommTaskIdSchema,
   toStatus: TaskStatusSchema,
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 });
 
 export const CompleteTaskCommandSchema = TaskCommandBase.extend({
   taskId: CommTaskIdSchema,
   actualMinutes: z.number().int().nonnegative().optional(),
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 });
 
 export const ArchiveTaskCommandSchema = TaskCommandBase.extend({
   taskId: CommTaskIdSchema,
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 });
 
 export const DeleteTaskCommandSchema = TaskCommandBase.extend({
   taskId: CommTaskIdSchema,
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 });
 
 // ─── Bulk Commands ────────────────────────────────────────────────────────────
 
 export const BulkAssignTasksCommandSchema = TaskCommandBase.extend({
-  taskIds: z.array(CommTaskIdSchema).min(1).max(200),
+  taskIds: BulkTaskIdsSchema,
   assigneeId: PrincipalIdSchema,
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.taskIds);
-  if (unique.size !== data.taskIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate taskId values are not allowed.",
-      path: ["taskIds"],
-    });
-  }
+  addUniqueTaskIdsIssue(data.taskIds, ctx);
 });
 
 export const BulkTransitionTaskStatusCommandSchema = TaskCommandBase.extend({
-  taskIds: z.array(CommTaskIdSchema).min(1).max(200),
+  taskIds: BulkTaskIdsSchema,
   toStatus: TaskStatusSchema,
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.taskIds);
-  if (unique.size !== data.taskIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate taskId values are not allowed.",
-      path: ["taskIds"],
-    });
-  }
+  addUniqueTaskIdsIssue(data.taskIds, ctx);
 });
 
 export const BulkCompleteTasksCommandSchema = TaskCommandBase.extend({
-  taskIds: z.array(CommTaskIdSchema).min(1).max(200),
+  taskIds: BulkTaskIdsSchema,
   actualMinutes: z.number().int().nonnegative().optional(),
-  reason: ReasonSchema.optional(),
+  reason: TaskReasonSchema.optional(),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.taskIds);
-  if (unique.size !== data.taskIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate taskId values are not allowed.",
-      path: ["taskIds"],
-    });
-  }
+  addUniqueTaskIdsIssue(data.taskIds, ctx);
 });
 
 export const BulkArchiveTasksCommandSchema = TaskCommandBase.extend({
-  taskIds: z.array(CommTaskIdSchema).min(1).max(200),
-  reason: ReasonSchema.optional(),
+  taskIds: BulkTaskIdsSchema,
+  reason: TaskReasonSchema.optional(),
 }).superRefine((data, ctx) => {
-  const unique = new Set(data.taskIds);
-  if (unique.size !== data.taskIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate taskId values are not allowed.",
-      path: ["taskIds"],
-    });
-  }
+  addUniqueTaskIdsIssue(data.taskIds, ctx);
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────

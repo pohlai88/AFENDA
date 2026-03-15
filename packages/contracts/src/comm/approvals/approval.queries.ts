@@ -7,7 +7,11 @@ import {
   CommQueryTextSchema,
   CommSearchLimitSchema,
 } from "../shared/query.js";
-import { makeCommListResponseSchema, makeCommSearchResponseSchema } from "../shared/response.js";
+import {
+  makeCommDetailResponseSchema,
+  makeCommListResponseSchema,
+  makeCommSearchResponseSchema,
+} from "../shared/response.js";
 import {
   ApprovalDelegationIdSchema,
   ApprovalDelegationSchema,
@@ -20,6 +24,7 @@ import {
   ApprovalStepSchema,
   ApprovalUrgencySchema,
 } from "./approval-request.entity.js";
+import { ApprovalSourceEntityTypeSchema } from "./approval.shared.js";
 
 export const GetApprovalRequestQuerySchema = z.object({
   approvalRequestId: ApprovalRequestIdSchema,
@@ -29,7 +34,7 @@ export const ListApprovalRequestsQuerySchema = z
   .object({
     status: ApprovalStatusSchema.optional(),
     requestedByPrincipalId: PrincipalIdSchema.optional(),
-    sourceEntityType: z.string().trim().min(1).max(128).optional(),
+    sourceEntityType: ApprovalSourceEntityTypeSchema.optional(),
     sourceEntityId: EntityIdSchema.optional(),
     urgency: ApprovalUrgencySchema.optional(),
     dueBefore: DateSchema.optional(),
@@ -67,7 +72,7 @@ export const GetApprovalPolicyQuerySchema = z.object({
 });
 
 export const ListApprovalPoliciesQuerySchema = z.object({
-  sourceEntityType: z.string().trim().min(1).max(128).optional(),
+  sourceEntityType: ApprovalSourceEntityTypeSchema.optional(),
   isActive: z.boolean().optional(),
   query: CommQueryTextSchema.optional(),
   limit: CommListLimitSchema,
@@ -92,10 +97,12 @@ export const ListApprovalDelegationsQuerySchema = z
     }
   });
 
+export const GetApprovalRequestResponseSchema = makeCommDetailResponseSchema(ApprovalRequestSchema);
 export const ListApprovalRequestsResponseSchema = makeCommListResponseSchema(ApprovalRequestSchema);
 export const SearchApprovalRequestsResponseSchema =
   makeCommSearchResponseSchema(ApprovalRequestSchema);
 export const ListApprovalStepsResponseSchema = makeCommListResponseSchema(ApprovalStepSchema);
+export const GetApprovalPolicyResponseSchema = makeCommDetailResponseSchema(ApprovalPolicySchema);
 export const ListApprovalPoliciesResponseSchema = makeCommListResponseSchema(ApprovalPolicySchema);
 export const ListApprovalDelegationsResponseSchema =
   makeCommListResponseSchema(ApprovalDelegationSchema);
@@ -107,8 +114,10 @@ export type ListApprovalStepsQuery = z.infer<typeof ListApprovalStepsQuerySchema
 export type GetApprovalPolicyQuery = z.infer<typeof GetApprovalPolicyQuerySchema>;
 export type ListApprovalPoliciesQuery = z.infer<typeof ListApprovalPoliciesQuerySchema>;
 export type ListApprovalDelegationsQuery = z.infer<typeof ListApprovalDelegationsQuerySchema>;
+export type GetApprovalRequestResponse = z.infer<typeof GetApprovalRequestResponseSchema>;
 export type ListApprovalRequestsResponse = z.infer<typeof ListApprovalRequestsResponseSchema>;
 export type SearchApprovalRequestsResponse = z.infer<typeof SearchApprovalRequestsResponseSchema>;
 export type ListApprovalStepsResponse = z.infer<typeof ListApprovalStepsResponseSchema>;
+export type GetApprovalPolicyResponse = z.infer<typeof GetApprovalPolicyResponseSchema>;
 export type ListApprovalPoliciesResponse = z.infer<typeof ListApprovalPoliciesResponseSchema>;
 export type ListApprovalDelegationsResponse = z.infer<typeof ListApprovalDelegationsResponseSchema>;

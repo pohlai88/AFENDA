@@ -13,7 +13,7 @@ import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/
 import { getSubscriptionByUnique } from "./subscription.queries";
 
 export interface CommSubscriptionPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommSubscriptionServiceError = {

@@ -1,12 +1,14 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+﻿import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
   CreateWorkflowCommandSchema,
-  UpdateWorkflowCommandSchema,
   ChangeWorkflowStatusCommandSchema,
   DeleteWorkflowCommandSchema,
   ExecuteWorkflowCommandSchema,
+  WorkflowTriggerTypeValues,
+  WorkflowActionTypeValues,
+  ConditionOperatorValues,
   WorkflowStatusValues,
   WorkflowRunStatusValues,
   type CorrelationId,
@@ -35,6 +37,12 @@ import {
   requireAuth,
   requireOrg,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import {
+  buildOrgScopedContext,
+  buildMinimalPolicyContext,
+  buildPolicyContext,
+} from "../../helpers/context.js";
 
 const WorkflowStatusSchema = z.enum(WorkflowStatusValues);
 const WorkflowRunStatusSchema = z.enum(WorkflowRunStatusValues);
@@ -103,10 +111,49 @@ const CreateWorkflowApiBodySchema = CreateWorkflowCommandSchema.omit({
   principalId: true,
 });
 
-const UpdateWorkflowApiBodySchema = UpdateWorkflowCommandSchema.omit({
-  orgId: true,
-  principalId: true,
-});
+// Keep this API body schema explicit because refined object schemas cannot
+// be transformed with omit() under zod@4 at runtime.
+const UpdateWorkflowApiBodySchema = z
+  .object({
+    idempotencyKey: z.string().uuid(),
+    workflowId: z.string().uuid(),
+    name: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().max(2_000).optional(),
+    trigger: z
+      .object({
+        type: z.enum(WorkflowTriggerTypeValues),
+        conditions: z
+          .array(
+            z.object({
+              field: z.string(),
+              operator: z.enum(ConditionOperatorValues),
+              value: z.unknown().optional(),
+            }),
+          )
+          .optional(),
+      })
+      .optional(),
+    actions: z
+      .array(
+        z.object({
+          type: z.enum(WorkflowActionTypeValues),
+          config: z.record(z.string(), z.unknown()),
+        }),
+      )
+      .min(1)
+      .max(10)
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const { idempotencyKey: _k, workflowId: _id, ...fields } = data;
+    if (Object.values(fields).every((v) => v === undefined)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one field must be provided for update.",
+        path: [],
+      });
+    }
+  });
 
 const ChangeWorkflowStatusApiBodySchema = ChangeWorkflowStatusCommandSchema.omit({
   orgId: true,
@@ -156,16 +203,6 @@ function denyWorkflowPermission(req: FastifyRequest, reply: FastifyReply, permis
   });
 }
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): WorkflowPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
-
 function formatWorkflowRow(row: {
   id: string;
   orgId: string;
@@ -185,9 +222,9 @@ function formatWorkflowRow(row: {
 }) {
   return {
     ...row,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-    lastTriggeredAt: row.lastTriggeredAt?.toISOString() ?? null,
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
+    lastTriggeredAt: serializeDate(row.lastTriggeredAt),
   };
 }
 
@@ -212,10 +249,10 @@ function formatWorkflowRunRow(row: {
 }) {
   return {
     ...row,
-    startedAt: row.startedAt.toISOString(),
-    completedAt: row.completedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    startedAt: serializeDate(row.startedAt)!,
+    completedAt: serializeDate(row.completedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -248,8 +285,8 @@ export async function commWorkflowRoutes(app: FastifyInstance) {
 
       const result = await createWorkflow(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
@@ -299,11 +336,12 @@ export async function commWorkflowRoutes(app: FastifyInstance) {
 
       const result = await updateWorkflow(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
+          workflowId: req.body.workflowId as CommWorkflowId,
           orgId: orgId as OrgId,
           principalId: auth.principalId,
         },
@@ -351,8 +389,8 @@ export async function commWorkflowRoutes(app: FastifyInstance) {
 
       const result = await changeWorkflowStatus(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
@@ -403,8 +441,8 @@ export async function commWorkflowRoutes(app: FastifyInstance) {
 
       const result = await deleteWorkflow(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
@@ -455,8 +493,8 @@ export async function commWorkflowRoutes(app: FastifyInstance) {
 
       const result = await executeWorkflow(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,

@@ -7,17 +7,22 @@ import {
   ApprovalStepIdSchema,
   ApprovalUrgencySchema,
 } from "./approval-request.entity.js";
-
-/** Reusable string schemas */
-const TitleSchema = z.string().trim().min(1).max(500);
-const ReasonSchema = z.string().trim().max(500);
-const CommentSchema = z.string().trim().max(2000);
+import {
+  ApprovalLabelSchema,
+  ApprovalOptionalCommentSchema,
+  ApprovalOptionalReasonSchema,
+  ApprovalPolicyNameSchema,
+  ApprovalReasonSchema,
+  ApprovalSourceEntityTypeSchema,
+  ApprovalTitleSchema,
+  addValidUntilAfterValidFromIssue,
+} from "./approval.shared.js";
 
 /** Approval step definition used when creating a request */
 export const ApprovalStepInputSchema = z.object({
   assigneeId: PrincipalIdSchema,
   /** Optional label shown in UI step chain, e.g. "Finance Manager" */
-  label: z.string().trim().min(1).max(200).optional(),
+  label: ApprovalLabelSchema.optional(),
 });
 
 /** Base schema for step-level commands */
@@ -27,48 +32,50 @@ const StepCommandBase = z.object({
   stepId: ApprovalStepIdSchema,
 });
 
+/** Base schema for request-level commands */
+const RequestCommandBase = z.object({
+  idempotencyKey: IdempotencyKeySchema,
+  approvalRequestId: ApprovalRequestIdSchema,
+});
+
 /** Commands */
 export const CreateApprovalRequestCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  title: TitleSchema,
-  sourceEntityType: z.string().trim().min(1).max(128),
+  title: ApprovalTitleSchema,
+  sourceEntityType: ApprovalSourceEntityTypeSchema,
   sourceEntityId: EntityIdSchema,
   urgency: ApprovalUrgencySchema.optional(),
-  dueDate: DateSchema.optional(),
+  dueDate: DateSchema.nullable().optional().default(null),
   steps: z.array(ApprovalStepInputSchema).min(1).max(10),
 });
 
 export const ApproveStepCommandSchema = StepCommandBase.extend({
-  comment: CommentSchema.optional(),
+  comment: ApprovalOptionalCommentSchema.optional().default(null),
 });
 
 export const RejectStepCommandSchema = StepCommandBase.extend({
-  comment: CommentSchema.min(1),
+  comment: ApprovalReasonSchema.max(2000),
 });
 
 export const DelegateStepCommandSchema = StepCommandBase.extend({
   delegateToPrincipalId: PrincipalIdSchema,
-  reason: ReasonSchema.optional(),
+  reason: ApprovalOptionalReasonSchema.optional().default(null),
 });
 
-export const EscalateApprovalCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  reason: ReasonSchema.min(1),
+export const EscalateApprovalCommandSchema = RequestCommandBase.extend({
+  reason: ApprovalReasonSchema,
 });
 
-export const WithdrawApprovalCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
-  approvalRequestId: ApprovalRequestIdSchema,
-  reason: ReasonSchema.optional(),
+export const WithdrawApprovalCommandSchema = RequestCommandBase.extend({
+  reason: ApprovalOptionalReasonSchema.optional().default(null),
 });
 
 export const CreateApprovalPolicyCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
-  name: z.string().trim().min(1).max(200),
-  sourceEntityType: z.string().trim().min(1).max(128),
-  autoApproveBelowAmount: z.number().int().nonnegative().optional(),
-  escalationAfterHours: z.number().int().positive().optional(),
+  name: ApprovalPolicyNameSchema,
+  sourceEntityType: ApprovalSourceEntityTypeSchema,
+  autoApproveBelowAmount: z.number().int().nonnegative().nullable().optional().default(null),
+  escalationAfterHours: z.number().int().positive().nullable().optional().default(null),
 });
 
 export const SetDelegationCommandSchema = z
@@ -77,17 +84,9 @@ export const SetDelegationCommandSchema = z
     toPrincipalId: PrincipalIdSchema,
     validFrom: DateSchema,
     validUntil: DateSchema,
-    reason: ReasonSchema.optional(),
+    reason: ApprovalOptionalReasonSchema.optional().default(null),
   })
-  .superRefine((data, ctx) => {
-    if (data.validUntil <= data.validFrom) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "validUntil must be after validFrom.",
-        path: ["validUntil"],
-      });
-    }
-  });
+  .superRefine(addValidUntilAfterValidFromIssue);
 
 /** Types */
 export type ApprovalStepInput = z.infer<typeof ApprovalStepInputSchema>;

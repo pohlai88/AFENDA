@@ -5,6 +5,8 @@
  */
 
 // ── Vocabulary ────────────────────────────────────────────────────────────────
+export * from "./errors.js";
+export * from "./permissions.js";
 export * from "./field-type.js";
 
 // ── Entity / Field definitions ────────────────────────────────────────────────

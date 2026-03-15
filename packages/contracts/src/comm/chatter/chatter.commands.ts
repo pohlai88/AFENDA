@@ -5,26 +5,38 @@ import {
   CommChatterContextEntityTypeSchema,
   CommChatterMessageIdSchema,
 } from "./chatter.entity.js";
+import { CommChatterMessageBodyTextSchema } from "./chatter.shared.js";
 
-const BodySchema = z.string().trim().min(1).max(20_000);
-
-export const PostChatterMessageCommandSchema = z.object({
+const ChatterCommandBaseSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
+});
+
+export const PostChatterMessageCommandFieldsSchema = z.object({
   entityType: CommChatterContextEntityTypeSchema,
   entityId: EntityIdSchema,
   parentMessageId: CommChatterMessageIdSchema.nullable().optional().default(null),
-  body: BodySchema,
+  body: CommChatterMessageBodyTextSchema,
 });
 
-export const UpdateChatterMessageCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const UpdateChatterMessageCommandFieldsSchema = z.object({
   messageId: CommChatterMessageIdSchema,
-  body: BodySchema,
+  body: CommChatterMessageBodyTextSchema,
 });
 
-export const DeleteChatterMessageCommandSchema = z.object({
-  idempotencyKey: IdempotencyKeySchema,
+export const DeleteChatterMessageCommandFieldsSchema = z.object({
   messageId: CommChatterMessageIdSchema,
+});
+
+export const PostChatterMessageCommandSchema = ChatterCommandBaseSchema.extend({
+  ...PostChatterMessageCommandFieldsSchema.shape,
+});
+
+export const UpdateChatterMessageCommandSchema = ChatterCommandBaseSchema.extend({
+  ...UpdateChatterMessageCommandFieldsSchema.shape,
+});
+
+export const DeleteChatterMessageCommandSchema = ChatterCommandBaseSchema.extend({
+  ...DeleteChatterMessageCommandFieldsSchema.shape,
 });
 
 export type PostChatterMessageCommand = z.infer<typeof PostChatterMessageCommandSchema>;

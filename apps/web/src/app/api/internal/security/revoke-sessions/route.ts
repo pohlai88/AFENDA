@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { publishAuthAuditEvent } from "@/features/auth/server/audit/audit.helpers";
 import { revokeUserSessions } from "@/features/auth/server/session-control/auth-session-control.service";
 
 const RevokeSessionsBodySchema = z
@@ -39,6 +40,17 @@ export async function POST(request: Request) {
     tenantId: body.tenantId,
     portal: body.portal,
     reason: body.reason ?? "manual_security_action",
+  });
+
+  await publishAuthAuditEvent("auth.ops.sessions_revoked", {
+    userId: session.user.id,
+    email: session.user.email,
+    metadata: {
+      targetUserId: body.targetUserId ?? null,
+      tenantId: body.tenantId ?? null,
+      portal: body.portal ?? null,
+      reason: body.reason ?? "manual_security_action",
+    },
   });
 
   return NextResponse.json({ ok: true });

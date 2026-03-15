@@ -7,18 +7,19 @@ export default function PortalEntryPage() {
       <CardHeader>
         <CardTitle>Choose a portal</CardTitle>
         <CardDescription>
-          Supplier and customer portals are isolated. Continue with the matching sign-in route.
+          Portal authentication routes have been removed. Rebuild portal access flows before
+          enabling these entries.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-muted-foreground">
         <div>
-          <Link className="underline-offset-4 hover:underline" href="/auth/portal/supplier/signin">
-            Supplier sign in
+          <Link className="underline-offset-4 hover:underline" href="/app">
+            Supplier portal coming back later
           </Link>
         </div>
         <div>
-          <Link className="underline-offset-4 hover:underline" href="/auth/portal/customer/signin">
-            Customer sign in
+          <Link className="underline-offset-4 hover:underline" href="/app">
+            Customer portal coming back later
           </Link>
         </div>
       </CardContent>

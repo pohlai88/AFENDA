@@ -7,6 +7,12 @@ import {
 } from "../../shared/ids.js";
 import { DateSchema, UtcDateTimeSchema } from "../../shared/datetime.js";
 import { CommProjectIdSchema } from "../shared/project-id.js";
+import {
+  TaskContextEntityTypeSchema,
+  TaskDescriptionSchema,
+  TaskNumberSchema,
+  TaskTitleSchema,
+} from "./task.shared.js";
 
 // ─── ID Brand ────────────────────────────────────────────────────────────────
 
@@ -41,9 +47,9 @@ export const TaskSchema = z
     orgId: OrgIdSchema,
     projectId: CommProjectIdSchema.nullable().default(null),
     parentTaskId: CommTaskIdSchema.nullable().default(null),
-    taskNumber: z.string().trim().min(1).max(64),
-    title: z.string().trim().min(1).max(500),
-    description: z.string().trim().max(20_000).nullable().default(null),
+    taskNumber: TaskNumberSchema,
+    title: TaskTitleSchema,
+    description: TaskDescriptionSchema.nullable().default(null),
     status: TaskStatusSchema,
     priority: TaskPrioritySchema,
     taskType: TaskTypeSchema,
@@ -56,7 +62,7 @@ export const TaskSchema = z
     completedAt: UtcDateTimeSchema.nullable().default(null),
     completedByPrincipalId: PrincipalIdSchema.nullable().default(null),
     sortOrder: z.number().int(),
-    contextEntityType: z.string().trim().min(1).max(128).nullable().default(null),
+    contextEntityType: TaskContextEntityTypeSchema.nullable().default(null),
     contextEntityId: EntityIdSchema.nullable().default(null),
     slaBreachAt: UtcDateTimeSchema.nullable().default(null),
     createdAt: UtcDateTimeSchema,

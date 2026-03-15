@@ -1,6 +1,8 @@
 /**
  * Barrel — erp/finance/ap (accounts payable)
  */
+export * from "./errors.js";
+export * from "./permissions.js";
 export * from "./invoice.entity.js";
 export * from "./invoice.commands.js";
 export * from "./payment-terms.entity.js";

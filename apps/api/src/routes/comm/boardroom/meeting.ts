@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -10,6 +10,8 @@ import {
   CreateBoardMeetingCommandSchema,
   MeetingStatusSchema,
   ProposeResolutionCommandSchema,
+  UpdateResolutionCommandSchema,
+  WithdrawResolutionCommandSchema,
   RecordMinutesCommandSchema,
   ResolutionStatusSchema,
   UpdateActionItemCommandSchema,
@@ -36,22 +38,26 @@ import {
   listResolutionsByMeeting,
   listVotesByResolution,
   proposeResolution,
+  updateResolution,
+  withdrawResolution,
   recordMinutes,
   updateActionItem,
   updateAttendeeStatus,
   updateMeeting,
 } from "@afenda/core";
-import type {
-  BoardMeetingPolicyContext,
-  BoardMeetingRow,
-  OrgScopedContext,
-} from "@afenda/core";
+import type { BoardMeetingPolicyContext, BoardMeetingRow, OrgScopedContext } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
   makeSuccessSchema,
   requireAuth,
   requireOrg,
 } from "../../../helpers/responses.js";
+import { serializeDate } from "../../../helpers/dates.js";
+import {
+  buildOrgScopedContext,
+  buildMinimalPolicyContext,
+  buildPolicyContext,
+} from "../../../helpers/context.js";
 
 const MeetingMutationResponseSchema = makeSuccessSchema(
   z.object({ id: z.string().uuid(), meetingNumber: z.string().optional() }),
@@ -182,7 +188,9 @@ const ActionItemListResponseSchema = makeSuccessSchema(z.array(ActionItemRowSche
 
 const CreateActionItemResponseSchema = makeSuccessSchema(z.object({ id: z.string().uuid() }));
 
-function serializeAgendaItem(row: import("@afenda/core").BoardAgendaItemRow): z.infer<typeof AgendaItemRowSchema> {
+function serializeAgendaItem(
+  row: import("@afenda/core").BoardAgendaItemRow,
+): z.infer<typeof AgendaItemRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
@@ -192,12 +200,14 @@ function serializeAgendaItem(row: import("@afenda/core").BoardAgendaItemRow): z.
     description: row.description,
     presenterId: row.presenterId,
     durationMinutes: row.durationMinutes,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-function serializeAttendee(row: import("@afenda/core").BoardMeetingAttendeeRow): z.infer<typeof AttendeeRowSchema> {
+function serializeAttendee(
+  row: import("@afenda/core").BoardMeetingAttendeeRow,
+): z.infer<typeof AttendeeRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
@@ -205,12 +215,14 @@ function serializeAttendee(row: import("@afenda/core").BoardMeetingAttendeeRow):
     principalId: row.principalId,
     status: row.status as z.infer<typeof AttendeeStatusSchema>,
     role: row.role,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-function serializeResolution(row: import("@afenda/core").BoardResolutionRow): z.infer<typeof ResolutionRowSchema> {
+function serializeResolution(
+  row: import("@afenda/core").BoardResolutionRow,
+): z.infer<typeof ResolutionRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
@@ -219,38 +231,47 @@ function serializeResolution(row: import("@afenda/core").BoardResolutionRow): z.
     description: row.description,
     status: row.status as z.infer<typeof ResolutionStatusSchema>,
     proposedById: row.proposedById,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
-function serializeResolutionVote(row: import("@afenda/core").BoardResolutionVoteRow): z.infer<typeof ResolutionVoteRowSchema> {
+function serializeResolutionVote(
+  row: import("@afenda/core").BoardResolutionVoteRow,
+): z.infer<typeof ResolutionVoteRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
     resolutionId: row.resolutionId,
     principalId: row.principalId,
     vote: row.vote as z.infer<typeof VoteSchema>,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
   };
 }
 
-function serializeMinute(row: import("@afenda/core").BoardMinuteRow): z.infer<typeof MinuteRowSchema> {
+function serializeMinute(
+  row: import("@afenda/core").BoardMinuteRow,
+): z.infer<typeof MinuteRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
     meetingId: row.meetingId,
     resolutionId: row.resolutionId,
     createdByPrincipalId: row.createdByPrincipalId,
-    recordedAt: row.recordedAt instanceof Date ? row.recordedAt.toISOString() : (row.recordedAt as string),
+    recordedAt:
+      row.recordedAt instanceof Date ? serializeDate(row.recordedAt)! : (row.recordedAt as string),
     content: row.content,
     metadata: row.metadata ?? {},
-    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : (row.createdAt as string),
-    updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : (row.updatedAt as string),
+    createdAt:
+      row.createdAt instanceof Date ? serializeDate(row.createdAt)! : (row.createdAt as string),
+    updatedAt:
+      row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : (row.updatedAt as string),
   };
 }
 
-function serializeActionItem(row: import("@afenda/core").BoardActionItemRow): z.infer<typeof ActionItemRowSchema> {
+function serializeActionItem(
+  row: import("@afenda/core").BoardActionItemRow,
+): z.infer<typeof ActionItemRowSchema> {
   return {
     id: row.id,
     orgId: row.orgId,
@@ -261,22 +282,17 @@ function serializeActionItem(row: import("@afenda/core").BoardActionItemRow): z.
     dueDate: row.dueDate,
     status: row.status,
     createdByPrincipalId: row.createdByPrincipalId,
-    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : (row.createdAt as string),
-    updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : (row.updatedAt as string),
-    closedAt: row.closedAt != null
-      ? (row.closedAt instanceof Date ? row.closedAt.toISOString() : (row.closedAt as string))
-      : null,
+    createdAt:
+      row.createdAt instanceof Date ? serializeDate(row.createdAt)! : (row.createdAt as string),
+    updatedAt:
+      row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : (row.updatedAt as string),
+    closedAt:
+      row.closedAt != null
+        ? row.closedAt instanceof Date
+          ? serializeDate(row.closedAt)!
+          : (row.closedAt as string)
+        : null,
   };
-}
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): BoardMeetingPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
 }
 
 function serializeMeeting(row: BoardMeetingRow): z.infer<typeof MeetingRowSchema> {
@@ -287,17 +303,17 @@ function serializeMeeting(row: BoardMeetingRow): z.infer<typeof MeetingRowSchema
     title: row.title,
     description: row.description,
     status: row.status as z.infer<typeof MeetingStatusSchema>,
-    scheduledAt: row.scheduledAt?.toISOString() ?? null,
+    scheduledAt: serializeDate(row.scheduledAt),
     duration: row.duration,
     location: row.location,
     chairId: row.chairId,
     secretaryId: row.secretaryId,
     quorumRequired: row.quorumRequired,
-    startedAt: row.startedAt?.toISOString() ?? null,
-    adjournedAt: row.adjournedAt?.toISOString() ?? null,
+    startedAt: serializeDate(row.startedAt),
+    adjournedAt: serializeDate(row.adjournedAt),
     createdByPrincipalId: row.createdByPrincipalId,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -364,11 +380,7 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const meeting = await getMeetingById(
-        app.db,
-        orgId as OrgId,
-        req.params.id as BoardMeetingId,
-      );
+      const meeting = await getMeetingById(app.db, orgId as OrgId, req.params.id as BoardMeetingId);
       if (!meeting) {
         return reply.status(404).send({
           error: { code: "COMM_MEETING_NOT_FOUND", message: "Meeting not found" },
@@ -405,8 +417,8 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await createMeeting(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -448,15 +460,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await updateMeeting(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -525,15 +536,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await addAgendaItem(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -602,15 +612,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await addAttendee(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -647,15 +656,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await updateAttendeeStatus(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_ATTENDEE_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_ATTENDEE_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -759,15 +767,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await proposeResolution(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -804,15 +811,102 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await castVote(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_RESOLUTION_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_RESOLUTION_NOT_FOUND" ? 404 : 400;
+        return reply.status(status).send({
+          error: { code: result.error.code, message: result.error.message },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.status(200).send({
+        data: { id: result.data.id },
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  typed.post(
+    "/commands/comm-board-meetings/resolutions/update",
+    {
+      schema: {
+        tags: ["COMM Boardroom"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: UpdateResolutionCommandSchema,
+        response: {
+          200: ProposeResolutionResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await updateResolution(
+        app.db,
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
+        req.correlationId as CorrelationId,
+        req.body,
+      );
+
+      if (!result.ok) {
+        const status = result.error.code === "COMM_RESOLUTION_NOT_FOUND" ? 404 : 400;
+        return reply.status(status).send({
+          error: { code: result.error.code, message: result.error.message },
+          correlationId: req.correlationId,
+        });
+      }
+
+      return reply.status(200).send({
+        data: { id: result.data.id },
+        correlationId: req.correlationId,
+      });
+    },
+  );
+
+  typed.post(
+    "/commands/comm-board-meetings/resolutions/withdraw",
+    {
+      schema: {
+        tags: ["COMM Boardroom"],
+        security: [{ bearerAuth: [] }, { devAuth: [] }],
+        body: WithdrawResolutionCommandSchema,
+        response: {
+          200: ProposeResolutionResponseSchema,
+          400: ApiErrorResponseSchema,
+          401: ApiErrorResponseSchema,
+          404: ApiErrorResponseSchema,
+        },
+      },
+    },
+    async (req, reply) => {
+      const orgId = requireOrg(req, reply);
+      if (!orgId) return;
+      const auth = requireAuth(req, reply);
+      if (!auth) return;
+
+      const result = await withdrawResolution(
+        app.db,
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
+        req.correlationId as CorrelationId,
+        req.body,
+      );
+
+      if (!result.ok) {
+        const status = result.error.code === "COMM_RESOLUTION_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -881,15 +975,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await recordMinutes(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MEETING_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -961,15 +1054,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await createActionItem(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_MINUTE_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_MINUTE_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,
@@ -1006,15 +1098,14 @@ export async function commBoardMeetingRoutes(app: FastifyInstance) {
 
       const result = await updateActionItem(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
 
       if (!result.ok) {
-        const status =
-          result.error.code === "COMM_ACTION_ITEM_NOT_FOUND" ? 404 : 400;
+        const status = result.error.code === "COMM_ACTION_ITEM_NOT_FOUND" ? 404 : 400;
         return reply.status(status).send({
           error: { code: result.error.code, message: result.error.message },
           correlationId: req.correlationId,

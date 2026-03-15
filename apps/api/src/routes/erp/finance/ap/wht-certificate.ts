@@ -1,10 +1,10 @@
-/**
- * WHT Certificate routes — create, list, get by ID.
+﻿/**
+ * WHT Certificate routes â€” create, list, get by ID.
  *
  * RULES:
- *   1. Use ZodTypeProvider for schema → schema.body, schema.response.
+ *   1. Use ZodTypeProvider for schema â†’ schema.body, schema.response.
  *   2. Commands: rate-limit 30/min, require auth, require org.
- *   3. Never import @afenda/db — use @afenda/core services.
+ *   3. Never import @afenda/db â€” use @afenda/core services.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -16,6 +16,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../../helpers/responses.js";
+import { serializeDate } from "../../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../../helpers/context.js";
 import {
   CreateWhtCertificateCommandSchema,
   IssueWhtCertificateCommandSchema,
@@ -34,7 +36,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const WhtCertificateRowSchema = z.object({
   id: z.string().uuid(),
@@ -66,20 +68,7 @@ const WhtCertificateListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function serialiseWhtCertificate(row: {
   id: string;
@@ -119,11 +108,11 @@ function serialiseWhtCertificate(row: {
     certificateDate: row.certificateDate,
     paymentRunId: row.paymentRunId,
     status: row.status,
-    issuedAt: row.issuedAt?.toISOString() ?? null,
-    submittedAt: row.submittedAt?.toISOString() ?? null,
+    issuedAt: serializeDate(row.issuedAt),
+    submittedAt: serializeDate(row.submittedAt),
     taxAuthorityReference: row.taxAuthorityReference,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -139,12 +128,12 @@ function mapErrorStatus(code: string) {
   }
 }
 
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function whtCertificateRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Create WHT certificate ──────────────────────────────────────────────────
+  // â”€â”€ Create WHT certificate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/create-wht-certificate",
     {
@@ -174,8 +163,8 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
 
       const result = await createWhtCertificate(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           supplierId: req.body.supplierId,
@@ -211,13 +200,13 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Issue WHT certificate ───────────────────────────────────────────────────
+  // â”€â”€ Issue WHT certificate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/issue-wht-certificate",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Issue a WHT certificate to the supplier (DRAFT → ISSUED).",
+        description: "Issue a WHT certificate to the supplier (DRAFT â†’ ISSUED).",
         tags: ["WHT Certificate"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: IssueWhtCertificateCommandSchema,
@@ -239,8 +228,8 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
 
       const result = await issueWhtCertificate(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         { whtCertificateId: req.body.whtCertificateId },
       );
@@ -263,13 +252,13 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Submit WHT certificate ───────────────────────────────────────────────────
+  // â”€â”€ Submit WHT certificate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/submit-wht-certificate",
     {
       config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
       schema: {
-        description: "Submit a WHT certificate to the tax authority (ISSUED → SUBMITTED).",
+        description: "Submit a WHT certificate to the tax authority (ISSUED â†’ SUBMITTED).",
         tags: ["WHT Certificate"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: SubmitWhtCertificateCommandSchema,
@@ -291,8 +280,8 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
 
       const result = await submitWhtCertificate(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           whtCertificateId: req.body.whtCertificateId,
@@ -318,7 +307,7 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List WHT certificates ───────────────────────────────────────────────────
+  // â”€â”€ List WHT certificates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/wht-certificates",
     {
@@ -357,7 +346,7 @@ export async function whtCertificateRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get WHT certificate by ID ───────────────────────────────────────────────
+  // â”€â”€ Get WHT certificate by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/wht-certificates/:id",
     {

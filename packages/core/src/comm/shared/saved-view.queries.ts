@@ -6,7 +6,7 @@ import type { CommSavedViewEntityType, CommSavedViewId, PrincipalId } from "@afe
 export interface CommSavedViewRow {
   id: CommSavedViewId;
   orgId: string;
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
   entityType: CommSavedViewEntityType;
   name: string;
   filters: Record<string, unknown>;

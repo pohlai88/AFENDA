@@ -1,13 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  PermissionSchema,
   PermissionValuePattern,
-  PermissionValues,
-  isPermission,
   normalizePermission,
   validatePermissionVocabulary,
 } from "../permissions";
+import { PermissionSchema, PermissionValues, isPermission } from "../../all-permissions";
 
 describe("shared permissions", () => {
   it("contains no duplicate values", () => {
@@ -47,6 +45,6 @@ describe("shared permissions", () => {
   });
 
   it("passes vocabulary validation checks", () => {
-    expect(validatePermissionVocabulary()).toEqual([]);
+    expect(validatePermissionVocabulary(PermissionValues)).toEqual([]);
   });
 });

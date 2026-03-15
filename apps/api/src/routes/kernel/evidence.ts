@@ -1,15 +1,15 @@
-/**
- * Evidence routes — document registration, presigned upload URLs, attach-evidence.
+﻿/**
+ * Evidence routes â€” document registration, presigned upload URLs, attach-evidence.
  *
  * Flow:
- *   1. POST /v1/evidence/presign          → presigned S3 PUT URL
+ *   1. POST /v1/evidence/presign          â†’ presigned S3 PUT URL
  *   2. (client uploads directly to S3)
- *   3. POST /v1/documents                 → register document row in DB
- *   4. POST /v1/commands/attach-evidence  → link document to entity
+ *   3. POST /v1/documents                 â†’ register document row in DB
+ *   4. POST /v1/commands/attach-evidence  â†’ link document to entity
  *
  * All routes use Zod type provider for automatic request validation and
  * OpenAPI schema generation. Manual `safeParse` is replaced by Fastify's
- * validator compiler — validation errors return a structured 400 response.
+ * validator compiler â€” validation errors return a structured 400 response.
  */
 
 import type { FastifyInstance } from "fastify";
@@ -47,8 +47,9 @@ import {
 } from "../../services/s3.js";
 import { CursorParamsSchema } from "@afenda/contracts";
 import { requireAuth } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
 
-// ── List documents schema ────────────────────────────────────────────────────
+// â”€â”€ List documents schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DocumentListSchema = z.object({
   data: z.array(
@@ -67,7 +68,7 @@ const DocumentListSchema = z.object({
   correlationId: z.string().uuid(),
 });
 
-// ── Presign schemas ──────────────────────────────────────────────────────────
+// â”€â”€ Presign schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const PresignBodySchema = z.object({
   filename: z.string().trim().min(1).max(255).describe("Name of the file to upload"),
@@ -149,14 +150,14 @@ function rejectByStoragePolicy(
 
 const PresignResponseSchema = makeSuccessSchema(
   z.object({
-    url: z.string().url().describe("Presigned S3 PUT URL — upload directly to this URL"),
+    url: z.string().url().describe("Presigned S3 PUT URL â€” upload directly to this URL"),
     objectKey: z.string().describe("S3 object key (use when registering the document)"),
     bucket: z.string().describe("S3 bucket name"),
     expiresAt: z.string().datetime().describe("ISO 8601 expiry timestamp for the presigned URL"),
   }),
 );
 
-// ── Register document schemas ────────────────────────────────────────────────
+// â”€â”€ Register document schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const RegisterDocumentResponseSchema = makeSuccessSchema(
   z.object({
@@ -167,7 +168,7 @@ const RegisterDocumentResponseSchema = makeSuccessSchema(
   }),
 );
 
-// ── Attach evidence schemas ──────────────────────────────────────────────────
+// â”€â”€ Attach evidence schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const AttachEvidenceResponseSchema = makeSuccessSchema(
   z.object({
@@ -178,7 +179,7 @@ const AttachEvidenceResponseSchema = makeSuccessSchema(
 export async function evidenceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── List documents ────────────────────────────────────────────────────────
+  // â”€â”€ List documents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/documents",
     {
@@ -214,7 +215,7 @@ export async function evidenceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Presigned upload URL (rate-limited to 10/min) ──────────────────────────
+  // â”€â”€ Presigned upload URL (rate-limited to 10/min) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/evidence/presign",
     {
@@ -263,7 +264,7 @@ export async function evidenceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Register document (after S3 upload, rate-limited to 30/min) ────────────
+  // â”€â”€ Register document (after S3 upload, rate-limited to 30/min) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/documents",
     {
@@ -386,7 +387,7 @@ export async function evidenceRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Attach evidence command (rate-limited to 30/min) ───────────────────────
+  // â”€â”€ Attach evidence command (rate-limited to 30/min) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/attach-evidence",
     {

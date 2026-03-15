@@ -2,6 +2,7 @@ import { z } from "zod";
 import { CommTaskIdSchema, PrincipalIdSchema, TaskWatcherIdSchema } from "../../shared/ids.js";
 import {
   CommSummaryGroupSchema,
+  makeCommDetailResponseSchema,
   makeCommListResponseSchema,
   makeCommSummaryResponseSchema,
 } from "../shared/response.js";
@@ -27,6 +28,7 @@ export const SummarizeTaskWatchersDataSchema = z.object({
   groups: z.array(CommSummaryGroupSchema),
 });
 
+export const GetTaskWatcherResponseSchema = makeCommDetailResponseSchema(TaskWatcherSchema);
 export const ListTaskWatchersResponseSchema = makeCommListResponseSchema(TaskWatcherSchema);
 export const SummarizeTaskWatchersResponseSchema = makeCommSummaryResponseSchema(
   SummarizeTaskWatchersDataSchema,
@@ -35,6 +37,7 @@ export const SummarizeTaskWatchersResponseSchema = makeCommSummaryResponseSchema
 export type ListTaskWatchersQuery = z.infer<typeof ListTaskWatchersQuerySchema>;
 export type GetTaskWatcherQuery = z.infer<typeof GetTaskWatcherQuerySchema>;
 export type SummarizeTaskWatchersQuery = z.infer<typeof SummarizeTaskWatchersQuerySchema>;
+export type GetTaskWatcherResponse = z.infer<typeof GetTaskWatcherResponseSchema>;
 export type ListTaskWatchersResponse = z.infer<typeof ListTaskWatchersResponseSchema>;
 export type SummarizeTaskWatchersData = z.infer<typeof SummarizeTaskWatchersDataSchema>;
 export type SummarizeTaskWatchersResponse = z.infer<typeof SummarizeTaskWatchersResponseSchema>;

@@ -13,6 +13,7 @@
     "check:boundaries": "node tools/gates/boundaries.mjs",
     "check:catalog": "node tools/gates/catalog.mjs",
     "check:contract-db-sync": "node tools/gates/contract-db-sync.mjs",
+    "check:vitest-config-convention": "node tools/gates/vitest-config-convention.mjs",
     "check:server-clock": "node tools/gates/server-clock.mjs",
     "check:no-unsafe-money-formatting": "node tools/gates/no-unsafe-money-formatting.mjs",
     "check:owners-lint": "node tools/gates/owners-lint.mjs",
@@ -24,6 +25,7 @@
     "check:audit-enforcement": "node tools/gates/audit-enforcement.mjs",
     "check:finance-invariants": "node tools/gates/finance-invariants.mjs",
     "check:page-states": "node tools/gates/page-states.mjs",
+    "check:auth-design-system": "node tools/gates/auth-design-system.mjs",
     "check:ui-shell": "node tools/gates/ui-shell.mjs",
     "check:all": "node tools/run-gates.mjs",
     "scaffold": "node tools/scaffold.mjs",
@@ -71,8 +73,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "e2e": "pnpm -C apps/web e2e",
-    "e2e:auth": "pnpm -C apps/web exec playwright test e2e/smoke.spec.ts --project=chromium --workers=1",
-    "e2e:auth:reuse": "set PLAYWRIGHT_BASE_URL=http://localhost:3000&& pnpm -C apps/web exec playwright test e2e/smoke.spec.ts --project=chromium --workers=1",
+    "e2e:smoke": "pnpm -C apps/web e2e:smoke",
+    "e2e:smoke:matrix": "pnpm -C apps/web e2e:smoke:matrix",
+    "e2e:auth": "pnpm -C apps/web e2e:api-guards",
     "dev:e2e": "turbo run dev --filter=@afenda/web --filter=@afenda/api"
   },
   "devDependencies": {

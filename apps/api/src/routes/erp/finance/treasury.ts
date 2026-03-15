@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -23,7 +23,7 @@ import {
   CurrencyCodeSchema,
   UtcDateTimeSchema,
   CashMovementDirectionValues as DirectionEnumValues,
-  // Wave 2 — Reconciliation
+  // Wave 2 â€” Reconciliation
   OpenReconciliationSessionCommandSchema,
   AddReconciliationMatchCommandSchema,
   RemoveReconciliationMatchCommandSchema,
@@ -31,24 +31,24 @@ import {
   ReconciliationSessionStatusValues,
   ReconciliationTargetTypeValues,
   ReconciliationMatchStatusValues,
-  // Wave 2 — Payment Instructions
+  // Wave 2 â€” Payment Instructions
   CreatePaymentInstructionCommandSchema,
   SubmitPaymentInstructionCommandSchema,
   ApprovePaymentInstructionCommandSchema,
   RejectPaymentInstructionCommandSchema,
   PaymentInstructionStatusValues,
   TreasuryPaymentMethodValues,
-  // Wave 2 — Payment Batches
+  // Wave 2 â€” Payment Batches
   CreatePaymentBatchCommandSchema,
   RequestPaymentBatchReleaseCommandSchema,
   ReleasePaymentBatchCommandSchema,
   PaymentBatchStatusValues,
-  // Wave 3 — Cash Position Snapshot
+  // Wave 3 â€” Cash Position Snapshot
   RequestCashPositionSnapshotCommandSchema,
   CashPositionSnapshotStatusValues,
   CashPositionBucketTypeValues,
   CashPositionSourceTypeValues,
-  // Wave 3.2 — Liquidity Forecast
+  // Wave 3.2 â€” Liquidity Forecast
   CreateLiquidityScenarioCommandSchema,
   ActivateLiquidityScenarioCommandSchema,
   RequestLiquidityForecastCommandSchema,
@@ -61,16 +61,16 @@ import {
   LiquiditySourceDirectionValues,
   UpsertLiquiditySourceFeedCommandSchema,
   UpsertFxRateSnapshotCommandSchema,
-  // Wave 3.3 — Forecast Variance
+  // Wave 3.3 â€” Forecast Variance
   RecordForecastVarianceCommandSchema,
-  // Wave 3.5 — AP/AR → Treasury Bridge
+  // Wave 3.5 â€” AP/AR â†’ Treasury Bridge
   UpsertApDuePaymentProjectionCommandSchema,
   ApDuePaymentProjectionStatusValues,
   ApDuePaymentMethodValues,
   UpsertArExpectedReceiptProjectionCommandSchema,
   ArExpectedReceiptProjectionStatusValues,
   ArExpectedReceiptMethodValues,
-  // Wave 4.1 — In-house Banking + Intercompany Transfers
+  // Wave 4.1 â€” In-house Banking + Intercompany Transfers
   createInternalBankAccountCommandSchema,
   activateInternalBankAccountCommandSchema,
   deactivateInternalBankAccountCommandSchema,
@@ -83,35 +83,6 @@ import {
   internalBankAccountTypeValues,
   intercompanyTransferStatusValues,
   intercompanyTransferPurposeValues,
-  // Wave 4.2 — Netting + Internal Interest
-  createNettingSessionCommandSchema,
-  addNettingSessionItemsCommandSchema,
-  closeNettingSessionCommandSchema,
-  settleNettingSessionCommandSchema,
-  createInternalInterestRateCommandSchema,
-  activateInternalInterestRateCommandSchema,
-  nettingSessionStatusValues,
-  nettingObligationStatusValues,
-  nettingSourceTypeValues,
-  internalInterestRateStatusValues,
-  internalInterestDayCountValues,
-  // Wave 5.2 — Treasury Accounting Bridge
-  createTreasuryAccountingPolicyCommandSchema,
-  activateTreasuryAccountingPolicyCommandSchema,
-  requestTreasuryPostingCommandSchema,
-  // Wave 6.1 — Treasury Policy + Limits
-  createTreasuryPolicyCommandSchema,
-  activateTreasuryPolicyCommandSchema,
-  createTreasuryLimitCommandSchema,
-  activateTreasuryLimitCommandSchema,
-  approveTreasuryLimitOverrideCommandSchema,
-  // Wave 6.2 — Integrations + Market Data
-  createBankConnectorCommandSchema,
-  activateBankConnectorCommandSchema,
-  requestBankConnectorSyncCommandSchema,
-  createMarketDataFeedCommandSchema,
-  activateMarketDataFeedCommandSchema,
-  requestMarketDataRefreshCommandSchema,
 } from "@afenda/contracts";
 import {
   activateBankAccount,
@@ -125,7 +96,7 @@ import {
   listBankStatements,
   markStatementFailed,
   updateBankAccount,
-  // Wave 2 — Reconciliation
+  // Wave 2 â€” Reconciliation
   openReconciliationSession,
   addReconciliationMatch,
   removeReconciliationMatch,
@@ -133,27 +104,27 @@ import {
   listReconciliationSessions,
   getReconciliationSessionById,
   listReconciliationMatches,
-  // Wave 2 — Payment Instructions
+  // Wave 2 â€” Payment Instructions
   createPaymentInstruction,
   submitPaymentInstruction,
   approvePaymentInstruction,
   rejectPaymentInstruction,
   listPaymentInstructions,
   getPaymentInstructionById,
-  // Wave 2 — Payment Batches
+  // Wave 2 â€” Payment Batches
   createPaymentBatch,
   requestPaymentBatchRelease,
   releasePaymentBatch,
   listPaymentBatches,
   getPaymentBatchById,
   listPaymentBatchItems,
-  // Wave 3 — Cash Position Snapshot
+  // Wave 3 â€” Cash Position Snapshot
   requestCashPositionSnapshot,
   listCashPositionSnapshots,
   getCashPositionSnapshotById,
   listCashPositionSnapshotLines,
   listCashPositionSnapshotLineage,
-  // Wave 3.2 — Liquidity Forecast
+  // Wave 3.2 â€” Liquidity Forecast
   createLiquidityScenario,
   activateLiquidityScenario,
   requestLiquidityForecast,
@@ -166,11 +137,11 @@ import {
   listLiquiditySourceFeeds,
   upsertFxRateSnapshot,
   listFxRateSnapshots,
-  // Wave 3.3 — Forecast Variance
+  // Wave 3.3 â€” Forecast Variance
   recordForecastVariance,
   listForecastVarianceByForecastId,
   getForecastVarianceById,
-  // Wave 3.5 — AP/AR → Treasury Bridge
+  // Wave 3.5 â€” AP/AR â†’ Treasury Bridge
   upsertApDuePaymentProjection,
   listApDuePaymentProjections,
   upsertArExpectedReceiptProjection,
@@ -179,27 +150,6 @@ import {
   InternalBankAccountQueries,
   IntercompanyTransferService,
   IntercompanyTransferQueries,
-  NettingSessionService,
-  NettingSessionQueries,
-  InternalInterestRateService,
-  createFxExposure,
-  closeFxExposure,
-  getFxExposureById,
-  listFxExposures,
-  createHedgeDesignation,
-  updateHedgeDesignationStatus,
-  getHedgeDesignationById,
-  listHedgeDesignations,
-  createRevaluationEvent,
-  updateRevaluationEventStatus,
-  getRevaluationEventById,
-  listRevaluationEvents,
-  TreasuryAccountingBridgeService,
-  TreasuryAccountingBridgeQueries,
-  TreasuryPolicyService,
-  TreasuryPolicyQueries,
-  BankConnectorService,
-  BankConnectorQueries,
 } from "@afenda/core";
 import type { OrgScopedContext } from "@afenda/core";
 import {
@@ -208,6 +158,12 @@ import {
   requireAuth,
   requireOrg,
 } from "../../../helpers/responses.js";
+import {
+  buildOrgScopedContext,
+  buildMinimalPolicyContext,
+  buildPolicyContext,
+} from "../../../helpers/context.js";
+import { serializeDate } from "../../../helpers/dates.js";
 
 const BankAccountRowSchema = z.object({
   id: z.string().uuid(),
@@ -270,16 +226,6 @@ function normalizeDateInputToUtcIso(input: string): string {
   return input;
 }
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}) {
-  return { principalId: req.ctx?.principalId };
-}
-
 function mapErrorStatus(code: string) {
   switch (code) {
     case "TREAS_BANK_ACCOUNT_NOT_FOUND":
@@ -322,10 +268,10 @@ function toBankAccountResponse(row: {
     externalBankRef: row.externalBankRef,
     status,
     isPrimary: row.isPrimary,
-    activatedAt: row.activatedAt?.toISOString() ?? null,
-    deactivatedAt: row.deactivatedAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    activatedAt: serializeDate(row.activatedAt),
+    deactivatedAt: serializeDate(row.deactivatedAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -341,30 +287,6 @@ export async function treasuryRoutes(app: FastifyInstance) {
     logger: app.log,
   });
   const intercompanyTransferQueries = new IntercompanyTransferQueries({ db: app.db });
-  const nettingSessionService = new NettingSessionService({
-    db: app.db,
-    logger: app.log,
-  });
-  const nettingSessionQueries = new NettingSessionQueries({ db: app.db });
-  const internalInterestRateService = new InternalInterestRateService({
-    db: app.db,
-    logger: app.log,
-  });
-  const treasuryAccountingBridgeService = new TreasuryAccountingBridgeService({
-    db: app.db,
-    logger: app.log,
-  });
-  const treasuryAccountingBridgeQueries = new TreasuryAccountingBridgeQueries({ db: app.db });
-  const treasuryPolicyService = new TreasuryPolicyService({
-    db: app.db,
-    logger: app.log,
-  });
-  const treasuryPolicyQueries = new TreasuryPolicyQueries({ db: app.db });
-  const bankConnectorService = new BankConnectorService({
-    db: app.db,
-    logger: app.log,
-  });
-  const bankConnectorQueries = new BankConnectorQueries({ db: app.db });
 
   server.post(
     "/commands/create-bank-account",
@@ -394,8 +316,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await createBankAccount(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           accountName: req.body.accountName,
@@ -451,8 +373,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await updateBankAccount(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -500,8 +422,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await activateBankAccount(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -549,8 +471,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await deactivateBankAccount(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -646,9 +568,9 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // Bank Statement routes  (Wave 1.2)
-  // ════════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   const BankStatementRowSchema = z.object({
     id: z.string().uuid(),
@@ -730,15 +652,15 @@ export async function treasuryRoutes(app: FastifyInstance) {
       orgId: row.orgId,
       bankAccountId: row.bankAccountId,
       sourceRef: row.sourceRef,
-      statementDate: row.statementDate.toISOString(),
+      statementDate: serializeDate(row.statementDate)!,
       openingBalance: String(row.openingBalance),
       closingBalance: String(row.closingBalance),
       currencyCode: row.currencyCode,
       status,
       lineCount: row.lineCount,
       failureReason: row.failureReason,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
+      createdAt: serializeDate(row.createdAt)!,
+      updatedAt: serializeDate(row.updatedAt)!,
     };
   }
 
@@ -763,14 +685,14 @@ export async function treasuryRoutes(app: FastifyInstance) {
       orgId: row.orgId,
       statementId: row.statementId,
       lineNumber: row.lineNumber,
-      transactionDate: row.transactionDate.toISOString(),
-      valueDate: row.valueDate?.toISOString() ?? null,
+      transactionDate: serializeDate(row.transactionDate)!,
+      valueDate: serializeDate(row.valueDate),
       description: row.description,
       reference: row.reference,
       amount: String(row.amount),
       direction,
       status,
-      createdAt: row.createdAt.toISOString(),
+      createdAt: serializeDate(row.createdAt)!,
     };
   }
 
@@ -803,8 +725,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await ingestBankStatement(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
@@ -860,8 +782,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
       const result = await markStatementFailed(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.correlationId as CorrelationId,
         {
           ...req.body,
@@ -1006,12 +928,12 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Health check for Treasury domain ─────────────────────────────────────
+  // â”€â”€ Health check for Treasury domain â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   server.get(
     "/treasury",
     {
       schema: {
-        description: "Treasury domain health — confirms routes are mounted.",
+        description: "Treasury domain health â€” confirms routes are mounted.",
         tags: ["Treasury"],
         response: {
           200: makeSuccessSchema(
@@ -1029,7 +951,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 2: Reconciliation Sessions ──────────────────────────────────────────
+  // â”€â”€ Wave 2: Reconciliation Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const ReconciliationSessionRowSchema = z.object({
     id: z.string().uuid(),
@@ -1062,24 +984,24 @@ export async function treasuryRoutes(app: FastifyInstance) {
       ...row,
       closedAt: row.closedAt
         ? row.closedAt instanceof Date
-          ? row.closedAt.toISOString()
+          ? serializeDate(row.closedAt)!
           : row.closedAt
         : null,
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+      createdAt: row.createdAt instanceof Date ? serializeDate(row.createdAt)! : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : row.updatedAt,
     };
   }
 
   function toReconMatchResponse(row: any) {
     return {
       ...row,
-      matchedAt: row.matchedAt instanceof Date ? row.matchedAt.toISOString() : row.matchedAt,
+      matchedAt: row.matchedAt instanceof Date ? serializeDate(row.matchedAt)! : row.matchedAt,
       unmatchedAt: row.unmatchedAt
         ? row.unmatchedAt instanceof Date
-          ? row.unmatchedAt.toISOString()
+          ? serializeDate(row.unmatchedAt)!
           : row.unmatchedAt
         : null,
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+      createdAt: row.createdAt instanceof Date ? serializeDate(row.createdAt)! : row.createdAt,
     };
   }
 
@@ -1334,7 +1256,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 2: Payment Instructions ──────────────────────────────────────────────
+  // â”€â”€ Wave 2: Payment Instructions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const PaymentInstructionRowSchema = z.object({
     id: z.string().uuid(),
@@ -1363,21 +1285,21 @@ export async function treasuryRoutes(app: FastifyInstance) {
       ...row,
       submittedAt: row.submittedAt
         ? row.submittedAt instanceof Date
-          ? row.submittedAt.toISOString()
+          ? serializeDate(row.submittedAt)!
           : row.submittedAt
         : null,
       approvedAt: row.approvedAt
         ? row.approvedAt instanceof Date
-          ? row.approvedAt.toISOString()
+          ? serializeDate(row.approvedAt)!
           : row.approvedAt
         : null,
       rejectedAt: row.rejectedAt
         ? row.rejectedAt instanceof Date
-          ? row.rejectedAt.toISOString()
+          ? serializeDate(row.rejectedAt)!
           : row.rejectedAt
         : null,
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+      createdAt: row.createdAt instanceof Date ? serializeDate(row.createdAt)! : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : row.updatedAt,
     };
   }
 
@@ -1607,7 +1529,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 2: Payment Batches ───────────────────────────────────────────────────
+  // â”€â”€ Wave 2: Payment Batches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const PaymentBatchRowSchema = z.object({
     id: z.string().uuid(),
@@ -1628,7 +1550,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toPaymentBatchResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       requestedReleaseAt: toIso(row.requestedReleaseAt),
@@ -1862,7 +1784,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
         data: {
           data: rows.map((r) => ({
             ...r,
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
           })),
         },
         correlationId: req.correlationId,
@@ -1870,7 +1792,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 3: Cash Position Snapshot ─────────────────────────────────────────
+  // â”€â”€ Wave 3: Cash Position Snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const CashPositionSnapshotRowSchema = z.object({
     id: z.string().uuid(),
@@ -1917,7 +1839,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toCashPositionSnapshotResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       asOfAt: toIso(row.asOfAt),
@@ -2070,7 +1992,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
             ...r,
             bucketType: r.bucketType as (typeof CashPositionBucketTypeValues)[number],
             sourceType: r.sourceType as (typeof CashPositionSourceTypeValues)[number],
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
           })),
         },
         correlationId: req.correlationId,
@@ -2103,7 +2025,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
         data: {
           data: rows.map((r) => ({
             ...r,
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
           })),
         },
         correlationId: req.correlationId,
@@ -2111,7 +2033,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 3.2: Liquidity Forecast ───────────────────────────────────────────
+  // â”€â”€ Wave 3.2: Liquidity Forecast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const LiquiditySourceFeedRowSchema = z.object({
     id: z.string().uuid(),
@@ -2132,7 +2054,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toLiquiditySourceFeedResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       sourceType: row.sourceType as (typeof LiquiditySourceFeedTypeValues)[number],
@@ -2221,7 +2143,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toLiquidityScenarioResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       scenarioType: row.scenarioType as (typeof LiquidityScenarioTypeValues)[number],
@@ -2233,7 +2155,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toLiquidityForecastResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       bucketGranularity:
@@ -2246,7 +2168,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toFxRateSnapshotResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       createdAt: toIso(row.createdAt),
@@ -2642,7 +2564,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
         data: {
           data: rows.map((r) => ({
             ...r,
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
           })),
         },
         correlationId: req.correlationId,
@@ -2677,7 +2599,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
         data: {
           data: rows.map((r) => ({
             ...r,
-            createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
+            createdAt: r.createdAt instanceof Date ? serializeDate(r.createdAt)! : r.createdAt,
           })),
         },
         correlationId: req.correlationId,
@@ -2685,7 +2607,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Wave 3.3: Forecast Variance ──────────────────────────────────────────
+  // â”€â”€ Wave 3.3: Forecast Variance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const ForecastVarianceRowSchema = z.object({
     id: z.string().uuid(),
@@ -2704,7 +2626,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toForecastVarianceResponse(row: any) {
     const toIso = (d: Date | string | null) =>
-      !d ? null : d instanceof Date ? d.toISOString() : d;
+      !d ? null : d instanceof Date ? serializeDate(d)! : d;
     return {
       ...row,
       measuredAt: toIso(row.measuredAt),
@@ -2812,7 +2734,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ─── Wave 3.5: AP/AR → Treasury Bridge ───────────────────────────────────
+  // â”€â”€â”€ Wave 3.5: AP/AR â†’ Treasury Bridge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const ApDuePaymentProjectionRowSchema = z.object({
     id: z.string().uuid(),
@@ -2856,7 +2778,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     "/commands/upsert-ap-due-payment-projection",
     {
       schema: {
-        description: "Upsert an AP due payment projection (AP → Treasury bridge).",
+        description: "Upsert an AP due payment projection (AP â†’ Treasury bridge).",
         tags: ["Treasury"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: UpsertApDuePaymentProjectionCommandSchema,
@@ -2896,8 +2818,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
       ...row,
       paymentMethod: row.paymentMethod as (typeof ApDuePaymentMethodValues)[number] | null,
       status: row.status as (typeof ApDuePaymentProjectionStatusValues)[number],
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+      createdAt: row.createdAt instanceof Date ? serializeDate(row.createdAt)! : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : row.updatedAt,
     };
   }
 
@@ -2937,7 +2859,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     "/commands/upsert-ar-expected-receipt-projection",
     {
       schema: {
-        description: "Upsert an AR expected receipt projection (AR → Treasury bridge).",
+        description: "Upsert an AR expected receipt projection (AR â†’ Treasury bridge).",
         tags: ["Treasury"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         body: UpsertArExpectedReceiptProjectionCommandSchema,
@@ -2977,8 +2899,8 @@ export async function treasuryRoutes(app: FastifyInstance) {
       ...row,
       receiptMethod: row.receiptMethod as (typeof ArExpectedReceiptMethodValues)[number] | null,
       status: row.status as (typeof ArExpectedReceiptProjectionStatusValues)[number],
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+      createdAt: row.createdAt instanceof Date ? serializeDate(row.createdAt)! : row.createdAt,
+      updatedAt: row.updatedAt instanceof Date ? serializeDate(row.updatedAt)! : row.updatedAt,
     };
   }
 
@@ -3013,7 +2935,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
     },
   );
 
-  // ─── Wave 4.1: In-house Banking + Intercompany Transfers ───────────────
+  // â”€â”€â”€ Wave 4.1: In-house Banking + Intercompany Transfers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const CreateInternalBankAccountApiSchema = createInternalBankAccountCommandSchema.omit({
     orgId: true,
@@ -3109,7 +3031,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toInternalBankAccountResponse(row: any) {
     const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
+      !value ? null : value instanceof Date ? serializeDate(value)! : value;
     return {
       ...row,
       accountType: row.accountType as (typeof internalBankAccountTypeValues)[number],
@@ -3124,7 +3046,7 @@ export async function treasuryRoutes(app: FastifyInstance) {
 
   function toIntercompanyTransferResponse(row: any) {
     const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
+      !value ? null : value instanceof Date ? serializeDate(value)! : value;
     return {
       ...row,
       purpose: row.purpose as (typeof intercompanyTransferPurposeValues)[number],
@@ -3653,2284 +3575,6 @@ export async function treasuryRoutes(app: FastifyInstance) {
       }
 
       return { data: toIntercompanyTransferResponse(found), correlationId: req.correlationId };
-    },
-  );
-
-  // ─── Wave 4.2: Netting + Internal Interest ───────────────────────────────
-
-  const CreateNettingSessionApiSchema = createNettingSessionCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const AddNettingSessionItemsApiSchema = addNettingSessionItemsCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const CloseNettingSessionApiSchema = closeNettingSessionCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const SettleNettingSessionApiSchema = settleNettingSessionCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const CreateInternalInterestRateApiSchema = createInternalInterestRateCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ActivateInternalInterestRateApiSchema = activateInternalInterestRateCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const NettingSessionRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    sessionNumber: z.string(),
-    currencyCode: z.string(),
-    nettingDate: z.string().date(),
-    settlementDate: z.string().date(),
-    status: z.enum(nettingSessionStatusValues),
-    totalObligationCount: z.number().int().nonnegative(),
-    totalGrossPayableMinor: z.string(),
-    totalGrossReceivableMinor: z.string(),
-    totalNettableMinor: z.string(),
-    sourceVersion: z.string(),
-    closedAt: z.string().datetime().nullable(),
-    settledAt: z.string().datetime().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const NettingSessionItemRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    nettingSessionId: z.string().uuid(),
-    sourceType: z.enum(nettingSourceTypeValues),
-    sourceId: z.string().uuid(),
-    fromLegalEntityId: z.string().uuid(),
-    toLegalEntityId: z.string().uuid(),
-    currencyCode: z.string(),
-    amountMinor: z.string(),
-    status: z.enum(nettingObligationStatusValues),
-    createdAt: z.string().datetime(),
-  });
-
-  const InternalInterestRateRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    code: z.string(),
-    legalEntityId: z.string().uuid().nullable(),
-    currencyCode: z.string(),
-    annualRateBps: z.number().int().nonnegative(),
-    dayCountConvention: z.enum(internalInterestDayCountValues),
-    effectiveFrom: z.string().date(),
-    effectiveTo: z.string().date().nullable(),
-    status: z.enum(internalInterestRateStatusValues),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  function toNettingSessionResponse(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    return {
-      ...row,
-      status: row.status as (typeof nettingSessionStatusValues)[number],
-      closedAt: toIso(row.closedAt),
-      settledAt: toIso(row.settledAt),
-      createdAt: toIso(row.createdAt),
-      updatedAt: toIso(row.updatedAt),
-    };
-  }
-
-  function toNettingSessionItemResponse(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    return {
-      ...row,
-      sourceType: row.sourceType as (typeof nettingSourceTypeValues)[number],
-      status: row.status as (typeof nettingObligationStatusValues)[number],
-      createdAt: toIso(row.createdAt),
-    };
-  }
-
-  function toInternalInterestRateResponse(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    return {
-      ...row,
-      dayCountConvention: row.dayCountConvention as (typeof internalInterestDayCountValues)[number],
-      status: row.status as (typeof internalInterestRateStatusValues)[number],
-      createdAt: toIso(row.createdAt),
-      updatedAt: toIso(row.updatedAt),
-    };
-  }
-
-  function mapWave42ErrorStatus(code: string) {
-    switch (code) {
-      case "TREASURY_NETTING_SESSION_NOT_FOUND":
-      case "TREASURY_INTERNAL_INTEREST_RATE_NOT_FOUND":
-        return 404 as const;
-      case "TREASURY_NETTING_SESSION_NUMBER_EXISTS":
-      case "TREASURY_INTERNAL_INTEREST_RATE_CODE_EXISTS":
-        return 409 as const;
-      case "TREASURY_NETTING_SESSION_ILLEGAL_TRANSITION":
-      case "TREASURY_NETTING_SOURCE_TRANSFER_NOT_SETTLED":
-      case "TREASURY_NETTING_SESSION_CURRENCY_MISMATCH":
-      case "TREASURY_NETTING_SESSION_UNBALANCED":
-        return 422 as const;
-      default:
-        return 400 as const;
-    }
-  }
-
-  server.post(
-    "/commands/create-netting-session",
-    {
-      schema: {
-        description: "Create a netting session in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateNettingSessionApiSchema,
-        response: {
-          201: makeSuccessSchema(NettingSessionRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await nettingSessionService.createNettingSession({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: toNettingSessionResponse(result.data),
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/add-netting-session-items",
-    {
-      schema: {
-        description: "Add settled intercompany transfers into a netting session.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: AddNettingSessionItemsApiSchema,
-        response: {
-          200: makeSuccessSchema(NettingSessionRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await nettingSessionService.addNettingSessionItems({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: toNettingSessionResponse(result.data), correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/close-netting-session",
-    {
-      schema: {
-        description: "Close an open netting session after position reconciliation.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CloseNettingSessionApiSchema,
-        response: {
-          200: makeSuccessSchema(NettingSessionRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await nettingSessionService.closeNettingSession({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: toNettingSessionResponse(result.data), correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/settle-netting-session",
-    {
-      schema: {
-        description: "Settle a closed netting session.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: SettleNettingSessionApiSchema,
-        response: {
-          200: makeSuccessSchema(NettingSessionRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await nettingSessionService.settleNettingSession({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: toNettingSessionResponse(result.data), correlationId: req.correlationId };
-    },
-  );
-
-  server.get(
-    "/treasury/netting-sessions",
-    {
-      schema: {
-        description: "List netting sessions.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(NettingSessionRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await nettingSessionQueries.listNettingSessions(orgId);
-      return {
-        data: { data: rows.map(toNettingSessionResponse) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/netting-sessions/:id/items",
-    {
-      schema: {
-        description: "List netting session items.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        params: z.object({ id: z.string().uuid() }),
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(NettingSessionItemRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await nettingSessionQueries.listNettingSessionItems(orgId, req.params.id);
-      return {
-        data: { data: rows.map(toNettingSessionItemResponse) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.post(
-    "/commands/create-internal-interest-rate",
-    {
-      schema: {
-        description: "Create an internal interest rate policy in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateInternalInterestRateApiSchema,
-        response: {
-          201: makeSuccessSchema(InternalInterestRateRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await internalInterestRateService.createInternalInterestRate({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: toInternalInterestRateResponse(result.data),
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-internal-interest-rate",
-    {
-      schema: {
-        description: "Activate an internal interest rate policy.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateInternalInterestRateApiSchema,
-        response: {
-          200: makeSuccessSchema(InternalInterestRateRowSchema),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await internalInterestRateService.activateInternalInterestRate({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(mapWave42ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: toInternalInterestRateResponse(result.data),
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/internal-interest-rates",
-    {
-      schema: {
-        description: "List internal interest rates.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(InternalInterestRateRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await nettingSessionQueries.listInternalInterestRates(orgId);
-      return {
-        data: { data: rows.map(toInternalInterestRateResponse) },
-
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // ─── Wave 5.1: FX Management + Revaluation ───────────────────────────────
-
-  const FxExposureRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    exposureNumber: z.string(),
-    exposureDate: z.string().date(),
-    valueDate: z.string().date(),
-    sourceType: z.string(),
-    sourceId: z.string().uuid(),
-    baseCurrencyCode: z.string(),
-    quoteCurrencyCode: z.string(),
-    direction: z.enum(["buy", "sell"]),
-    grossAmountMinor: z.string(),
-    status: z.enum(["open", "partially_hedged", "fully_hedged", "closed", "cancelled"]),
-    sourceVersion: z.string(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const HedgeDesignationRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    fxExposureId: z.string().uuid(),
-    hedgeNumber: z.string(),
-    hedgeInstrumentType: z.enum(["fx_forward", "fx_swap", "natural_hedge", "manual_proxy"]),
-    hedgeRelationshipType: z.enum(["cash_flow_hedge", "fair_value_hedge", "economic_hedge"]),
-    designatedAmountMinor: z.string(),
-    status: z.enum(["draft", "designated", "de-designated", "expired"]),
-    startDate: z.string().date(),
-    endDate: z.string().date().nullable(),
-    designationMemo: z.string().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const RevaluationEventRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    fxExposureId: z.string().uuid(),
-    hedgeDesignationId: z.string().uuid().nullable(),
-    valuationDate: z.string().date(),
-    priorRateSnapshotId: z.string().uuid().nullable(),
-    currentRateSnapshotId: z.string().uuid(),
-    carryingAmountMinor: z.string(),
-    revaluedAmountMinor: z.string(),
-    revaluationDeltaMinor: z.string(),
-    status: z.enum(["pending", "calculated", "posted", "failed"]),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  // Omit orgId from API schemas (auto-populated from auth context)
-  const CreateFxExposureApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    sourceType: z.enum([
-      "ap_due_payment_projection",
-      "ar_expected_receipt_projection",
-      "intercompany_transfer",
-      "manual_exposure",
-    ]),
-    sourceId: z.string().uuid(),
-    exposureNumber: z.string().trim().min(1).max(64),
-    exposureDate: z.string().date(),
-    valueDate: z.string().date(),
-    baseCurrencyCode: z.string().trim().length(3),
-    quoteCurrencyCode: z.string().trim().length(3),
-    direction: z.enum(["buy", "sell"]),
-    grossAmountMinor: z.string(),
-    sourceVersion: z.string().trim().min(1).max(128),
-  });
-
-  const CloseFxExposureApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    fxExposureId: z.string().uuid(),
-  });
-
-  const DesignateHedgeApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    hedgeNumber: z.string().trim().min(1).max(64),
-    fxExposureId: z.string().uuid(),
-    hedgeInstrumentType: z.enum(["fx_forward", "fx_swap", "natural_hedge", "manual_proxy"]),
-    hedgeRelationshipType: z.enum(["cash_flow_hedge", "fair_value_hedge", "economic_hedge"]),
-    designatedAmountMinor: z.string(),
-    startDate: z.string().date(),
-    endDate: z.string().date().nullable().optional(),
-    designationMemo: z.string().trim().max(1000).nullable().optional(),
-  });
-
-  const DeDesignateHedgeApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    hedgeDesignationId: z.string().uuid(),
-  });
-
-  const CreateRevaluationEventApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    fxExposureId: z.string().uuid(),
-    hedgeDesignationId: z.string().uuid().nullable().optional(),
-    valuationDate: z.string().date(),
-    priorRateSnapshotId: z.string().uuid().nullable().optional(),
-    currentRateSnapshotId: z.string().uuid(),
-    carryingAmountMinor: z.string(),
-    revaluedAmountMinor: z.string(),
-    revaluationDeltaMinor: z.string(),
-  });
-
-  const UpdateRevaluationEventApiSchema = z.object({
-    idempotencyKey: z.string().trim().min(8).max(128),
-    revaluationEventId: z.string().uuid(),
-    status: z.enum(["pending", "calculated", "posted", "failed"]),
-  });
-
-  function toFxExposureResponse(row: any) {
-    return {
-      id: row.id,
-      orgId: row.orgId,
-      exposureNumber: row.exposureNumber,
-      exposureDate: row.exposureDate,
-      valueDate: row.valueDate,
-      sourceType: row.sourceType,
-      sourceId: row.sourceId,
-      baseCurrencyCode: row.baseCurrencyCode,
-      quoteCurrencyCode: row.quoteCurrencyCode,
-      direction: row.direction,
-      grossAmountMinor: row.grossAmountMinor,
-      status: row.status,
-      sourceVersion: row.sourceVersion,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
-
-  function toHedgeDesignationResponse(row: any) {
-    return {
-      id: row.id,
-      orgId: row.orgId,
-      fxExposureId: row.fxExposureId,
-      hedgeNumber: row.hedgeNumber,
-      hedgeInstrumentType: row.hedgeInstrumentType,
-      hedgeRelationshipType: row.hedgeRelationshipType,
-      designatedAmountMinor: row.designatedAmountMinor,
-      status: row.status,
-      startDate: row.startDate,
-      endDate: row.endDate,
-      designationMemo: row.designationMemo,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
-
-  function toRevaluationEventResponse(row: any) {
-    return {
-      id: row.id,
-      orgId: row.orgId,
-      fxExposureId: row.fxExposureId,
-      hedgeDesignationId: row.hedgeDesignationId,
-      valuationDate: row.valuationDate,
-      priorRateSnapshotId: row.priorRateSnapshotId,
-      currentRateSnapshotId: row.currentRateSnapshotId,
-      carryingAmountMinor: row.carryingAmountMinor,
-      revaluedAmountMinor: row.revaluedAmountMinor,
-      revaluationDeltaMinor: row.revaluationDeltaMinor,
-      status: row.status,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
-
-  function mapWave51ErrorStatus(code: string) {
-    switch (code) {
-      case "TREAS_FX_EXPOSURE_INVALID_CURRENCY_PAIR":
-      case "TREAS_FX_EXPOSURE_NOT_FOUND":
-      case "TREAS_FX_EXPOSURE_CANNOT_CLOSE":
-      case "TREAS_HEDGE_DESIGNATION_NOT_FOUND":
-      case "TREAS_HEDGE_INVALID_STATUS_TRANSITION":
-      case "TREAS_HEDGE_ALREADY_ACTIVE":
-      case "TREAS_REVALUATION_EVENT_NOT_FOUND":
-      case "TREAS_REVALUATION_INVALID_STATUS_TRANSITION":
-      case "TREAS_REVALUATION_INVALID_DELTA":
-        return 400 as const;
-      default:
-        return 400 as const;
-    }
-  }
-
-  // FX Exposure Routes
-  server.post(
-    "/commands/create-fx-exposure",
-    {
-      schema: {
-        description: "Create a new FX exposure.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateFxExposureApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await createFxExposure(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/close-fx-exposure",
-    {
-      schema: {
-        description: "Close an FX exposure.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CloseFxExposureApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await closeFxExposure(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // Hedge Designation Routes
-  server.post(
-    "/commands/designate-hedge",
-    {
-      schema: {
-        description: "Create a hedge designation for an FX exposure.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: DesignateHedgeApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await createHedgeDesignation(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/de-designate-hedge",
-    {
-      schema: {
-        description: "Remove a hedge designation.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: DeDesignateHedgeApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await updateHedgeDesignationStatus(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/fx-exposures",
-    {
-      schema: {
-        description: "List FX exposures.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        querystring: z.object({
-          status: z.string().optional(),
-          sourceType: z.string().optional(),
-          baseCurrencyCode: z.string().optional(),
-          quoteCurrencyCode: z.string().optional(),
-        }),
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(FxExposureRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const rows = await listFxExposures(app.db, orgId as OrgId, req.query);
-      return {
-        data: { data: rows.map(toFxExposureResponse) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/fx-exposures/:id",
-    {
-      schema: {
-        description: "Get FX exposure by ID.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        params: z.object({ id: z.string().uuid() }),
-        response: {
-          200: makeSuccessSchema(FxExposureRowSchema),
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const row = await getFxExposureById(app.db, orgId as OrgId, req.params.id);
-      if (!row) {
-        return reply.status(404).send({
-          error: {
-            code: "TREAS_FX_EXPOSURE_NOT_FOUND",
-            message: "FX exposure not found",
-          },
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: toFxExposureResponse(row),
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/hedge-designations",
-    {
-      schema: {
-        description: "List hedge designations.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        querystring: z.object({
-          fxExposureId: z.string().uuid().optional(),
-          status: z.string().optional(),
-          hedgeInstrumentType: z.string().optional(),
-          hedgeRelationshipType: z.string().optional(),
-        }),
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(HedgeDesignationRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const rows = await listHedgeDesignations(app.db, orgId as OrgId, req.query);
-      return {
-        data: { data: rows.map(toHedgeDesignationResponse) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/hedge-designations/:id",
-    {
-      schema: {
-        description: "Get hedge designation by ID.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        params: z.object({ id: z.string().uuid() }),
-        response: {
-          200: makeSuccessSchema(HedgeDesignationRowSchema),
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const row = await getHedgeDesignationById(app.db, orgId as OrgId, req.params.id);
-      if (!row) {
-        return reply.status(404).send({
-          error: {
-            code: "TREAS_HEDGE_DESIGNATION_NOT_FOUND",
-            message: "Hedge designation not found",
-          },
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: toHedgeDesignationResponse(row),
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/revaluation-events",
-    {
-      schema: {
-        description: "List revaluation events.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        querystring: z.object({
-          fxExposureId: z.string().uuid().optional(),
-          status: z.string().optional(),
-          valuationDateFrom: z.string().date().optional(),
-          valuationDateTo: z.string().date().optional(),
-        }),
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(RevaluationEventRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const rows = await listRevaluationEvents(app.db, orgId as OrgId, req.query);
-      return {
-        data: { data: rows.map(toRevaluationEventResponse) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/revaluation-events/:id",
-    {
-      schema: {
-        description: "Get revaluation event by ID.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        params: z.object({ id: z.string().uuid() }),
-        response: {
-          200: makeSuccessSchema(RevaluationEventRowSchema),
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const row = await getRevaluationEventById(app.db, orgId as OrgId, req.params.id);
-      if (!row) {
-        return reply.status(404).send({
-          error: {
-            code: "TREAS_REVALUATION_EVENT_NOT_FOUND",
-            message: "Revaluation event not found",
-          },
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: toRevaluationEventResponse(row),
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // Revaluation Event Routes
-  server.post(
-    "/commands/create-revaluation-event",
-    {
-      schema: {
-        description: "Create a revaluation event for FX exposure.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateRevaluationEventApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await createRevaluationEvent(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/update-revaluation-event-status",
-    {
-      schema: {
-        description: "Update revaluation event status.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: UpdateRevaluationEventApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await updateRevaluationEventStatus(
-        app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
-        req.correlationId as CorrelationId,
-        { ...req.body, orgId } as any,
-      );
-
-      if (!result.ok) {
-        return reply.status(mapWave51ErrorStatus(result.error.code)).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return {
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // ─── Wave 5.2: Treasury Accounting Bridge ───────────────────────────────
-
-  const CreateTreasuryAccountingPolicyApiSchema = createTreasuryAccountingPolicyCommandSchema.omit({
-    orgId: true,
-  });
-
-  const ActivateTreasuryAccountingPolicyApiSchema =
-    activateTreasuryAccountingPolicyCommandSchema.omit({
-      orgId: true,
-    });
-
-  const RequestTreasuryPostingApiSchema = requestTreasuryPostingCommandSchema.omit({
-    orgId: true,
-  });
-
-  const TreasuryAccountingPolicyRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    policyCode: z.string(),
-    name: z.string(),
-    scopeType: z.string(),
-    debitAccountCode: z.string(),
-    creditAccountCode: z.string(),
-    status: z.string(),
-    effectiveFrom: z.string().date(),
-    effectiveTo: z.string().date().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const TreasuryPostingBridgeRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    sourceType: z.string(),
-    sourceId: z.string().uuid(),
-    treasuryAccountingPolicyId: z.string().uuid(),
-    debitAccountCode: z.string(),
-    creditAccountCode: z.string(),
-    amountMinor: z.string(),
-    currencyCode: z.string(),
-    status: z.string(),
-    correlationId: z.string(),
-    postedJournalEntryId: z.string().uuid().nullable(),
-    failureReason: z.string().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  function toWave52Response(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    const toDateOnly = (value: Date | string | null) => {
-      if (!value) return null;
-      if (value instanceof Date) return value.toISOString().slice(0, 10);
-      return value;
-    };
-
-    return {
-      ...row,
-      createdAt: toIso(row.createdAt),
-      updatedAt: toIso(row.updatedAt),
-      effectiveFrom: toDateOnly(row.effectiveFrom),
-      effectiveTo: toDateOnly(row.effectiveTo),
-    };
-  }
-
-  server.post(
-    "/commands/create-treasury-accounting-policy",
-    {
-      schema: {
-        description: "Create a treasury accounting policy in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateTreasuryAccountingPolicyApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryAccountingBridgeService.createPolicy({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_ACCOUNTING_POLICY_CODE_EXISTS" ? 409 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-treasury-accounting-policy",
-    {
-      schema: {
-        description: "Activate a treasury accounting policy.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateTreasuryAccountingPolicyApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryAccountingBridgeService.activatePolicy({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_ACCOUNTING_POLICY_NOT_FOUND" ? 404 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/request-treasury-posting",
-    {
-      schema: {
-        description: "Request asynchronous treasury posting to GL.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: RequestTreasuryPostingApiSchema,
-        response: {
-          202: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryAccountingBridgeService.requestPosting({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_ACCOUNTING_POLICY_NOT_ACTIVE" ? 422 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(202).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.get(
-    "/treasury/accounting-policies",
-    {
-      schema: {
-        description: "List treasury accounting policies.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(TreasuryAccountingPolicyRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await treasuryAccountingBridgeQueries.listPolicies(orgId);
-      return {
-        data: { data: rows.map(toWave52Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/posting-bridges",
-    {
-      schema: {
-        description: "List treasury posting bridge requests.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(TreasuryPostingBridgeRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await treasuryAccountingBridgeQueries.listPostingRequests(orgId);
-      return {
-        data: { data: rows.map(toWave52Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // ─── Wave 6.1: Treasury Policy + Limits ──────────────────────────────────
-
-  const CreateTreasuryPolicyApiSchema = createTreasuryPolicyCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ActivateTreasuryPolicyApiSchema = activateTreasuryPolicyCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const CreateTreasuryLimitApiSchema = createTreasuryLimitCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ActivateTreasuryLimitApiSchema = activateTreasuryLimitCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ApproveTreasuryLimitOverrideApiSchema = approveTreasuryLimitOverrideCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const TreasuryPolicyRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    code: z.string(),
-    name: z.string(),
-    scopeType: z.string(),
-    legalEntityId: z.string().uuid().nullable(),
-    currencyCode: z.string().nullable(),
-    allowOverride: z.boolean(),
-    status: z.enum(["draft", "active", "inactive"]),
-    effectiveFrom: z.string().date(),
-    effectiveTo: z.string().date().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const TreasuryLimitRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    policyId: z.string().uuid(),
-    code: z.string(),
-    scopeType: z.string(),
-    legalEntityId: z.string().uuid().nullable(),
-    currencyCode: z.string().nullable(),
-    metric: z.string(),
-    thresholdMinor: z.string(),
-    hardBlock: z.boolean(),
-    status: z.enum(["draft", "active", "inactive"]),
-    effectiveFrom: z.string().date(),
-    effectiveTo: z.string().date().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const TreasuryLimitBreachRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    treasuryLimitId: z.string().uuid(),
-    sourceType: z.string(),
-    sourceId: z.string().uuid(),
-    measuredValueMinor: z.string(),
-    thresholdMinor: z.string(),
-    hardBlock: z.boolean(),
-    overrideRequested: z.boolean(),
-    overrideApprovedByUserId: z.string().uuid().nullable(),
-    overrideReason: z.string().nullable(),
-    correlationId: z.string(),
-    createdAt: z.string().datetime(),
-  });
-
-  function toWave61Response(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    const toDateOnly = (value: Date | string | null) => {
-      if (!value) return null;
-      if (value instanceof Date) return value.toISOString().slice(0, 10);
-      return value;
-    };
-
-    return {
-      ...row,
-      createdAt: toIso(row.createdAt),
-      updatedAt: toIso(row.updatedAt),
-      effectiveFrom: toDateOnly(row.effectiveFrom),
-      effectiveTo: toDateOnly(row.effectiveTo),
-    };
-  }
-
-  server.post(
-    "/commands/create-treasury-policy",
-    {
-      schema: {
-        description: "Create a treasury policy in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateTreasuryPolicyApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryPolicyService.createPolicy({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(400).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-treasury-policy",
-    {
-      schema: {
-        description: "Activate a treasury policy.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateTreasuryPolicyApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryPolicyService.activatePolicy({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(400).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/create-treasury-limit",
-    {
-      schema: {
-        description: "Create a treasury limit in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateTreasuryLimitApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryPolicyService.createLimit({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(400).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-treasury-limit",
-    {
-      schema: {
-        description: "Activate a treasury limit.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateTreasuryLimitApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryPolicyService.activateLimit({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(400).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/approve-treasury-limit-override",
-    {
-      schema: {
-        description: "Approve an override on a non-hard-block treasury limit breach.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ApproveTreasuryLimitOverrideApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-          422: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await treasuryPolicyService.approveOverride({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        return reply.status(400).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.get(
-    "/treasury/policies",
-    {
-      schema: {
-        description: "List treasury policies.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(TreasuryPolicyRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await treasuryPolicyQueries.listPolicies(orgId);
-      return {
-        data: { data: rows.map(toWave61Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/limits",
-    {
-      schema: {
-        description: "List treasury limits.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(TreasuryLimitRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await treasuryPolicyQueries.listLimits(orgId);
-      return {
-        data: { data: rows.map(toWave61Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/limit-breaches",
-    {
-      schema: {
-        description: "List treasury limit breaches.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(TreasuryLimitBreachRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await treasuryPolicyQueries.listBreaches(orgId);
-      return {
-        data: { data: rows.map(toWave61Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  // ─── Wave 6.2: Integrations + Market Data ────────────────────────────────
-
-  const CreateBankConnectorApiSchema = createBankConnectorCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ActivateBankConnectorApiSchema = activateBankConnectorCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const RequestBankConnectorSyncApiSchema = requestBankConnectorSyncCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const CreateMarketDataFeedApiSchema = createMarketDataFeedCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const ActivateMarketDataFeedApiSchema = activateMarketDataFeedCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const RequestMarketDataRefreshApiSchema = requestMarketDataRefreshCommandSchema.omit({
-    orgId: true,
-    actorUserId: true,
-    correlationId: true,
-  });
-
-  const BankConnectorRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    code: z.string(),
-    connectorType: z.string(),
-    bankName: z.string(),
-    legalEntityId: z.string().uuid().nullable(),
-    status: z.string(),
-    health: z.string(),
-    endpointRef: z.string().nullable(),
-    lastSyncRequestedAt: z.string().datetime().nullable(),
-    lastSyncSucceededAt: z.string().datetime().nullable(),
-    lastSyncFailedAt: z.string().datetime().nullable(),
-    lastErrorCode: z.string().nullable(),
-    lastErrorMessage: z.string().nullable(),
-    consecutiveFailureCount: z.number().int().nonnegative(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const BankConnectorExecutionRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    bankConnectorId: z.string().uuid(),
-    executionType: z.string(),
-    direction: z.string(),
-    correlationId: z.string(),
-    status: z.string(),
-    retryCount: z.number().int().nonnegative(),
-    requestPayloadRef: z.string().nullable(),
-    responsePayloadRef: z.string().nullable(),
-    errorCode: z.string().nullable(),
-    errorMessage: z.string().nullable(),
-    startedAt: z.string().datetime().nullable(),
-    finishedAt: z.string().datetime().nullable(),
-    createdAt: z.string().datetime(),
-  });
-
-  const MarketDataFeedRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    code: z.string(),
-    providerCode: z.string(),
-    feedType: z.string(),
-    baseCurrencyCode: z.string().nullable(),
-    quoteCurrencyCode: z.string().nullable(),
-    status: z.string(),
-    freshnessMinutes: z.number().int().positive(),
-    lastRefreshRequestedAt: z.string().datetime().nullable(),
-    lastRefreshSucceededAt: z.string().datetime().nullable(),
-    lastRefreshFailedAt: z.string().datetime().nullable(),
-    lastErrorCode: z.string().nullable(),
-    lastErrorMessage: z.string().nullable(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
-  });
-
-  const MarketDataObservationRowSchema = z.object({
-    id: z.string().uuid(),
-    orgId: z.string().uuid(),
-    marketDataFeedId: z.string().uuid(),
-    observationDate: z.string().date(),
-    valueScaled: z.string(),
-    scale: z.number().int().positive(),
-    sourceVersion: z.string(),
-    createdAt: z.string().datetime(),
-  });
-
-  function toWave62Response(row: any) {
-    const toIso = (value: Date | string | null) =>
-      !value ? null : value instanceof Date ? value.toISOString() : value;
-    const toDateOnly = (value: Date | string | null) => {
-      if (!value) return null;
-      if (value instanceof Date) return value.toISOString().slice(0, 10);
-      return value;
-    };
-
-    return {
-      ...row,
-      createdAt: toIso(row.createdAt),
-      updatedAt: toIso(row.updatedAt),
-      startedAt: toIso(row.startedAt),
-      finishedAt: toIso(row.finishedAt),
-      lastSyncRequestedAt: toIso(row.lastSyncRequestedAt),
-      lastSyncSucceededAt: toIso(row.lastSyncSucceededAt),
-      lastSyncFailedAt: toIso(row.lastSyncFailedAt),
-      lastRefreshRequestedAt: toIso(row.lastRefreshRequestedAt),
-      lastRefreshSucceededAt: toIso(row.lastRefreshSucceededAt),
-      lastRefreshFailedAt: toIso(row.lastRefreshFailedAt),
-      observationDate: toDateOnly(row.observationDate),
-    };
-  }
-
-  server.post(
-    "/commands/create-bank-connector",
-    {
-      schema: {
-        description: "Create a bank connector in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateBankConnectorApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.createBankConnector({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_BANK_CONNECTOR_CODE_EXISTS" ? 409 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-bank-connector",
-    {
-      schema: {
-        description: "Activate a bank connector.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateBankConnectorApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.activateBankConnector({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_BANK_CONNECTOR_NOT_FOUND" ? 404 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/request-bank-connector-sync",
-    {
-      schema: {
-        description: "Request a connector execution and enqueue async processing.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: RequestBankConnectorSyncApiSchema,
-        response: {
-          202: makeSuccessSchema(
-            z.object({ id: z.string().uuid(), executionId: z.string().uuid() }),
-          ),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.requestBankConnectorSync({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_BANK_CONNECTOR_NOT_FOUND" ? 404 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(202).send({
-        data: result.data,
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/create-market-data-feed",
-    {
-      schema: {
-        description: "Create a market data feed in draft state.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: CreateMarketDataFeedApiSchema,
-        response: {
-          201: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          409: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.createMarketDataFeed({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_MARKET_DATA_FEED_CODE_EXISTS" ? 409 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(201).send({
-        data: { id: result.data.id },
-        correlationId: req.correlationId,
-      });
-    },
-  );
-
-  server.post(
-    "/commands/activate-market-data-feed",
-    {
-      schema: {
-        description: "Activate a market data feed.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: ActivateMarketDataFeedApiSchema,
-        response: {
-          200: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.activateMarketDataFeed({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_MARKET_DATA_FEED_NOT_FOUND" ? 404 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return { data: { id: result.data.id }, correlationId: req.correlationId };
-    },
-  );
-
-  server.post(
-    "/commands/request-market-data-refresh",
-    {
-      schema: {
-        description: "Request market data feed refresh and enqueue async processing.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: RequestMarketDataRefreshApiSchema,
-        response: {
-          202: makeSuccessSchema(z.object({ id: z.string().uuid() })),
-          400: ApiErrorResponseSchema,
-          401: ApiErrorResponseSchema,
-          404: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      const auth = requireAuth(req, reply);
-      if (!auth) return;
-
-      const result = await bankConnectorService.requestMarketDataRefresh({
-        ...req.body,
-        orgId,
-        actorUserId: auth.principalId,
-        correlationId: req.correlationId,
-      });
-
-      if (!result.ok) {
-        const status = result.error.code === "TREASURY_MARKET_DATA_FEED_NOT_FOUND" ? 404 : 400;
-        return reply.status(status).send({
-          error: result.error,
-          correlationId: req.correlationId,
-        });
-      }
-
-      return reply.status(202).send({ data: result.data, correlationId: req.correlationId });
-    },
-  );
-
-  server.get(
-    "/treasury/bank-connectors",
-    {
-      schema: {
-        description: "List bank connectors.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(BankConnectorRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await bankConnectorQueries.listBankConnectors(orgId);
-      return {
-        data: { data: rows.map(toWave62Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/bank-connector-executions",
-    {
-      schema: {
-        description: "List bank connector executions.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(BankConnectorExecutionRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await bankConnectorQueries.listBankConnectorExecutions(orgId);
-      return {
-        data: { data: rows.map(toWave62Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/market-data-feeds",
-    {
-      schema: {
-        description: "List market data feeds.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(MarketDataFeedRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await bankConnectorQueries.listMarketDataFeeds(orgId);
-      return {
-        data: { data: rows.map(toWave62Response) },
-        correlationId: req.correlationId,
-      };
-    },
-  );
-
-  server.get(
-    "/treasury/market-data-observations",
-    {
-      schema: {
-        description: "List market data observations.",
-        tags: ["Treasury"],
-        security: [{ bearerAuth: [] }, { devAuth: [] }],
-        response: {
-          200: makeSuccessSchema(z.object({ data: z.array(MarketDataObservationRowSchema) })),
-          401: ApiErrorResponseSchema,
-        },
-      },
-    },
-    async (req, reply) => {
-      const orgId = requireOrg(req, reply);
-      if (!orgId) return;
-      requireAuth(req, reply);
-
-      const rows = await bankConnectorQueries.listMarketDataObservations(orgId);
-      return {
-        data: { data: rows.map(toWave62Response) },
-        correlationId: req.correlationId,
-      };
     },
   );
 }

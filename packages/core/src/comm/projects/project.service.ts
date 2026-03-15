@@ -27,7 +27,7 @@ import type {
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface CommProjectPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type CommProjectServiceError = {

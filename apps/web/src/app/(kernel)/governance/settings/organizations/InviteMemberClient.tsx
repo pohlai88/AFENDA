@@ -1,7 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
   Card,
   CardContent,
@@ -15,38 +18,89 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Spinner,
+  toast,
 } from "@afenda/ui";
-import {
-  listOrganizationsAction,
-  inviteMemberAction,
-  type OrganizationListItem,
-  type InviteMemberResult,
-} from "@/app/auth/_actions/create-organization";
 import { UserPlus } from "lucide-react";
 
-const INITIAL_STATE: InviteMemberResult = { ok: false, error: "" };
+import {
+  inviteNeonClientOrganizationMember,
+  neonClientCapabilities,
+  useActiveOrganization,
+} from "@/lib/auth/client";
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string" && message.trim()) {
+      return message;
+    }
+  }
+
+  return fallback;
+}
 
 /**
  * Invite a member to an organization (Neon Auth auth.organization.inviteMember) — Settings > Organizations.
  */
-export function InviteMemberClient() {
-  const [organizations, setOrganizations] = useState<OrganizationListItem[] | null>(null);
-  const [loadStatus, setLoadStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+export function InviteMemberClient({ onMutationSuccess }: { onMutationSuccess?: () => void }) {
+  const canInviteMember = neonClientCapabilities.organization.inviteMember;
 
-  const [state, formAction, isPending] = useActionState(inviteMemberAction, INITIAL_STATE);
+  const { data: activeOrganization } = useActiveOrganization();
 
-  async function handleLoadOrgs() {
-    setLoadStatus("loading");
-    const result = await listOrganizationsAction();
-    if (result.ok) {
-      setOrganizations(result.organizations);
-      const first = result.organizations[0];
-      if (first?.id && !selectedOrgId) setSelectedOrgId(first.id);
-      setLoadStatus("idle");
-    } else {
-      setLoadStatus("error");
+  const [organizationId, setOrganizationId] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("member");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (activeOrganization?.id) {
+      setOrganizationId(activeOrganization.id);
     }
+  }, [activeOrganization?.id]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!canInviteMember) {
+      setError("Organization invitations are unavailable in this environment.");
+      return;
+    }
+
+    const normalizedOrgId = organizationId.trim();
+    const normalizedEmail = email.trim();
+
+    if (!normalizedOrgId) {
+      setError("Organization ID is required.");
+      return;
+    }
+
+    if (!normalizedEmail) {
+      setError("Invitee email is required.");
+      return;
+    }
+
+    startTransition(async () => {
+      const response = await inviteNeonClientOrganizationMember({
+        organizationId: normalizedOrgId,
+        email: normalizedEmail,
+        role,
+      });
+
+      if (response.error) {
+        setError(getErrorMessage(response.error, "Unable to invite organization member."));
+        return;
+      }
+
+      setSuccess(`Invitation sent to ${normalizedEmail}.`);
+      setEmail("");
+      toast.success("Invitation sent.");
+      onMutationSuccess?.();
+    });
   }
 
   return (
@@ -62,78 +116,87 @@ export function InviteMemberClient() {
             Invite to organization
           </CardTitle>
           <CardDescription className="text-xs">
-            Load your organizations, then choose one and enter the invitee&apos;s email.
+            Invite a teammate by email and assign their initial organization role.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {organizations === null ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleLoadOrgs}
-              disabled={loadStatus === "loading"}
-            >
-              {loadStatus === "loading" ? "Loading…" : "Load organizations"}
-            </Button>
-          ) : (
-            <form action={formAction} className="space-y-3">
-              <input type="hidden" name="organizationId" value={selectedOrgId} readOnly />
-              <div className="space-y-2">
-                <Label htmlFor="invite-org">Organization</Label>
-                <Select
-                  value={selectedOrgId}
-                  onValueChange={setSelectedOrgId}
-                  required
-                  disabled={isPending}
+        <CardContent className="space-y-4">
+          {!canInviteMember ? (
+            <Alert>
+              <AlertTitle>Invitations unavailable</AlertTitle>
+              <AlertDescription>
+                Neon organization.inviteMember is not available in this environment.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          {success ? (
+            <Alert>
+              <AlertTitle>Invitation sent</AlertTitle>
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          {error ? (
+            <Alert variant="destructive">
+              <AlertTitle>Unable to send invitation</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <form className="space-y-3" onSubmit={handleSubmit}>
+            <div className="space-y-1.5">
+              <Label htmlFor="organization-invite-org-id">Organization ID</Label>
+              <Input
+                id="organization-invite-org-id"
+                value={organizationId}
+                onChange={(event) => setOrganizationId(event.target.value)}
+                placeholder="org_..."
+                disabled={!canInviteMember || isPending}
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="organization-invite-email">Email</Label>
+              <Input
+                id="organization-invite-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="teammate@example.com"
+                disabled={!canInviteMember || isPending}
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="organization-invite-role">Role</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger
+                  id="organization-invite-role"
+                  disabled={!canInviteMember || isPending}
                 >
-                  <SelectTrigger id="invite-org" className="w-full">
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {organizations
-                      .filter((org): org is OrganizationListItem & { id: string } =>
-                        Boolean(org.id),
-                      )
-                      .map((org) => (
-                        <SelectItem key={org.id} value={org.id}>
-                          {org.name ?? org.slug ?? org.id}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="invite-email">Email</Label>
-                <Input
-                  id="invite-email"
-                  name="email"
-                  type="email"
-                  placeholder="member@example.com"
-                  required
-                  disabled={isPending}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="invite-role">Role (optional)</Label>
-                <Input
-                  id="invite-role"
-                  name="role"
-                  type="text"
-                  placeholder="member"
-                  maxLength={64}
-                  disabled={isPending}
-                />
-              </div>
-              {state && !state.ok && state.error && (
-                <p className="text-sm text-destructive">{state.error}</p>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="member">Member</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="owner">Owner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button type="submit" size="sm" disabled={!canInviteMember || isPending}>
+              {isPending ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="size-4" />
+                  Sending...
+                </span>
+              ) : (
+                "Send invitation"
               )}
-              {state?.ok && <p className="text-sm text-primary">Invitation sent successfully.</p>}
-              <Button type="submit" size="sm" disabled={isPending || !selectedOrgId}>
-                {isPending ? "Sending…" : "Send invitation"}
-              </Button>
-            </form>
-          )}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </section>

@@ -1,10 +1,5 @@
 import type { DbClient } from "@afenda/db";
-import {
-  commBoardMeeting,
-  commBoardMinutes,
-  commBoardActionItem,
-  outboxEvent,
-} from "@afenda/db";
+import { commBoardMeeting, commBoardMinutes, commBoardActionItem, outboxEvent } from "@afenda/db";
 import { and, eq, sql } from "drizzle-orm";
 import type {
   BoardMinuteId,
@@ -16,24 +11,18 @@ import type {
   CreateActionItemCommand,
   UpdateActionItemCommand,
 } from "@afenda/contracts";
-import {
-  COMM_MINUTES_RECORDED,
-  COMM_ACTION_ITEM_CREATED,
-  COMM_ACTION_ITEM_UPDATED,
-} from "@afenda/contracts";
+import { CommMinutesEvents } from "@afenda/contracts";
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
 
 export interface BoardMeetingPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type MinutesServiceResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: { code: string; message: string } };
 
-function requirePrincipal(
-  policyCtx: BoardMeetingPolicyContext,
-): MinutesServiceResult<PrincipalId> {
+function requirePrincipal(policyCtx: BoardMeetingPolicyContext): MinutesServiceResult<PrincipalId> {
   if (!policyCtx.principalId) {
     return {
       ok: false,
@@ -58,12 +47,7 @@ export async function recordMinutes(
   const [meeting] = await db
     .select()
     .from(commBoardMeeting)
-    .where(
-      and(
-        eq(commBoardMeeting.orgId, orgId),
-        eq(commBoardMeeting.id, params.meetingId),
-      ),
-    );
+    .where(and(eq(commBoardMeeting.orgId, orgId), eq(commBoardMeeting.id, params.meetingId)));
 
   if (!meeting) {
     return { ok: false, error: { code: "COMM_MEETING_NOT_FOUND", message: "Meeting not found" } };
@@ -94,7 +78,7 @@ export async function recordMinutes(
 
       await tx.insert(outboxEvent).values({
         orgId,
-        type: COMM_MINUTES_RECORDED,
+        type: CommMinutesEvents.MinutesRecorded,
         version: "1",
         correlationId,
         payload: {
@@ -128,12 +112,7 @@ export async function createActionItem(
   const [minute] = await db
     .select()
     .from(commBoardMinutes)
-    .where(
-      and(
-        eq(commBoardMinutes.orgId, orgId),
-        eq(commBoardMinutes.id, params.minuteId),
-      ),
-    );
+    .where(and(eq(commBoardMinutes.orgId, orgId), eq(commBoardMinutes.id, params.minuteId)));
 
   if (!minute) {
     return { ok: false, error: { code: "COMM_MINUTE_NOT_FOUND", message: "Minute not found" } };
@@ -166,7 +145,7 @@ export async function createActionItem(
 
       await tx.insert(outboxEvent).values({
         orgId,
-        type: COMM_ACTION_ITEM_CREATED,
+        type: CommMinutesEvents.ActionItemCreated,
         version: "1",
         correlationId,
         payload: {
@@ -201,12 +180,7 @@ export async function updateActionItem(
   const [existing] = await db
     .select()
     .from(commBoardActionItem)
-    .where(
-      and(
-        eq(commBoardActionItem.orgId, orgId),
-        eq(commBoardActionItem.id, params.id),
-      ),
-    );
+    .where(and(eq(commBoardActionItem.orgId, orgId), eq(commBoardActionItem.id, params.id)));
 
   if (!existing) {
     return {
@@ -248,16 +222,11 @@ export async function updateActionItem(
           ...(setClosedAt != null && { closedAt: setClosedAt }),
           updatedAt: sql`now()`,
         })
-        .where(
-          and(
-            eq(commBoardActionItem.orgId, orgId),
-            eq(commBoardActionItem.id, params.id),
-          ),
-        );
+        .where(and(eq(commBoardActionItem.orgId, orgId), eq(commBoardActionItem.id, params.id)));
 
       await tx.insert(outboxEvent).values({
         orgId,
-        type: COMM_ACTION_ITEM_UPDATED,
+        type: CommMinutesEvents.ActionItemUpdated,
         version: "1",
         correlationId,
         payload: {

@@ -1,5 +1,5 @@
-/**
- * GL routes — post journal entry, reverse entry, list entries, list accounts, trial balance.
+﻿/**
+ * GL routes â€” post journal entry, reverse entry, list entries, list accounts, trial balance.
  *
  * Follows the Sprint 0 evidence.ts pattern:
  *   - ZodTypeProvider for automatic validation + OpenAPI generation
@@ -18,6 +18,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../../helpers/responses.js";
+import { serializeDate } from "../../../helpers/dates.js";
+import { buildOrgScopedContext, buildPolicyContext } from "../../../helpers/context.js";
 import {
   PostToGLCommandSchema,
   ReverseEntryCommandSchema,
@@ -38,7 +40,7 @@ import {
 } from "@afenda/core";
 import type { OrgScopedContext, PolicyContext } from "@afenda/core";
 
-// ── Response schemas ─────────────────────────────────────────────────────────
+// â”€â”€ Response schemas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const JournalEntryResponseSchema = makeSuccessSchema(
   z.object({
@@ -126,27 +128,14 @@ const TrialBalanceSchema = makeSuccessSchema(
   ),
 );
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): PolicyContext {
-  return {
-    principalId: req.ctx?.principalId,
-    permissionsSet: req.ctx?.permissionsSet ?? new Set(),
-  };
-}
-
-// ── Route registration ───────────────────────────────────────────────────────
+// â”€â”€ Route registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export async function glRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
 
-  // ── Post journal entry ─────────────────────────────────────────────────────
+  // â”€â”€ Post journal entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/post-to-gl",
     {
@@ -171,7 +160,7 @@ export async function glRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const result = await postToGL(app.db, buildCtx(orgId), buildPolicyCtx(req), {
+      const result = await postToGL(app.db, buildOrgScopedContext(orgId), buildPolicyContext(req), {
         correlationId: req.body.correlationId,
         sourceInvoiceId: req.body.sourceInvoiceId,
         memo: req.body.memo,
@@ -205,7 +194,7 @@ export async function glRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Reverse journal entry ──────────────────────────────────────────────────
+  // â”€â”€ Reverse journal entry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.post(
     "/commands/reverse-entry",
     {
@@ -232,8 +221,8 @@ export async function glRoutes(app: FastifyInstance) {
 
       const result = await reverseJournalEntry(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildPolicyContext(req),
         req.body.correlationId,
         req.body.journalEntryId,
         req.body.memo,
@@ -259,7 +248,7 @@ export async function glRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List journal entries ───────────────────────────────────────────────────
+  // â”€â”€ List journal entries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/gl/journal-entries",
     {
@@ -290,13 +279,13 @@ export async function glRoutes(app: FastifyInstance) {
           id: e.id,
           orgId: e.orgId,
           entryNumber: e.entryNumber,
-          postedAt: e.postedAt.toISOString(),
+          postedAt: serializeDate(e.postedAt)!,
           memo: e.memo,
           postedByPrincipalId: e.postedByPrincipalId,
           correlationId: e.correlationId,
           sourceInvoiceId: e.sourceInvoiceId,
           reversalOfId: e.reversalOfId,
-          createdAt: e.createdAt.toISOString(),
+          createdAt: serializeDate(e.createdAt)!,
         })),
         cursor: page.cursor,
         hasMore: page.hasMore,
@@ -305,7 +294,7 @@ export async function glRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Get journal entry by ID ────────────────────────────────────────────────
+  // â”€â”€ Get journal entry by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/gl/journal-entries/:entryId",
     {
@@ -348,14 +337,14 @@ export async function glRoutes(app: FastifyInstance) {
           id: entry.id,
           orgId: entry.orgId,
           entryNumber: entry.entryNumber,
-          postedAt: entry.postedAt.toISOString(),
+          postedAt: serializeDate(entry.postedAt)!,
           memo: entry.memo,
           postedByPrincipalId: entry.postedByPrincipalId,
           correlationId: entry.correlationId,
           idempotencyKey: entry.idempotencyKey,
           sourceInvoiceId: entry.sourceInvoiceId,
           reversalOfId: entry.reversalOfId,
-          createdAt: entry.createdAt.toISOString(),
+          createdAt: serializeDate(entry.createdAt)!,
           lines: entry.lines.map((l) => ({
             id: l.id,
             journalEntryId: l.journalEntryId,
@@ -372,7 +361,7 @@ export async function glRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── List accounts ──────────────────────────────────────────────────────────
+  // â”€â”€ List accounts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/gl/accounts",
     {
@@ -401,8 +390,8 @@ export async function glRoutes(app: FastifyInstance) {
       return {
         data: page.data.map((a) => ({
           ...a,
-          createdAt: a.createdAt.toISOString(),
-          updatedAt: a.updatedAt.toISOString(),
+          createdAt: serializeDate(a.createdAt)!,
+          updatedAt: serializeDate(a.updatedAt)!,
         })),
         cursor: page.cursor,
         hasMore: page.hasMore,
@@ -411,7 +400,7 @@ export async function glRoutes(app: FastifyInstance) {
     },
   );
 
-  // ── Trial balance ──────────────────────────────────────────────────────────
+  // â”€â”€ Trial balance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   typed.get(
     "/gl/trial-balance",
     {
@@ -448,7 +437,7 @@ export async function glRoutes(app: FastifyInstance) {
   );
 }
 
-// ── Error code → HTTP status mapping ─────────────────────────────────────────
+// â”€â”€ Error code â†’ HTTP status mapping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function mapErrorStatus(code: string) {
   switch (code) {

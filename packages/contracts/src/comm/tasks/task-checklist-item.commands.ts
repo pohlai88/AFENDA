@@ -1,17 +1,31 @@
 import { z } from "zod";
 import { IdempotencyKeySchema } from "../../kernel/execution/idempotency/request-key.js";
 import { CommTaskIdSchema, TaskChecklistItemIdSchema } from "../../shared/ids.js";
+import { TaskChecklistItemTextSchema } from "./task-checklist-item.shared.js";
 
-// ─── Reusable Field Schema ────────────────────────────────────────────────────
+const ChecklistItemIdsSchema = z.array(TaskChecklistItemIdSchema).min(1).max(100);
 
-const ChecklistItemSchema = z.string().trim().min(1).max(500);
+function addDuplicateIdIssue(
+  ids: readonly string[],
+  path: string,
+  message: string,
+  ctx: z.RefinementCtx,
+) {
+  if (new Set(ids).size !== ids.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message,
+      path: [path],
+    });
+  }
+}
 
 // ─── Mutation Input Schemas ───────────────────────────────────────────────────
 // Used for client-side validation before wrapping in a command (no idempotency key).
 
 /** Shape of a single item being created — server assigns id, orgId, isChecked, checkedAt, timestamps. */
 export const TaskChecklistItemCreateSchema = z.object({
-  text: ChecklistItemSchema,
+  text: TaskChecklistItemTextSchema,
   /** If omitted, the server appends the item at the end of the list. */
   sortOrder: z.number().int().min(0).optional(),
 });
@@ -20,7 +34,7 @@ export const TaskChecklistItemCreateSchema = z.object({
 export const TaskChecklistItemUpdateSchema = z
   .object({
     checklistItemId: TaskChecklistItemIdSchema,
-    text: ChecklistItemSchema.optional(),
+    text: TaskChecklistItemTextSchema.optional(),
     sortOrder: z.number().int().min(0).optional(),
   })
   .superRefine((data, ctx) => {
@@ -43,10 +57,9 @@ const ChecklistCommandBase = z.object({
 
 export const AddTaskChecklistCommandSchema = ChecklistCommandBase.extend({
   taskId: CommTaskIdSchema,
-  items: z.array(ChecklistItemSchema).min(1).max(100),
+  items: z.array(TaskChecklistItemTextSchema).min(1).max(100),
 }).superRefine((data, ctx) => {
-  const uniqueItems = new Set(data.items);
-  if (uniqueItems.size !== data.items.length) {
+  if (new Set(data.items).size !== data.items.length) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Duplicate checklist items are not allowed.",
@@ -69,16 +82,14 @@ export const RemoveTaskChecklistItemCommandSchema = ChecklistCommandBase.extend(
 export const ReorderTaskChecklistCommandSchema = ChecklistCommandBase.extend({
   taskId: CommTaskIdSchema,
   /** Ordered list of all checklist item IDs for the task, representing the desired sequence. */
-  orderedItemIds: z.array(TaskChecklistItemIdSchema).min(1),
+  orderedItemIds: ChecklistItemIdsSchema,
 }).superRefine((data, ctx) => {
-  const uniqueIds = new Set(data.orderedItemIds);
-  if (uniqueIds.size !== data.orderedItemIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "orderedItemIds must not contain duplicates.",
-      path: ["orderedItemIds"],
-    });
-  }
+  addDuplicateIdIssue(
+    data.orderedItemIds,
+    "orderedItemIds",
+    "orderedItemIds must not contain duplicates.",
+    ctx,
+  );
 });
 
 export const BulkUpdateTaskChecklistCommandSchema = ChecklistCommandBase.extend({
@@ -86,15 +97,12 @@ export const BulkUpdateTaskChecklistCommandSchema = ChecklistCommandBase.extend(
   /** Each entry updates one checklist item. At most 100 items per batch. */
   updates: z.array(TaskChecklistItemUpdateSchema).min(1).max(100),
 }).superRefine((data, ctx) => {
-  const ids = data.updates.map((u) => u.checklistItemId);
-  const uniqueIds = new Set(ids);
-  if (uniqueIds.size !== ids.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate checklistItemId values are not allowed in bulk updates.",
-      path: ["updates"],
-    });
-  }
+  addDuplicateIdIssue(
+    data.updates.map((u) => u.checklistItemId),
+    "updates",
+    "Duplicate checklistItemId values are not allowed in bulk updates.",
+    ctx,
+  );
 });
 
 export const BulkToggleTaskChecklistItemsCommandSchema = ChecklistCommandBase.extend({
@@ -109,29 +117,24 @@ export const BulkToggleTaskChecklistItemsCommandSchema = ChecklistCommandBase.ex
     .min(1)
     .max(100),
 }).superRefine((data, ctx) => {
-  const ids = data.toggles.map((t) => t.checklistItemId);
-  const uniqueIds = new Set(ids);
-  if (uniqueIds.size !== ids.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate checklistItemId values are not allowed in bulk toggles.",
-      path: ["toggles"],
-    });
-  }
+  addDuplicateIdIssue(
+    data.toggles.map((t) => t.checklistItemId),
+    "toggles",
+    "Duplicate checklistItemId values are not allowed in bulk toggles.",
+    ctx,
+  );
 });
 
 export const BulkRemoveTaskChecklistItemsCommandSchema = ChecklistCommandBase.extend({
   taskId: CommTaskIdSchema,
-  checklistItemIds: z.array(TaskChecklistItemIdSchema).min(1).max(100),
+  checklistItemIds: ChecklistItemIdsSchema,
 }).superRefine((data, ctx) => {
-  const uniqueIds = new Set(data.checklistItemIds);
-  if (uniqueIds.size !== data.checklistItemIds.length) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Duplicate checklistItemId values are not allowed in bulk removals.",
-      path: ["checklistItemIds"],
-    });
-  }
+  addDuplicateIdIssue(
+    data.checklistItemIds,
+    "checklistItemIds",
+    "Duplicate checklistItemId values are not allowed in bulk removals.",
+    ctx,
+  );
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────

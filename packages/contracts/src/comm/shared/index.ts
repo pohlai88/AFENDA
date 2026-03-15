@@ -6,6 +6,8 @@ export * from "./label.js";
 export * from "./label.queries.js";
 export * from "./mention.js";
 export * from "./project-id.js";
+export * from "./mention.queries.js";
+export * from "./project-id.queries.js";
 export * from "./query.js";
 export * from "./response.js";
 export * from "./saved-view.js";

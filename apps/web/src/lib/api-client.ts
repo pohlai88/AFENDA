@@ -74,8 +74,7 @@ export async function getApiHeaders(): Promise<Record<string, string>> {
     const cookieStore = await cookies();
     activeOrgId = cookieStore.get(ACTIVE_ORG_COOKIE_NAME)?.value;
     const sessionToken =
-      cookieStore.get("neon-auth.session")?.value ??
-      cookieStore.get("__Secure-neon-auth.session")?.value;
+      cookieStore.get("session")?.value ?? cookieStore.get("__Secure-session")?.value;
 
     if (sessionToken) {
       headers["Authorization"] = `Bearer ${sessionToken}`;

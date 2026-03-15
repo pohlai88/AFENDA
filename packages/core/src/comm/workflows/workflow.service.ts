@@ -27,7 +27,7 @@ import {
 import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
 
 export interface WorkflowPolicyContext {
-  principalId: PrincipalId | null;
+  principalId?: PrincipalId | null;
 }
 
 export type WorkflowServiceResult<T> =

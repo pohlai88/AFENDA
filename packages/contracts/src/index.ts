@@ -13,6 +13,10 @@
 // ── shared (universal primitives) ────────────────────────────────────────────
 export * from "./shared/index.js";
 
+// ── cross-pillar aggregators (root-only composition) ───────────────────────
+export * from "./all-errors.js";
+export * from "./all-permissions.js";
+
 // ── kernel (system truth capabilities) ───────────────────────────────────────
 export * from "./kernel/index.js";
 
@@ -22,56 +26,6 @@ export { JournalEntrySchema, type JournalEntry } from "./erp/finance/gl/journal-
 
 // ── comm (communication surfaces) ────────────────────────────────────────────
 export * from "./comm/index.js";
-
-// ── adapters (infrastructure-agnostic contracts) ────────────────────────────
-export {
-  PostgresRepository,
-  InMemoryRepository,
-  DbAdapters,
-  DomainError as AdapterDomainError,
-  type Repository,
-  type RepoResult,
-  type QueryClient,
-  type ListOptions,
-} from "./adapters/db.js";
-export {
-  PostgresSearchAdapter,
-  ElasticSearchAdapter,
-  InMemorySearchIndex,
-  SearchAdapters,
-  SearchError,
-  type SearchResult as AdapterSearchResult,
-  type SearchQuery as AdapterSearchQuery,
-  type SearchIndex as AdapterSearchIndex,
-  type PostgresQueryClient,
-  type ElasticClientLike,
-} from "./adapters/search.js";
-export {
-  PostgresEventBus,
-  RedisEventBus,
-  InMemoryEventBus,
-  EventBusAdapters,
-  EventBusError,
-  type EventBus,
-  type EventEnvelope as AdapterEventEnvelope,
-  type PostgresPoolLike,
-  type PostgresTxClient,
-  type RedisClientLike,
-} from "./adapters/event-bus.js";
-export {
-  InMemoryFileStore,
-  LocalFsFileStore,
-  S3FileStore,
-  StorageAdapters,
-  StorageError,
-  type FileStore,
-  type FileMetadata,
-  type PutOptions as FilePutOptions,
-  type SignedUrlOptions as FileSignedUrlOptions,
-  type ListOptions as FileListOptions,
-  type ListResult as FileListResult,
-  type S3ClientLike,
-} from "./adapters/storage.js";
 
 // ── ui (shell architecture types) ────────────────────────────────────────────
 // export * from "./ui/index.js"; // TODO: Re-enable after new shell is built

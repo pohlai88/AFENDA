@@ -14,15 +14,11 @@ export const metadata: Metadata = {
  * Admin layout — defence-in-depth session check.
  * Middleware is the first gate; this layout is the second.
  */
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   return <>{children}</>;

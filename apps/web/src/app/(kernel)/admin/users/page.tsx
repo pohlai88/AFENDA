@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { hasAdminOperationAccess } from "@/lib/auth/server";
 import { ListUsersClient } from "./ListUsersClient";
 import { Button } from "@afenda/ui";
 import { ChevronLeft } from "lucide-react";
@@ -11,18 +12,18 @@ export const dynamic = "force-dynamic";
 export default async function AdminUsersPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
-  if (!session.user.roles?.includes("admin")) {
+  if (!hasAdminOperationAccess(session)) {
     redirect("/admin");
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-6">
         <Button variant="ghost" size="sm" className="mb-2 -ml-2" asChild>
           <Link href="/admin">
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Admin
           </Link>
         </Button>
@@ -35,3 +36,4 @@ export default async function AdminUsersPage() {
     </div>
   );
 }
+

@@ -10,13 +10,11 @@ interface PageProps {
   params: Promise<{ incidentId: string }>;
 }
 
-export default async function AdminSecurityIncidentDetailPage({
-  params,
-}: PageProps) {
+export default async function AdminSecurityIncidentDetailPage({ params }: PageProps) {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const { incidentId } = await params;
@@ -37,12 +35,9 @@ export default async function AdminSecurityIncidentDetailPage({
         >
           ← Incidents
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {incident.title}
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">{incident.title}</h1>
         <p className="text-sm text-muted-foreground">
-          {incident.code} · severity: {incident.severity} · status:{" "}
-          {incident.status}
+          {incident.code} · severity: {incident.severity} · status: {incident.status}
         </p>
       </div>
 

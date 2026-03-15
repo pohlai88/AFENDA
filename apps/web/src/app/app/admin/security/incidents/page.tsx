@@ -9,7 +9,7 @@ export default async function AdminSecurityIncidentsPage() {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const incidents = await listRecentAuthIncidents(100);
@@ -17,15 +17,10 @@ export default async function AdminSecurityIncidentsPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Link
-          href="/app/admin/security"
-          className="text-sm text-muted-foreground hover:underline"
-        >
+        <Link href="/app/admin/security" className="text-sm text-muted-foreground hover:underline">
           ← Security Ops
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          Security Incidents
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Security Incidents</h1>
         <p className="text-sm text-muted-foreground">
           Triage, assignment, and resolution workflow for auth security events.
         </p>
@@ -38,9 +33,7 @@ export default async function AdminSecurityIncidentsPage() {
         <CardContent>
           <div className="space-y-3">
             {incidents.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No incidents found.
-              </div>
+              <div className="text-sm text-muted-foreground">No incidents found.</div>
             ) : (
               incidents.map((incident) => (
                 <div key={incident.id} className="rounded-md border p-3">
@@ -48,8 +41,7 @@ export default async function AdminSecurityIncidentsPage() {
                     <div>
                       <div className="font-medium">{incident.title}</div>
                       <div className="text-sm text-muted-foreground">
-                        {incident.code} · severity: {incident.severity} · status:{" "}
-                        {incident.status}
+                        {incident.code} · severity: {incident.severity} · status: {incident.status}
                       </div>
                       {incident.relatedEmail ? (
                         <div className="text-sm text-muted-foreground">

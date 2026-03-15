@@ -9,7 +9,7 @@ export default async function AdminSecurityCompliancePage() {
   const session = await auth();
 
   if (!session?.user || !session.user.roles.includes("admin")) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   const allRuns = await runAuthControlChecks();
@@ -18,15 +18,10 @@ export default async function AdminSecurityCompliancePage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Link
-          href="/app/admin/security"
-          className="text-sm text-muted-foreground hover:underline"
-        >
+        <Link href="/app/admin/security" className="text-sm text-muted-foreground hover:underline">
           ← Security Ops
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          Compliance & Evidence
-        </h1>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Compliance & Evidence</h1>
         <p className="text-sm text-muted-foreground">
           Control runs, attestations, retention, and signed evidence exports.
         </p>
@@ -38,9 +33,7 @@ export default async function AdminSecurityCompliancePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {controlRuns.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
-              No control runs yet.
-            </div>
+            <div className="text-sm text-muted-foreground">No control runs yet.</div>
           ) : (
             controlRuns.map((run) => (
               <div key={run.id} className="rounded-md border p-3">

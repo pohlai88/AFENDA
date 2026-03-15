@@ -9,6 +9,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
+    "e2e:smoke": "playwright test e2e/smoke.spec.ts --project=chromium --workers=1",
+    "e2e:smoke:matrix": "playwright test e2e/smoke.spec.ts",
+    "e2e:api-guards": "node ./scripts/run-playwright-api-guards.mjs",
+    "e2e:install": "playwright install chromium firefox webkit",
     "lint": "eslint src/"
   },
   "dependencies": {
@@ -23,7 +27,6 @@
     "@neondatabase/auth": "catalog:",
     "@neondatabase/neon-js": "catalog:",
     "@react-pdf/renderer": "^4.3.2",
-    "better-auth": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "drizzle-orm": "catalog:",

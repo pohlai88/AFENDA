@@ -14,19 +14,15 @@ export const dynamic = "force-dynamic";
  * Second line of defence: this layout verifies the session server-side before
  * rendering any portal content.
  *
- * Redirects to /auth/signin if session is missing or invalid.
+ * Redirects to the public entry page when session is missing or invalid.
  * Portal-specific access checks (correct portal role) are performed in the
  * individual portal sub-layouts or pages.
  */
-export default async function PortalLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/");
   }
 
   return (
@@ -37,9 +33,7 @@ export default async function PortalLayout({
             <div className="flex items-center justify-between gap-4">
               <CardTitle>AFENDA Portal</CardTitle>
             </div>
-            <CardDescription>
-              Authenticated as {session.user.email}
-            </CardDescription>
+            <CardDescription>Authenticated as {session.user.email}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <span>{session.user.email}</span>

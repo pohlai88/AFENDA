@@ -21,7 +21,7 @@ export default async function CommLayout({ children }: { children: ReactNode }) 
   const session = await auth();
 
   if (!session) {
-    redirect("/auth/signin");
+    redirect("/app");
   }
 
   // Active org is managed by middleware + AppShell context

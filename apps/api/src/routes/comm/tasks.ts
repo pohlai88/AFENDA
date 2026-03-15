@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+﻿import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import {
@@ -46,6 +46,8 @@ import {
   requireOrg,
   requireAuth,
 } from "../../helpers/responses.js";
+import { serializeDate } from "../../helpers/dates.js";
+import { buildOrgScopedContext, buildMinimalPolicyContext } from "../../helpers/context.js";
 
 const TaskMutationResponseSchema = makeSuccessSchema(
   z.object({
@@ -138,15 +140,7 @@ const TaskTimeEntryResponseSchema = makeSuccessSchema(
   ),
 );
 
-function buildCtx(orgId: string): OrgScopedContext {
-  return { activeContext: { orgId: orgId as OrgId } };
-}
-
-function buildPolicyCtx(req: {
-  ctx?: { principalId: PrincipalId; permissionsSet: ReadonlySet<string> };
-}): CommTaskPolicyContext {
-  return { principalId: req.ctx?.principalId ?? null };
-}
+// Context builders now in helpers/context.ts
 
 function formatTaskRow(row: {
   id: string;
@@ -176,10 +170,10 @@ function formatTaskRow(row: {
 }) {
   return {
     ...row,
-    completedAt: row.completedAt?.toISOString() ?? null,
-    slaBreachAt: row.slaBreachAt?.toISOString() ?? null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    completedAt: serializeDate(row.completedAt),
+    slaBreachAt: serializeDate(row.slaBreachAt),
+    createdAt: serializeDate(row.createdAt)!,
+    updatedAt: serializeDate(row.updatedAt)!,
   };
 }
 
@@ -208,8 +202,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await createTask(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -252,8 +246,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await updateTask(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -297,8 +291,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await assignTask(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -342,8 +336,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await bulkAssignTasks(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -387,8 +381,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await transitionTaskStatus(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -432,8 +426,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await bulkTransitionTaskStatus(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -477,8 +471,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await completeTask(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -522,8 +516,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await archiveTask(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -567,8 +561,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await addTaskChecklist(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -612,8 +606,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await toggleTaskChecklistItem(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -657,8 +651,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await removeTaskChecklistItem(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -702,8 +696,8 @@ export async function commTaskRoutes(app: FastifyInstance) {
 
       const result = await logTaskTimeEntry(
         app.db,
-        buildCtx(orgId),
-        buildPolicyCtx(req),
+        buildOrgScopedContext(orgId),
+        buildMinimalPolicyContext(req),
         req.correlationId as CorrelationId,
         req.body,
       );
@@ -825,9 +819,9 @@ export async function commTaskRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          checkedAt: row.checkedAt?.toISOString() ?? null,
-          createdAt: row.createdAt.toISOString(),
-          updatedAt: row.updatedAt.toISOString(),
+          checkedAt: serializeDate(row.checkedAt),
+          createdAt: serializeDate(row.createdAt)!,
+          updatedAt: serializeDate(row.updatedAt)!,
         })),
         correlationId: req.correlationId,
       });
@@ -857,7 +851,7 @@ export async function commTaskRoutes(app: FastifyInstance) {
       return reply.status(200).send({
         data: rows.map((row) => ({
           ...row,
-          createdAt: row.createdAt.toISOString(),
+          createdAt: serializeDate(row.createdAt)!,
         })),
         correlationId: req.correlationId,
       });

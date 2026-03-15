@@ -1,335 +1,71 @@
 /**
- * Canonical error code registry.
+ * Shared infrastructure error codes.
+ *
+ * CHANGELOG:
+ *   - 2026-03-14: Refactored to ADR-0005 compliance — removed pillar imports from shared/.
+ *   - Domain-specific error codes now in their respective pillar modules:
+ *       AP_* → erp/finance/ap/errors.ts
+ *       GL_* → erp/finance/gl/errors.ts
+ *       SUP_*, PURCH_* → erp/supplier/errors.ts
+ *       TREAS_*, TREASURY_*, TRY_* → erp/finance/treasury/errors.ts
+ *       IAM_* → kernel/identity/errors.ts
+ *       DOC_* (evidence) → kernel/governance/evidence/errors.ts
+ *       CFG_* → kernel/registry/errors.ts
+ *       COMM_* → comm/errors.ts
+ *   - For combined ErrorCodeValues array, import from "@afenda/contracts" root barrel.
+ *
+ * SCOPE:
+ *   This file contains ONLY shared infrastructure error codes (SHARED_* prefix).
+ *   These are protocol/transport-level errors, not domain-specific business errors.
  *
  * RULES:
- *   1. Clients switch on `code`, not HTTP status. Every distinct failure mode
- *      gets its own entry here — no free-form strings in API responses.
- *   2. Naming convention: SCOPE_NOUN_REASON (SCREAMING_SNAKE_CASE).
- *      - SHARED_* — infrastructure-level errors (auth, validation, idempotency)
- *      - AP_*     — accounts-payable / invoice workflow
- *      - IAM_*    — identity & access management
- *      - GL_*     — general ledger
- *      - SUP_*    — supplier management
- *      - DOC_*    — document / evidence
- *   3. `ErrorCodeValues` is `as const` so callers (DB check constraints, switch
- *      statements, test fixtures) can import the list without pulling Zod.
- *   4. Removing or renaming a code is a BREAKING CHANGE — add a deprecation
- *      comment for at least one major version before removal.
- *   5. HTTP status mapping lives in @afenda/core (or the API layer) — NEVER
- *      add status codes here. Contracts are transport-agnostic.
+ *   1. shared/ pillar MUST NOT import from kernel/, erp/, or comm/ (ADR-0005 §3.2).
+ *   2. Format: UPPER_SNAKE_CASE with "SHARED_" prefix.
+ *   3. Clients switch on `code`, not HTTP status.
+ *   4. Adding a code is safe. Removing/renaming is BREAKING.
+ *   5. HTTP status mapping lives in @afenda/core or API layer — contracts are transport-agnostic.
  */
 import { z } from "zod";
 
-// ─── Error code values (as const so DB/switch statements can reuse) ──────────
-export const ErrorCodeValues = [
-  // SHARED — infrastructure, cross-domain
-  "SHARED_VALIDATION_ERROR",
-  "SHARED_NOT_FOUND",
-  "SHARED_CONFLICT",
-  "SHARED_UNAUTHORIZED",
-  "SHARED_FORBIDDEN",
-  "SHARED_INTERNAL_ERROR",
-  "SHARED_IDEMPOTENCY_CONFLICT",
-  "SHARED_RATE_LIMITED",
+// ─── Shared infrastructure error codes ────────────────────────────────────────
+export const SHARED_VALIDATION_ERROR = "SHARED_VALIDATION_ERROR" as const;
+export const SHARED_NOT_FOUND = "SHARED_NOT_FOUND" as const;
+export const SHARED_CONFLICT = "SHARED_CONFLICT" as const;
+export const SHARED_UNAUTHORIZED = "SHARED_UNAUTHORIZED" as const;
+export const SHARED_FORBIDDEN = "SHARED_FORBIDDEN" as const;
+export const SHARED_INTERNAL_ERROR = "SHARED_INTERNAL_ERROR" as const;
+export const SHARED_IDEMPOTENCY_CONFLICT = "SHARED_IDEMPOTENCY_CONFLICT" as const;
+export const SHARED_RATE_LIMITED = "SHARED_RATE_LIMITED" as const;
 
-  // AP — accounts-payable / invoice workflow
-  "AP_INVOICE_NOT_FOUND",
-  "AP_INVOICE_ALREADY_APPROVED",
-  "AP_INVOICE_ALREADY_POSTED",
-  "AP_INVOICE_ALREADY_VOIDED",
-  "AP_INVOICE_ALREADY_PAID",
-  "AP_INVOICE_INVALID_STATUS_TRANSITION",
-
-  // AP — payment terms
-  "AP_PAYMENT_TERMS_NOT_FOUND",
-  "AP_PAYMENT_TERMS_CODE_EXISTS",
-
-  // AP — holds
-  "AP_HOLD_NOT_FOUND",
-  "AP_HOLD_ALREADY_RELEASED",
-  "AP_INVOICE_HAS_ACTIVE_HOLDS",
-
-  // AP — invoice lines
-  "AP_INVOICE_LINE_NOT_FOUND",
-  "AP_INVOICE_LINE_DUPLICATE_NUMBER",
-
-  // AP — payment runs
-  "AP_PAYMENT_RUN_NOT_FOUND",
-  "AP_PAYMENT_RUN_NOT_DRAFT",
-  "AP_PAYMENT_RUN_ALREADY_APPROVED",
-  "AP_PAYMENT_RUN_ALREADY_EXECUTED",
-  "AP_PAYMENT_RUN_ALREADY_CANCELLED",
-  "AP_PAYMENT_RUN_EMPTY",
-  "AP_PAYMENT_RUN_CURRENCY_MISMATCH",
-
-  // AP — payment run items
-  "AP_PAYMENT_RUN_ITEM_NOT_FOUND",
-  "AP_PAYMENT_RUN_ITEM_DUPLICATE_INVOICE",
-  "AP_PAYMENT_RUN_ITEM_INVOICE_NOT_PAYABLE",
-  "AP_PAYMENT_RUN_ITEM_AMOUNT_EXCEEDS_BALANCE",
-  "AP_SUPPLIER_BANK_ACCOUNT_MISSING",
-
-  // AP — prepayments
-  "AP_PREPAYMENT_NOT_FOUND",
-  "AP_PREPAYMENT_NUMBER_EXISTS",
-  "AP_PREPAYMENT_INSUFFICIENT_BALANCE",
-  "AP_PREPAYMENT_ALREADY_VOIDED",
-  "AP_PREPAYMENT_CURRENCY_MISMATCH",
-  "AP_PREPAYMENT_SUPPLIER_MISMATCH",
-  "AP_PREPAYMENT_APPLICATION_NOT_FOUND",
-
-  // AP — match tolerances
-  "AP_MATCH_TOLERANCE_NOT_FOUND",
-  "AP_MATCH_TOLERANCE_DUPLICATE_SCOPE",
-  "AP_MATCH_TOLERANCE_OVER_VARIANCE",
-
-  // AP — WHT certificates
-  "AP_WHT_CERTIFICATE_NOT_FOUND",
-  "AP_WHT_CERTIFICATE_NUMBER_EXISTS",
-  "AP_WHT_CERTIFICATE_ALREADY_ISSUED",
-  "AP_WHT_CERTIFICATE_ALREADY_SUBMITTED",
-  "AP_WHT_CERTIFICATE_ALREADY_VOIDED",
-  "AP_WHT_EXEMPTION_NOT_FOUND",
-  "AP_WHT_EXEMPTION_EXPIRED",
-
-  // SUP — supplier management
-  "SUP_SUPPLIER_NOT_FOUND",
-  "SUP_SUPPLIER_ALREADY_ACTIVE",
-
-  // SUP — supplier sites
-  "SUP_SITE_NOT_FOUND",
-  "SUP_SITE_ALREADY_PRIMARY",
-  "SUP_CANNOT_DEACTIVATE_PRIMARY_SITE",
-
-  // PURCH — purchasing (PO, receipt)
-  "PURCH_PURCHASE_ORDER_NOT_FOUND",
-  "PURCH_PURCHASE_ORDER_NUMBER_EXISTS",
-  "PURCH_RECEIPT_NOT_FOUND",
-  "PURCH_RECEIPT_NUMBER_EXISTS",
-  "PURCH_RECEIPT_PO_NOT_FOUND",
-
-  // SUP — supplier bank accounts
-  "SUP_BANK_ACCOUNT_NOT_FOUND",
-  "SUP_BANK_ACCOUNT_ALREADY_PRIMARY",
-  "SUP_BANK_ACCOUNT_ALREADY_VERIFIED",
-  "SUP_BANK_ACCOUNT_NOT_VERIFIED",
-  "SUP_CANNOT_DEACTIVATE_PRIMARY_ACCOUNT",
-
-  // GL — general ledger
-  "GL_JOURNAL_UNBALANCED",
-  "GL_ACCOUNT_NOT_FOUND",
-  "GL_ACCOUNT_INACTIVE",
-
-  // DOC — document / evidence
-  "DOC_DOCUMENT_NOT_FOUND",
-  "DOC_DOCUMENT_ALREADY_ATTACHED",
-  "DOC_MIME_NOT_ALLOWED",
-  "DOC_FILE_TOO_LARGE",
-
-  // TREAS — Treasury
-  "TREAS_BANK_ACCOUNT_NOT_FOUND",
-  "TREAS_BANK_ACCOUNT_INACTIVE",
-  "TREAS_BANK_ACCOUNT_SUSPENDED",
-  "TREAS_BANK_ACCOUNT_NUMBER_EXISTS",
-  "TREAS_BANK_STATEMENT_NOT_FOUND",
-  "TREAS_BANK_STATEMENT_ALREADY_INGESTED",
-  "TREAS_BANK_STATEMENT_PROCESSING_FAILED",
-  "TREAS_RECONCILIATION_SESSION_NOT_FOUND",
-  "TREAS_RECONCILIATION_SESSION_CLOSED",
-  "TREAS_RECONCILIATION_SESSION_VOIDED",
-  "TREAS_RECONCILIATION_MATCH_EXCEEDS_LINE_AMOUNT",
-  "TREAS_RECONCILIATION_LINE_ALREADY_MATCHED",
-  "TREAS_PAYMENT_BATCH_NOT_FOUND",
-  "TREAS_PAYMENT_BATCH_NOT_DRAFT",
-  "TREAS_PAYMENT_BATCH_ALREADY_APPROVED",
-  "TREAS_PAYMENT_BATCH_ALREADY_RELEASED",
-  "TREAS_PAYMENT_BATCH_CANCELLED",
-  "TREAS_PAYMENT_BATCH_EMPTY",
-  "TREAS_PAYMENT_INSTRUCTION_NOT_FOUND",
-  "TREAS_PAYMENT_INSTRUCTION_AMOUNT_MISMATCH",
-  "TREAS_PAYMENT_INSTRUCTION_BANK_ACCOUNT_MISSING",
-  "TREAS_RECONCILIATION_MATCH_NOT_FOUND",
-  "TREAS_PAYMENT_INSTRUCTION_ILLEGAL_TRANSITION",
-  "TREAS_PAYMENT_INSTRUCTION_INVALID_BANK_ACCOUNT",
-  "TREAS_PAYMENT_BATCH_INSTRUCTION_NOT_FOUND",
-  "TREAS_PAYMENT_BATCH_INSTRUCTION_NOT_APPROVED",
-  "TREAS_PAYMENT_BATCH_DIMENSION_MISMATCH",
-  "TREAS_PAYMENT_BATCH_ILLEGAL_TRANSITION",
-  "TREAS_PAYMENT_SOD_VIOLATION",
-  "TREASURY_LIQUIDITY_SOURCE_FEED_NOT_FOUND",
-  "TREASURY_AP_DUE_PAYMENT_PROJECTION_NOT_FOUND",
-  "TREASURY_AR_EXPECTED_RECEIPT_PROJECTION_NOT_FOUND",
-  "TREASURY_FORECAST_VARIANCE_NOT_FOUND",
-  "TREASURY_FX_NORMALIZATION_REQUIRED",
-  "TREASURY_FX_RATE_SNAPSHOT_NOT_FOUND",
-  "TREASURY_LIQUIDITY_FORECAST_BUCKET_NOT_FOUND",
-
-  // IAM — identity & access management
-  "IAM_ORG_NOT_FOUND",
-  "IAM_PRINCIPAL_NOT_FOUND",
-  "IAM_INSUFFICIENT_PERMISSIONS",
-  "IAM_CREDENTIALS_INVALID", // wrong email or password at sign-in
-  "IAM_PASSWORD_CHANGE_INVALID", // wrong current password when changing
-  "IAM_EMAIL_ALREADY_REGISTERED",
-  "IAM_RESET_TOKEN_INVALID",
-  "IAM_RESET_TOKEN_EXPIRED",
-  "IAM_PORTAL_ACCESS_DENIED",
-  "IAM_PORTAL_INVITATION_REQUIRED",
-  "IAM_PORTAL_INVITATION_INVALID",
-  "IAM_PORTAL_INVITATION_EXPIRED",
-  "IAM_ACCOUNT_LOCKED", // too many failed login attempts
-  "IAM_MFA_INVALID", // invalid or expired MFA verification code
-  "IAM_MFA_NOT_IMPLEMENTED", // MFA verification not yet available via API
-  "IAM_SESSION_GRANT_INVALID", // session grant invalid or already used
-  "IAM_SESSION_GRANT_EXPIRED", // session grant expired
-
-  // CFG — settings / configuration
-  "CFG_SETTING_INVALID_VALUE",
-  "CFG_SETTING_KEY_UNKNOWN",
-  // Reserved — not used in Phase 1 (no route returns it yet):
-  // "CFG_SETTING_NOT_FOUND",
-
-  // CFG — custom fields (Phase 3)
-  "CFG_CUSTOM_FIELD_KEY_IMMUTABLE", // attempted api_key change on PATCH
-  "CFG_CUSTOM_FIELD_NOT_FOUND", // definition not found for this org
-  "CFG_CUSTOM_FIELD_INVALID_VALUE", // value fails data_type validation
-  "CFG_CUSTOM_FIELD_ENTITY_TYPE_UNKNOWN", // entity_type not in controlled vocabulary
-
-  // TRY — Treasury
-  "TRY_BANK_ACCOUNT_NOT_FOUND",
-  "TRY_BANK_ACCOUNT_ALREADY_EXISTS",
-  "TRY_BANK_ACCOUNT_INACTIVE",
-  "TRY_BANK_STATEMENT_NOT_FOUND",
-  "TRY_BANK_STATEMENT_DUPLICATE",
-  "TRY_BANK_STATEMENT_INGESTION_FAILED",
-  "TRY_RECONCILIATION_SESSION_NOT_FOUND",
-  "TRY_RECONCILIATION_SESSION_ALREADY_CLOSED",
-  "TRY_PAYMENT_BATCH_NOT_FOUND",
-  "TRY_PAYMENT_BATCH_ALREADY_RELEASED",
-  "TRY_PAYMENT_INSTRUCTION_NOT_FOUND",
-
-  // TREASURY — Wave 4.1 In-house Banking + Intercompany Transfers
-  "TREASURY_INTERNAL_BANK_ACCOUNT_NOT_FOUND",
-  "TREASURY_INTERNAL_BANK_ACCOUNT_CODE_EXISTS",
-  "TREASURY_INTERNAL_BANK_ACCOUNT_ILLEGAL_TRANSITION",
-  "TREASURY_INTERCOMPANY_TRANSFER_NOT_FOUND",
-  "TREASURY_INTERCOMPANY_TRANSFER_NUMBER_EXISTS",
-  "TREASURY_INTERCOMPANY_TRANSFER_SAME_ENTITY",
-  "TREASURY_INTERCOMPANY_TRANSFER_ACCOUNT_NOT_FOUND",
-  "TREASURY_INTERCOMPANY_TRANSFER_ACCOUNT_INACTIVE",
-  "TREASURY_INTERCOMPANY_TRANSFER_ENTITY_ACCOUNT_MISMATCH",
-  "TREASURY_INTERCOMPANY_TRANSFER_CURRENCY_MISMATCH",
-  "TREASURY_INTERCOMPANY_TRANSFER_DEBIT_MISMATCH",
-  "TREASURY_INTERCOMPANY_TRANSFER_CREDIT_MISMATCH",
-  "TREASURY_INTERCOMPANY_TRANSFER_UNBALANCED",
-  "TREASURY_INTERCOMPANY_TRANSFER_ILLEGAL_TRANSITION",
-  "TREASURY_INTERCOMPANY_TRANSFER_SOD_VIOLATION",
-
-  // COMM — shared infrastructure
-  "COMM_COMMENT_NOT_FOUND",
-  "COMM_LABEL_NOT_FOUND",
-  "COMM_LABEL_DUPLICATE",
-  "COMM_SAVED_VIEW_NOT_FOUND",
-  "COMM_SUBSCRIPTION_NOT_FOUND",
-  "COMM_INBOX_ITEM_NOT_FOUND",
-  "COMM_NOTIFICATION_PREFERENCE_NOT_FOUND",
-
-  // COMM — tasks
-  "COMM_TASK_NOT_FOUND",
-  "COMM_TASK_ALREADY_COMPLETED",
-  "COMM_TASK_ALREADY_ARCHIVED",
-  "COMM_TASK_INVALID_STATUS_TRANSITION",
-  "COMM_TASK_ASSIGNEE_NOT_IN_ORG",
-  "COMM_TASK_PARENT_NOT_FOUND",
-  "COMM_TASK_CIRCULAR_HIERARCHY",
-  "COMM_TASK_CHECKLIST_ITEM_NOT_FOUND",
-  "COMM_TASK_TIME_ENTRY_NOT_FOUND",
-
-  // COMM — projects
-  "COMM_PROJECT_NOT_FOUND",
-  "COMM_PROJECT_INVALID_STATUS_TRANSITION",
-  "COMM_PROJECT_MEMBER_NOT_FOUND",
-  "COMM_PROJECT_MEMBER_ALREADY_EXISTS",
-  "COMM_PROJECT_MILESTONE_NOT_FOUND",
-  "COMM_PROJECT_MILESTONE_ALREADY_COMPLETED",
-
-  // COMM — approvals
-  "COMM_APPROVAL_NOT_FOUND",
-  "COMM_APPROVAL_STEP_NOT_FOUND",
-  "COMM_APPROVAL_POLICY_NOT_FOUND",
-  "COMM_APPROVAL_DELEGATION_NOT_FOUND",
-  "COMM_APPROVAL_ALREADY_RESOLVED",
-  "COMM_APPROVAL_ALREADY_WITHDRAWN",
-  "COMM_APPROVAL_STEP_NOT_PENDING",
-  "COMM_APPROVAL_STEP_NOT_ASSIGNED_TO_ACTOR",
-  "COMM_APPROVAL_NO_ACTIVE_STEP",
-  "COMM_APPROVAL_INVALID_DELEGATION_DATES",
-  "COMM_APPROVAL_POLICY_DUPLICATE",
-
-  // COMM — announcements
-  "COMM_ANNOUNCEMENT_NOT_FOUND",
-  "COMM_ANNOUNCEMENT_ALREADY_PUBLISHED",
-  "COMM_ANNOUNCEMENT_ALREADY_ARCHIVED",
-  "COMM_ANNOUNCEMENT_NOT_PUBLISHED",
-  "COMM_ANNOUNCEMENT_INVALID_STATUS_TRANSITION",
-  "COMM_ANNOUNCEMENT_SCHEDULED_AT_MUST_BE_FUTURE",
-
-  // COMM — boardroom
-  "COMM_MEETING_NOT_FOUND",
-  "COMM_MEETING_ALREADY_STARTED",
-  "COMM_AGENDA_ITEM_NOT_FOUND",
-  "COMM_ATTENDEE_NOT_FOUND",
-  "COMM_ATTENDEE_ALREADY_ADDED",
-  "COMM_RESOLUTION_NOT_FOUND",
-  "COMM_RESOLUTION_VOTING_CLOSED",
-  "COMM_RESOLUTION_ALREADY_VOTED",
-  "COMM_MINUTE_NOT_FOUND",
-  "COMM_ACTION_ITEM_NOT_FOUND",
-
-  // COMM — docs
-  "COMM_DOCUMENT_NOT_FOUND",
-  "COMM_DOCUMENT_PARENT_NOT_FOUND",
-  "COMM_DOCUMENT_SLUG_TAKEN",
-  "COMM_DOCUMENT_ALREADY_ARCHIVED",
-  "COMM_DOCUMENT_ALREADY_PUBLISHED",
-  "COMM_DOCUMENT_COLLABORATOR_ALREADY_EXISTS",
-  "COMM_DOCUMENT_COLLABORATOR_NOT_FOUND",
+export const SharedErrorCodeValues = [
+  SHARED_VALIDATION_ERROR,
+  SHARED_NOT_FOUND,
+  SHARED_CONFLICT,
+  SHARED_UNAUTHORIZED,
+  SHARED_FORBIDDEN,
+  SHARED_INTERNAL_ERROR,
+  SHARED_IDEMPOTENCY_CONFLICT,
+  SHARED_RATE_LIMITED,
 ] as const;
 
-// Named exports for IAM error codes (used by core, api)
-export const IAM_ORG_NOT_FOUND = "IAM_ORG_NOT_FOUND" as const;
-export const IAM_PRINCIPAL_NOT_FOUND = "IAM_PRINCIPAL_NOT_FOUND" as const;
-export const IAM_INSUFFICIENT_PERMISSIONS = "IAM_INSUFFICIENT_PERMISSIONS" as const;
-export const IAM_CREDENTIALS_INVALID = "IAM_CREDENTIALS_INVALID" as const;
-export const IAM_PASSWORD_CHANGE_INVALID = "IAM_PASSWORD_CHANGE_INVALID" as const;
-export const IAM_EMAIL_ALREADY_REGISTERED = "IAM_EMAIL_ALREADY_REGISTERED" as const;
-export const IAM_RESET_TOKEN_INVALID = "IAM_RESET_TOKEN_INVALID" as const;
-export const IAM_RESET_TOKEN_EXPIRED = "IAM_RESET_TOKEN_EXPIRED" as const;
-export const IAM_PORTAL_ACCESS_DENIED = "IAM_PORTAL_ACCESS_DENIED" as const;
-export const IAM_PORTAL_INVITATION_REQUIRED = "IAM_PORTAL_INVITATION_REQUIRED" as const;
-export const IAM_PORTAL_INVITATION_INVALID = "IAM_PORTAL_INVITATION_INVALID" as const;
-export const IAM_PORTAL_INVITATION_EXPIRED = "IAM_PORTAL_INVITATION_EXPIRED" as const;
-export const IAM_ACCOUNT_LOCKED = "IAM_ACCOUNT_LOCKED" as const;
-export const IAM_MFA_INVALID = "IAM_MFA_INVALID" as const;
-export const IAM_MFA_NOT_IMPLEMENTED = "IAM_MFA_NOT_IMPLEMENTED" as const;
-export const IAM_SESSION_GRANT_INVALID = "IAM_SESSION_GRANT_INVALID" as const;
-export const IAM_SESSION_GRANT_EXPIRED = "IAM_SESSION_GRANT_EXPIRED" as const;
+export const SharedErrorCodeSchema = z.enum(SharedErrorCodeValues);
+
+export type SharedErrorCode = z.infer<typeof SharedErrorCodeSchema>;
+
+// ─── Error Code Pattern Validation ────────────────────────────────────────────
 
 /**
  * Enforces SCOPE_NOUN_REASON shape at runtime.
- * Catches accidental `Shared_NotFound` or `APInvoiceNotFound` at parse time.
+ * Pattern: UPPER_SNAKE_CASE with at least one underscore.
+ * Examples: SHARED_NOT_FOUND, IAM_INVALID_TOKEN, AP_INVOICE_NOT_FOUND
  */
-const ERROR_CODE_PATTERN = /^[A-Z]+_[A-Z0-9]+_[A-Z0-9_]+$/;
-
-export const ErrorCodeSchema = z.enum(ErrorCodeValues).refine((v) => ERROR_CODE_PATTERN.test(v), {
-  message: "Error code must match SCOPE_NOUN_REASON (SCREAMING_SNAKE_CASE)",
-});
-
-export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
+export const ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+$/;
 
 // ─── Structured API error (pairs with ErrorEnvelope in envelope.ts) ──────────
 export const ApiErrorSchema = z.object({
-  code: ErrorCodeSchema,
+  code: z.string().regex(ERROR_CODE_PATTERN, {
+    message: "Error code must match SCOPE_NOUN_REASON (SCREAMING_SNAKE_CASE)",
+  }),
   /** Human-readable message — must be non-empty. */
   message: z.string().min(1),
   /**

@@ -6,6 +6,10 @@ import {
   PrincipalIdSchema,
   TaskTimeEntryIdSchema,
 } from "../../shared/ids.js";
+import {
+  TaskTimeEntryDescriptionSchema,
+  TaskTimeEntryMinutesSchema,
+} from "./task-time-entry.shared.js";
 
 // ─── ID Brand ────────────────────────────────────────────────────────────────
 
@@ -16,9 +20,9 @@ export const TaskTimeEntrySchema = z.object({
   orgId: OrgIdSchema,
   taskId: CommTaskIdSchema,
   principalId: PrincipalIdSchema,
-  minutes: z.number().int().positive(),
+  minutes: TaskTimeEntryMinutesSchema,
   entryDate: DateSchema,
-  description: z.string().trim().max(2_000).nullable().default(null),
+  description: TaskTimeEntryDescriptionSchema.nullable().default(null),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });

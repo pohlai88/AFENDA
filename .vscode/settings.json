@@ -47,5 +47,11 @@
 
   // ── File encoding: always read/write UTF-8; never silently re-encode ──
   "files.encoding": "utf8",
-  "files.autoGuessEncoding": false
+  "files.autoGuessEncoding": false,
+
+  // ── Reduce TS/extension noise (e.g. total-typescript as-const on intentional const) ──
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"]
 }
