@@ -65,29 +65,22 @@ async function BankStatementContent({ id }: { id: string }) {
     });
     lines = linesResult.data;
   } catch (err) {
-    error =
-      err instanceof Error ? err.message : "Failed to load bank statement";
+    error = err instanceof Error ? err.message : "Failed to load bank statement";
   }
 
   if (error || !statement) {
     return (
       <div className="space-y-6 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Bank Statement
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Bank Statement</h1>
           <Button asChild variant="ghost">
-            <Link href="/finance/treasury/bank-statements">
-              Back to Statements
-            </Link>
+            <Link href="/finance/treasury/bank-statements">Back to Statements</Link>
           </Button>
         </div>
 
         <Card className="border-destructive bg-destructive/5">
           <CardContent className="pt-6">
-            <p className="text-destructive">
-              {error || "Bank statement not found"}
-            </p>
+            <p className="text-destructive">{error || "Bank statement not found"}</p>
           </CardContent>
         </Card>
       </div>
@@ -101,9 +94,7 @@ async function BankStatementContent({ id }: { id: string }) {
           Bank Statement — {statement.sourceRef}
         </h1>
         <Button asChild variant="ghost">
-          <Link href="/finance/treasury/bank-statements">
-            Back to Statements
-          </Link>
+          <Link href="/finance/treasury/bank-statements">Back to Statements</Link>
         </Button>
       </div>
 
@@ -114,20 +105,14 @@ async function BankStatementContent({ id }: { id: string }) {
             <div>
               <CardTitle className="text-lg">Statement Details</CardTitle>
               <CardDescription>
-                {new Date(statement.statementDate).toLocaleDateString(
-                  "en-US",
-                  {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  },
-                )}
+                {new Date(statement.statementDate).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </CardDescription>
             </div>
-            <Badge
-              variant="secondary"
-              className={statusBadgeColor[statement.status] || ""}
-            >
+            <Badge variant="secondary" className={statusBadgeColor[statement.status] || ""}>
               {statement.status}
             </Badge>
           </div>
@@ -135,24 +120,18 @@ async function BankStatementContent({ id }: { id: string }) {
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Source Reference
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">Source Reference</p>
               <p className="mt-1 font-mono text-sm">{statement.sourceRef}</p>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Currency
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">Currency</p>
               <p className="mt-1 text-sm">{statement.currencyCode}</p>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Opening Balance
-              </p>
-              <p className="mt-1 text-sm font-mono">
+              <p className="text-xs font-medium text-muted-foreground">Opening Balance</p>
+              <p className="mt-1 font-mono text-sm">
                 {statement.currencyCode}{" "}
                 {minorToMajorDecimalString(
                   BigInt(statement.openingBalance),
@@ -162,10 +141,8 @@ async function BankStatementContent({ id }: { id: string }) {
             </div>
 
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Closing Balance
-              </p>
-              <p className="mt-1 text-sm font-mono font-bold">
+              <p className="text-xs font-medium text-muted-foreground">Closing Balance</p>
+              <p className="mt-1 font-mono text-sm font-bold">
                 {statement.currencyCode}{" "}
                 {minorToMajorDecimalString(
                   BigInt(statement.closingBalance),
@@ -175,16 +152,12 @@ async function BankStatementContent({ id }: { id: string }) {
             </div>
 
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Transaction Lines
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">Transaction Lines</p>
               <p className="mt-1 text-sm">{statement.lineCount}</p>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-muted-foreground">
-                Created
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">Created</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {new Date(statement.createdAt).toLocaleString()}
               </p>
@@ -193,12 +166,8 @@ async function BankStatementContent({ id }: { id: string }) {
 
           {statement.failureReason && (
             <div className="rounded border border-destructive bg-destructive/5 p-3">
-              <p className="text-xs font-medium text-destructive">
-                Failure Reason
-              </p>
-              <p className="mt-1 text-sm text-destructive">
-                {statement.failureReason}
-              </p>
+              <p className="text-xs font-medium text-destructive">Failure Reason</p>
+              <p className="mt-1 text-sm text-destructive">{statement.failureReason}</p>
             </div>
           )}
         </CardContent>
@@ -214,9 +183,7 @@ async function BankStatementContent({ id }: { id: string }) {
         </CardHeader>
         <CardContent>
           {lines.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No transaction lines found.
-            </p>
+            <p className="text-sm text-muted-foreground">No transaction lines found.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -227,7 +194,7 @@ async function BankStatementContent({ id }: { id: string }) {
                     <TableHead className="text-xs">Value Date</TableHead>
                     <TableHead className="text-xs">Description</TableHead>
                     <TableHead className="text-xs">Reference</TableHead>
-                    <TableHead className="text-xs text-right">Amount</TableHead>
+                    <TableHead className="text-right text-xs">Amount</TableHead>
                     <TableHead className="text-xs">Direction</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
                   </TableRow>
@@ -235,57 +202,38 @@ async function BankStatementContent({ id }: { id: string }) {
                 <TableBody>
                   {lines.map((line) => (
                     <TableRow key={line.id}>
-                      <TableCell className="text-xs font-mono">
-                        {line.lineNumber}
-                      </TableCell>
+                      <TableCell className="font-mono text-xs">{line.lineNumber}</TableCell>
                       <TableCell className="text-xs">
                         {new Date(line.transactionDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-xs">
-                        {line.valueDate
-                          ? new Date(line.valueDate).toLocaleDateString()
-                          : "-"}
+                        {line.valueDate ? new Date(line.valueDate).toLocaleDateString() : "-"}
                       </TableCell>
-                      <TableCell className="text-xs">
-                        {line.description}
-                      </TableCell>
-                      <TableCell className="text-xs font-mono">
-                        {line.reference || "—"}
-                      </TableCell>
-                      <TableCell className="text-xs text-right font-mono">
+                      <TableCell className="text-xs">{line.description}</TableCell>
+                      <TableCell className="font-mono text-xs">{line.reference || "—"}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">
                         <span
                           className={
-                            line.direction === "inflow"
-                              ? "text-success"
-                              : "text-destructive"
+                            line.direction === "inflow" ? "text-success" : "text-destructive"
                           }
                         >
                           {line.direction === "inflow" ? "+" : "−"}
-                          {minorToMajorDecimalString(
-                            BigInt(line.amount),
-                            statement.currencyCode,
-                          )}
+                          {minorToMajorDecimalString(BigInt(line.amount), statement.currencyCode)}
                         </span>
                       </TableCell>
                       <TableCell className="text-xs">
                         <span
                           className={
-                            line.direction === "inflow"
-                              ? "text-success"
-                              : "text-destructive"
+                            line.direction === "inflow" ? "text-success" : "text-destructive"
                           }
                         >
-                          {line.direction === "inflow"
-                            ? "Inflow"
-                            : "Outflow"}
+                          {line.direction === "inflow" ? "Inflow" : "Outflow"}
                         </span>
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant="secondary"
-                          className={
-                            lineStatusBadgeColor[line.status] || ""
-                          }
+                          className={lineStatusBadgeColor[line.status] || ""}
                         >
                           {line.status}
                         </Badge>
@@ -302,7 +250,7 @@ async function BankStatementContent({ id }: { id: string }) {
   );
 }
 
-export default function BankStatementDetailPage({ params }: PageProps) {
+export default async function BankStatementDetailPage({ params }: PageProps) {
   return (
     <Suspense fallback={<BankStatementLoadingSkeleton />}>
       <BankStatementContent id={params.id} />
@@ -313,10 +261,10 @@ export default function BankStatementDetailPage({ params }: PageProps) {
 // Loading skeleton
 function BankStatementLoadingSkeleton() {
   return (
-    <div className="space-y-6 px-6 py-6 animate-pulse">
+    <div className="animate-pulse space-y-6 px-6 py-6">
       <div className="flex items-center justify-between">
-        <div className="h-8 w-48 bg-muted rounded" />
-        <div className="h-10 w-32 bg-muted rounded" />
+        <div className="h-8 w-48 rounded bg-muted" />
+        <div className="h-10 w-32 rounded bg-muted" />
       </div>
 
       {/* Statement Header Card */}
@@ -324,18 +272,18 @@ function BankStatementLoadingSkeleton() {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="h-5 w-32 bg-muted rounded mb-2" />
-              <div className="h-4 w-48 bg-muted rounded" />
+              <div className="mb-2 h-5 w-32 rounded bg-muted" />
+              <div className="h-4 w-48 rounded bg-muted" />
             </div>
-            <div className="h-6 w-20 bg-muted rounded" />
+            <div className="h-6 w-20 rounded bg-muted" />
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             {[...Array(6)].map((_, i) => (
               <div key={i}>
-                <div className="h-3 w-24 bg-muted rounded mb-2" />
-                <div className="h-4 w-40 bg-muted rounded" />
+                <div className="mb-2 h-3 w-24 rounded bg-muted" />
+                <div className="h-4 w-40 rounded bg-muted" />
               </div>
             ))}
           </div>
@@ -345,13 +293,13 @@ function BankStatementLoadingSkeleton() {
       {/* Transaction Lines Card */}
       <Card>
         <CardHeader>
-          <div className="h-5 w-32 bg-muted rounded mb-2" />
-          <div className="h-4 w-48 bg-muted rounded" />
+          <div className="mb-2 h-5 w-32 rounded bg-muted" />
+          <div className="h-4 w-48 rounded bg-muted" />
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-10 bg-muted rounded" />
+              <div key={i} className="h-10 rounded bg-muted" />
             ))}
           </div>
         </CardContent>

@@ -1,2 +1,2 @@
-export * from "./workflow.service.js";
-export * from "./workflow.queries.js";
+export * from "./workflow.service";
+export * from "./workflow.queries";

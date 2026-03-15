@@ -17,6 +17,7 @@ export interface AuthSessionUser {
   roles: string[];
   permissions: string[];
   requiresMfa?: boolean;
+  emailVerified?: boolean;
 }
 
 export interface AuthSession {
@@ -127,6 +128,7 @@ function toAuthSession(neonSession: unknown): AuthSession | null {
       roles: toStringArray(user.roles),
       permissions: effectivePermissions,
       requiresMfa: typeof user.requiresMfa === "boolean" ? user.requiresMfa : undefined,
+      emailVerified: typeof user.emailVerified === "boolean" ? user.emailVerified : undefined,
     },
     activeOrganization,
   };

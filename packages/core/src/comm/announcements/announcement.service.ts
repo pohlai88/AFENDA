@@ -18,8 +18,8 @@ import type {
   CommAnnouncementEvent,
 } from "@afenda/contracts";
 import { AnnouncementOutboxRecordSchema, CommAnnouncementEvents } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
-import { ensureScheduledAtInFuture } from "./create-persisted-announcement.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
+import { ensureScheduledAtInFuture } from "./create-persisted-announcement";
 
 // ── Context & result types ────────────────────────────────────────────────────
 

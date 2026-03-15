@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import prettierConfig from "eslint-config-prettier";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
-import drizzle from "eslint-plugin-drizzle";
+import * as drizzle from "eslint-plugin-drizzle";
 import noHardcodedColors from "./tools/eslint/no-hardcoded-colors.mjs";
 import noJsDateInDb from "./tools/eslint/no-js-date-in-db.mjs";
 import noRawFormElements from "./tools/eslint/no-raw-form-elements.mjs";

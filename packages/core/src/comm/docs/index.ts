@@ -1,18 +1,18 @@
 import { instrumentService } from "../../kernel/infrastructure/tracing";
-import * as rawDocumentService from "./document.service.js";
-import * as rawDocumentQueries from "./document.queries.js";
+import * as rawDocumentService from "./document.service";
+import * as rawDocumentQueries from "./document.queries";
 
 export type {
   CommDocumentPolicyContext,
   CommDocumentServiceError,
   CommDocumentServiceResult,
-} from "./document.service.js";
+} from "./document.service";
 export type {
   DocumentRow,
   DocumentVersionRow,
   DocumentListParams,
   CollaboratorRow,
-} from "./document.queries.js";
+} from "./document.queries";
 
 const instrumented = instrumentService("comm.docs", {
   ...rawDocumentService,

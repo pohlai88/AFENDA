@@ -14,7 +14,7 @@ const AmountMinorInput = z.preprocess((value) => {
   return value;
 }, z.bigint());
 
-export const JournalEntrySchema = z
+const JournalEntrySchema = z
   .object({
     entryId: JournalEntryIdSchema,
     occurredAt: UtcDateTimeSchema,
@@ -72,14 +72,16 @@ export const JournalEntrySchema = z
     }
   });
 
-export type JournalEntry = z.infer<typeof JournalEntrySchema>;
+type JournalEntry = z.infer<typeof JournalEntrySchema>;
+export const SharedJournalEntrySchema = JournalEntrySchema;
+export type SharedJournalEntry = JournalEntry;
 
 export type AccountBalance = {
   amountMinor: bigint;
   currencyCode: CurrencyCode;
 };
 
-function compareEntries(a: JournalEntry, b: JournalEntry): number {
+function compareEntries(a: SharedJournalEntry, b: SharedJournalEntry): number {
   if (a.occurredAt < b.occurredAt) return -1;
   if (a.occurredAt > b.occurredAt) return 1;
   if (a.entryId < b.entryId) return -1;
@@ -87,11 +89,11 @@ function compareEntries(a: JournalEntry, b: JournalEntry): number {
   return 0;
 }
 
-export function validateJournalEntry(input: unknown): JournalEntry {
+export function validateJournalEntry(input: unknown): SharedJournalEntry {
   return JournalEntrySchema.parse(input);
 }
 
-function parseEntries(entries: readonly JournalEntry[]): JournalEntry[] {
+function parseEntries(entries: readonly SharedJournalEntry[]): SharedJournalEntry[] {
   return entries.map((entry) => JournalEntrySchema.parse(entry));
 }
 
@@ -110,7 +112,7 @@ function cloneBalances(
 
 function applyParsedEntries(
   balances: Map<string, AccountBalance>,
-  parsedEntries: readonly JournalEntry[],
+  parsedEntries: readonly SharedJournalEntry[],
 ): Map<string, AccountBalance> {
   const sortedEntries = [...parsedEntries].sort(compareEntries);
 
@@ -144,21 +146,23 @@ function applyParsedEntries(
 
 export function applyJournalEntries(
   startingBalances: ReadonlyMap<string, AccountBalance>,
-  entries: readonly JournalEntry[],
+  entries: readonly SharedJournalEntry[],
 ): Map<string, AccountBalance> {
   const parsedEntries = parseEntries(entries);
   const balances = cloneBalances(startingBalances);
   return applyParsedEntries(balances, parsedEntries);
 }
 
-export function recomputeBalances(entries: readonly JournalEntry[]): Map<string, AccountBalance> {
+export function recomputeBalances(
+  entries: readonly SharedJournalEntry[],
+): Map<string, AccountBalance> {
   const parsedEntries = parseEntries(entries);
   const balances = new Map<string, AccountBalance>();
   return applyParsedEntries(balances, parsedEntries);
 }
 
 export const SharedJournal = {
-  JournalEntrySchema,
+  SharedJournalEntrySchema,
   validateJournalEntry,
   applyJournalEntries,
   recomputeBalances,

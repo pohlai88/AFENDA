@@ -13,6 +13,7 @@ export * from "./bank-account.entity.js";
 export * from "./bank-account.commands.js";
 export * from "./bank-statement.entity.js";
 export * from "./bank-statement.commands.js";
+export * from "./treasury-cash-ops.index.js";
 // Wave 2
 export * from "./reconciliation-session.entity.js";
 export * from "./reconciliation-session.commands.js";
@@ -43,3 +44,5 @@ export * from "./internal-bank-account.entity.js";
 export * from "./internal-bank-account.commands.js";
 export * from "./intercompany-transfer.entity.js";
 export * from "./intercompany-transfer.commands.js";
+export * from "./treasury-governance.index.js";
+export * from "./treasury-connectors.index.js";

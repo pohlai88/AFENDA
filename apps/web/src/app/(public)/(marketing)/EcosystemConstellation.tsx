@@ -50,14 +50,70 @@ interface ModuleNode {
 }
 
 const MODULES: ModuleNode[] = [
-  { id: "gl",          name: "General Ledger",      shortName: "GL",     icon: BookOpen,    pillar: "erp",    color: "#10b981" },
-  { id: "ap",          name: "Accounts Payable",    shortName: "AP",     icon: FileText,    pillar: "erp",    color: "#10b981" },
-  { id: "ar",          name: "Accounts Receivable", shortName: "AR",     icon: Coins,       pillar: "erp",    color: "#14b8a6" },
-  { id: "audit",       name: "Audit Engine",        shortName: "AUDIT",  icon: Shield,      pillar: "kernel", color: "#06b6d4" },
-  { id: "treasury",    name: "Treasury",            shortName: "TRSY",   icon: Building2,   pillar: "erp",    color: "#10b981" },
-  { id: "procurement", name: "Procurement",         shortName: "PROC",   icon: Workflow,    pillar: "erp",    color: "#10b981" },
-  { id: "compliance",  name: "Compliance",          shortName: "CMPL",   icon: Scale,       pillar: "kernel", color: "#06b6d4" },
-  { id: "identity",    name: "Identity & RBAC",     shortName: "IAM",    icon: Fingerprint, pillar: "kernel", color: "#06b6d4" },
+  {
+    id: "gl",
+    name: "General Ledger",
+    shortName: "GL",
+    icon: BookOpen,
+    pillar: "erp",
+    color: "#10b981",
+  },
+  {
+    id: "ap",
+    name: "Accounts Payable",
+    shortName: "AP",
+    icon: FileText,
+    pillar: "erp",
+    color: "#10b981",
+  },
+  {
+    id: "ar",
+    name: "Accounts Receivable",
+    shortName: "AR",
+    icon: Coins,
+    pillar: "erp",
+    color: "#14b8a6",
+  },
+  {
+    id: "audit",
+    name: "Audit Engine",
+    shortName: "AUDIT",
+    icon: Shield,
+    pillar: "kernel",
+    color: "#06b6d4",
+  },
+  {
+    id: "treasury",
+    name: "Treasury",
+    shortName: "TRSY",
+    icon: Building2,
+    pillar: "erp",
+    color: "#10b981",
+  },
+  {
+    id: "procurement",
+    name: "Procurement",
+    shortName: "PROC",
+    icon: Workflow,
+    pillar: "erp",
+    color: "#10b981",
+  },
+  {
+    id: "compliance",
+    name: "Compliance",
+    shortName: "CMPL",
+    icon: Scale,
+    pillar: "kernel",
+    color: "#06b6d4",
+  },
+  {
+    id: "identity",
+    name: "Identity & RBAC",
+    shortName: "IAM",
+    icon: Fingerprint,
+    pillar: "kernel",
+    color: "#06b6d4",
+  },
 ];
 
 /* ── Data: Integration partners (outer ring) ─────────────────────────────── */
@@ -160,25 +216,105 @@ interface SyncEvent {
 }
 
 const SYNC_EVENTS: SyncEvent[] = [
-  { time: "14:23:01", direction: "←", source: "SAP.GL",      event: "3,847 journal entries synced",   ref: "JE-2026-4891…97",  latency: "0.34s", status: "ok" },
-  { time: "14:23:02", direction: "→", source: "XERO.AP",     event: "Invoice batch pushed",           ref: "INV-2026-1247",    latency: "0.12s", status: "ok" },
-  { time: "14:23:04", direction: "←", source: "ORACLE.FX",   event: "FX rates ingested (214 pairs)",  ref: "FX-20260309-1423", latency: "0.21s", status: "ok" },
-  { time: "14:23:05", direction: "⇄", source: "NETSUITE.GL", event: "Multi-sub consolidation run",    ref: "CONS-2026-Q1-03",  latency: "1.82s", status: "ok" },
-  { time: "14:23:07", direction: "←", source: "ODOO.PROC",   event: "PO approval pipeline sync",      ref: "PO-2026-0891",     latency: "0.09s", status: "ok" },
-  { time: "14:23:08", direction: "→", source: "QUICKBOOKS",  event: "Bank reconciliation exported",   ref: "RECON-2026-W10",   latency: "0.28s", status: "ok" },
-  { time: "14:23:10", direction: "←", source: "ERPNEXT.AP",  event: "Vendor invoice ingested",        ref: "VINV-2026-3341",   latency: "0.07s", status: "ok" },
-  { time: "14:23:12", direction: "⇄", source: "ZOHO.BOOKS",  event: "AR aging snapshot synced",        ref: "AGING-2026-Q1",    latency: "0.44s", status: "warn" },
-  { time: "14:23:14", direction: "→", source: "WEBHOOK",     event: "GL close event emitted",          ref: "EVT-GL-Q1-CLOSE",  latency: "0.01s", status: "ok" },
-  { time: "14:23:15", direction: "←", source: "SAP.AP",      event: "Payment run verified",            ref: "PAY-2026-0412",    latency: "0.55s", status: "ok" },
+  {
+    time: "14:23:01",
+    direction: "←",
+    source: "SAP.GL",
+    event: "3,847 journal entries synced",
+    ref: "JE-2026-4891…97",
+    latency: "0.34s",
+    status: "ok",
+  },
+  {
+    time: "14:23:02",
+    direction: "→",
+    source: "XERO.AP",
+    event: "Invoice batch pushed",
+    ref: "INV-2026-1247",
+    latency: "0.12s",
+    status: "ok",
+  },
+  {
+    time: "14:23:04",
+    direction: "←",
+    source: "ORACLE.FX",
+    event: "FX rates ingested (214 pairs)",
+    ref: "FX-20260309-1423",
+    latency: "0.21s",
+    status: "ok",
+  },
+  {
+    time: "14:23:05",
+    direction: "⇄",
+    source: "NETSUITE.GL",
+    event: "Multi-sub consolidation run",
+    ref: "CONS-2026-Q1-03",
+    latency: "1.82s",
+    status: "ok",
+  },
+  {
+    time: "14:23:07",
+    direction: "←",
+    source: "ODOO.PROC",
+    event: "PO approval pipeline sync",
+    ref: "PO-2026-0891",
+    latency: "0.09s",
+    status: "ok",
+  },
+  {
+    time: "14:23:08",
+    direction: "→",
+    source: "QUICKBOOKS",
+    event: "Bank reconciliation exported",
+    ref: "RECON-2026-W10",
+    latency: "0.28s",
+    status: "ok",
+  },
+  {
+    time: "14:23:10",
+    direction: "←",
+    source: "ERPNEXT.AP",
+    event: "Vendor invoice ingested",
+    ref: "VINV-2026-3341",
+    latency: "0.07s",
+    status: "ok",
+  },
+  {
+    time: "14:23:12",
+    direction: "⇄",
+    source: "ZOHO.BOOKS",
+    event: "AR aging snapshot synced",
+    ref: "AGING-2026-Q1",
+    latency: "0.44s",
+    status: "warn",
+  },
+  {
+    time: "14:23:14",
+    direction: "→",
+    source: "WEBHOOK",
+    event: "GL close event emitted",
+    ref: "EVT-GL-Q1-CLOSE",
+    latency: "0.01s",
+    status: "ok",
+  },
+  {
+    time: "14:23:15",
+    direction: "←",
+    source: "SAP.AP",
+    event: "Payment run verified",
+    ref: "PAY-2026-0412",
+    latency: "0.55s",
+    status: "ok",
+  },
 ];
 
 /* ── Data: Throughput stats ──────────────────────────────────────────────── */
 
 const THROUGHPUT_STATS = [
-  { label: "Events / sec",      value: "14,200",  accent: "#14b8a6" },
-  { label: "Active bridges",    value: "847",     accent: "#10b981" },
-  { label: "Data points / mo",  value: "2.4B",    accent: "#06b6d4" },
-  { label: "Uptime (365d)",     value: "99.997%", accent: "#34d399" },
+  { label: "Events / sec", value: "14,200", accent: "#14b8a6" },
+  { label: "Active bridges", value: "847", accent: "#10b981" },
+  { label: "Data points / mo", value: "2.4B", accent: "#06b6d4" },
+  { label: "Uptime (365d)", value: "99.997%", accent: "#34d399" },
 ];
 
 /* ── SVG constants ───────────────────────────────────────────────────────── */
@@ -224,7 +360,7 @@ function ConstellationSVG({
   return (
     <svg
       viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-      className="w-full h-auto"
+      className="h-auto w-full"
       role="img"
       aria-label="AFENDA ecosystem constellation showing module and integration connections"
     >
@@ -245,36 +381,72 @@ function ConstellationSVG({
       {/* ── Background grid pattern ── */}
       <g opacity={0.15}>
         {Array.from({ length: 15 }).map((_, i) => (
-          <line key={`gv-${i}`} x1={i * 56} y1={0} x2={i * 56} y2={SVG_H} stroke="#1e293b" strokeWidth={0.5} />
+          <line
+            key={`gv-${i}`}
+            x1={i * 56}
+            y1={0}
+            x2={i * 56}
+            y2={SVG_H}
+            stroke="#1e293b"
+            strokeWidth={0.5}
+          />
         ))}
         {Array.from({ length: 10 }).map((_, i) => (
-          <line key={`gh-${i}`} x1={0} y1={i * 56} x2={SVG_W} y2={i * 56} stroke="#1e293b" strokeWidth={0.5} />
+          <line
+            key={`gh-${i}`}
+            x1={0}
+            y1={i * 56}
+            x2={SVG_W}
+            y2={i * 56}
+            stroke="#1e293b"
+            strokeWidth={0.5}
+          />
         ))}
       </g>
 
       {/* ── Orbital rings (decorative) ── */}
-      <circle cx={CX} cy={CY} r={RING1_R} fill="none" stroke="#1e293b" strokeWidth={0.5} strokeDasharray="4 8" opacity={0.5} />
-      <circle cx={CX} cy={CY} r={RING2_R} fill="none" stroke="#1e293b" strokeWidth={0.5} strokeDasharray="4 12" opacity={0.3} />
+      <circle
+        cx={CX}
+        cy={CY}
+        r={RING1_R}
+        fill="none"
+        stroke="#1e293b"
+        strokeWidth={0.5}
+        strokeDasharray="4 8"
+        opacity={0.5}
+      />
+      <circle
+        cx={CX}
+        cy={CY}
+        r={RING2_R}
+        fill="none"
+        stroke="#1e293b"
+        strokeWidth={0.5}
+        strokeDasharray="4 12"
+        opacity={0.3}
+      />
 
       {/* ── Pulse waves from center ── */}
-      {!prefersReduced && [0, 1, 2].map((ring) => (
-        <motion.circle
-          key={`pulse-${ring}`}
-          cx={CX}
-          cy={CY}
-          fill="none"
-          stroke="rgba(20,184,166,0.12)"
-          strokeWidth={0.8}
-          initial={{ r: 30, opacity: 0.3 }}
-          animate={{ r: 260, opacity: 0 }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            delay: ring * 1.3,
-            ease: "easeOut",
-          }}
-        />
-      ))}
+      {!prefersReduced &&
+        [0, 1, 2].map((ring) => (
+          <motion.circle
+            key={`pulse-${ring}`}
+            cx={CX}
+            cy={CY}
+            r={30}
+            fill="none"
+            stroke="rgba(20,184,166,0.12)"
+            strokeWidth={0.8}
+            initial={{ r: 30, opacity: 0.3 }}
+            animate={{ r: 260, opacity: 0 }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              delay: ring * 1.3,
+              ease: "easeOut",
+            }}
+          />
+        ))}
 
       {/* ── Connection lines: center → modules ── */}
       {modulePositions.map((pos, i) => {
@@ -320,6 +492,8 @@ function ConstellationSVG({
               {/* Data particle along active connection */}
               {isActiveIntg && !prefersReduced && (
                 <motion.circle
+                  cx={intgPos.x}
+                  cy={intgPos.y}
                   r={2.5}
                   fill={intg.color}
                   initial={{ cx: intgPos.x, cy: intgPos.y, opacity: 0 }}
@@ -465,6 +639,7 @@ function ConstellationSVG({
               <motion.circle
                 cx={pos.x}
                 cy={pos.y}
+                r={16}
                 fill="none"
                 stroke={intg.color}
                 strokeWidth={0.5}
@@ -513,10 +688,10 @@ function IntegrationDossier({ integration }: { integration: IntegrationPartner }
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-slate-800/60 bg-slate-900/60 backdrop-blur-md"
+      className="flex flex-col items-start gap-4 rounded-xl border border-slate-800/60 bg-slate-900/60 p-5 backdrop-blur-md sm:flex-row"
     >
       <div
-        className="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 text-xs font-mono font-bold"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold"
         style={{
           borderColor: `${integration.color}40`,
           backgroundColor: `${integration.color}10`,
@@ -525,20 +700,26 @@ function IntegrationDossier({ integration }: { integration: IntegrationPartner }
       >
         {integration.name.slice(0, 2).toUpperCase()}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-1">
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-3">
           <span className="text-sm font-semibold text-white">{integration.name}</span>
           <span className="mk-mono-label-xs text-slate-500">{integration.syncType}</span>
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed">{integration.afendaAdds}</p>
+        <p className="text-xs leading-relaxed text-slate-400">{integration.afendaAdds}</p>
       </div>
-      <div className="flex items-center gap-1.5 shrink-0 self-center">
+      <div className="flex shrink-0 items-center gap-1.5 self-center">
         <span className="relative flex h-2 w-2">
           <span
             className="absolute inline-flex h-full w-full rounded-full opacity-60"
-            style={{ backgroundColor: integration.color, animation: "mk-ping 1.5s cubic-bezier(0,0,0.2,1) infinite" }}
+            style={{
+              backgroundColor: integration.color,
+              animation: "mk-ping 1.5s cubic-bezier(0,0,0.2,1) infinite",
+            }}
           />
-          <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: integration.color }} />
+          <span
+            className="relative inline-flex h-2 w-2 rounded-full"
+            style={{ backgroundColor: integration.color }}
+          />
         </span>
         <span className="mk-mono-label-xxs text-slate-500">LIVE</span>
       </div>
@@ -556,7 +737,10 @@ function SyncTerminal({ activeIndex }: { activeIndex: number }) {
   useEffect(() => {
     if (!inView) return;
     if (visibleCount >= SYNC_EVENTS.length) return;
-    const timer = setTimeout(() => setVisibleCount((c) => Math.min(c + 1, SYNC_EVENTS.length)), 2200);
+    const timer = setTimeout(
+      () => setVisibleCount((c) => Math.min(c + 1, SYNC_EVENTS.length)),
+      2200,
+    );
     return () => clearTimeout(timer);
   }, [visibleCount, inView]);
 
@@ -567,7 +751,10 @@ function SyncTerminal({ activeIndex }: { activeIndex: number }) {
   };
 
   return (
-    <div ref={terminalRef} className="rounded-xl border border-slate-800 bg-[#080A0F] overflow-hidden">
+    <div
+      ref={terminalRef}
+      className="overflow-hidden rounded-xl border border-slate-800 bg-[#080A0F]"
+    >
       {/* Terminal chrome */}
       <div className="mk-terminal-chrome rounded-t-xl">
         <div className="flex items-center gap-1.5">
@@ -576,43 +763,45 @@ function SyncTerminal({ activeIndex }: { activeIndex: number }) {
           <div className="mk-terminal-dot" />
         </div>
         <div className="flex items-center gap-2">
-          <Activity className="w-3 h-3 text-teal-500" />
+          <Activity className="h-3 w-3 text-teal-500" />
           <span className="mk-mono-label-xs text-slate-500">INTEGRATION SYNC LOG</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
           </span>
           <span className="mk-mono-label-xxs text-slate-600">STREAMING</span>
         </div>
       </div>
       {/* Events feed */}
-      <div className="p-3 space-y-0.5 max-h-64 overflow-y-auto font-mono text-[11px] leading-relaxed">
+      <div className="max-h-64 space-y-0.5 overflow-y-auto p-3 font-mono text-[11px] leading-relaxed">
         {SYNC_EVENTS.slice(0, visibleCount).map((evt, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-2 py-1 px-2 rounded hover:bg-slate-800/30 transition-colors"
+            className="flex items-center gap-2 rounded px-2 py-1 transition-colors hover:bg-slate-800/30"
           >
-            <span className="text-slate-600 shrink-0">{evt.time}</span>
+            <span className="shrink-0 text-slate-600">{evt.time}</span>
             <span className={`shrink-0 ${dirColor(evt.direction)}`}>{evt.direction}</span>
-            <span className="text-slate-400 shrink-0 w-24 truncate">{evt.source}</span>
-            <span className="text-slate-300 flex-1 truncate">{evt.event}</span>
-            <span className="text-slate-600 shrink-0 hidden sm:inline">{evt.ref}</span>
-            <span className="text-teal-600 shrink-0">{evt.latency}</span>
-            <span className={`shrink-0 ${evt.status === "ok" ? "text-emerald-500" : "text-amber-500"}`}>
+            <span className="w-24 shrink-0 truncate text-slate-400">{evt.source}</span>
+            <span className="flex-1 truncate text-slate-300">{evt.event}</span>
+            <span className="hidden shrink-0 text-slate-600 sm:inline">{evt.ref}</span>
+            <span className="shrink-0 text-teal-600">{evt.latency}</span>
+            <span
+              className={`shrink-0 ${evt.status === "ok" ? "text-emerald-500" : "text-amber-500"}`}
+            >
               {evt.status === "ok" ? "✓" : "⚠"}
             </span>
           </motion.div>
         ))}
         {/* Blinking cursor */}
-        <div className="flex items-center gap-2 py-1 px-2">
+        <div className="flex items-center gap-2 px-2 py-1">
           <span className="text-slate-600">&gt;</span>
           <motion.span
-            className="w-1.5 h-3.5 bg-teal-500/70"
+            className="h-3.5 w-1.5 bg-teal-500/70"
             animate={{ opacity: [1, 0] }}
             transition={{ duration: 0.8, repeat: Infinity }}
           />
@@ -626,19 +815,19 @@ function SyncTerminal({ activeIndex }: { activeIndex: number }) {
 
 function ThroughputStats() {
   return (
-    <div className="grid grid-cols-2 gap-3 h-full content-center">
+    <div className="grid h-full grid-cols-2 content-center gap-3">
       {THROUGHPUT_STATS.map((stat) => (
         <div
           key={stat.label}
-          className="p-4 rounded-xl border border-slate-800/50 bg-slate-900/40 text-center"
+          className="rounded-xl border border-slate-800/50 bg-slate-900/40 p-4 text-center"
         >
           <p
-            className="text-2xl md:text-3xl font-semibold tracking-tight"
+            className="text-2xl font-semibold tracking-tight md:text-3xl"
             style={{ color: stat.accent }}
           >
             {stat.value}
           </p>
-          <p className="mk-mono-label-xs text-slate-500 mt-1">{stat.label}</p>
+          <p className="mk-mono-label-xs mt-1 text-slate-500">{stat.label}</p>
         </div>
       ))}
     </div>
@@ -655,7 +844,7 @@ function IntegrationGrid({
   onSelect: (i: number) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
       {INTEGRATIONS.map((intg, i) => {
         const isActive = i === activeIndex;
         return (
@@ -663,25 +852,22 @@ function IntegrationGrid({
             key={intg.id}
             type="button"
             onClick={() => onSelect(i)}
-            className={`
-              p-3 rounded-lg border text-left transition-all duration-300
-              ${
-                isActive
-                  ? "border-slate-700 bg-slate-800/60"
-                  : "border-slate-800/40 bg-slate-900/20 hover:bg-slate-800/30 hover:border-slate-700"
-              }
-            `}
+            className={`rounded-lg border p-3 text-left transition-all duration-300 ${
+              isActive
+                ? "border-slate-700 bg-slate-800/60"
+                : "border-slate-800/40 bg-slate-900/20 hover:border-slate-700 hover:bg-slate-800/30"
+            } `}
           >
             <div className="flex items-center gap-2">
               <div
-                className="w-2 h-2 rounded-full shrink-0 transition-all duration-300"
+                className="h-2 w-2 shrink-0 rounded-full transition-all duration-300"
                 style={{
                   backgroundColor: isActive ? intg.color : "#334155",
                   boxShadow: isActive ? `0 0 8px ${intg.color}` : "none",
                 }}
               />
               <span
-                className={`text-xs font-mono font-semibold tracking-wider transition-colors duration-300 ${
+                className={`font-mono text-xs font-semibold tracking-wider transition-colors duration-300 ${
                   isActive ? "text-white" : "text-slate-500"
                 }`}
               >
@@ -692,7 +878,7 @@ function IntegrationGrid({
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="text-[10px] text-slate-400 mt-2 leading-relaxed"
+                className="mt-2 text-[10px] leading-relaxed text-slate-400"
               >
                 {intg.syncType}
               </motion.p>
@@ -741,15 +927,15 @@ export function EcosystemConstellation() {
     <section
       ref={sectionRef}
       id="ecosystem"
-      className="py-32 mk-section-deep overflow-hidden border-t border-slate-900 relative z-10"
+      className="mk-section-deep relative z-10 overflow-hidden border-t border-slate-900 py-32"
     >
       {/* Ambient glow */}
-      <div className="absolute inset-0 mk-glow-center pointer-events-none" />
+      <div className="mk-glow-center pointer-events-none absolute inset-0" />
 
       <div className="mk-container relative z-10">
         {/* ── Section Header ── */}
         <motion.div
-          className="text-center mb-16 lg:mb-20"
+          className="mb-16 text-center lg:mb-20"
           initial={prefersReduced ? false : { opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -757,27 +943,27 @@ export function EcosystemConstellation() {
         >
           <Badge
             variant="outline"
-            className="mb-6 border-teal-900/50 text-teal-400 font-mono tracking-[0.2em] uppercase text-[10px] bg-teal-950/20 px-3 py-1"
+            className="mb-6 border-teal-900/50 bg-teal-950/20 px-3 py-1 font-mono text-[10px] tracking-[0.2em] text-teal-400 uppercase"
           >
-            <ArrowRightLeft className="w-3 h-3" />
+            <ArrowRightLeft className="h-3 w-3" />
             The Nexus
           </Badge>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight mb-6 leading-[1.05]">
+          <h2 className="mb-6 text-4xl leading-[1.05] font-medium tracking-tight text-white md:text-5xl lg:text-6xl">
             One truth layer.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400">
+            <span className="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               Every system connected.
             </span>
           </h2>
-          <p className="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto font-light leading-relaxed">
-            AFENDA doesn&apos;t replace your ERP. It sits between your operational systems
-            and the regulators, auditors, and CFOs who demand verifiable truth —
-            a cryptographic bridge that makes <em>every</em> platform trustworthy.
+          <p className="mx-auto max-w-3xl text-lg leading-relaxed font-light text-slate-400 md:text-xl">
+            AFENDA doesn&apos;t replace your ERP. It sits between your operational systems and the
+            regulators, auditors, and CFOs who demand verifiable truth — a cryptographic bridge that
+            makes <em>every</em> platform trustworthy.
           </p>
         </motion.div>
 
         {/* ── Constellation Diagram ── */}
         <motion.div
-          className="relative mx-auto max-w-5xl mb-12"
+          className="relative mx-auto mb-12 max-w-5xl"
           initial={prefersReduced ? false : { opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
@@ -791,7 +977,7 @@ export function EcosystemConstellation() {
         </motion.div>
 
         {/* ── Active Integration Dossier ── */}
-        <div className="max-w-3xl mx-auto mb-12">
+        <div className="mx-auto mb-12 max-w-3xl">
           <AnimatePresence mode="wait">
             {INTEGRATIONS[activeIndex] && (
               <IntegrationDossier
@@ -804,7 +990,7 @@ export function EcosystemConstellation() {
 
         {/* ── Integration Selector Grid ── */}
         <motion.div
-          className="max-w-3xl mx-auto mb-20"
+          className="mx-auto mb-20 max-w-3xl"
           initial={prefersReduced ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -815,7 +1001,7 @@ export function EcosystemConstellation() {
 
         {/* ── Live Sync Terminal + Throughput Stats ── */}
         <motion.div
-          className="grid lg:grid-cols-5 gap-6 mb-24"
+          className="mb-24 grid gap-6 lg:grid-cols-5"
           initial={prefersReduced ? false : { opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -831,7 +1017,7 @@ export function EcosystemConstellation() {
 
         {/* ── The Positioning Statement ── */}
         <motion.div
-          className="text-center max-w-4xl mx-auto"
+          className="mx-auto max-w-4xl text-center"
           initial={prefersReduced ? false : { opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -839,14 +1025,14 @@ export function EcosystemConstellation() {
         >
           {/* The killer line */}
           <div className="mb-10">
-            <p className="text-xl md:text-2xl lg:text-3xl font-light text-slate-400 leading-relaxed tracking-tight">
+            <p className="text-xl leading-relaxed font-light tracking-tight text-slate-400 md:text-2xl lg:text-3xl">
               SAP moves your data.&ensp;Oracle stores your data.
               <br className="hidden md:block" />
               QuickBooks books your data.&ensp;Xero reconciles your data.
             </p>
-            <p className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mt-4 tracking-tight">
+            <p className="mt-4 text-2xl font-semibold tracking-tight text-white md:text-3xl lg:text-4xl">
               AFENDA{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">
+              <span className="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
                 proves
               </span>{" "}
               your data.
@@ -854,14 +1040,14 @@ export function EcosystemConstellation() {
           </div>
 
           {/* Supporting copy */}
-          <p className="text-slate-500 text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            We don&apos;t compete with the platforms you already trust. We add the
-            layer they were never built to provide: verifiable, cryptographic,
-            regulatory truth — across every system, every entity, every jurisdiction.
+          <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-slate-500 md:text-lg">
+            We don&apos;t compete with the platforms you already trust. We add the layer they were
+            never built to provide: verifiable, cryptographic, regulatory truth — across every
+            system, every entity, every jurisdiction.
           </p>
 
           {/* Proof points */}
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 mb-6">
+          <div className="mb-6 flex flex-wrap justify-center gap-x-8 gap-y-3">
             {[
               "Append-only audit ledger",
               "Zero-trust verification",
@@ -869,14 +1055,14 @@ export function EcosystemConstellation() {
               "Event-sourced architecture",
             ].map((point) => (
               <div key={point} className="flex items-center gap-2">
-                <Zap className="w-3 h-3 text-teal-500" />
-                <span className="text-xs font-mono text-slate-400 tracking-wider">{point}</span>
+                <Zap className="h-3 w-3 text-teal-500" />
+                <span className="font-mono text-xs tracking-wider text-slate-400">{point}</span>
               </div>
             ))}
           </div>
 
           {/* Mono footer */}
-          <p className="mk-mono-label-xs text-slate-600 mt-10 tracking-[0.25em]">
+          <p className="mk-mono-label-xs mt-10 tracking-[0.25em] text-slate-600">
             THE MISSING LAYER FOR MODERN ENTERPRISE FINANCE
           </p>
         </motion.div>

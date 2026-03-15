@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@afenda/ui";
-import { fetchSuccessorsForPosition } from "../../../shared/hrm-client";
+import { fetchSuccessorsForPosition } from "../../../../shared/hrm-client";
 
 interface SuccessorItem {
   successorNominationId: string;
@@ -45,7 +45,7 @@ export default async function SuccessorsPage({
       <div className="mb-6 flex items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight">Successors for Position</h1>
-          <p className="text-sm text-muted-foreground font-mono">{positionId}</p>
+          <p className="font-mono text-sm text-muted-foreground">{positionId}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>

@@ -135,6 +135,12 @@ export const AuditActionValues = [
   "treasury.liquidity-source-feed.upserted",
   "treasury.fx-rate-snapshot.upserted",
   "treasury.forecast-variance.recorded",
+  "treasury.fx-exposure.created",
+  "treasury.fx-exposure.closed",
+  "treasury.hedge-designation.created",
+  "treasury.hedge-designation.status-updated",
+  "treasury.revaluation-event.created",
+  "treasury.revaluation-event.status-updated",
   // Treasury — Wave 4.1 In-house Banking + Intercompany Transfers
   "treasury.internal-bank-account.created",
   "treasury.internal-bank-account.activated",
@@ -288,6 +294,9 @@ export const AuditEntityTypeValues = [
   "liquidity_source_feed",
   "fx_rate_snapshot",
   "forecast_variance",
+  "fx_exposure",
+  "hedge_designation",
+  "revaluation_event",
   "internal_bank_account",
   "intercompany_transfer",
 

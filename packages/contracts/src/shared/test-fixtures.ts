@@ -1,4 +1,4 @@
-import { JournalEntrySchema, type JournalEntry } from "./journal.js";
+import { SharedJournalEntrySchema, type SharedJournalEntry } from "./journal.js";
 import { MoneySchema, type CurrencyCode, type Money } from "./money.js";
 
 export type RNG = {
@@ -217,7 +217,7 @@ export async function runPropertyHarness<T>(opts: {
   }
 }
 
-export function makeJournalEntryFixture(opts: JournalEntryFixtureOptions = {}): JournalEntry {
+export function makeJournalEntryFixture(opts: JournalEntryFixtureOptions = {}): SharedJournalEntry {
   const rng = opts.rng ?? createSeededRng("journal-default");
   const amount = BigInt(1 + rng.nextInt(10000));
 
@@ -244,7 +244,7 @@ export function makeJournalEntryFixture(opts: JournalEntryFixtureOptions = {}): 
     metadata: opts.metadata ?? {},
   };
 
-  return JournalEntrySchema.parse(entry);
+  return SharedJournalEntrySchema.parse(entry);
 }
 
 export type SeedGeneratorOptions = {
@@ -319,12 +319,12 @@ export function seedGenerator(opts: SeedGeneratorOptions = {}): {
   return { currencies, permissions, currencyMeta };
 }
 
-export function sampleLedgerBatch(seed: string, n = 10): JournalEntry[] {
+export function sampleLedgerBatch(seed: string, n = 10): SharedJournalEntry[] {
   assertPositiveInteger(n, "n");
 
   const rng = createSeededRng(seed);
   const currencies = ["USD", "EUR", "JPY"];
-  const result: JournalEntry[] = [];
+  const result: SharedJournalEntry[] = [];
 
   for (let i = 0; i < n; i += 1) {
     const entry = makeJournalEntryFixture({

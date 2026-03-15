@@ -62,10 +62,10 @@ describe("shared envelope", () => {
     expect(blankCursor.success).toBe(false);
   });
 
-  it("rejects invalid ApiError shape in error envelope", () => {
+  it("rejects invalid ApiError code shape in error envelope", () => {
     const result = ErrorEnvelopeSchema.safeParse({
       error: {
-        code: "NOT_A_REAL_CODE",
+        code: "not-a-real-code",
         message: "bad",
       },
       correlationId,

@@ -42,41 +42,182 @@ interface LedgerEvent {
   shortLabel: string;
   timestamp: string;
   parentId?: string;
-  ring: number;   // 0 = innermost, 1, 2 = outer
-  angle: number;  // degrees around the orbit
+  ring: number; // 0 = innermost, 1, 2 = outer
+  angle: number; // degrees around the orbit
   domain: "INGEST" | "VALIDATE" | "SETTLE" | "AUDIT";
   timestampOrder: number; // For chronological replay
 }
 
 const EVENTS: LedgerEvent[] = [
-  { id: "E001", type: "invoice",    label: "INV-2024-4281",   shortLabel: "INV",  timestamp: "2024-01-15", ring: 2, angle: 220, domain: "INGEST", timestampOrder: 1 },
-  { id: "E002", type: "approval",   label: "APR-CFO-CHEN",   shortLabel: "APR",  timestamp: "2024-01-15", ring: 1, angle: 200, parentId: "E001", domain: "VALIDATE", timestampOrder: 2 },
-  { id: "E003", type: "posting",    label: "JNL-GL-00891",   shortLabel: "JNL",  timestamp: "2024-01-16", ring: 0, angle: 180, parentId: "E002", domain: "SETTLE", timestampOrder: 3 },
-  { id: "E004", type: "adjustment", label: "ADJ-FX-REVAL",   shortLabel: "ADJ",  timestamp: "2024-03-31", ring: 1, angle: 120, parentId: "E003", domain: "VALIDATE", timestampOrder: 4 },
-  { id: "E005", type: "reversal",   label: "REV-4281-A",     shortLabel: "REV",  timestamp: "2024-06-12", ring: 1, angle: 60,  parentId: "E003", domain: "AUDIT", timestampOrder: 5 },
-  { id: "E006", type: "correction", label: "COR-4281-B",     shortLabel: "COR",  timestamp: "2024-06-12", ring: 2, angle: 40,  parentId: "E005", domain: "INGEST", timestampOrder: 6 },
-  { id: "E007", type: "approval",   label: "APR-AUDIT-LOCK", shortLabel: "SEAL", timestamp: "2024-06-30", ring: 0, angle: 340, parentId: "E006", domain: "AUDIT", timestampOrder: 7 },
-  { id: "E008", type: "invoice",    label: "INV-2024-7712",  shortLabel: "INV",  timestamp: "2024-07-01", ring: 2, angle: 310, domain: "INGEST", timestampOrder: 8 },
-  { id: "E009", type: "posting",    label: "JNL-GL-01204",   shortLabel: "JNL",  timestamp: "2024-07-02", ring: 0, angle: 290, parentId: "E008", domain: "SETTLE", timestampOrder: 9 },
-  { id: "E010", type: "adjustment", label: "ADJ-IC-ELIM",    shortLabel: "ADJ",  timestamp: "2024-09-30", ring: 1, angle: 260, parentId: "E009", domain: "VALIDATE", timestampOrder: 10 },
+  {
+    id: "E001",
+    type: "invoice",
+    label: "INV-2024-4281",
+    shortLabel: "INV",
+    timestamp: "2024-01-15",
+    ring: 2,
+    angle: 220,
+    domain: "INGEST",
+    timestampOrder: 1,
+  },
+  {
+    id: "E002",
+    type: "approval",
+    label: "APR-CFO-CHEN",
+    shortLabel: "APR",
+    timestamp: "2024-01-15",
+    ring: 1,
+    angle: 200,
+    parentId: "E001",
+    domain: "VALIDATE",
+    timestampOrder: 2,
+  },
+  {
+    id: "E003",
+    type: "posting",
+    label: "JNL-GL-00891",
+    shortLabel: "JNL",
+    timestamp: "2024-01-16",
+    ring: 0,
+    angle: 180,
+    parentId: "E002",
+    domain: "SETTLE",
+    timestampOrder: 3,
+  },
+  {
+    id: "E004",
+    type: "adjustment",
+    label: "ADJ-FX-REVAL",
+    shortLabel: "ADJ",
+    timestamp: "2024-03-31",
+    ring: 1,
+    angle: 120,
+    parentId: "E003",
+    domain: "VALIDATE",
+    timestampOrder: 4,
+  },
+  {
+    id: "E005",
+    type: "reversal",
+    label: "REV-4281-A",
+    shortLabel: "REV",
+    timestamp: "2024-06-12",
+    ring: 1,
+    angle: 60,
+    parentId: "E003",
+    domain: "AUDIT",
+    timestampOrder: 5,
+  },
+  {
+    id: "E006",
+    type: "correction",
+    label: "COR-4281-B",
+    shortLabel: "COR",
+    timestamp: "2024-06-12",
+    ring: 2,
+    angle: 40,
+    parentId: "E005",
+    domain: "INGEST",
+    timestampOrder: 6,
+  },
+  {
+    id: "E007",
+    type: "approval",
+    label: "APR-AUDIT-LOCK",
+    shortLabel: "SEAL",
+    timestamp: "2024-06-30",
+    ring: 0,
+    angle: 340,
+    parentId: "E006",
+    domain: "AUDIT",
+    timestampOrder: 7,
+  },
+  {
+    id: "E008",
+    type: "invoice",
+    label: "INV-2024-7712",
+    shortLabel: "INV",
+    timestamp: "2024-07-01",
+    ring: 2,
+    angle: 310,
+    domain: "INGEST",
+    timestampOrder: 8,
+  },
+  {
+    id: "E009",
+    type: "posting",
+    label: "JNL-GL-01204",
+    shortLabel: "JNL",
+    timestamp: "2024-07-02",
+    ring: 0,
+    angle: 290,
+    parentId: "E008",
+    domain: "SETTLE",
+    timestampOrder: 9,
+  },
+  {
+    id: "E010",
+    type: "adjustment",
+    label: "ADJ-IC-ELIM",
+    shortLabel: "ADJ",
+    timestamp: "2024-09-30",
+    ring: 1,
+    angle: 260,
+    parentId: "E009",
+    domain: "VALIDATE",
+    timestampOrder: 10,
+  },
 ];
 
-const EVENT_META: Record<LedgerEvent["type"], { color: string; bg: string; border: string; glow: string }> = {
-  invoice:    { color: "text-emerald-400", bg: "bg-emerald-500/15", border: "border-emerald-500/40", glow: "rgba(52,211,153,0.6)"  },
-  approval:   { color: "text-teal-400",    bg: "bg-teal-500/15",    border: "border-teal-500/40",    glow: "rgba(20,184,166,0.6)"  },
-  posting:    { color: "text-cyan-400",     bg: "bg-cyan-500/15",    border: "border-cyan-500/40",    glow: "rgba(34,211,238,0.6)"  },
-  adjustment: { color: "text-amber-400",    bg: "bg-amber-500/15",   border: "border-amber-500/40",   glow: "rgba(245,158,11,0.6)" },
-  reversal:   { color: "text-rose-400",     bg: "bg-rose-500/15",    border: "border-rose-500/40",    glow: "rgba(244,63,94,0.6)"  },
-  correction: { color: "text-violet-400",   bg: "bg-violet-500/15",  border: "border-violet-500/40",  glow: "rgba(167,139,250,0.6)" },
+const EVENT_META: Record<
+  LedgerEvent["type"],
+  { color: string; bg: string; border: string; glow: string }
+> = {
+  invoice: {
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/15",
+    border: "border-emerald-500/40",
+    glow: "rgba(52,211,153,0.6)",
+  },
+  approval: {
+    color: "text-teal-400",
+    bg: "bg-teal-500/15",
+    border: "border-teal-500/40",
+    glow: "rgba(20,184,166,0.6)",
+  },
+  posting: {
+    color: "text-cyan-400",
+    bg: "bg-cyan-500/15",
+    border: "border-cyan-500/40",
+    glow: "rgba(34,211,238,0.6)",
+  },
+  adjustment: {
+    color: "text-amber-400",
+    bg: "bg-amber-500/15",
+    border: "border-amber-500/40",
+    glow: "rgba(245,158,11,0.6)",
+  },
+  reversal: {
+    color: "text-rose-400",
+    bg: "bg-rose-500/15",
+    border: "border-rose-500/40",
+    glow: "rgba(244,63,94,0.6)",
+  },
+  correction: {
+    color: "text-violet-400",
+    bg: "bg-violet-500/15",
+    border: "border-violet-500/40",
+    glow: "rgba(167,139,250,0.6)",
+  },
 };
 
 const TYPE_ICON: Record<LedgerEvent["type"], React.ReactNode> = {
-  invoice:    <FileCheck2 className="w-3 h-3" />,
-  approval:   <Stamp className="w-3 h-3" />,
-  posting:    <BookOpen className="w-3 h-3" />,
-  adjustment: <RotateCcw className="w-3 h-3" />,
-  reversal:   <GitBranch className="w-3 h-3" />,
-  correction: <Link2 className="w-3 h-3" />,
+  invoice: <FileCheck2 className="h-3 w-3" />,
+  approval: <Stamp className="h-3 w-3" />,
+  posting: <BookOpen className="h-3 w-3" />,
+  adjustment: <RotateCcw className="h-3 w-3" />,
+  reversal: <GitBranch className="h-3 w-3" />,
+  correction: <Link2 className="h-3 w-3" />,
 };
 
 /* ── Utility: polar to cartesian ─────────────────────────────────────────── */
@@ -109,24 +250,22 @@ export function PillarArchitecture() {
   useEffect(() => {
     if (!isInView || userInteracted || lockedId || isReplaying) return;
     const timer = setInterval(() => {
-      setAutoIdx(prev => (prev + 1) % EVENTS.length);
+      setAutoIdx((prev) => (prev + 1) % EVENTS.length);
     }, 2800);
     return () => clearInterval(timer);
   }, [isInView, userInteracted, lockedId, isReplaying]);
 
-  const activeId = lockedId || (userInteracted ? hoveredId : EVENTS[autoIdx]?.id ?? null);
+  const activeId = lockedId || (userInteracted ? hoveredId : (EVENTS[autoIdx]?.id ?? null));
 
   // Filter events by domain
   const visibleEvents = useMemo(() => {
-    const baseEvents = domainFilter 
-      ? EVENTS.filter(e => e.domain === domainFilter)
-      : EVENTS;
-    
+    const baseEvents = domainFilter ? EVENTS.filter((e) => e.domain === domainFilter) : EVENTS;
+
     // If replaying, only show events up to replay progress
     if (isReplaying) {
-      return baseEvents.filter(e => e.timestampOrder <= replayProgress);
+      return baseEvents.filter((e) => e.timestampOrder <= replayProgress);
     }
-    
+
     return baseEvents;
   }, [domainFilter, isReplaying, replayProgress]);
 
@@ -134,10 +273,10 @@ export function PillarArchitecture() {
   const lineageChain = useMemo(() => {
     const chain = new Set<string>();
     if (!activeId) return chain;
-    let current: LedgerEvent | undefined = EVENTS.find(e => e.id === activeId);
+    let current: LedgerEvent | undefined = EVENTS.find((e) => e.id === activeId);
     while (current) {
       chain.add(current.id);
-      current = current.parentId ? EVENTS.find(e => e.id === current!.parentId) : undefined;
+      current = current.parentId ? EVENTS.find((e) => e.id === current!.parentId) : undefined;
     }
     return chain;
   }, [activeId]);
@@ -145,9 +284,9 @@ export function PillarArchitecture() {
   // Replay animation
   useEffect(() => {
     if (!isReplaying) return;
-    
+
     const timer = setInterval(() => {
-      setReplayProgress(prev => {
+      setReplayProgress((prev) => {
         if (prev >= 10) {
           setIsReplaying(false);
           return 10;
@@ -155,18 +294,18 @@ export function PillarArchitecture() {
         return prev + 1;
       });
     }, 800);
-    
+
     return () => clearInterval(timer);
   }, [isReplaying]);
 
   // Lineage edges (only for visible events)
   const lineageEdges = useMemo(() => {
-    const visibleIds = new Set(visibleEvents.map(e => e.id));
-    
+    const visibleIds = new Set(visibleEvents.map((e) => e.id));
+
     return visibleEvents
-      .filter(e => e.parentId && e.ring !== undefined)
-      .map(e => {
-        const parent = EVENTS.find(p => p.id === e.parentId);
+      .filter((e) => e.parentId && e.ring !== undefined)
+      .map((e) => {
+        const parent = EVENTS.find((p) => p.id === e.parentId);
         if (!parent || parent.ring === undefined || !visibleIds.has(parent.id)) return null;
         const from = polarToXY(CX, CY, RING_RADII[e.ring!]!, e.angle);
         const to = polarToXY(CX, CY, RING_RADII[parent.ring!]!, parent.angle);
@@ -174,12 +313,12 @@ export function PillarArchitecture() {
         return { id: `${e.id}-${parent.id}`, from, to, isHighlighted, type: e.type };
       })
       .filter(Boolean) as Array<{
-        id: string;
-        from: { x: number; y: number };
-        to: { x: number; y: number };
-        isHighlighted: boolean;
-        type: LedgerEvent["type"];
-      }>;
+      id: string;
+      from: { x: number; y: number };
+      to: { x: number; y: number };
+      isHighlighted: boolean;
+      type: LedgerEvent["type"];
+    }>;
   }, [lineageChain, visibleEvents]);
 
   function handleHover(id: string | null) {
@@ -189,12 +328,12 @@ export function PillarArchitecture() {
   }
 
   function handleNodeClick(id: string) {
-    setLockedId(prev => prev === id ? null : id); // Toggle lock
+    setLockedId((prev) => (prev === id ? null : id)); // Toggle lock
     setUserInteracted(true);
   }
 
   function handleDomainFilter(domain: LedgerEvent["domain"]) {
-    setDomainFilter(prev => prev === domain ? null : domain); // Toggle filter
+    setDomainFilter((prev) => (prev === domain ? null : domain)); // Toggle filter
     setLockedId(null);
   }
 
@@ -230,17 +369,17 @@ export function PillarArchitecture() {
   return (
     <section
       ref={sectionRef}
-      className="py-32 mk-section-alt border-t border-slate-900/80 relative z-10 overflow-hidden"
+      className="mk-section-alt relative z-10 overflow-hidden border-t border-slate-900/80 py-32"
       id="pillar"
     >
       {/* ── Atmospheric depth ── */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-teal-900/4 blur-[200px] rounded-full pointer-events-none" />
-      <div className="absolute top-0 right-1/4 w-[300px] h-[400px] bg-cyan-900/3 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-indigo-900/3 blur-[120px] rounded-full pointer-events-none" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-900/4 blur-[200px]" />
+      <div className="pointer-events-none absolute top-0 right-1/4 h-[400px] w-[300px] rounded-full bg-cyan-900/3 blur-[150px]" />
+      <div className="pointer-events-none absolute bottom-0 left-1/4 h-[300px] w-[400px] rounded-full bg-indigo-900/3 blur-[120px]" />
 
       <div className="mk-container relative z-10">
         {/* ── Header ── */}
-        <div className="text-center mb-16 md:mb-24">
+        <div className="mb-16 text-center md:mb-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -249,9 +388,9 @@ export function PillarArchitecture() {
           >
             <Badge
               variant="outline"
-              className="mb-6 border-teal-900/50 text-teal-400 font-mono tracking-[0.2em] uppercase text-[10px] bg-teal-950/20 px-3 py-1 mx-auto"
+              className="mx-auto mb-6 border-teal-900/50 bg-teal-950/20 px-3 py-1 font-mono text-[10px] tracking-[0.2em] text-teal-400 uppercase"
             >
-              <History className="w-3 h-3 mr-2" />
+              <History className="mr-2 h-3 w-3" />
               North Star Architecture
             </Badge>
           </motion.div>
@@ -261,11 +400,11 @@ export function PillarArchitecture() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-medium text-white tracking-tight mb-4 leading-[1.05]"
+            className="mb-4 text-4xl leading-[1.05] font-medium tracking-tight text-white md:text-6xl lg:text-7xl"
           >
             Nothing Is Deleted.
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-400">
+            <span className="bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">
               Everything Is Remembered.
             </span>
           </motion.h2>
@@ -275,54 +414,57 @@ export function PillarArchitecture() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base md:text-lg text-slate-400 font-light leading-relaxed max-w-3xl mx-auto mt-6"
+            className="mx-auto mt-6 max-w-3xl text-base leading-relaxed font-light text-slate-400 md:text-lg"
           >
             The pillar architecture gives finance leadership a visual model of your truth layer.
             Each correction, approval, and reversal becomes{" "}
-            <span className="text-white/80">evidence, not overwritten state</span>,
-            so audit narratives remain complete under real-world operational pressure.
+            <span className="text-white/80">evidence, not overwritten state</span>, so audit
+            narratives remain complete under real-world operational pressure.
           </motion.p>
         </div>
 
         {/* ── Main Layout ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-0 items-start">
-
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-0">
           {/* ── LEFT: Properties ── */}
-          <div className="lg:col-span-4 space-y-4 order-2 lg:order-1 lg:pr-6">
+          <div className="order-2 space-y-4 lg:order-1 lg:col-span-4 lg:pr-6">
             {[
               {
-                icon: <Lock className="w-4 h-4 text-emerald-400" />,
+                icon: <Lock className="h-4 w-4 text-emerald-400" />,
                 iconBg: "bg-emerald-950/50 border-emerald-500/30",
                 hoverBorder: "hover:border-emerald-500/20",
                 title: "Immutable Ledger Architecture",
                 desc: (
-                  <>Financial events are append-only. Corrections generate{" "}
-                  <span className="text-emerald-400/70">new entries</span> rather
-                  than modifying history, preserving a permanent record of
-                  economic activity.</>
+                  <>
+                    Financial events are append-only. Corrections generate{" "}
+                    <span className="text-emerald-400/70">new entries</span> rather than modifying
+                    history, preserving a permanent record of economic activity.
+                  </>
                 ),
               },
               {
-                icon: <GitBranch className="w-4 h-4 text-cyan-400" />,
+                icon: <GitBranch className="h-4 w-4 text-cyan-400" />,
                 iconBg: "bg-cyan-950/50 border-cyan-500/30",
                 hoverBorder: "hover:border-cyan-500/20",
                 title: "Complete Transaction Lineage",
                 desc: (
-                  <>Every financial event links to its origin. Invoices,
-                  approvals, reversals, and adjustments remain{" "}
-                  <span className="text-cyan-400/70">permanently traceable</span>.</>
+                  <>
+                    Every financial event links to its origin. Invoices, approvals, reversals, and
+                    adjustments remain{" "}
+                    <span className="text-cyan-400/70">permanently traceable</span>.
+                  </>
                 ),
               },
               {
-                icon: <Shield className="w-4 h-4 text-violet-400" />,
+                icon: <Shield className="h-4 w-4 text-violet-400" />,
                 iconBg: "bg-violet-950/50 border-violet-500/30",
                 hoverBorder: "hover:border-violet-500/20",
                 title: "Audit Narrative Preservation",
                 desc: (
-                  <>AFENDA maintains the{" "}
-                  <span className="text-violet-400/70">full story</span> behind
-                  financial decisions, ensuring auditors can reconstruct events
-                  years or decades later.</>
+                  <>
+                    AFENDA maintains the <span className="text-violet-400/70">full story</span>{" "}
+                    behind financial decisions, ensuring auditors can reconstruct events years or
+                    decades later.
+                  </>
                 ),
               },
             ].map((card, i) => (
@@ -334,16 +476,20 @@ export function PillarArchitecture() {
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.12 }}
                 className="group"
               >
-                <div className={`p-5 rounded-xl border border-slate-800/50 bg-slate-900/20 hover:bg-slate-900/40 ${card.hoverBorder} transition-all duration-500`}>
+                <div
+                  className={`rounded-xl border border-slate-800/50 bg-slate-900/20 p-5 hover:bg-slate-900/40 ${card.hoverBorder} transition-all duration-500`}
+                >
                   <div className="flex items-start gap-3.5">
-                    <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${card.iconBg} transition-all duration-500`}>
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${card.iconBg} transition-all duration-500`}
+                    >
                       {card.icon}
                     </div>
                     <div>
-                      <h3 className="text-[15px] font-medium text-white tracking-tight mb-1.5">
+                      <h3 className="mb-1.5 text-[15px] font-medium tracking-tight text-white">
                         {card.title}
                       </h3>
-                      <p className="text-[13px] text-slate-400 font-light leading-relaxed">
+                      <p className="text-[13px] leading-relaxed font-light text-slate-400">
                         {card.desc}
                       </p>
                     </div>
@@ -360,7 +506,7 @@ export function PillarArchitecture() {
               transition={{ duration: 0.6, delay: 0.8 }}
               className="pt-3"
             >
-              <p className="text-sm text-slate-500 font-light italic leading-relaxed pl-3 border-l-2 border-teal-500/20">
+              <p className="border-l-2 border-teal-500/20 pl-3 text-sm leading-relaxed font-light text-slate-500 italic">
                 "A ledger that will still tell the truth
                 <span className="text-teal-400/60"> 100 years</span> from now."
               </p>
@@ -374,17 +520,28 @@ export function PillarArchitecture() {
               transition={{ duration: 0.5, delay: 1 }}
               className="pt-2"
             >
-              <div className="px-4 py-3 rounded-lg border border-slate-800/30 bg-slate-950/40 space-y-2">
-                <span className="text-[9px] font-mono text-slate-600 tracking-[0.2em] uppercase">
+              <div className="space-y-2 rounded-lg border border-slate-800/30 bg-slate-950/40 px-4 py-3">
+                <span className="font-mono text-[9px] tracking-[0.2em] text-slate-600 uppercase">
                   Event Legend
                 </span>
                 <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                  {(["invoice", "approval", "posting", "adjustment", "reversal", "correction"] as const).map(type => {
+                  {(
+                    [
+                      "invoice",
+                      "approval",
+                      "posting",
+                      "adjustment",
+                      "reversal",
+                      "correction",
+                    ] as const
+                  ).map((type) => {
                     const m = EVENT_META[type];
                     return (
                       <div key={type} className="flex items-center gap-1.5">
-                        <div className={`w-2 h-2 rounded-full ${m.bg} border ${m.border}`} />
-                        <span className={`text-[9px] font-mono ${m.color} tracking-wider uppercase`}>
+                        <div className={`h-2 w-2 rounded-full ${m.bg} border ${m.border}`} />
+                        <span
+                          className={`font-mono text-[9px] ${m.color} tracking-wider uppercase`}
+                        >
                           {type}
                         </span>
                       </div>
@@ -396,19 +553,15 @@ export function PillarArchitecture() {
           </div>
 
           {/* ── RIGHT: North Star Orbital Diagram ── */}
-          <div className="lg:col-span-8 order-1 lg:order-2 relative flex items-center justify-center">
+          <div className="relative order-1 flex items-center justify-center lg:order-2 lg:col-span-8">
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 1, ease: "easeOut" }}
-              className="relative w-full max-w-[700px] aspect-square"
+              className="relative aspect-square w-full max-w-[700px]"
             >
-              <svg
-                viewBox="0 0 800 800"
-                className="w-full h-full"
-                style={{ overflow: "visible" }}
-              >
+              <svg viewBox="0 0 800 800" className="h-full w-full" style={{ overflow: "visible" }}>
                 <defs>
                   {/* Radial glow for center */}
                   <radialGradient id="ns-core-glow" cx="50%" cy="50%" r="50%">
@@ -419,7 +572,12 @@ export function PillarArchitecture() {
 
                   {/* Subtle grid pattern */}
                   <pattern id="ns-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.03)" strokeWidth="0.5" />
+                    <path
+                      d="M 40 0 L 0 0 0 40"
+                      fill="none"
+                      stroke="rgba(148,163,184,0.03)"
+                      strokeWidth="0.5"
+                    />
                   </pattern>
 
                   {/* Glow filter */}
@@ -451,7 +609,9 @@ export function PillarArchitecture() {
                   <React.Fragment key={`ring-${i}`}>
                     {/* Ring track */}
                     <motion.circle
-                      cx={CX} cy={CY} r={r}
+                      cx={CX}
+                      cy={CY}
+                      r={r}
                       fill="none"
                       stroke={`rgba(148,163,184,${0.06 + i * 0.02})`}
                       strokeWidth="1"
@@ -462,7 +622,9 @@ export function PillarArchitecture() {
                     />
                     {/* Dashed detail ring */}
                     <circle
-                      cx={CX} cy={CY} r={r}
+                      cx={CX}
+                      cy={CY}
+                      r={r}
                       fill="none"
                       stroke={`rgba(45,212,191,${0.04 + i * 0.01})`}
                       strokeWidth="0.5"
@@ -470,8 +632,9 @@ export function PillarArchitecture() {
                     />
                     {/* Ring label */}
                     <text
-                      x={CX + r + 8} y={CY - 4}
-                      className="fill-slate-700 text-[8px] font-mono"
+                      x={CX + r + 8}
+                      y={CY - 4}
+                      className="fill-slate-700 font-mono text-[8px]"
                       style={{ letterSpacing: "0.15em" }}
                     >
                       {i === 0 ? "CORE" : i === 1 ? "PROCESS" : "INGEST"}
@@ -480,11 +643,19 @@ export function PillarArchitecture() {
                 ))}
 
                 {/* ── LINEAGE CONNECTIONS ── */}
-                {lineageEdges.map(edge => {
+                {lineageEdges.map((edge) => {
                   const meta = EVENT_META[edge.type];
                   // Curved path through center influence - rounded for consistent hydration
-                  const mx = Math.round(((edge.from.x + edge.to.x) / 2 + (CX - (edge.from.x + edge.to.x) / 2) * 0.3) * 100) / 100;
-                  const my = Math.round(((edge.from.y + edge.to.y) / 2 + (CY - (edge.from.y + edge.to.y) / 2) * 0.3) * 100) / 100;
+                  const mx =
+                    Math.round(
+                      ((edge.from.x + edge.to.x) / 2 + (CX - (edge.from.x + edge.to.x) / 2) * 0.3) *
+                        100,
+                    ) / 100;
+                  const my =
+                    Math.round(
+                      ((edge.from.y + edge.to.y) / 2 + (CY - (edge.from.y + edge.to.y) / 2) * 0.3) *
+                        100,
+                    ) / 100;
                   const pathD = `M ${edge.from.x} ${edge.from.y} Q ${mx} ${my} ${edge.to.x} ${edge.to.y}`;
 
                   return (
@@ -495,7 +666,9 @@ export function PillarArchitecture() {
                         fill="none"
                         stroke={edge.isHighlighted ? meta.glow : "rgba(71,85,105,0.12)"}
                         strokeWidth={edge.isHighlighted ? "2" : "0.8"}
-                        strokeDasharray={edge.type === "reversal" || edge.type === "correction" ? "4 4" : "none"}
+                        strokeDasharray={
+                          edge.type === "reversal" || edge.type === "correction" ? "4 4" : "none"
+                        }
                         className="transition-all duration-500"
                       />
                       {/* Glow overlay for highlighted */}
@@ -512,11 +685,7 @@ export function PillarArchitecture() {
                       {/* Animated particle traveling the path */}
                       {edge.isHighlighted && (
                         <circle r="2.5" fill={meta.glow} filter="url(#ns-glow)">
-                          <animateMotion
-                            dur="2s"
-                            repeatCount="indefinite"
-                            path={pathD}
-                          />
+                          <animateMotion dur="2s" repeatCount="indefinite" path={pathD} />
                         </circle>
                       )}
                     </React.Fragment>
@@ -525,8 +694,10 @@ export function PillarArchitecture() {
 
                 {/* ── SLOW-ROTATING SCAN LINE ── */}
                 <motion.line
-                  x1={CX} y1={CY}
-                  x2={CX} y2={CY - RING_RADII[2]! - 20}
+                  x1={CX}
+                  y1={CY}
+                  x2={CX}
+                  y2={CY - RING_RADII[2]! - 20}
                   stroke="rgba(45,212,191,0.08)"
                   strokeWidth="1"
                   animate={{ rotate: 360 }}
@@ -554,7 +725,9 @@ export function PillarArchitecture() {
                       <AnimatePresence>
                         {isActive && (
                           <motion.circle
-                            cx={pos.x} cy={pos.y}
+                            cx={pos.x}
+                            cy={pos.y}
+                            r={12}
                             fill="none"
                             stroke={meta.glow}
                             strokeWidth="1"
@@ -569,7 +742,9 @@ export function PillarArchitecture() {
                       {/* Locked indicator ring */}
                       {isLocked && (
                         <motion.circle
-                          cx={pos.x} cy={pos.y} r="25"
+                          cx={pos.x}
+                          cy={pos.y}
+                          r="25"
                           fill="none"
                           stroke={meta.glow}
                           strokeWidth="2"
@@ -583,7 +758,9 @@ export function PillarArchitecture() {
                       {/* Outer pulse ring for hovered node */}
                       {isHovered && !isLocked && (
                         <motion.circle
-                          cx={pos.x} cy={pos.y}
+                          cx={pos.x}
+                          cy={pos.y}
+                          r={14}
                           fill="none"
                           stroke={meta.glow}
                           strokeWidth="1.5"
@@ -595,52 +772,62 @@ export function PillarArchitecture() {
 
                       {/* Node body */}
                       <motion.circle
-                        cx={pos.x} cy={pos.y}
+                        r={isActive ? 13 : 10}
+                        cx={pos.x}
+                        cy={pos.y}
                         className={`${isActive ? "fill-slate-900" : "fill-slate-950"} transition-all duration-300`}
                         stroke={isActive ? meta.glow : "rgba(71,85,105,0.4)"}
                         strokeWidth={isActive ? "2" : "1"}
                         filter={isActive ? "url(#ns-glow)" : undefined}
                         initial={{ r: 0, opacity: 0 }}
-                        animate={{ 
-                          r: isActive ? 13 : 10, 
+                        animate={{
+                          r: isActive ? 13 : 10,
                           opacity: 1,
-                          ...(isReplaying && event.timestampOrder === replayProgress ? {
-                            scale: [1, 1.3, 1],
-                          } : {})
+                          ...(isReplaying && event.timestampOrder === replayProgress
+                            ? {
+                                scale: [1, 1.3, 1],
+                              }
+                            : {}),
                         }}
                         viewport={{ once: true }}
-                        transition={{ 
-                          duration: 0.4, 
-                          delay: isReplaying ? 0 : 0.5 + i * 0.08 
+                        transition={{
+                          duration: 0.4,
+                          delay: isReplaying ? 0 : 0.5 + i * 0.08,
                         }}
                       />
 
                       {/* Node icon placeholder — colored inner dot */}
                       <motion.circle
-                        cx={pos.x} cy={pos.y}
+                        cx={pos.x}
+                        cy={pos.y}
                         r={isActive ? 4.5 : 3}
                         fill={isActive ? meta.glow : "rgba(148,163,184,0.3)"}
                         className="transition-all duration-300"
                         initial={{ r: 0 }}
-                        animate={{ 
+                        animate={{
                           r: isActive ? 4.5 : 3,
-                          ...(isReplaying && event.timestampOrder === replayProgress ? {
-                            opacity: [0.3, 1, 0.3, 1],
-                          } : {})
+                          ...(isReplaying && event.timestampOrder === replayProgress
+                            ? {
+                                opacity: [0.3, 1, 0.3, 1],
+                              }
+                            : {}),
                         }}
                         viewport={{ once: true }}
-                        transition={{ 
-                          duration: 0.3, 
-                          delay: isReplaying ? 0 : 0.6 + i * 0.08
+                        transition={{
+                          duration: 0.3,
+                          delay: isReplaying ? 0 : 0.6 + i * 0.08,
                         }}
                       />
 
                       {/* Short label */}
                       <text
                         x={pos.x}
-                        y={pos.y + (event.ring === 0 ? 24 : event.angle > 90 && event.angle < 270 ? 24 : -18)}
+                        y={
+                          pos.y +
+                          (event.ring === 0 ? 24 : event.angle > 90 && event.angle < 270 ? 24 : -18)
+                        }
                         textAnchor="middle"
-                        className={`text-[8px] font-mono tracking-[0.15em] transition-all duration-300 ${
+                        className={`font-mono text-[8px] tracking-[0.15em] transition-all duration-300 ${
                           isActive ? meta.color.replace("text-", "fill-") : "fill-slate-700"
                         }`}
                       >
@@ -657,7 +844,15 @@ export function PillarArchitecture() {
                   transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 >
-                  <circle cx={CX} cy={CY} r="50" fill="none" stroke="rgba(45,212,191,0.15)" strokeWidth="0.5" strokeDasharray="3 6" />
+                  <circle
+                    cx={CX}
+                    cy={CY}
+                    r="50"
+                    fill="none"
+                    stroke="rgba(45,212,191,0.15)"
+                    strokeWidth="0.5"
+                    strokeDasharray="3 6"
+                  />
                 </motion.g>
 
                 {/* Inner ring counter-rotation */}
@@ -666,17 +861,43 @@ export function PillarArchitecture() {
                   transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
                   style={{ transformOrigin: `${CX}px ${CY}px` }}
                 >
-                  <circle cx={CX} cy={CY} r="35" fill="none" stroke="rgba(45,212,191,0.1)" strokeWidth="0.5" strokeDasharray="2 4" />
+                  <circle
+                    cx={CX}
+                    cy={CY}
+                    r="35"
+                    fill="none"
+                    stroke="rgba(45,212,191,0.1)"
+                    strokeWidth="0.5"
+                    strokeDasharray="2 4"
+                  />
                 </motion.g>
 
                 {/* Core solid */}
-                <circle cx={CX} cy={CY} r="24" fill="rgba(4,6,10,0.9)" stroke="rgba(45,212,191,0.5)" strokeWidth="2" />
-                <circle cx={CX} cy={CY} r="24" fill="none" stroke="rgba(45,212,191,0.1)" strokeWidth="8" />
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r="24"
+                  fill="rgba(4,6,10,0.9)"
+                  stroke="rgba(45,212,191,0.5)"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx={CX}
+                  cy={CY}
+                  r="24"
+                  fill="none"
+                  stroke="rgba(45,212,191,0.1)"
+                  strokeWidth="8"
+                />
 
                 {/* Core inner diamond */}
                 <g style={{ transform: `translate(${CX}px, ${CY}px)` }}>
                   <motion.rect
-                    x="-8" y="-8" width="16" height="16" rx="2"
+                    x="-8"
+                    y="-8"
+                    width="16"
+                    height="16"
+                    rx="2"
                     fill="rgba(45,212,191,0.15)"
                     stroke="rgba(45,212,191,0.5)"
                     strokeWidth="1"
@@ -688,39 +909,66 @@ export function PillarArchitecture() {
 
                 {/* Core star flare */}
                 <motion.line
-                  x1={CX - 18} y1={CY} x2={CX + 18} y2={CY}
-                  stroke="rgba(45,212,191,0.4)" strokeWidth="0.5"
+                  x1={CX - 18}
+                  y1={CY}
+                  x2={CX + 18}
+                  y2={CY}
+                  stroke="rgba(45,212,191,0.4)"
+                  strokeWidth="0.5"
                   animate={{ opacity: [0.2, 0.6, 0.2] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 />
                 <motion.line
-                  x1={CX} y1={CY - 18} x2={CX} y2={CY + 18}
-                  stroke="rgba(45,212,191,0.4)" strokeWidth="0.5"
+                  x1={CX}
+                  y1={CY - 18}
+                  x2={CX}
+                  y2={CY + 18}
+                  stroke="rgba(45,212,191,0.4)"
+                  strokeWidth="0.5"
                   animate={{ opacity: [0.2, 0.6, 0.2] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                 />
 
                 {/* "TRUTH" label at center */}
-                <text x={CX} y={CY + 2} textAnchor="middle" className="fill-teal-400 text-[7px] font-mono tracking-[0.3em]" style={{ dominantBaseline: "central" }}>
+                <text
+                  x={CX}
+                  y={CY + 2}
+                  textAnchor="middle"
+                  className="fill-teal-400 font-mono text-[7px] tracking-[0.3em]"
+                  style={{ dominantBaseline: "central" }}
+                >
                   ★
                 </text>
 
                 {/* Core label below */}
-                <text x={CX} y={CY + 42} textAnchor="middle" className="fill-slate-600 text-[7px] font-mono tracking-[0.2em]">
+                <text
+                  x={CX}
+                  y={CY + 42}
+                  textAnchor="middle"
+                  className="fill-slate-600 font-mono text-[7px] tracking-[0.2em]"
+                >
                   NORTH_STAR
                 </text>
-                <text x={CX} y={CY + 54} textAnchor="middle" className="fill-teal-500/60 text-[6px] font-mono tracking-[0.15em]">
+                <text
+                  x={CX}
+                  y={CY + 54}
+                  textAnchor="middle"
+                  className="fill-teal-500/60 font-mono text-[6px] tracking-[0.15em]"
+                >
                   UNIFIED TRUTH
                 </text>
 
                 {/* ── Compass tick marks ── */}
-                {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
                   const inner = polarToXY(CX, CY, RING_RADII[2]! + 8, angle);
                   const outer = polarToXY(CX, CY, RING_RADII[2]! + 16, angle);
                   return (
                     <line
                       key={`tick-${angle}`}
-                      x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y}
+                      x1={inner.x}
+                      y1={inner.y}
+                      x2={outer.x}
+                      y2={outer.y}
                       stroke="rgba(148,163,184,0.08)"
                       strokeWidth="1"
                     />
@@ -729,48 +977,52 @@ export function PillarArchitecture() {
 
                 {/* Cardinal labels - now clickable filters */}
                 {[
-                  { angle: 0,   label: "INGEST" as const },
-                  { angle: 90,  label: "VALIDATE" as const },
+                  { angle: 0, label: "INGEST" as const },
+                  { angle: 90, label: "VALIDATE" as const },
                   { angle: 180, label: "SETTLE" as const },
                   { angle: 270, label: "AUDIT" as const },
                 ].map(({ angle, label }) => {
                   const p = polarToXY(CX, CY, RING_RADII[2]! + 32, angle);
                   const isActive = domainFilter === label;
-                  const domainEventCount = EVENTS.filter(e => e.domain === label).length;
-                  
+                  const domainEventCount = EVENTS.filter((e) => e.domain === label).length;
+
                   return (
-                    <g 
+                    <g
                       key={label}
                       onClick={() => handleDomainFilter(label)}
                       className="cursor-pointer"
                     >
                       {/* Clickable background circle */}
                       <circle
-                        cx={p.x} cy={p.y} r="18"
+                        cx={p.x}
+                        cy={p.y}
+                        r="18"
                         fill={isActive ? "rgba(45,212,191,0.1)" : "transparent"}
                         stroke={isActive ? "rgba(45,212,191,0.3)" : "transparent"}
                         strokeWidth="1"
                         className="transition-all duration-300 hover:fill-teal-500/5 hover:stroke-teal-500/20"
                       />
-                      
+
                       {/* Label text */}
                       <text
-                        x={p.x} y={p.y - 2}
+                        x={p.x}
+                        y={p.y - 2}
                         textAnchor="middle"
                         dominantBaseline="central"
-                        className={`text-[7px] font-mono tracking-[0.2em] transition-all duration-300 pointer-events-none ${
+                        className={`pointer-events-none font-mono text-[7px] tracking-[0.2em] transition-all duration-300 ${
                           isActive ? "fill-teal-400" : "fill-slate-700 group-hover:fill-slate-600"
                         }`}
                       >
                         {label}
                       </text>
-                      
+
                       {/* Event count badge */}
                       <text
-                        x={p.x} y={p.y + 8}
+                        x={p.x}
+                        y={p.y + 8}
                         textAnchor="middle"
                         dominantBaseline="central"
-                        className={`text-[6px] font-mono transition-all duration-300 pointer-events-none ${
+                        className={`pointer-events-none font-mono text-[6px] transition-all duration-300 ${
                           isActive ? "fill-teal-500" : "fill-slate-800"
                         }`}
                       >
@@ -783,44 +1035,47 @@ export function PillarArchitecture() {
 
               {/* ── Active event detail tooltip ── */}
               <AnimatePresence>
-                {activeId && (() => {
-                  const event = EVENTS.find(e => e.id === activeId);
-                  if (!event) return null;
-                  const meta = EVENT_META[event.type];
-                  return (
-                    <motion.div
-                      key={activeId}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.25 }}
-                      className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-950/95 border border-slate-800/80 rounded-lg px-4 py-2.5 backdrop-blur-xl shadow-2xl pointer-events-none"
-                    >
-                      <div className={`w-7 h-7 rounded-md flex items-center justify-center ${meta.bg} border ${meta.border} ${meta.color}`}>
-                        {TYPE_ICON[event.type]}
-                      </div>
-                      <div>
-                        <div className={`text-[11px] font-mono tracking-[0.1em] ${meta.color}`}>
-                          {event.label}
+                {activeId &&
+                  (() => {
+                    const event = EVENTS.find((e) => e.id === activeId);
+                    if (!event) return null;
+                    const meta = EVENT_META[event.type];
+                    return (
+                      <motion.div
+                        key={activeId}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 6 }}
+                        transition={{ duration: 0.25 }}
+                        className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-slate-800/80 bg-slate-950/95 px-4 py-2.5 shadow-2xl backdrop-blur-xl"
+                      >
+                        <div
+                          className={`flex h-7 w-7 items-center justify-center rounded-md ${meta.bg} border ${meta.border} ${meta.color}`}
+                        >
+                          {TYPE_ICON[event.type]}
                         </div>
-                        <div className="text-[9px] font-mono text-slate-600 tracking-wider">
-                          {event.timestamp} • {event.type.toUpperCase()}
-                          {event.parentId && (
-                            <span className="text-slate-700"> → {event.parentId}</span>
-                          )}
+                        <div>
+                          <div className={`font-mono text-[11px] tracking-[0.1em] ${meta.color}`}>
+                            {event.label}
+                          </div>
+                          <div className="font-mono text-[9px] tracking-wider text-slate-600">
+                            {event.timestamp} • {event.type.toUpperCase()}
+                            {event.parentId && (
+                              <span className="text-slate-700"> → {event.parentId}</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      {lineageChain.size > 1 && (
-                        <div className="flex items-center gap-1 ml-2 pl-3 border-l border-slate-800">
-                          <ArrowUp className="w-3 h-3 text-teal-500/60" />
-                          <span className="text-[9px] font-mono text-teal-500/60 tracking-wider">
-                            {lineageChain.size} LINKED
-                          </span>
-                        </div>
-                      )}
-                    </motion.div>
-                  );
-                })()}
+                        {lineageChain.size > 1 && (
+                          <div className="ml-2 flex items-center gap-1 border-l border-slate-800 pl-3">
+                            <ArrowUp className="h-3 w-3 text-teal-500/60" />
+                            <span className="font-mono text-[9px] tracking-wider text-teal-500/60">
+                              {lineageChain.size} LINKED
+                            </span>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })()}
               </AnimatePresence>
 
               {/* ── Replay Timeline Scrubber ── */}
@@ -829,22 +1084,22 @@ export function PillarArchitecture() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.8 }}
-                className="absolute top-3 left-3 md:top-6 md:left-6 flex flex-col gap-2 pointer-events-auto"
+                className="pointer-events-auto absolute top-3 left-3 flex flex-col gap-2 md:top-6 md:left-6"
               >
                 {/* Control buttons */}
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     onClick={isReplaying ? handleReplayStop : handleReplayStart}
-                    className="flex items-center gap-1.5 bg-slate-950/90 border border-slate-800/50 rounded px-2.5 py-1.5 hover:bg-slate-900/90 hover:border-teal-500/30 transition-all duration-300"
+                    className="flex items-center gap-1.5 rounded border border-slate-800/50 bg-slate-950/90 px-2.5 py-1.5 transition-all duration-300 hover:border-teal-500/30 hover:bg-slate-900/90"
                     title={isReplaying ? "Pause replay" : "Start replay"}
                   >
                     {isReplaying ? (
-                      <Pause className="w-3 h-3 text-teal-400" />
+                      <Pause className="h-3 w-3 text-teal-400" />
                     ) : (
-                      <Play className="w-3 h-3 text-teal-400" />
+                      <Play className="h-3 w-3 text-teal-400" />
                     )}
-                    <span className="text-[8px] font-mono text-slate-500 tracking-[0.15em]">
+                    <span className="font-mono text-[8px] tracking-[0.15em] text-slate-500">
                       {isReplaying ? "PAUSE" : "REPLAY"}
                     </span>
                   </Button>
@@ -853,11 +1108,11 @@ export function PillarArchitecture() {
                     <Button
                       variant="ghost"
                       onClick={() => setLockedId(null)}
-                      className="flex items-center gap-1.5 bg-teal-950/40 border border-teal-500/30 rounded px-2.5 py-1.5 hover:bg-teal-950/60 transition-all duration-300"
+                      className="flex items-center gap-1.5 rounded border border-teal-500/30 bg-teal-950/40 px-2.5 py-1.5 transition-all duration-300 hover:bg-teal-950/60"
                       title="Unlock node"
                     >
-                      <LockKeyhole className="w-3 h-3 text-teal-400" />
-                      <span className="text-[8px] font-mono text-teal-400 tracking-[0.15em]">
+                      <LockKeyhole className="h-3 w-3 text-teal-400" />
+                      <span className="font-mono text-[8px] tracking-[0.15em] text-teal-400">
                         LOCKED
                       </span>
                     </Button>
@@ -867,11 +1122,11 @@ export function PillarArchitecture() {
                     <Button
                       variant="ghost"
                       onClick={() => setDomainFilter(null)}
-                      className="flex items-center gap-1.5 bg-cyan-950/40 border border-cyan-500/30 rounded px-2.5 py-1.5 hover:bg-cyan-950/60 transition-all duration-300"
+                      className="flex items-center gap-1.5 rounded border border-cyan-500/30 bg-cyan-950/40 px-2.5 py-1.5 transition-all duration-300 hover:bg-cyan-950/60"
                       title="Clear domain filter"
                     >
-                      <Filter className="w-3 h-3 text-cyan-400" />
-                      <span className="text-[8px] font-mono text-cyan-400 tracking-[0.15em]">
+                      <Filter className="h-3 w-3 text-cyan-400" />
+                      <span className="font-mono text-[8px] tracking-[0.15em] text-cyan-400">
                         {domainFilter}
                       </span>
                     </Button>
@@ -879,18 +1134,16 @@ export function PillarArchitecture() {
                 </div>
 
                 {/* Timeline scrubber */}
-                <div className="flex items-center gap-2 bg-slate-950/90 border border-slate-800/50 rounded px-3 py-2 backdrop-blur-sm">
-                  <span className="text-[7px] font-mono text-slate-600 tracking-[0.15em]">
-                    T0
-                  </span>
+                <div className="flex items-center gap-2 rounded border border-slate-800/50 bg-slate-950/90 px-3 py-2 backdrop-blur-sm">
+                  <span className="font-mono text-[7px] tracking-[0.15em] text-slate-600">T0</span>
                   <Slider
                     min={0}
                     max={10}
                     value={[replayProgress]}
                     onValueChange={(values) => handleReplayScrub(values[0] ?? 0)}
-                    className="w-32 [&_[data-slot=slider-track]]:h-1 [&_[data-slot=slider-track]]:bg-slate-800 [&_[data-slot=slider-range]]:bg-teal-500/30 [&_[data-slot=slider-thumb]]:size-3 [&_[data-slot=slider-thumb]]:border-teal-400 [&_[data-slot=slider-thumb]]:bg-teal-400 [&_[data-slot=slider-thumb]]:shadow-[0_0_8px_rgba(45,212,191,0.5)] [&_[data-slot=slider-thumb]]:hover:shadow-[0_0_12px_rgba(45,212,191,0.8)]"
+                    className="w-32 [&_[data-slot=slider-range]]:bg-teal-500/30 [&_[data-slot=slider-thumb]]:size-3 [&_[data-slot=slider-thumb]]:border-teal-400 [&_[data-slot=slider-thumb]]:bg-teal-400 [&_[data-slot=slider-thumb]]:shadow-[0_0_8px_rgba(45,212,191,0.5)] [&_[data-slot=slider-thumb]]:hover:shadow-[0_0_12px_rgba(45,212,191,0.8)] [&_[data-slot=slider-track]]:h-1 [&_[data-slot=slider-track]]:bg-slate-800"
                   />
-                  <span className="text-[7px] font-mono text-teal-500 tracking-[0.15em] min-w-[20px] text-right">
+                  <span className="min-w-[20px] text-right font-mono text-[7px] tracking-[0.15em] text-teal-500">
                     {replayProgress}/{EVENTS.length}
                   </span>
                 </div>
@@ -904,9 +1157,9 @@ export function PillarArchitecture() {
                 transition={{ duration: 0.6, delay: 2 }}
                 className="absolute top-3 right-3 md:top-6 md:right-6"
               >
-                <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800/40 rounded px-2.5 py-1.5 backdrop-blur-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-                  <span className="text-[8px] font-mono text-slate-500 tracking-[0.2em]">
+                <div className="flex items-center gap-2 rounded border border-slate-800/40 bg-slate-950/80 px-2.5 py-1.5 backdrop-blur-sm">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-400" />
+                  <span className="font-mono text-[8px] tracking-[0.2em] text-slate-500">
                     RETENTION: ∞
                   </span>
                 </div>
@@ -918,13 +1171,13 @@ export function PillarArchitecture() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 1.2 }}
-                className="absolute bottom-3 right-3 md:bottom-6 md:right-6 max-w-[200px]"
+                className="absolute right-3 bottom-3 max-w-[200px] md:right-6 md:bottom-6"
               >
-                <div className="bg-slate-950/80 border border-slate-800/40 rounded px-2.5 py-2 backdrop-blur-sm space-y-1">
-                  <div className="text-[7px] font-mono text-slate-600 tracking-[0.2em] uppercase mb-1.5">
+                <div className="space-y-1 rounded border border-slate-800/40 bg-slate-950/80 px-2.5 py-2 backdrop-blur-sm">
+                  <div className="mb-1.5 font-mono text-[7px] tracking-[0.2em] text-slate-600 uppercase">
                     Interactions
                   </div>
-                  <div className="text-[8px] text-slate-500 leading-relaxed space-y-0.5">
+                  <div className="space-y-0.5 text-[8px] leading-relaxed text-slate-500">
                     <div>• Click nodes to lock</div>
                     <div>• Click domains to filter</div>
                     <div>• Use timeline to replay</div>

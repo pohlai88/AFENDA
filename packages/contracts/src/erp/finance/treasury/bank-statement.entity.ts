@@ -10,9 +10,6 @@ import {
 } from "./treasury-shared.entity.js";
 import { BankAccountIdSchema } from "./bank-account.entity.js";
 
-// Re-export for bank-account so consumers get the status values easily
-export { BankAccountStatusValues };
-
 // ── BankStatement (header) ────────────────────────────────────────────────────
 
 export const BankStatementIdSchema = brandedUuid("BankStatementId");

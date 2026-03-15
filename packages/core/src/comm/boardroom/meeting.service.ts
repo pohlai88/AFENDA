@@ -11,7 +11,7 @@ import type {
   UpdateBoardMeetingCommand,
 } from "@afenda/contracts";
 import { COMM_MEETING_CREATED, COMM_MEETING_UPDATED } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface BoardMeetingPolicyContext {
   principalId?: PrincipalId | null;

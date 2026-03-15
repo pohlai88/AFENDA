@@ -1,2 +1,2 @@
-export * from "./approval.service.js";
-export * from "./approval.queries.js";
+export * from "./approval.service";
+export * from "./approval.queries";

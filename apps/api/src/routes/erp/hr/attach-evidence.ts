@@ -7,9 +7,9 @@ import {
   requireAuth,
   requireOrg,
 } from "../../../helpers/responses.js";
-import { AttachEvidenceCommandSchema, AttachEvidenceResultSchema } from "@afenda/contracts";
+import { HrAttachEvidenceCommandSchema, HrAttachEvidenceResultSchema } from "@afenda/contracts";
 
-const ResponseSchema = makeSuccessSchema(AttachEvidenceResultSchema);
+const ResponseSchema = makeSuccessSchema(HrAttachEvidenceResultSchema);
 
 export async function hrAttachEvidenceRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -21,7 +21,7 @@ export async function hrAttachEvidenceRoutes(app: FastifyInstance) {
         description: "Attach evidence to a grievance case or disciplinary action.",
         tags: ["HRM", "Employee Relations"],
         security: [{ bearerAuth: [] }, { devAuth: [] }],
-        body: AttachEvidenceCommandSchema,
+        body: HrAttachEvidenceCommandSchema,
         response: {
           200: ResponseSchema,
           400: ApiErrorResponseSchema,

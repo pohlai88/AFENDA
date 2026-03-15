@@ -1,6 +1,6 @@
-export * from "./db.js";
-export * from "./search.js";
-export * from "./event-bus.js";
+export * from "./db";
+export * from "./search";
+export * from "./event-bus";
 export {
   InMemoryFileStore,
   LocalFsFileStore,
@@ -14,4 +14,4 @@ export {
   type ListOptions as StorageListOptions,
   type ListResult as StorageListResult,
   type S3ClientLike,
-} from "./storage.js";
+} from "./storage";

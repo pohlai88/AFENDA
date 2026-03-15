@@ -1,5 +1,6 @@
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
+import { buildCoverageConfig } from "../../tools/testing/vitest.shared";
 
 const fromRoot = (relativePath: string) => fileURLToPath(new URL(relativePath, import.meta.url));
 
@@ -22,11 +23,6 @@ export default defineConfig({
     restoreMocks: true,
     pool: "forks",
     globalSetup: ["src/__vitest_test__/global-setup.ts"],
-    coverage: {
-      provider: "v8",
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/index.ts", "src/types.ts", "**/__vitest_test__/**"],
-      reporter: ["text", "html", "lcov"],
-    },
+    coverage: buildCoverageConfig(["src/**/*.ts"], ["src/**/index.ts", "src/types.ts", "**/__vitest_test__/**"]),
   },
 });

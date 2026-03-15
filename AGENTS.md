@@ -88,15 +88,15 @@ worker     → contracts + core + db
 
 ### What This Means
 
-| Package | Can Import | NEVER Import |
-|---------|-----------|--------------|
-| `contracts` | zod, date-fns | Anything from monorepo |
-| `db` | drizzle-orm, pg, `@afenda/contracts` | core, ui, api, web, worker |
-| `core` | `@afenda/contracts`, `@afenda/db` | ui, api, web, worker |
-| `ui` | `@afenda/contracts` | core, db, api, web, worker |
-| `api` | `@afenda/contracts`, `@afenda/core` | db, ui, web, worker |
-| `web` | `@afenda/contracts`, `@afenda/ui` | core, db, api, worker |
-| `worker` | `@afenda/contracts`, `@afenda/core`, `@afenda/db` | ui, api, web |
+| Package     | Can Import                                        | NEVER Import               |
+| ----------- | ------------------------------------------------- | -------------------------- |
+| `contracts` | zod, date-fns                                     | Anything from monorepo     |
+| `db`        | drizzle-orm, pg, `@afenda/contracts`              | core, ui, api, web, worker |
+| `core`      | `@afenda/contracts`, `@afenda/db`                 | ui, api, web, worker       |
+| `ui`        | `@afenda/contracts`                               | core, db, api, web, worker |
+| `api`       | `@afenda/contracts`, `@afenda/core`               | db, ui, web, worker        |
+| `web`       | `@afenda/contracts`, `@afenda/ui`                 | core, db, api, worker      |
+| `worker`    | `@afenda/contracts`, `@afenda/core`, `@afenda/db` | ui, api, web               |
 
 **Enforced by:** `tools/gates/boundaries.mjs` (CI gate)
 
@@ -136,18 +136,18 @@ packages/
 
 ### Module Examples
 
-| Pillar | Module Path | Purpose |
-|--------|------------|---------|
-| `shared` | `shared/ids` | ID schemas (orgId, userId, invoiceId) |
-| `shared` | `shared/errors` | Error code registry |
-| `shared` | `shared/money` | Money type utilities |
-| `kernel` | `kernel/governance/audit` | Audit log schemas + services |
-| `kernel` | `kernel/identity` | User, org, role schemas |
-| `kernel` | `kernel/execution/outbox` | Event outbox patterns |
-| `erp` | `erp/finance/ap` | Accounts Payable domain |
-| `erp` | `erp/finance/gl` | General Ledger domain |
-| `erp` | `erp/supplier` | Supplier management |
-| `comm` | `comm/notification` | Notification system |
+| Pillar   | Module Path               | Purpose                               |
+| -------- | ------------------------- | ------------------------------------- |
+| `shared` | `shared/ids`              | ID schemas (orgId, userId, invoiceId) |
+| `shared` | `shared/errors`           | Error code registry                   |
+| `shared` | `shared/money`            | Money type utilities                  |
+| `kernel` | `kernel/governance/audit` | Audit log schemas + services          |
+| `kernel` | `kernel/identity`         | User, org, role schemas               |
+| `kernel` | `kernel/execution/outbox` | Event outbox patterns                 |
+| `erp`    | `erp/finance/ap`          | Accounts Payable domain               |
+| `erp`    | `erp/finance/gl`          | General Ledger domain                 |
+| `erp`    | `erp/supplier`            | Supplier management                   |
+| `comm`   | `comm/notification`       | Notification system                   |
 
 **Enforced by:** `tools/gates/module-boundaries.mjs` (CI gate)
 
@@ -187,6 +187,26 @@ packages/
 - ✅ **No `console.*`** — use Pino logger from `@afenda/core/infra/logger`
 - ✅ **No hardcoded colors** — use Tailwind design tokens
 
+### Barrel Export Naming (anti-collision rule)
+
+TypeScript only reports `TS2308` duplicate export names at the **root** barrel, not at the source module. To prevent conflicts early, every export with a generic name MUST carry its domain prefix so it is unique across all `export *` chains:
+
+| Pillar / module              | Required prefix    | Example                         |
+| ---------------------------- | ------------------ | ------------------------------- |
+| `erp/hr`                     | `Hr` or `Hrm`      | `HrAttachEvidenceCommandSchema` |
+| `erp/finance/ap`             | `Ap`               | `ApCreateInvoiceCommand`        |
+| `erp/finance/gl`             | `Gl`               | `GlJournalEntrySchema`          |
+| `erp/supplier`               | `Supplier`         | `SupplierCreateCommand`         |
+| `erp/purchasing`             | `Po`               | `PoLineItemSchema`              |
+| `kernel/governance/evidence` | `Evidence` / `Doc` | `EvidenceAttachCommand`         |
+
+Schemas whose names are already domain-unique (e.g. `InvoiceSchema`, `OrgSchema`) do not need an additional prefix.
+
+- ❌ Never add a generic `AttachEvidenceCommandSchema` in an HR module when `kernel/governance/evidence` already exports one
+- ✅ Use `HrAttachEvidenceCommandSchema` in HR — unique, explicit, self-documenting
+
+**Enforced by:** `tools/gates/barrel-export-conflicts.mjs` (CI gate — Phase 1)
+
 ### UI Components
 
 - ✅ **All components use shadcn/ui** — NO raw HTML elements:
@@ -208,6 +228,7 @@ packages/
 ### Step-by-Step
 
 1. **Zod Schemas** (`packages/contracts/src/<pillar>/<module>/`)
+
    ```typescript
    // entity.entity.ts
    export const InvoiceSchema = z.object({
@@ -220,9 +241,10 @@ packages/
    ```
 
 2. **Drizzle Table** (`packages/db/src/schema/<pillar>/<module>/`)
+
    ```typescript
    import { InvoiceStatusValues } from "@afenda/contracts";
-   
+
    export const invoice = pgTable("invoice", {
      id: uuid("id").primaryKey().defaultRandom(),
      orgId: uuid("org_id").notNull(),
@@ -235,14 +257,17 @@ packages/
    ```
 
 3. **SQL Migration**
+
    ```bash
    pnpm db:generate
    # Edit migration file, add RLS policies
    pnpm db:migrate
    ```
+
    If `db:generate` fails with `TypeError: Do not know how to serialize a BigInt`, see [Drizzle BigInt serialization error](#drizzle-bigint-serialization-error) in Quick Commands. Prefer string IDs in JSON payloads (outbox, audit) to avoid this.
 
 4. **Domain Service** (`packages/core/src/<pillar>/<module>/`)
+
    ```typescript
    export async function createInvoice(
      db: Db,
@@ -254,6 +279,7 @@ packages/
    ```
 
 5. **API Route** (`apps/api/src/routes/<pillar>/<module>/`)
+
    ```typescript
    app.post("/v1/commands/create-invoice", {
      schema: { body: CreateInvoiceCommandSchema },
@@ -265,6 +291,7 @@ packages/
    ```
 
 6. **Worker Handler** (`apps/worker/src/jobs/<pillar>/<module>/`)
+
    ```typescript
    export async function handleInvoiceCreated(
      payload: InvoiceCreatedEvent
@@ -274,6 +301,7 @@ packages/
    ```
 
 7. **UI** (`apps/web/src/app/(erp)/finance/ap/invoices/`)
+
    ```tsx
    // page.tsx, loading.tsx, error.tsx
    // Use field-kit for forms
@@ -303,11 +331,13 @@ node tools/scaffold.mjs erp/finance/ap invoice
 All UI components from `@afenda/ui`:
 
 **Form Controls:**
+
 - `Input`, `Textarea`, `Button`, `Label`
 - `Switch`, `Checkbox`
 - `Select` + composition (SelectTrigger, SelectContent, SelectItem, SelectValue)
 
 **Layout:**
+
 - `Card` + composition
 - `Dialog` + composition
 - `Table` + composition
@@ -323,11 +353,13 @@ npx shadcn@latest add <component> -y -p ../../packages/ui/src/components
 ```
 
 **Why run from apps/web?**
+
 - shadcn CLI validates Next.js framework + Tailwind v4
 - `packages/ui` is a library package without Next.js
 - `apps/web` has required config, we use `--path` to target `packages/ui`
 
 **Examples:**
+
 ```bash
 # Add single component
 npx shadcn@latest add scroll-area -y -p ../../packages/ui/src/components
@@ -340,6 +372,7 @@ npx shadcn@latest add chart -y -o -p ../../packages/ui/src/components
 ```
 
 **After installation:**
+
 1. Export from `packages/ui/src/components/index.ts`
 2. Add dependencies to `packages/ui/package.json` if needed
 3. Run `pnpm install` from repo root
@@ -358,6 +391,7 @@ npx shadcn@latest add <block-name> -y -p ../../packages/ui/src/components/block/
 ```
 
 **Examples:**
+
 ```bash
 # Auth blocks
 npx shadcn@latest add login-01 -y -p ../../packages/ui/src/components/block/login-01
@@ -369,11 +403,13 @@ npx shadcn@latest add sidebar-10 -y -p ../../packages/ui/src/components/block/si
 ```
 
 **After installation:**
+
 - Each block is self-contained in its subdirectory (includes its own copies of primitives)
 - Import the form component directly in `apps/web`: `import { LoginForm } from "@afenda/ui/block/login-01/login-form"`
 - Do NOT export blocks from `packages/ui/src/components/index.ts` (they are not primitives)
 
 **Installed blocks (current):**
+
 ```
 packages/ui/src/components/block/
   login-01/      ← simple login form (email + password + social)
@@ -418,60 +454,64 @@ node tools/gates/shadcn-enforcement-autofix.mjs
 
 ---
 
-## 7. CI Gates (18 Total)
+## 7. CI Gates (19 Total)
 
 All gates run via `pnpm check:all` and block CI on failure.
 
-### Phase 1: Static Correctness (8 gates)
+### Phase 1: Static Correctness (9 gates)
 
-| Gate | Purpose | Location |
-|------|---------|----------|
-| `test-location` | Tests in `__vitest_test__/` only | `tools/gates/test-location.mjs` |
-| `schema-invariants` | DB schema rules (timestamptz, org_id) | `tools/gates/schema-invariants.mjs` |
-| `migration-lint` | SQL migration safety checks | `tools/gates/migration-lint.mjs` |
-| `contract-db-sync` | Zod schemas ↔ Drizzle tables match | `tools/gates/contract-db-sync.mjs` |
-| `token-compliance` | No hardcoded colors | `tools/gates/token-compliance.mjs` |
-| **`shadcn-enforcement`** | All UI uses shadcn components | `tools/gates/shadcn-enforcement.mjs` |
-| `owners-lint` | OWNERS.md files complete | `tools/gates/owners-lint.mjs` |
-| `catalog` | pnpm catalog consistency | `tools/gates/catalog.mjs` |
+| Gate                          | Purpose                                                 | Location                                  |
+| ----------------------------- | ------------------------------------------------------- | ----------------------------------------- |
+| **`barrel-export-conflicts`** | Detects duplicate export names across `export *` chains | `tools/gates/barrel-export-conflicts.mjs` |
+| `test-location`               | Tests in `__vitest_test__/` only                        | `tools/gates/test-location.mjs`           |
+| `schema-invariants`           | DB schema rules (timestamptz, org_id)                   | `tools/gates/schema-invariants.mjs`       |
+| `migration-lint`              | SQL migration safety checks                             | `tools/gates/migration-lint.mjs`          |
+| `contract-db-sync`            | Zod schemas ↔ Drizzle tables match                     | `tools/gates/contract-db-sync.mjs`        |
+| `token-compliance`            | No hardcoded colors                                     | `tools/gates/token-compliance.mjs`        |
+| **`shadcn-enforcement`**      | All UI uses shadcn components                           | `tools/gates/shadcn-enforcement.mjs`      |
+| `owners-lint`                 | OWNERS.md files complete                                | `tools/gates/owners-lint.mjs`             |
+| `catalog`                     | pnpm catalog consistency                                | `tools/gates/catalog.mjs`                 |
 
 ### Phase 2: Architecture Boundaries (4 gates)
 
-| Gate | Purpose |
-|------|---------|
-| `boundaries` | Import Direction Law enforcement |
-| `module-boundaries` | Pillar structure enforcement |
-| `org-isolation` | Multi-tenant isolation checks |
-| `finance-invariants` | Money type, journal entry rules |
+| Gate                 | Purpose                          |
+| -------------------- | -------------------------------- |
+| `boundaries`         | Import Direction Law enforcement |
+| `module-boundaries`  | Pillar structure enforcement     |
+| `org-isolation`      | Multi-tenant isolation checks    |
+| `finance-invariants` | Money type, journal entry rules  |
 
 ### Phase 3: Domain Completeness (6 gates)
 
-| Gate | Purpose |
-|------|---------|
+| Gate                  | Purpose                                            |
+| --------------------- | -------------------------------------------------- |
 | `domain-completeness` | Error codes, audit actions, permissions registered |
-| `route-registry-sync` | API routes documented |
-| `audit-enforcement` | Audit logs on mutations |
-| `ui-meta` | Entity metadata completeness |
-| `server-clock` | No `new Date()` in backend |
-| `page-states` | Next.js page suspense boundaries |
+| `route-registry-sync` | API routes documented                              |
+| `audit-enforcement`   | Audit logs on mutations                            |
+| `ui-meta`             | Entity metadata completeness                       |
+| `server-clock`        | No `new Date()` in backend                         |
+| `page-states`         | Next.js page suspense boundaries                   |
 
 **ESLint complements gates** — runs in-editor and at `pnpm lint` (before gates):
+
 - `@afenda/no-hardcoded-colors` — design tokens (mirrors token-compliance)
 - `@afenda/no-raw-form-elements` — shadcn only (mirrors shadcn-enforcement)
 - `@afenda/no-js-date-in-db` — no `new Date()` in DB code (mirrors server-clock)
 - `react-hooks/rules-of-hooks` + `exhaustive-deps` — React Hooks safety
 - `@typescript-eslint/no-floating-promises`, `no-misused-promises`, `await-thenable` — async safety (type-aware)
-- `jsx-a11y/*` — accessibility (alt-text, aria-*, etc.)
+- `jsx-a11y/*` — accessibility (alt-text, aria-\*, etc.)
 - `drizzle/enforce-delete-with-where`, `enforce-update-with-where` — Drizzle safety (core, db, api)
 
 See `docs/ci-gates-eslint-integration.md` for details.
 
 **Run all gates:**
+
 ```bash
 pnpm check:all
 ```
 
 **Run specific gate:**
+
 ```bash
 node tools/gates/shadcn-enforcement.mjs
 ```
@@ -588,30 +628,30 @@ import { GeneratedList } from "@afenda/ui";
 
 ## 9. Naming Conventions
 
-| Context | Convention | Example |
-|---------|-----------|----------|
-| **Database** | | |
-| Columns | snake_case | `org_id`, `created_at`, `invoice_number` |
-| Tables | snake_case singular | `invoice`, `journal_entry`, `audit_log` |
-| Indexes | `{table}_{columns}_idx` | `invoice_org_id_idx` |
-| Enums | snake_case | `invoice_status`, `payment_method` |
-| **TypeScript** | | |
-| Variables | camelCase | `orgId`, `createdAt`, `invoiceNumber` |
-| Types/Interfaces | PascalCase | `Invoice`, `CreateInvoiceCommand` |
-| Functions | camelCase | `createInvoice`, `approveInvoice` |
-| Files | kebab-case | `invoice.entity.ts`, `create-invoice.ts` |
-| **Schemas** | | |
-| Zod schemas | PascalCase + Schema | `InvoiceSchema`, `CreateInvoiceCommandSchema` |
-| Entity schemas | PascalCase + Schema | `InvoiceSchema` |
-| Command schemas | Create/Update + PascalCase + Command + Schema | `CreateInvoiceCommandSchema` |
-| **Registry** | | |
-| Permissions | dot.notation | `ap.invoice.create`, `ap.invoice.approve` |
-| Error codes | UPPER_SNAKE | `AP_INVOICE_NOT_FOUND` |
-| Audit actions | dot.notation | `ap.invoice.created`, `ap.invoice.approved` |
-| Event types | UPPER_SNAKE | `AP_INVOICE_CREATED`, `AP_INVOICE_APPROVED` |
-| **Routes** | | |
-| Commands | `/v1/commands/{action}` | `/v1/commands/create-invoice` |
-| Queries | `/v1/{entities}` | `/v1/invoices`, `/v1/invoices/{id}` |
+| Context          | Convention                                    | Example                                       |
+| ---------------- | --------------------------------------------- | --------------------------------------------- |
+| **Database**     |                                               |                                               |
+| Columns          | snake_case                                    | `org_id`, `created_at`, `invoice_number`      |
+| Tables           | snake_case singular                           | `invoice`, `journal_entry`, `audit_log`       |
+| Indexes          | `{table}_{columns}_idx`                       | `invoice_org_id_idx`                          |
+| Enums            | snake_case                                    | `invoice_status`, `payment_method`            |
+| **TypeScript**   |                                               |                                               |
+| Variables        | camelCase                                     | `orgId`, `createdAt`, `invoiceNumber`         |
+| Types/Interfaces | PascalCase                                    | `Invoice`, `CreateInvoiceCommand`             |
+| Functions        | camelCase                                     | `createInvoice`, `approveInvoice`             |
+| Files            | kebab-case                                    | `invoice.entity.ts`, `create-invoice.ts`      |
+| **Schemas**      |                                               |                                               |
+| Zod schemas      | PascalCase + Schema                           | `InvoiceSchema`, `CreateInvoiceCommandSchema` |
+| Entity schemas   | PascalCase + Schema                           | `InvoiceSchema`                               |
+| Command schemas  | Create/Update + PascalCase + Command + Schema | `CreateInvoiceCommandSchema`                  |
+| **Registry**     |                                               |                                               |
+| Permissions      | dot.notation                                  | `ap.invoice.create`, `ap.invoice.approve`     |
+| Error codes      | UPPER_SNAKE                                   | `AP_INVOICE_NOT_FOUND`                        |
+| Audit actions    | dot.notation                                  | `ap.invoice.created`, `ap.invoice.approved`   |
+| Event types      | UPPER_SNAKE                                   | `AP_INVOICE_CREATED`, `AP_INVOICE_APPROVED`   |
+| **Routes**       |                                               |                                               |
+| Commands         | `/v1/commands/{action}`                       | `/v1/commands/create-invoice`                 |
+| Queries          | `/v1/{entities}`                              | `/v1/invoices`, `/v1/invoices/{id}`           |
 
 ---
 
@@ -700,6 +740,9 @@ node tools/gates/schema-invariants.mjs
 
 # Auto-fix shadcn violations
 node tools/gates/shadcn-enforcement-autofix.mjs
+
+# Create weekly CI metrics stub
+pnpm ci:metrics:new
 ```
 
 ---
@@ -717,7 +760,7 @@ The AFENDA brand mark is a **3-dot audit mark** — two solid circles and one ho
 - **Dot 1 & 2** (solid, `r=2`) — Data input and processing. Certainty, finality.
 - **Dot 3** (hollow ring, `r=2.5`, `strokeWidth=1.5`) — The audit loop. Continuous, cyclical, transparent.
 
-The hollow ring prevents the mark from reading as a generic ellipsis (`...`) or kebab menu. It signals *inspection* — you can see through it.
+The hollow ring prevents the mark from reading as a generic ellipsis (`...`) or kebab menu. It signals _inspection_ — you can see through it.
 
 ### SVG Specification
 
@@ -742,13 +785,13 @@ import { AfendaMark } from "./AfendaMark";
 <AfendaMark size={20} variant="animated" />
 ```
 
-| Prop | Default | Purpose |
-|------|---------|--------|
-| `size` | `24` | Render size in px (scales from 24×24 viewBox) |
-| `variant` | `"static"` | `"static"` = no transitions, `"animated"` = spring hover + stagger |
-| `color` | `#14b8a6` | Fill/stroke color (teal-500) |
-| `hoverColor` | `#0d9488` | Hover color shift (teal-700) |
-| `className` | — | Additional CSS classes |
+| Prop         | Default    | Purpose                                                            |
+| ------------ | ---------- | ------------------------------------------------------------------ |
+| `size`       | `24`       | Render size in px (scales from 24×24 viewBox)                      |
+| `variant`    | `"static"` | `"static"` = no transitions, `"animated"` = spring hover + stagger |
+| `color`      | `#14b8a6`  | Fill/stroke color (teal-500)                                       |
+| `hoverColor` | `#0d9488`  | Hover color shift (teal-700)                                       |
+| `className`  | —          | Additional CSS classes                                             |
 
 ### Animation Physics
 
@@ -765,11 +808,11 @@ type: "spring", stiffness: 400, damping: 25
 
 ### Favicon Files
 
-| File | Purpose |
-|------|--------|
-| `apps/web/src/app/icon.svg` | SVG favicon (auto-detected by Next.js) |
-| `apps/web/src/app/apple-icon.svg` | Apple touch icon (dark bg #0B0D12) |
-| `apps/web/scripts/generate-favicon.mjs` | SVG → multi-resolution ICO generator |
+| File                                    | Purpose                                |
+| --------------------------------------- | -------------------------------------- |
+| `apps/web/src/app/icon.svg`             | SVG favicon (auto-detected by Next.js) |
+| `apps/web/src/app/apple-icon.svg`       | Apple touch icon (dark bg #0B0D12)     |
+| `apps/web/scripts/generate-favicon.mjs` | SVG → multi-resolution ICO generator   |
 
 ### Usage Rules
 
@@ -785,60 +828,63 @@ type: "spring", stiffness: 400, damping: 25
 
 ### Architecture Documentation
 
-| File | Purpose |
-|------|---------|
-| **`PROJECT.md`** | Complete architecture specification |
-| **`AGENTS.md`** | This file - AI agent quick reference |
-| **`.github/copilot-instructions.md`** | GitHub Copilot rules |
-| **`docs/adr/adr_0005_module_architecture_restructure.md`** | Pillar structure ADR |
-| **`docs/production-readiness.md`** | Pre-deploy checklist (env, Neon, Redis, security) |
-| **`docs/neon-optimization.md`** | Neon DB optimization guide |
+| File                                                       | Purpose                                           |
+| ---------------------------------------------------------- | ------------------------------------------------- |
+| **`PROJECT.md`**                                           | Complete architecture specification               |
+| **`AGENTS.md`**                                            | This file - AI agent quick reference              |
+| **`.github/copilot-instructions.md`**                      | GitHub Copilot rules                              |
+| **`docs/adr/adr_0005_module_architecture_restructure.md`** | Pillar structure ADR                              |
+| **`docs/production-readiness.md`**                         | Pre-deploy checklist (env, Neon, Redis, security) |
+| **`docs/neon-optimization.md`**                            | Neon DB optimization guide                        |
+| **`docs/test-rollout/testing-rollout-strategy.md`**        | Testing rollout ownership, phases, and pass/fail criteria |
+| **`docs/test-rollout/ci-weekly-metrics-template.md`**      | Weekly CI metrics source template                  |
 
 ### Configuration
 
-| File | Purpose |
-|------|---------|
-| `turbo.json` | Turborepo build configuration |
-| `pnpm-workspace.yaml` | Workspace packages |
-| `package.json` | Root package scripts + catalog |
-| `tsconfig.base.json` | Shared TypeScript config |
-| `vitest.workspace.ts` | Vitest test configuration |
+| File                  | Purpose                        |
+| --------------------- | ------------------------------ |
+| `turbo.json`          | Turborepo build configuration  |
+| `pnpm-workspace.yaml` | Workspace packages             |
+| `package.json`        | Root package scripts + catalog |
+| `scripts/create-ci-weekly-metrics.mjs` | Generates weekly CI metrics files from template |
+| `tsconfig.base.json`  | Shared TypeScript config       |
+| `vitest.workspace.ts` | Vitest test configuration      |
 
 ### Registry Files (CRITICAL)
 
-| File | Purpose |
-|------|---------|
-| **`packages/contracts/src/shared/errors.ts`** | All error codes |
-| **`packages/contracts/src/kernel/governance/audit/actions.ts`** | All audit actions |
-| **`packages/contracts/src/shared/permissions.ts`** | All permission keys |
-| **`packages/contracts/src/kernel/execution/outbox/envelope.ts`** | Event types |
+| File                                                             | Purpose             |
+| ---------------------------------------------------------------- | ------------------- |
+| **`packages/contracts/src/shared/errors.ts`**                    | All error codes     |
+| **`packages/contracts/src/kernel/governance/audit/actions.ts`**  | All audit actions   |
+| **`packages/contracts/src/shared/permissions.ts`**               | All permission keys |
+| **`packages/contracts/src/kernel/execution/outbox/envelope.ts`** | Event types         |
 
 ### CI Gates
 
-| Directory | Purpose |
-|-----------|---------|
-| **`tools/gates/`** | 18 CI enforcement gates |
-| **`docs/ci-gates/`** | Gate documentation |
+| Directory            | Purpose                 |
+| -------------------- | ----------------------- |
+| **`tools/gates/`**   | 18 CI enforcement gates |
+| **`docs/ci-gates/`** | Gate documentation      |
 
 ### Templates
 
-| Directory | Purpose |
-|-----------|---------|
+| Directory        | Purpose                             |
+| ---------------- | ----------------------------------- |
 | **`templates/`** | Scaffold templates for new entities |
 
 ### Key Implementation Files
 
-| File | Purpose |
-|------|---------|
-| `apps/api/src/index.ts` | API server entry + route registration |
-| `apps/api/src/types.ts` | Fastify type augmentations |
-| `apps/api/src/helpers/responses.ts` | Response builders, error codes |
-| `apps/web/src/app/layout.tsx` | Root layout |
-| `packages/ui/src/field-kit/registry.ts` | Field renderer registry |
-| `packages/ui/src/meta/registry.ts` | Entity metadata registry |
-| `packages/core/src/infra/logger.ts` | Pino logger setup |
+| File                                                   | Purpose                                  |
+| ------------------------------------------------------ | ---------------------------------------- |
+| `apps/api/src/index.ts`                                | API server entry + route registration    |
+| `apps/api/src/types.ts`                                | Fastify type augmentations               |
+| `apps/api/src/helpers/responses.ts`                    | Response builders, error codes           |
+| `apps/web/src/app/layout.tsx`                          | Root layout                              |
+| `packages/ui/src/field-kit/registry.ts`                | Field renderer registry                  |
+| `packages/ui/src/meta/registry.ts`                     | Entity metadata registry                 |
+| `packages/core/src/infra/logger.ts`                    | Pino logger setup                        |
 | `apps/web/src/app/(public)/(marketing)/AfendaMark.tsx` | Brand icon component (static + animated) |
-| `apps/web/src/app/icon.svg` | SVG favicon |
+| `apps/web/src/app/icon.svg`                            | SVG favicon                              |
 
 ---
 
@@ -849,6 +895,7 @@ type: "spring", stiffness: 400, damping: 25
 #### React Optimization
 
 **1. Use React Hooks Wisely**
+
 ```typescript
 // ✅ Memoize expensive computed values
 const columns = useMemo(() => {
@@ -874,6 +921,7 @@ const handleClick = useCallback(() => {
 ```
 
 **2. Component Code Splitting**
+
 ```typescript
 // Next.js dynamic imports with loading states
 import dynamic from 'next/dynamic';
@@ -892,6 +940,7 @@ const AdminPanel = lazy(() => import('./AdminPanel'));
 ```
 
 **3. Suspense Boundaries for Streaming (Next.js 16)**
+
 ```typescript
 // apps/web/src/app/page.tsx
 import { Suspense } from "react";
@@ -902,7 +951,7 @@ export default function Page() {
       <Suspense fallback={<HeaderSkeleton />}>
         <Header />
       </Suspense>
-      
+
       <Suspense fallback={<DataTableSkeleton />}>
         <DataTable />
       </Suspense>
@@ -912,6 +961,7 @@ export default function Page() {
 ```
 
 **4. Performance Monitoring**
+
 ```typescript
 // Built into GeneratedList and GeneratedForm components
 const renderStart = useRef(performance.now());
@@ -929,6 +979,7 @@ useEffect(() => {
 #### Next.js App Router Optimization
 
 **1. Route Segment Config**
+
 ```typescript
 // Force dynamic for real-time data
 export const dynamic = "force-dynamic";
@@ -941,6 +992,7 @@ export const revalidate = 3600;
 ```
 
 **2. Parallel Data Fetching**
+
 ```typescript
 // ✅ Fetch in parallel
 async function Page() {
@@ -948,7 +1000,7 @@ async function Page() {
     getUser(),
     getInvoices(),
   ]);
-  
+
   return <Dashboard user={user} invoices={invoices} />;
 }
 
@@ -960,6 +1012,7 @@ async function Page() {
 ```
 
 **3. Image & Font Optimization**
+
 ```typescript
 // Use Next.js Image component
 import Image from "next/image";
@@ -976,7 +1029,7 @@ import Image from "next/image";
 // Font optimization
 import { Inter } from "next/font/google";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   preload: true,
@@ -988,6 +1041,7 @@ const inter = Inter({
 #### Database Performance
 
 **1. Connection Pooling**
+
 ```typescript
 // packages/db/src/client.ts
 const pool = new Pool({
@@ -999,6 +1053,7 @@ const pool = new Pool({
 ```
 
 **2. Use Indexes Effectively**
+
 ```typescript
 // Every table MUST have indexes on:
 // - Foreign keys (for joins)
@@ -1018,6 +1073,7 @@ export const invoice = pgTable("invoice", {
 ```
 
 **3. Use Transactions for Multi-Step Operations**
+
 ```typescript
 // packages/db/src/client.ts - ADR-0003 pattern
 import { withOrgContext } from "@afenda/db";
@@ -1034,6 +1090,7 @@ const result = await withOrgContext(db, {
 ```
 
 **4. Batch Operations**
+
 ```typescript
 // ✅ Batch inserts
 await db.insert(auditLog).values([
@@ -1051,6 +1108,7 @@ for (const item of items) {
 #### API Performance
 
 **1. Rate Limiting**
+
 ```typescript
 // apps/api/src/index.ts
 await app.register(rateLimit, {
@@ -1067,6 +1125,7 @@ app.post("/v1/commands/create-invoice", {
 ```
 
 **2. Request Deduplication (Idempotency)**
+
 ```typescript
 // Every command must accept idempotencyKey
 export interface CreateInvoiceCommand {
@@ -1079,10 +1138,11 @@ export interface CreateInvoiceCommand {
 ```
 
 **3. Correlation IDs for Tracing**
+
 ```typescript
 // apps/api/src/index.ts
 app.addHook("onRequest", async (req, reply) => {
-  const correlationId = 
+  const correlationId =
     req.headers[CorrelationIdHeader] ?? crypto.randomUUID();
   req.correlationId = correlationId;
   reply.header(CorrelationIdHeader, correlationId);
@@ -1092,6 +1152,7 @@ app.addHook("onRequest", async (req, reply) => {
 ### Caching Strategies
 
 **1. Next.js Data Cache**
+
 ```typescript
 // Revalidate on-demand
 fetch('https://api.example.com/data', {
@@ -1110,6 +1171,7 @@ fetch('https://api.example.com/realtime', {
 ```
 
 **2. Database Query Results Caching**
+
 ```typescript
 // Use Redis or similar for frequently accessed data
 // NOT YET IMPLEMENTED - future enhancement
@@ -1254,8 +1316,8 @@ const result = await db.execute(
 
 // Use DOMPurify if you MUST render HTML
 import DOMPurify from "isomorphic-dompurify";
-<div dangerouslySetInnerHTML={{ 
-  __html: DOMPurify.sanitize(userInput) 
+<div dangerouslySetInnerHTML={{
+  __html: DOMPurify.sanitize(userInput)
 }} />
 ```
 
@@ -1266,8 +1328,8 @@ import DOMPurify from "isomorphic-dompurify";
 ```typescript
 // apps/api/src/index.ts
 await app.register(cors, {
-  origin: env.ALLOWED_ORIGINS.length > 0 
-    ? env.ALLOWED_ORIGINS 
+  origin: env.ALLOWED_ORIGINS.length > 0
+    ? env.ALLOWED_ORIGINS
     : true,
   credentials: true,
 });
@@ -1351,16 +1413,16 @@ openssl rand -base64 32
 export function redactEnv(env: Record<string, unknown>) {
   const redacted = { ...env };
   const sensitiveKeys = [
-    "DATABASE_URL", "NEON_AUTH_COOKIE_SECRET", 
+    "DATABASE_URL", "NEON_AUTH_COOKIE_SECRET",
     "AUTH_CHALLENGE_SECRET", "API_KEY"
   ];
-  
+
   for (const key of sensitiveKeys) {
     if (redacted[key]) {
       redacted[key] = "[REDACTED]";
     }
   }
-  
+
   return redacted;
 }
 ```
@@ -1405,18 +1467,18 @@ DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=require
 
 ### OWASP Top 10 Coverage
 
-| Threat | Mitigation Strategy |
-|--------|-------------------|
-| **A01: Broken Access Control** | - O(1) permission checks via Set<br/>- Multi-tenant RLS policies<br/>- withOrgContext for all queries |
-| **A02: Cryptographic Failures** | - 32+ char secrets<br/>- PostgreSQL SSL connections<br/>- Audit log redaction |
-| **A03: Injection** | - Drizzle ORM parameterized queries<br/>- Zod validation<br/>- No raw SQL |
-| **A04: Insecure Design** | - Schema-is-truth workflow<br/>- Append-only audit logs<br/>- Idempotency keys |
-| **A05: Security Misconfiguration** | - Environment validation on startup<br/>- CORS whitelist<br/>- Rate limiting enabled |
-| **A06: Vulnerable Components** | - pnpm audit<br/>- Dependabot alerts<br/>- Regular updates |
-| **A07: Authentication Failures** | - NextAuth (secure by default)<br/>- Correlation IDs<br/>- Session management |
-| **A08: Software/Data Integrity** | - CI gates (18 total)<br/>- Typecheck before deploy<br/>- Migration linting |
-| **A09: Logging Failures** | - Structured Pino logging<br/>- Correlation IDs<br/>- Audit log for all mutations |
-| **A10: SSRF** | - No user-controlled URLs<br/>- Whitelist external APIs<br/>- Network segmentation |
+| Threat                             | Mitigation Strategy                                                                                   |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **A01: Broken Access Control**     | - O(1) permission checks via Set<br/>- Multi-tenant RLS policies<br/>- withOrgContext for all queries |
+| **A02: Cryptographic Failures**    | - 32+ char secrets<br/>- PostgreSQL SSL connections<br/>- Audit log redaction                         |
+| **A03: Injection**                 | - Drizzle ORM parameterized queries<br/>- Zod validation<br/>- No raw SQL                             |
+| **A04: Insecure Design**           | - Schema-is-truth workflow<br/>- Append-only audit logs<br/>- Idempotency keys                        |
+| **A05: Security Misconfiguration** | - Environment validation on startup<br/>- CORS whitelist<br/>- Rate limiting enabled                  |
+| **A06: Vulnerable Components**     | - pnpm audit<br/>- Dependabot alerts<br/>- Regular updates                                            |
+| **A07: Authentication Failures**   | - NextAuth (secure by default)<br/>- Correlation IDs<br/>- Session management                         |
+| **A08: Software/Data Integrity**   | - CI gates (18 total)<br/>- Typecheck before deploy<br/>- Migration linting                           |
+| **A09: Logging Failures**          | - Structured Pino logging<br/>- Correlation IDs<br/>- Audit log for all mutations                     |
+| **A10: SSRF**                      | - No user-controlled URLs<br/>- Whitelist external APIs<br/>- Network segmentation                    |
 
 ---
 

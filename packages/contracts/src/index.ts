@@ -22,7 +22,6 @@ export * from "./kernel/index.js";
 
 // ── erp (business domains) ───────────────────────────────────────────────────
 export * from "./erp/index.js";
-export { JournalEntrySchema, type JournalEntry } from "./erp/finance/gl/journal-entry.entity.js";
 
 // ── comm (communication surfaces) ────────────────────────────────────────────
 export * from "./comm/index.js";

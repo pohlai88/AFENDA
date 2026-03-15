@@ -1,9 +1,5 @@
 import type { DbClient } from "@afenda/db";
-import {
-  commBoardMeeting,
-  commBoardMeetingAttendee,
-  outboxEvent,
-} from "@afenda/db";
+import { commBoardMeeting, commBoardMeetingAttendee, outboxEvent } from "@afenda/db";
 import { and, eq, sql } from "drizzle-orm";
 import type {
   AddAttendeeCommand,
@@ -15,7 +11,7 @@ import type {
   UpdateAttendeeStatusCommand,
 } from "@afenda/contracts";
 import { COMM_ATTENDEE_ADDED, COMM_ATTENDEE_STATUS_UPDATED } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface BoardMeetingPolicyContext {
   principalId?: PrincipalId | null;
@@ -52,12 +48,7 @@ export async function addAttendee(
   const [meeting] = await db
     .select()
     .from(commBoardMeeting)
-    .where(
-      and(
-        eq(commBoardMeeting.orgId, orgId),
-        eq(commBoardMeeting.id, params.meetingId),
-      ),
-    );
+    .where(and(eq(commBoardMeeting.orgId, orgId), eq(commBoardMeeting.id, params.meetingId)));
 
   if (!meeting) {
     return { ok: false, error: { code: "COMM_MEETING_NOT_FOUND", message: "Meeting not found" } };
@@ -76,7 +67,10 @@ export async function addAttendee(
   if (existing) {
     return {
       ok: false,
-      error: { code: "COMM_ATTENDEE_ALREADY_ADDED", message: "Attendee already added to this meeting" },
+      error: {
+        code: "COMM_ATTENDEE_ALREADY_ADDED",
+        message: "Attendee already added to this meeting",
+      },
     };
   }
 
@@ -88,7 +82,11 @@ export async function addAttendee(
       action: "meeting.attendee_added",
       entityType: "board_meeting_attendee" as const,
       correlationId,
-      details: { meetingId: params.meetingId, principalId: params.principalId, role: params.role ?? null },
+      details: {
+        meetingId: params.meetingId,
+        principalId: params.principalId,
+        role: params.role ?? null,
+      },
     },
     async (tx) => {
       const [row] = await tx

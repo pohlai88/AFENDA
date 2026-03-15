@@ -27,7 +27,8 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
  * Total: 23 gates
  */
 const GATES = [
-  // ── Phase 1: Static Correctness (10) ───────────────────────────────────
+  // ── Phase 1: Static Correctness (11) ───────────────────────────────────
+  resolve(__dirname, "gates/barrel-export-conflicts.mjs"),
   resolve(__dirname, "gates/boundaries.mjs"),
   resolve(__dirname, "gates/module-boundaries.mjs"),
   resolve(__dirname, "gates/catalog.mjs"),

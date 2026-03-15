@@ -2,9 +2,31 @@ packages:
   - "apps/*"
   - "packages/*"
 
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
+# ── Build script allow-list ────────────────────────────────────────────────
+# allowBuilds replaces onlyBuiltDependencies (deprecated in pnpm v10.26.0).
+# Only these packages may run preinstall/install/postinstall scripts.
+allowBuilds:
+  esbuild: true
+  sharp: true
+
+# ── Workspace governance ───────────────────────────────────────────────────
+# Hard error if circular workspace dependencies are detected.
+# Synergises with Turborepo's dependsOn: ["^build"] — both require a DAG.
+disallowWorkspaceCycles: true
+
+# Enforce catalog use at install time (complements the catalog.mjs CI gate).
+# pnpm add <pkg> will error if <pkg> is not already in the catalog below.
+# Added in pnpm v10.12.1.
+catalogMode: strict
+
+# Auto-prune catalog entries that are no longer used by any package.
+# Added in pnpm v10.15.0.
+cleanupUnusedCatalogs: true
+
+# Skip full resolution on repeat installs when node_modules is up-to-date.
+# Significantly speeds up pnpm install after git pull with no dep changes.
+# Added in pnpm v10.1.0.
+optimisticRepeatInstall: true
 
 # ─── Version Catalog ───────────────────────────────────────────────────────
 # Single source of truth for dependency versions across the monorepo.

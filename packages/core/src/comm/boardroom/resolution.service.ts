@@ -23,8 +23,8 @@ import {
   COMM_RESOLUTION_WITHDRAWN,
   COMM_VOTE_CAST,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
-import { getResolutionStateGuardError } from "./resolution.guards.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
+import { getResolutionStateGuardError } from "./resolution.guards";
 
 export interface BoardMeetingPolicyContext {
   principalId?: PrincipalId | null;

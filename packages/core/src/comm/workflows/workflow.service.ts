@@ -24,7 +24,7 @@ import {
   COMM_WORKFLOW_RUN_COMPLETED,
   COMM_WORKFLOW_RUN_FAILED,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface WorkflowPolicyContext {
   principalId?: PrincipalId | null;

@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -23,6 +24,22 @@ const nextConfig: NextConfig = {
 
   // Externalize pg — native Node.js driver; avoids bundling issues
   serverExternalPackages: ["pg"],
+
+  // Turbopack is the default dev bundler in Next.js 16.
+  // Top-level since v15.3.0 — no longer under `experimental`.
+  turbopack: {
+    // Monorepo root: allows Turbopack to resolve symlinked pnpm workspace
+    // packages (packages/*) that live above the apps/web directory.
+    root: path.resolve(__dirname, "../.."),
+    // Explicit extension list — matches Turbopack's internal defaults.
+    // Listed here for self-documentation; avoids implicit fallback behaviour
+    // if defaults change in a future Next.js upgrade.
+    resolveExtensions: [".tsx", ".ts", ".jsx", ".js", ".mjs", ".mts", ".json"],
+    // Stable debug IDs in JS bundles and source maps (Next.js 16+).
+    // Enables precise symbol lookup in Sentry / Datadog without relying on
+    // fragile file-path heuristics.
+    debugIds: true,
+  },
 
   // API proxy for local dev (avoids CORS in development)
   // Exclude /api/internal/security/* — those are Next.js route handlers, not proxied to Fastify.

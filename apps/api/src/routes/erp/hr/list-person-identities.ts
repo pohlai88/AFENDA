@@ -10,9 +10,7 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const ResponseSchema = makeSuccessSchema(
-  z.object({ items: z.array(HrmPersonIdentitySchema) }),
-);
+const ResponseSchema = makeSuccessSchema(z.object({ items: z.array(HrmPersonIdentitySchema) }));
 
 export async function hrListPersonIdentitiesRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -48,8 +46,8 @@ export async function hrListPersonIdentitiesRoutes(app: FastifyInstance) {
         identityType: r.identityType,
         identityNumber: r.identityNumber,
         issuingCountryCode: r.issuingCountryCode,
-        issuedAt: r.issuedAt ? r.issuedAt.toISOString().slice(0, 10) : null,
-        expiresAt: r.expiresAt ? r.expiresAt.toISOString().slice(0, 10) : null,
+        issuedAt: r.issuedAt,
+        expiresAt: r.expiresAt,
         isPrimary: r.isPrimary,
         verificationStatus: r.verificationStatus,
         createdAt: r.createdAt.toISOString(),

@@ -1,24 +1,46 @@
 {
-  "$schema": "https://turbo.build/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
+  "globalDependencies": ["tsconfig.base.json", "eslint.config.js"],
+  "globalEnv": ["NODE_ENV", "CI"],
   "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "!**/*.md",
+        "!**/__vitest_test__/**",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/e2e/**"
+      ],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "outputLogs": "new-only"
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    "lint": {
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md"],
+      "outputs": [],
+      "outputLogs": "new-only"
+    },
+    "test": {
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/e2e/**"],
+      "outputs": ["coverage/**"],
+      "outputLogs": "new-only"
+    },
+    "test:coverage": {
+      "inputs": ["$TURBO_DEFAULT$", "!**/*.md", "!**/e2e/**"],
+      "outputs": ["coverage/**"],
+      "outputLogs": "new-only"
+    },
     "dev": {
       "cache": false,
       "persistent": true,
       "dependsOn": ["^build"]
-    },
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
-    },
-    "typecheck": {
-      "dependsOn": ["^typecheck"],
-      "outputs": []
-    },
-    "lint": {
-      "outputs": []
-    },
-    "test": {
-      "outputs": ["coverage/**"]
     },
     "e2e": {
       "cache": false,

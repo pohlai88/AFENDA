@@ -8,8 +8,8 @@ export interface PersonIdentityRow {
   identityType: string;
   identityNumber: string;
   issuingCountryCode: string | null;
-  issuedAt: Date | null;
-  expiresAt: Date | null;
+  issuedAt: string | null;
+  expiresAt: string | null;
   isPrimary: boolean;
   verificationStatus: string;
   createdAt: Date;
@@ -36,12 +36,7 @@ export async function listPersonIdentities(
       updatedAt: hrmPersonIdentities.updatedAt,
     })
     .from(hrmPersonIdentities)
-    .where(
-      and(
-        eq(hrmPersonIdentities.orgId, orgId),
-        eq(hrmPersonIdentities.personId, personId),
-      ),
-    )
+    .where(and(eq(hrmPersonIdentities.orgId, orgId), eq(hrmPersonIdentities.personId, personId)))
     .orderBy(hrmPersonIdentities.createdAt);
 
   return rows;

@@ -26,7 +26,7 @@ export const CreateDisciplinaryActionCommandSchema = z.object({
   notes: z.string().trim().max(2000).nullable().optional(),
 });
 
-export const AttachEvidenceCommandSchema = z.object({
+export const HrAttachEvidenceCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   caseType: HrCaseEvidenceTypeSchema,
   caseId: UuidSchema,
@@ -54,7 +54,7 @@ export const CreateDisciplinaryActionResultSchema = z.object({
   disciplinaryActionId: UuidSchema,
 });
 
-export const AttachEvidenceResultSchema = z.object({
+export const HrAttachEvidenceResultSchema = z.object({
   evidenceId: UuidSchema,
 });
 
@@ -67,14 +67,12 @@ export const CloseDisciplinaryActionResultSchema = z.object({
 });
 
 export type CreateGrievanceCaseCommand = z.infer<typeof CreateGrievanceCaseCommandSchema>;
-export type CreateDisciplinaryActionCommand = z.infer<
-  typeof CreateDisciplinaryActionCommandSchema
->;
-export type AttachEvidenceCommand = z.infer<typeof AttachEvidenceCommandSchema>;
+export type CreateDisciplinaryActionCommand = z.infer<typeof CreateDisciplinaryActionCommandSchema>;
+export type HrAttachEvidenceCommand = z.infer<typeof HrAttachEvidenceCommandSchema>;
 export type CloseGrievanceCaseCommand = z.infer<typeof CloseGrievanceCaseCommandSchema>;
 export type CloseDisciplinaryActionCommand = z.infer<typeof CloseDisciplinaryActionCommandSchema>;
 export type CreateGrievanceCaseResult = z.infer<typeof CreateGrievanceCaseResultSchema>;
 export type CreateDisciplinaryActionResult = z.infer<typeof CreateDisciplinaryActionResultSchema>;
-export type AttachEvidenceResult = z.infer<typeof AttachEvidenceResultSchema>;
+export type HrAttachEvidenceResult = z.infer<typeof HrAttachEvidenceResultSchema>;
 export type CloseGrievanceCaseResult = z.infer<typeof CloseGrievanceCaseResultSchema>;
 export type CloseDisciplinaryActionResult = z.infer<typeof CloseDisciplinaryActionResultSchema>;

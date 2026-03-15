@@ -19,7 +19,7 @@ import {
   COMM_PROJECT_MILESTONE_CREATED,
   COMM_PROJECT_STATUS_CHANGED,
   COMM_PROJECT_UPDATED,
-} from "./project.events.js";
+} from "./project.event-types.js";
 
 const ProjectEventContextPayloadSchema = z.object({
   projectId: CommProjectIdSchema,

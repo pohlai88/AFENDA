@@ -10,7 +10,7 @@ import type {
   PrincipalId,
 } from "@afenda/contracts";
 import { COMM_AGENDA_ITEM_ADDED } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface BoardMeetingPolicyContext {
   principalId?: PrincipalId | null;
@@ -48,9 +48,7 @@ export async function addAgendaItem(
   const [meeting] = await db
     .select()
     .from(commBoardMeeting)
-    .where(
-      and(eq(commBoardMeeting.orgId, orgId), eq(commBoardMeeting.id, params.meetingId)),
-    );
+    .where(and(eq(commBoardMeeting.orgId, orgId), eq(commBoardMeeting.id, params.meetingId)));
 
   if (!meeting) {
     return { ok: false, error: { code: "COMM_MEETING_NOT_FOUND", message: "Meeting not found" } };

@@ -5,7 +5,8 @@ const E2E_PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
 const E2E_HOST = process.env.PLAYWRIGHT_HOST ?? "localhost";
 const E2E_BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://${E2E_HOST}:${E2E_PORT}`;
 const HAS_EXTERNAL_BASE_URL = Boolean(process.env.PLAYWRIGHT_BASE_URL);
-const RUN_CROSS_BROWSER = IS_CI || process.env.PLAYWRIGHT_CROSS_BROWSER === "1";
+const RUN_CROSS_BROWSER = process.env.PLAYWRIGHT_CROSS_BROWSER === "1";
+const ENV_WORKERS = process.env.PLAYWRIGHT_WORKERS;
 
 /**
  * Playwright E2E configuration for the AFENDA web app.
@@ -21,9 +22,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,
-  workers: Number(process.env.PLAYWRIGHT_WORKERS ?? 1),
+  // Playwright recommends serial CI workers for stability. Keep local parallel unless explicitly overridden.
+  workers: ENV_WORKERS ? Number(ENV_WORKERS) : IS_CI ? 1 : undefined,
   reporter: IS_CI
-    ? [["github"], ["html", { open: "never" }]]
+    ? [["github"], ["html", { open: "never" }], ["junit", { outputFile: "test-results/e2e-junit-results.xml" }]]
     : [["line"], ["html", { open: "on-failure" }]],
   timeout: 120_000,
 
@@ -33,7 +35,8 @@ export default defineConfig({
 
   use: {
     baseURL: E2E_BASE_URL,
-    trace: IS_CI ? "retain-on-failure" : "on-first-retry",
+    // Collect trace on retries to keep CI overhead lower while preserving debuggability.
+    trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
     actionTimeout: 15_000,
@@ -74,14 +77,15 @@ export default defineConfig({
   /* Start the dev server before running tests (local dev only).
    * Auth tests need web + API. dev:e2e skips worker to avoid startup failures. */
   webServer:
-    IS_CI || HAS_EXTERNAL_BASE_URL
+    HAS_EXTERNAL_BASE_URL
       ? undefined
       : {
           // Use node+next directly to avoid Windows `Terminate batch job (Y/N)?` prompts from pnpm.cmd.
           command: `node ./node_modules/next/dist/bin/next dev --webpack --port ${E2E_PORT}`,
           url: E2E_BASE_URL,
           cwd: ".",
-          reuseExistingServer: true,
+          // Reuse local server for faster iteration; require a fresh process in CI.
+          reuseExistingServer: !IS_CI,
           timeout: 180_000,
         },
 });

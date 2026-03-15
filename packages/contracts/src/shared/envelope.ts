@@ -4,7 +4,9 @@
  * RULES:
  *   1. Every response carries a `correlationId` (UUID) for end-to-end tracing.
  *      Source of truth for the schema is `ids.ts#CorrelationIdSchema`.
- *   2. Error codes come from `errors.ts#ErrorCodeSchema` — never raw strings.
+ *   2. Error codes must follow the canonical SCREAMING_SNAKE_CASE shape.
+ *      Registry membership is validated at higher layers using the package-root
+ *      combined `ErrorCodeSchema`, keeping shared/ free of pillar imports.
  *   3. `makeSuccessEnvelopeSchema` and `makeCursorEnvelopeSchema` are schema
  *      factories, not constants. Name them with the `make` prefix so callers
  *      know to invoke them with an inner schema, not use them directly.

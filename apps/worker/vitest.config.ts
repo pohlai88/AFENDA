@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { buildCoverageConfig } from "../../tools/testing/vitest.shared";
 
 export default defineConfig({
   test: {
@@ -6,13 +7,9 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/dist/**"],
     passWithNoTests: true,
     testTimeout: 10_000,
+    hookTimeout: 10_000,
     clearMocks: true,
     restoreMocks: true,
-    coverage: {
-      provider: "v8",
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/index.ts", "**/__vitest_test__/**"],
-      reporter: ["text", "html", "lcov"],
-    },
+    coverage: buildCoverageConfig(["src/**/*.ts"], ["src/**/index.ts", "**/__vitest_test__/**"]),
   },
 });

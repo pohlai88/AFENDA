@@ -27,8 +27,8 @@ import {
   COMM_DOCUMENT_PUBLISHED,
   COMM_DOCUMENT_UPDATED,
 } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
-import { findCollaborator } from "./document.queries.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
+import { findCollaborator } from "./document.queries";
 
 export interface CommDocumentPolicyContext {
   principalId?: PrincipalId | null;

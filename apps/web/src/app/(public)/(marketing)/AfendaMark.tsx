@@ -78,9 +78,9 @@ export function AfendaMark({
     >
       {/* Dot 1 */}
       <motion.circle
-        cx="5"
-        cy="12"
-        r="2"
+        cx={5}
+        cy={12}
+        r={2}
         fill={color}
         variants={{
           hidden: { scale: 0, opacity: 0 },
@@ -91,9 +91,9 @@ export function AfendaMark({
       />
       {/* Dot 2 */}
       <motion.circle
-        cx="12"
-        cy="12"
-        r="2"
+        cx={12}
+        cy={12}
+        r={2}
         fill={color}
         variants={{
           hidden: { scale: 0, opacity: 0 },
@@ -108,15 +108,15 @@ export function AfendaMark({
       />
       {/* Audit Ring — r=2.5 so outer edge (3.25px) optically matches 4px solid dots */}
       <motion.circle
-        cx="19"
-        cy="12"
-        r="2.5"
+        cx={19}
+        cy={12}
+        r={2.5}
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth={1.5}
         fill="none"
         variants={{
-          hidden: { scale: 0, opacity: 0, pathLength: 0 },
-          visible: { scale: 1, opacity: 1, pathLength: 1 },
+          hidden: { scale: 0, opacity: 0 },
+          visible: { scale: 1, opacity: 1 },
           hover: {
             scale: 1.25,
             stroke: hoverColor,
@@ -124,7 +124,7 @@ export function AfendaMark({
             transition: { delay: 0.1, ...springTransition },
           },
         }}
-        transition={{ ...springTransition, pathLength: { duration: 0.8 } }}
+        transition={springTransition}
       />
     </motion.svg>
   );

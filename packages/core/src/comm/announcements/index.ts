@@ -1,3 +1,3 @@
-export * from "./announcement.service.js";
-export * from "./announcement.queries.js";
-export * from "./create-persisted-announcement.js";
+export * from "./announcement.service";
+export * from "./announcement.queries";
+export * from "./create-persisted-announcement";

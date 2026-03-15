@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  JournalEntrySchema,
+  SharedJournalEntrySchema,
   applyJournalEntries,
   recomputeBalances,
   validateJournalEntry,
@@ -29,7 +29,7 @@ describe("shared journal", () => {
   });
 
   it("enforces debit/credit invariants", () => {
-    const bothZero = JournalEntrySchema.safeParse({
+    const bothZero = SharedJournalEntrySchema.safeParse({
       entryId: ENTRY_1,
       occurredAt: "2026-03-13T10:00:00.000Z",
       accountId: ACCOUNT_A,
@@ -39,7 +39,7 @@ describe("shared journal", () => {
     });
     expect(bothZero.success).toBe(false);
 
-    const bothPositive = JournalEntrySchema.safeParse({
+    const bothPositive = SharedJournalEntrySchema.safeParse({
       entryId: ENTRY_1,
       occurredAt: "2026-03-13T10:00:00.000Z",
       accountId: ACCOUNT_A,
@@ -80,14 +80,14 @@ describe("shared journal", () => {
 
     const balances = applyJournalEntries(
       new Map(),
-      entries.map((entry) => JournalEntrySchema.parse(entry)),
+      entries.map((entry) => SharedJournalEntrySchema.parse(entry)),
     );
     expect(balances.get(ACCOUNT_A)?.amountMinor).toBe(125n);
   });
 
   it("throws when account currency changes across entries", () => {
     const entries = [
-      JournalEntrySchema.parse({
+      SharedJournalEntrySchema.parse({
         entryId: ENTRY_1,
         occurredAt: "2026-03-13T10:00:00.000Z",
         accountId: ACCOUNT_A,
@@ -95,7 +95,7 @@ describe("shared journal", () => {
         creditMinor: "0",
         currencyCode: "USD",
       }),
-      JournalEntrySchema.parse({
+      SharedJournalEntrySchema.parse({
         entryId: ENTRY_2,
         occurredAt: "2026-03-13T10:01:00.000Z",
         accountId: ACCOUNT_A,
@@ -110,7 +110,7 @@ describe("shared journal", () => {
 
   it("recomputes balances for multiple accounts", () => {
     const entries = [
-      JournalEntrySchema.parse({
+      SharedJournalEntrySchema.parse({
         entryId: ENTRY_1,
         occurredAt: "2026-03-13T10:00:00.000Z",
         accountId: ACCOUNT_A,
@@ -118,7 +118,7 @@ describe("shared journal", () => {
         creditMinor: "0",
         currencyCode: "USD",
       }),
-      JournalEntrySchema.parse({
+      SharedJournalEntrySchema.parse({
         entryId: ENTRY_2,
         occurredAt: "2026-03-13T10:01:00.000Z",
         accountId: ACCOUNT_A,
@@ -126,7 +126,7 @@ describe("shared journal", () => {
         creditMinor: "30",
         currencyCode: "USD",
       }),
-      JournalEntrySchema.parse({
+      SharedJournalEntrySchema.parse({
         entryId: ENTRY_3,
         occurredAt: "2026-03-13T10:02:00.000Z",
         accountId: ACCOUNT_B,

@@ -15,7 +15,7 @@ export const CreateScenarioCommandSchema = z.object({
   idempotencyKey: IdempotencyKeySchema,
   workforcePlanId: UuidSchema,
   scenarioName: z.string().trim().min(1).max(255),
-  assumptionsJson: z.record(z.unknown()).nullable().optional(),
+  assumptionsJson: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const SetPositionBudgetCommandSchema = z.object({

@@ -99,15 +99,9 @@ const CTX = { activeContext: { orgId: ORG_ID } };
 const POLICY_CTX = { principalId: PRINCIPAL_A };
 
 beforeEach(() => {
-<<<<<<< HEAD
-  vi.resetAllMocks();
-
-  // Rebuild default mock graph so each test starts from identical state.
-=======
   vi.clearAllMocks();
   // Default: empty result for select queries
   selectResultQueue = [];
->>>>>>> d80f778 (feat(comm): implement communication domain slices and worker handlers)
   mockInsertReturning.mockResolvedValue([{ id: SESSION_ID }]);
   mockInsertValues.mockReturnValue({ returning: mockInsertReturning });
   mockInsert.mockReturnValue({ values: mockInsertValues });

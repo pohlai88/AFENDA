@@ -12,7 +12,7 @@ import type {
   UpdateActionItemCommand,
 } from "@afenda/contracts";
 import { CommMinutesEvents } from "@afenda/contracts";
-import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit.js";
+import { withAudit, type OrgScopedContext } from "../../kernel/governance/audit/audit";
 
 export interface BoardMeetingPolicyContext {
   principalId?: PrincipalId | null;

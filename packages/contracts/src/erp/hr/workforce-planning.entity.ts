@@ -21,7 +21,7 @@ export const HrmWorkforceScenarioSchema = z.object({
   orgId: OrgIdSchema,
   workforcePlanId: UuidSchema,
   scenarioName: z.string().trim().min(1).max(255),
-  assumptionsJson: z.record(z.unknown()).nullable(),
+  assumptionsJson: z.record(z.string(), z.unknown()).nullable(),
   createdAt: UtcDateTimeSchema,
   updatedAt: UtcDateTimeSchema,
 });
