@@ -33,15 +33,15 @@
   },
 
   // ── TypeScript ───────────────────────────────────────────────────────────────
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.preferences.quoteStyle": "double",
-  "typescript.preferences.importModuleSpecifier": "shortest",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
-  "typescript.inlayHints.parameterNames.enabled": "literals",
-  "typescript.inlayHints.variableTypes.enabled": false,
-  "typescript.inlayHints.returnTypes.enabled": false,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "js/ts.preferences.quoteStyle": "double",
+  "js/ts.preferences.importModuleSpecifier": "shortest",
+  "js/ts.suggest.autoImports": true,
+  "js/ts.updateImportsOnFileMove.enabled": "always",
+  "js/ts.inlayHints.parameterNames.enabled": "literals",
+  "js/ts.inlayHints.variableTypes.enabled": false,
+  "js/ts.inlayHints.returnTypes.enabled": false,
 
   // ── ESLint (flat config — eslint.config.js at root) ─────────────────────────
   "eslint.useFlatConfig": true,
