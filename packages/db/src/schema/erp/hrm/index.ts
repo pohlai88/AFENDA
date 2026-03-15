@@ -1,5 +1,6 @@
 export * from "./_shared";
 export * from "./hrm-employees";
+export * from "./hrm-person-extensions";
 export * from "./hrm-employment";
 export * from "./hrm-organization";
 export * from "./hrm-recruitment";
@@ -7,3 +8,10 @@ export * from "./hrm-onboarding";
 export * from "./hrm-attendance";
 export * from "./hrm-leave";
 export * from "./hrm-compensation";
+export * from "./hrm-payroll";
+export * from "./hrm-performance";
+export * from "./hrm-talent";
+export * from "./hrm-learning";
+export * from "./hrm-compliance";
+export * from "./hrm-case-management";
+export * from "./hrm-workforce-planning";

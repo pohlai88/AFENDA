@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { TransferEmployeeCommandSchema, TransferEmployeeResultSchema } from "@afenda/contracts";
 import { transferEmployee } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,30 +9,11 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const TransferEmployeeBodySchema = z.object({
-  employmentId: z.string().uuid(),
-  effectiveFrom: z.string(),
-  legalEntityId: z.string().uuid(),
-  businessUnitId: z.string().uuid().optional(),
-  departmentId: z.string().uuid().optional(),
-  costCenterId: z.string().uuid().optional(),
-  locationId: z.string().uuid().optional(),
-  positionId: z.string().uuid().optional(),
-  jobId: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional(),
-  managerEmployeeId: z.string().uuid().optional(),
-  workScheduleId: z.string().uuid().optional(),
-  employmentClass: z.string().max(50).optional(),
-  fteRatio: z.string().max(20).optional(),
-  changeReason: z.string().min(1).max(120),
+const TransferEmployeeBodySchema = TransferEmployeeCommandSchema.omit({
+  idempotencyKey: true,
 });
 
-const TransferEmployeeResponseSchema = makeSuccessSchema(
-  z.object({
-    previousWorkAssignmentId: z.string().uuid(),
-    newWorkAssignmentId: z.string().uuid(),
-  }),
-);
+const TransferEmployeeResponseSchema = makeSuccessSchema(TransferEmployeeResultSchema);
 
 export async function hrTransferEmployeeRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

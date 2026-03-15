@@ -2,13 +2,27 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { listSalaryHistory } from "@afenda/core";
-import { ApiErrorResponseSchema, requireAuth, requireOrg } from "../../../helpers/responses.js";
+import {
+  ApiErrorResponseSchema,
+  makeSuccessSchema,
+  requireAuth,
+  requireOrg,
+} from "../../../helpers/responses.js";
 
 const QuerySchema = z.object({
   employmentId: z.string().uuid().optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });
+
+const ResponseSchema = makeSuccessSchema(
+  z.object({
+    data: z.array(z.record(z.string(), z.unknown())),
+    limit: z.number().int(),
+    offset: z.number().int(),
+    total: z.number().int(),
+  }),
+);
 
 export async function hrListSalaryHistoryRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -23,9 +37,7 @@ export async function hrListSalaryHistoryRoutes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }, { devAuth: [] }],
         querystring: QuerySchema,
         response: {
-          200: z.object({
-            data: z.array(z.record(z.unknown())),
-          }),
+          200: ResponseSchema,
           401: ApiErrorResponseSchema,
           403: ApiErrorResponseSchema,
           500: ApiErrorResponseSchema,
@@ -44,7 +56,7 @@ export async function hrListSalaryHistoryRoutes(app: FastifyInstance) {
         offset: req.query.offset,
       });
 
-      return reply.status(200).send({ data: rows });
+      return reply.status(200).send({ data: rows, correlationId: req.correlationId });
     },
   );
 }

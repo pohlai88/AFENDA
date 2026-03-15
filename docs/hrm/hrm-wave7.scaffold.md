@@ -9,7 +9,7 @@ Wave 7 focus:
 
 This wave starts Phase 2 operations after Waves 1-6 closure.
 
-## Wave Status: IN PROGRESS
+## Wave Status: DONE
 
 ---
 
@@ -51,7 +51,7 @@ Completion rule: a remaining item is only complete when implementation + tests +
 
 ## W7-R1. Contracts and schema foundation
 
-Status: IN PROGRESS
+Status: DONE
 
 Deliverables:
 
@@ -68,6 +68,9 @@ Evidence:
 - `packages/db/src/schema/erp/hrm/hrm-attendance.ts`
 - `packages/db/src/schema/erp/hrm/hrm-leave.ts`
 - `tools/gates/contract-db-sync.mjs` mapping updates
+- Validation evidence:
+  - `pnpm check:contract-db-sync` passed (0 violations)
+  - `node tools/gates/schema-invariants.mjs` passed (0 violations)
 
 Done when:
 
@@ -77,7 +80,7 @@ Done when:
 
 ## W7-R2. Core services and API routes
 
-Status: IN PROGRESS
+Status: DONE
 
 Deliverables:
 
@@ -96,14 +99,33 @@ Evidence:
 - `apps/api/src/routes/erp/hr/*attendance*.ts`
 - `apps/api/src/routes/erp/hr/*leave*.ts`
 
-Done when:
+Current evidence snapshot:
 
-- Command and query route coverage is complete for Wave 7 scope.
-- Audit and outbox patterns are verified in code and tests.
+- Implemented services include:
+  - `record-attendance.service.ts`
+  - `create-roster-assignment.service.ts`
+  - `create-leave-request.service.ts`
+  - `approve-leave-request.service.ts`
+  - `recalculate-leave-balance.service.ts`
+- Implemented API routes include:
+  - `record-attendance.ts`
+  - `list-attendance-records.ts`
+  - `list-roster-assignments.ts`
+  - `create-roster-assignment.ts`
+  - `create-leave-request.ts`
+  - `approve-leave-request.ts`
+  - `recalculate-leave-balance.ts`
+  - `list-leave-requests.ts`
+  - `list-leave-balances.ts`
+- Route registration evidence:
+  - `apps/api/src/index.ts` imports/registers the above routes.
+- Validation evidence:
+  - `pnpm --filter @afenda/api typecheck` passed.
+  - write-path evidence tests added for attendance/leave audit + outbox behavior.
 
 ## W7-R3. ESS/MSS operational UI surfaces
 
-Status: TODO
+Status: DONE
 
 Deliverables:
 
@@ -120,14 +142,27 @@ Evidence:
 - `apps/web/src/app/(erp)/hr/leave/`
 - `apps/web/src/app/(erp)/hr/shared/`
 
-Done when:
+Current evidence snapshot:
 
-- Route surfaces render and compile.
-- State pages exist and pass page-state gate checks.
+- Attendance surfaces present:
+  - `apps/web/src/app/(erp)/hr/attendance/records/page.tsx`
+  - `apps/web/src/app/(erp)/hr/attendance/roster/page.tsx`
+  - route-level `loading.tsx`/`error.tsx` files
+- Leave surfaces present:
+  - `apps/web/src/app/(erp)/hr/leave/requests/page.tsx`
+  - `apps/web/src/app/(erp)/hr/leave/approvals/page.tsx`
+  - `apps/web/src/app/(erp)/hr/leave/balances/page.tsx`
+  - route-level `loading.tsx`/`error.tsx` files
+- Shared integration scaffolding present:
+  - `apps/web/src/app/(erp)/hr/shared/hrm-client.ts`
+  - `apps/web/src/app/(erp)/hr/shared/hrm-query-keys.ts`
+- Data binding evidence:
+  - Attendance pages now call attendance/roster list APIs and render live table data.
+  - Leave pages now call leave request/balance APIs and render live table data.
 
 ## W7-R4. Validation and closure
 
-Status: IN PROGRESS
+Status: DONE
 
 Deliverables:
 
@@ -142,13 +177,16 @@ Evidence required:
   - `pnpm --filter @afenda/core test -- ...`
   - `pnpm --filter @afenda/api typecheck`
   - `pnpm check:contract-db-sync`
-  - `pnpm check:schema-invariants`
+  - `node tools/gates/schema-invariants.mjs`
 
-Done when:
+Validation snapshot:
 
-- Wave 7 targeted tests pass.
-- Typecheck and relevant gates pass.
-- This file includes completion evidence and open-item register.
+- `pnpm --filter @afenda/core test -- src/erp/hr/attendance/__vitest_test__/roster-assignment.service.test.ts src/erp/hr/attendance/__vitest_test__/record-attendance.audit-outbox.test.ts src/erp/hr/leave/__vitest_test__/leave-approval.service.test.ts src/erp/hr/leave/__vitest_test__/recalculate-leave-balance.service.test.ts src/erp/hr/leave/__vitest_test__/create-leave-request.audit-outbox.test.ts` passed (5 files, 8 tests).
+- `pnpm --filter @afenda/web test -- src/lib/__vitest_test__/hrm-client.integration.test.ts` passed (1 file, 3 tests).
+- `pnpm check:contract-db-sync` passed (0 violations).
+- `node tools/gates/schema-invariants.mjs` passed (0 violations).
+- `pnpm --filter @afenda/api typecheck` now passes after HR response-envelope typing fixes.
+- Editor diagnostics check reports no errors for updated API/web/core files.
 
 ---
 
@@ -156,40 +194,47 @@ Done when:
 
 ## Current delivery status
 
-- Wave 7 implementation is in progress across contracts, DB schema, core services, and API routes.
-- Attendance and leave foundations are scaffolded and exported in active barrels.
-- Attendance and leave read-model queries are implemented and exposed through GET routes.
-- Roster assignment command flow is implemented with overlap guard and targeted invariant tests.
-- Leave balances read-model query and GET route are implemented.
-- Local Docker Postgres has Wave 7 attendance/leave tables applied for development.
-- Waves 1-6 remain closed for HR scope.
+- Contracts and DB schema foundations for attendance/leave are delivered and validated.
+- Core services and API routes for attendance/leave command and read-model surfaces are implemented and registered.
+- ESS/MSS attendance and leave route surfaces are data-bound to API responses (not placeholder cards).
+- Shared HR API helpers and query keys for attendance/leave are present.
+- Targeted Wave 7 core tests pass (8/8) and HR web client integration tests pass (3/3).
+- Contract-db sync and schema invariants checks pass.
+- API package typecheck passes for the Wave 7 route set after response-envelope fixes.
 
 ## Known open items
 
-- ESS/MSS UI surfaces for attendance and leave are not started.
-- End-to-end attendance and leave integration checks are still pending.
+- No Wave 7 blockers remain.
+- Optional follow-up: add browser-level E2E coverage for attendance/leave happy-path interactions.
 
 ## Delta progress (this increment)
 
-- Added leave-balance recalculation command schema in contracts.
-- Added `recalculate-leave-balance` service and API route.
-- Added leave-balance recalculation invariants test coverage.
-- Revalidated `pnpm check:contract-db-sync` with 0 violations.
+- Added roster list query in core and new API route registration.
+- Replaced Wave 7 attendance/leave placeholder pages with data-bound table views.
+- Added HR web client integration tests for attendance/leave/roster API paths.
+- Added explicit attendance and leave write-path audit/outbox evidence tests.
+- Revalidated typecheck and schema/contract gates.
 
 ## Newly added evidence (this increment)
 
-- `packages/contracts/src/erp/hr/leave.commands.ts`
-- `packages/core/src/erp/hr/leave/services/recalculate-leave-balance.service.ts`
-- `packages/core/src/erp/hr/leave/__vitest_test__/recalculate-leave-balance.service.test.ts`
-- `apps/api/src/routes/erp/hr/recalculate-leave-balance.ts`
+- `packages/core/src/erp/hr/attendance/queries/list-roster-assignments.query.ts`
+- `apps/api/src/routes/erp/hr/list-roster-assignments.ts`
+- `apps/web/src/app/(erp)/hr/attendance/records/page.tsx`
+- `apps/web/src/app/(erp)/hr/attendance/roster/page.tsx`
+- `apps/web/src/app/(erp)/hr/leave/requests/page.tsx`
+- `apps/web/src/app/(erp)/hr/leave/approvals/page.tsx`
+- `apps/web/src/app/(erp)/hr/leave/balances/page.tsx`
+- `apps/web/src/lib/__vitest_test__/hrm-client.integration.test.ts`
+- `packages/core/src/erp/hr/attendance/__vitest_test__/record-attendance.audit-outbox.test.ts`
+- `packages/core/src/erp/hr/leave/__vitest_test__/create-leave-request.audit-outbox.test.ts`
 
 ---
 
 # Next exact batch to build
 
-1. Implement Wave 7 ESS/MSS attendance and leave route surfaces.
-2. Add page loading/error/empty states for each new HR route.
-3. Add API-client integration checks for attendance and leave flows.
+1. Start Wave 8 scope from `docs/hrm/hrm-wave8-plus-roadmap.md`.
+2. Optional: add browser E2E coverage for leave request submission and approval loop.
+3. Optional: add richer filters and pagination controls to attendance/leave tables.
 
 Exit rule:
 

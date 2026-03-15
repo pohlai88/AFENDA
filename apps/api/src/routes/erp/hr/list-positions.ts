@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { ListPositionsResultSchema } from "@afenda/contracts";
 import { listPositions } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -16,30 +17,7 @@ const ListPositionsQuerySchema = z.object({
   offset: z.coerce.number().int().min(0).optional(),
 });
 
-const ListPositionsResponseSchema = makeSuccessSchema(
-  z.object({
-    items: z.array(
-      z.object({
-        positionId: z.string().uuid(),
-        positionCode: z.string(),
-        positionTitle: z.string(),
-        legalEntityId: z.string().uuid(),
-        orgUnitId: z.string().uuid().nullable(),
-        jobId: z.string().uuid().nullable(),
-        gradeId: z.string().uuid().nullable(),
-        positionStatus: z.string(),
-        isBudgeted: z.boolean(),
-        headcountLimit: z.number().int(),
-        effectiveFrom: z.string(),
-        effectiveTo: z.string().nullable(),
-        isCurrent: z.boolean(),
-      }),
-    ),
-    total: z.number().int(),
-    limit: z.number().int(),
-    offset: z.number().int(),
-  }),
-);
+const ListPositionsResponseSchema = makeSuccessSchema(ListPositionsResultSchema);
 
 export async function hrListPositionsRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

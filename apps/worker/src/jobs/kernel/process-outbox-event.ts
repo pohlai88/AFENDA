@@ -399,6 +399,61 @@ export const processOutboxEvent: Task = async (payload, helpers) => {
     case "PURCHASING.RECEIPT_CREATED":
       // No async side effects for draft receipt creation
       break;
+    // HRM Wave 9–10 — Payroll, payslips, payment batch, GL posting
+    case "HRM.PAYROLL_PERIOD_OPENED":
+    case "HRM.PAYROLL_PERIOD_LOCKED":
+    case "HRM.PAYROLL_RUN_CREATED":
+    case "HRM.PAYROLL_RUN_SUBMITTED":
+    case "HRM.PAYROLL_RUN_APPROVED":
+    case "HRM.PAYSLIPS_PUBLISHED":
+    case "HRM.PAYMENT_BATCH_GENERATED":
+    case "HRM.PAYROLL_POSTED_TO_GL":
+      // Audit + outbox suffice; optional: PDF generation, Treasury handoff
+      break;
+    // HRM Wave 11 — Performance
+    case "HRM.REVIEW_CYCLE_CREATED":
+    case "HRM.PERFORMANCE_REVIEW_CREATED":
+    case "HRM.SELF_REVIEW_SUBMITTED":
+    case "HRM.MANAGER_REVIEW_COMPLETED":
+    case "HRM.PERFORMANCE_GOAL_CREATED":
+      // Audit + outbox suffice
+      break;
+    // HRM Wave 11 — Talent
+    case "HRM.TALENT_PROFILE_CREATED":
+    case "HRM.SUCCESSION_PLAN_CREATED":
+    case "HRM.SUCCESSOR_NOMINATED":
+      // Audit + outbox suffice
+      break;
+    // HRM Wave 11 — Learning
+    case "HRM.COURSE_CREATED":
+    case "HRM.COURSE_SESSION_CREATED":
+    case "HRM.LEARNER_ENROLLED":
+    case "HRM.ENROLLMENT_COMPLETED":
+    case "HRM.CERTIFICATION_RECORDED":
+      // Audit + outbox suffice
+      break;
+    // HRM Wave 12 — Compliance
+    case "HRM.POLICY_DOCUMENT_CREATED":
+    case "HRM.POLICY_ACKNOWLEDGED":
+    case "HRM.COMPLIANCE_CHECK_CREATED":
+    case "HRM.WORK_PERMIT_RECORDED":
+      // Audit + outbox suffice
+      break;
+    // HRM Wave 12 — Employee Relations
+    case "HRM.GRIEVANCE_CASE_CREATED":
+    case "HRM.GRIEVANCE_CASE_CLOSED":
+    case "HRM.DISCIPLINARY_ACTION_CREATED":
+    case "HRM.DISCIPLINARY_ACTION_CLOSED":
+    case "HRM.CASE_EVIDENCE_ATTACHED":
+      // Audit + outbox suffice
+      break;
+    // HRM Wave 12 — Workforce Planning
+    case "HRM.WORKFORCE_PLAN_CREATED":
+    case "HRM.WORKFORCE_SCENARIO_CREATED":
+    case "HRM.POSITION_BUDGET_SET":
+    case "HRM.HIRING_FORECAST_CREATED":
+      // Audit + outbox suffice
+      break;
     default:
       helpers.logger.warn(
         `unhandled outbox event type: ${event.type} correlationId=${event.correlationId}`,

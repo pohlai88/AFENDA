@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { CreateOrgUnitCommandSchema, CreateOrgUnitResultSchema } from "@afenda/contracts";
 import { createOrgUnit } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,20 +9,9 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const CreateOrgUnitBodySchema = z.object({
-  legalEntityId: z.string().uuid(),
-  orgUnitCode: z.string().min(1).max(50).optional(),
-  orgUnitName: z.string().min(1).max(255),
-  parentOrgUnitId: z.string().uuid().optional(),
-  status: z.string().max(50).optional(),
-});
+const CreateOrgUnitBodySchema = CreateOrgUnitCommandSchema.omit({ idempotencyKey: true });
 
-const CreateOrgUnitResponseSchema = makeSuccessSchema(
-  z.object({
-    orgUnitId: z.string().uuid(),
-    orgUnitCode: z.string(),
-  }),
-);
+const CreateOrgUnitResponseSchema = makeSuccessSchema(CreateOrgUnitResultSchema);
 
 export async function hrCreateOrgUnitRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -52,7 +41,13 @@ export async function hrCreateOrgUnitRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const result = await createOrgUnit(app.db, orgId, auth.principalId, req.correlationId, req.body);
+      const result = await createOrgUnit(
+        app.db,
+        orgId,
+        auth.principalId,
+        req.correlationId,
+        req.body,
+      );
 
       if (!result.ok) {
         const status =

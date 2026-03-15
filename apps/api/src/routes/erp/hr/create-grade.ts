@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { CreateGradeCommandSchema, CreateGradeResultSchema } from "@afenda/contracts";
 import { createGrade } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,21 +9,9 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const CreateGradeBodySchema = z.object({
-  gradeCode: z.string().min(1).max(50).optional(),
-  gradeName: z.string().min(1).max(255),
-  gradeRank: z.number().int().optional(),
-  minSalaryAmount: z.string().optional(),
-  midSalaryAmount: z.string().optional(),
-  maxSalaryAmount: z.string().optional(),
-});
+const CreateGradeBodySchema = CreateGradeCommandSchema.omit({ idempotencyKey: true });
 
-const CreateGradeResponseSchema = makeSuccessSchema(
-  z.object({
-    gradeId: z.string().uuid(),
-    gradeCode: z.string(),
-  }),
-);
+const CreateGradeResponseSchema = makeSuccessSchema(CreateGradeResultSchema);
 
 export async function hrCreateGradeRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -52,7 +40,13 @@ export async function hrCreateGradeRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const result = await createGrade(app.db, orgId, auth.principalId, req.correlationId, req.body);
+      const result = await createGrade(
+        app.db,
+        orgId,
+        auth.principalId,
+        req.correlationId,
+        req.body,
+      );
 
       if (!result.ok) {
         const status = result.error.code === "HRM_CONFLICT" ? 409 : 400;

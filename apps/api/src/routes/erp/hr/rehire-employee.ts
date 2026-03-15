@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { RehireEmployeeCommandSchema, RehireEmployeeResultSchema } from "@afenda/contracts";
 import { rehireEmployee } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -13,43 +14,12 @@ const RehireEmployeeParamsSchema = z.object({
   employeeId: z.string().uuid(),
 });
 
-const RehireEmployeeBodySchema = z.object({
-  legalEntityId: z.string().uuid(),
-  employmentType: z.enum(["permanent", "contract", "temporary", "internship", "outsourced"]),
-  hireDate: z.string(),
-  startDate: z.string(),
-  probationEndDate: z.string().optional(),
-  businessUnitId: z.string().uuid().optional(),
-  departmentId: z.string().uuid().optional(),
-  costCenterId: z.string().uuid().optional(),
-  locationId: z.string().uuid().optional(),
-  positionId: z.string().uuid().optional(),
-  jobId: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional(),
-  managerEmployeeId: z.string().uuid().optional(),
-  workScheduleId: z.string().uuid().optional(),
-  employmentClass: z.string().max(50).optional(),
-  fteRatio: z.string().max(20).optional(),
-  changeReason: z.string().max(120).optional(),
-  contract: z
-    .object({
-      contractNumber: z.string().max(80).optional(),
-      contractType: z.string().max(50),
-      contractStartDate: z.string(),
-      contractEndDate: z.string().optional(),
-      documentFileId: z.string().uuid().optional(),
-    })
-    .optional(),
+const RehireEmployeeBodySchema = RehireEmployeeCommandSchema.omit({
+  idempotencyKey: true,
+  employeeId: true,
 });
 
-const RehireEmployeeResponseSchema = makeSuccessSchema(
-  z.object({
-    employeeId: z.string().uuid(),
-    employmentId: z.string().uuid(),
-    workAssignmentId: z.string().uuid(),
-    contractId: z.string().uuid().optional(),
-  }),
-);
+const RehireEmployeeResponseSchema = makeSuccessSchema(RehireEmployeeResultSchema);
 
 export async function hrRehireEmployeeRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

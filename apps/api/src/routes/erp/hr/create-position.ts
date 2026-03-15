@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { CreatePositionCommandSchema, CreatePositionResultSchema } from "@afenda/contracts";
 import { createPosition } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,25 +9,9 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const CreatePositionBodySchema = z.object({
-  positionCode: z.string().min(1).max(50).optional(),
-  positionTitle: z.string().min(1).max(255),
-  legalEntityId: z.string().uuid(),
-  orgUnitId: z.string().uuid().optional(),
-  jobId: z.string().uuid().optional(),
-  gradeId: z.string().uuid().optional(),
-  positionStatus: z.string().max(50).optional(),
-  isBudgeted: z.boolean().optional(),
-  headcountLimit: z.number().int().min(1).optional(),
-  effectiveFrom: z.string(),
-});
+const CreatePositionBodySchema = CreatePositionCommandSchema.omit({ idempotencyKey: true });
 
-const CreatePositionResponseSchema = makeSuccessSchema(
-  z.object({
-    positionId: z.string().uuid(),
-    positionCode: z.string(),
-  }),
-);
+const CreatePositionResponseSchema = makeSuccessSchema(CreatePositionResultSchema);
 
 export async function hrCreatePositionRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
@@ -56,7 +40,13 @@ export async function hrCreatePositionRoutes(app: FastifyInstance) {
       const auth = requireAuth(req, reply);
       if (!auth) return;
 
-      const result = await createPosition(app.db, orgId, auth.principalId, req.correlationId, req.body);
+      const result = await createPosition(
+        app.db,
+        orgId,
+        auth.principalId,
+        req.correlationId,
+        req.body,
+      );
 
       if (!result.ok) {
         const status = result.error.code === "HRM_CONFLICT" ? 409 : 400;

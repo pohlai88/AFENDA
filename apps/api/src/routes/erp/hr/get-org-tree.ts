@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { OrgTreeNodeSchema } from "@afenda/contracts";
 import { getOrgTree } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,19 +9,7 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const OrgTreeNodeSchema: z.ZodTypeAny = z.lazy(() =>
-  z.object({
-    orgUnitId: z.string().uuid(),
-    orgUnitCode: z.string(),
-    orgUnitName: z.string(),
-    legalEntityId: z.string().uuid(),
-    parentOrgUnitId: z.string().uuid().nullable(),
-    status: z.string(),
-    children: z.array(OrgTreeNodeSchema),
-  }),
-);
-
-const GetOrgTreeResponseSchema = makeSuccessSchema(z.array(OrgTreeNodeSchema));
+const GetOrgTreeResponseSchema = makeSuccessSchema(OrgTreeNodeSchema.array());
 
 export async function hrGetOrgTreeRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

@@ -756,6 +756,8 @@ Owns:
 * proration
 * off-cycle rules
 
+> **Implementation status:** Stubbed. Foundation (periods, runs, payslips, GL posting) exists; gross-to-net, deductions, statutory items, and net pay calculation are not yet implemented. See [Section 15 — Payroll Calculation Gap](#payroll-calculation-gap).
+
 ## Statutory compliance
 
 Owns:
@@ -764,6 +766,8 @@ Owns:
 * social contributions
 * statutory filing datasets
 * regional payroll rules
+
+> **Implementation status:** Not present. Required for production payroll.
 
 ## Payroll audit controls
 
@@ -1125,7 +1129,75 @@ If you want phased delivery:
 
 ---
 
-# 15. Strong Final Answer
+# 15. Implementation Status and Wave Coverage
+
+This section maps the target architecture above to the current AFENDA implementation (Waves 1–13). See [hrm-wave13.scaffold.md](hrm-wave13.scaffold.md) for Wave 13 deliverables. A detailed gap analysis compares this chapter against the implementation.
+
+## Domain-to-Wave Mapping
+
+| Domain | Waves | Status | Key Gaps |
+|--------|-------|--------|----------|
+| Core HR | 1, 13 | Implemented | — |
+| Organizational Management | 1 | Implemented | ReportingLine, PositionAssignment (matrix), CostCenterHRLink, HeadcountPlan, freeze position, change supervisor chain |
+| Recruitment | 1 | Implemented | — |
+| Onboarding & Offboarding | 1 | Implemented | — |
+| Time & Attendance | 2 | Implemented | WorkCalendar, ShiftPattern, TimesheetEntry, OvertimeRequest, HolidayCalendar, approve overtime, flag attendance anomaly |
+| Leave Management | 2 | Implemented | calculate leave accrual (RecalculateLeaveBalance exists); handoff payroll inputs stub |
+| Payroll | 9, 10 | Foundation + stub | See [Payroll Calculation Gap](#payroll-calculation-gap) below |
+| Compensation & Benefits | 2 | Implemented | AllowancePolicy, BonusPlan, annual review cycles, incentive plans, process annual increments |
+| Performance Management | 11 | Implemented | GoalPlan, Feedback360, RatingModel, open goal cycle, calibrate ratings, link to development plan |
+| Talent Management | 11 | Implemented | TalentPool, CareerPath, RetentionRiskAssessment, MobilityPreference, run 9-box review, identify HiPo, assess bench strength |
+| Learning & Development | 11 | Implemented | LearningPath, TrainingAttendance, CapabilityGap, DevelopmentPlan, assign mandatory training, renew certification |
+| Workforce Planning | 12 | Implemented | — |
+| Employee Relations | 12 | Implemented | — |
+| HR Compliance | 12 | Implemented | — |
+| ESS / MSS | — | Partial | profile view exists; claim submission, document download, overtime approval, team compliance view not present |
+
+## Payroll Calculation Gap
+
+**Section 7** describes the full payroll sub-module. Current implementation:
+
+| Sub-module | Status |
+|------------|--------|
+| Payroll foundation | Implemented — periods, runs, lock/unlock |
+| Payroll master data | Partial — employee pay assignment via compensation package |
+| Payroll input management | Stub |
+| **Payroll calculation engine** | **Stub** — gross-to-net, element formulas, retro, proration, off-cycle not implemented |
+| Statutory compliance | Not present — tax slabs, contributions, regional rules |
+| Payroll audit controls | Partial — approval workflow exists |
+| Payslip publication | Implemented |
+| Payroll payments | Implemented — payment batch generation |
+| Payroll accounting integration | Implemented — GL posting |
+
+**Priority:** Implement payroll calculation engine (gross-to-net, deductions, statutory items, net pay) and statutory compliance before production payroll rollout.
+
+## Deferred Scope (Roadmap)
+
+### Tier 2 — Common Enterprise Features (Future Waves)
+
+* Overtime and timesheet management
+* Claims / reimbursement
+* Document management integration
+* Mandatory compliance training
+* ESS/MSS claim submission, document download, overtime approval
+
+### Tier 3 — Advanced Talent / Learning (Future Waves)
+
+* Career pathing and internal mobility
+* Development plans
+* Learning paths
+* Talent review (9-box, HiPo, retention risk)
+* Learning analytics
+
+### Integration Gaps (Roadmap)
+
+* HRM ↔ Projects (labor cost allocation, timesheet costing)
+* HRM ↔ Document Management
+* Leave liability accrual, bonus accrual, reimbursement payable
+
+---
+
+# 16. Strong Final Answer
 
 So, the **main HRM sub-modules** in an ERP-grade architecture are:
 

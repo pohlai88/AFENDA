@@ -1,6 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import {
+  TerminateEmploymentCommandSchema,
+  TerminateEmploymentResultSchema,
+} from "@afenda/contracts";
 import { terminateEmployment } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,21 +12,11 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const TerminateEmploymentBodySchema = z.object({
-  employmentId: z.string().uuid(),
-  terminationDate: z.string(),
-  terminationReasonCode: z.string().min(1).max(50),
-  comment: z.string().max(1000).optional(),
-  startSeparationCase: z.boolean().optional(),
+const TerminateEmploymentBodySchema = TerminateEmploymentCommandSchema.omit({
+  idempotencyKey: true,
 });
 
-const TerminateEmploymentResponseSchema = makeSuccessSchema(
-  z.object({
-    employmentId: z.string().uuid(),
-    terminatedAt: z.string(),
-    separationCaseId: z.string().uuid().optional(),
-  }),
-);
+const TerminateEmploymentResponseSchema = makeSuccessSchema(TerminateEmploymentResultSchema);
 
 export async function hrTerminateEmploymentRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

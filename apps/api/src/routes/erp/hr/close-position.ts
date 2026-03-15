@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
+import { ClosePositionCommandSchema, ClosePositionResultSchema } from "@afenda/contracts";
 import { closePosition } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -13,17 +14,12 @@ const ClosePositionParamsSchema = z.object({
   positionId: z.string().uuid(),
 });
 
-const ClosePositionBodySchema = z.object({
-  effectiveTo: z.string(),
+const ClosePositionBodySchema = ClosePositionCommandSchema.omit({
+  idempotencyKey: true,
+  positionId: true,
 });
 
-const ClosePositionResponseSchema = makeSuccessSchema(
-  z.object({
-    positionId: z.string().uuid(),
-    previousStatus: z.string(),
-    currentStatus: z.string(),
-  }),
-);
+const ClosePositionResponseSchema = makeSuccessSchema(ClosePositionResultSchema);
 
 export async function hrClosePositionRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

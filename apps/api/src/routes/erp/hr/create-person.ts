@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { CreatePersonCommandSchema, CreatePersonResultSchema } from "@afenda/contracts";
 import { createPerson } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,28 +9,11 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const CreatePersonBodySchema = z.object({
-  personCode: z.string().min(1).max(50).optional(),
-  legalName: z.string().min(1).max(255),
-  preferredName: z.string().max(255).optional(),
-  firstName: z.string().min(1).max(120),
-  middleName: z.string().max(120).optional(),
-  lastName: z.string().min(1).max(120),
-  displayName: z.string().max(255).optional(),
-  birthDate: z.string().optional(),
-  genderCode: z.string().max(50).optional(),
-  maritalStatusCode: z.string().max(50).optional(),
-  nationalityCountryCode: z.string().max(3).optional(),
-  personalEmail: z.string().email().optional(),
-  mobilePhone: z.string().max(50).optional(),
+const CreatePersonBodySchema = CreatePersonCommandSchema.omit({
+  idempotencyKey: true,
 });
 
-const CreatePersonResponseSchema = makeSuccessSchema(
-  z.object({
-    personId: z.string().uuid(),
-    personCode: z.string(),
-  }),
-);
+const CreatePersonResponseSchema = makeSuccessSchema(CreatePersonResultSchema);
 
 export async function hrCreatePersonRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

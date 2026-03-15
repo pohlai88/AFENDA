@@ -73,6 +73,29 @@ const groups = [
       { label: "Enrollments", href: "/hr/benefits/enrollments" },
     ],
   },
+  {
+    title: "Performance",
+    href: "/hr/performance/review-cycles",
+    links: [
+      { label: "Review Cycles", href: "/hr/performance/review-cycles" },
+      { label: "Manager Review Queue", href: "/hr/performance/manager-queue" },
+    ],
+  },
+  {
+    title: "Talent",
+    href: "/hr/talent/succession-plans",
+    links: [
+      { label: "Succession Plans", href: "/hr/talent/succession-plans" },
+    ],
+  },
+  {
+    title: "Learning",
+    href: "/hr/learning/courses",
+    links: [
+      { label: "Course Catalog", href: "/hr/learning/courses" },
+      { label: "My Enrollments", href: "/hr/learning/enrollments" },
+    ],
+  },
 ];
 
 export default function HrmHomePage() {

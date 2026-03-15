@@ -65,9 +65,16 @@ export async function hrEnrollBenefitRoutes(app: FastifyInstance) {
             : result.error.code === "HRM_INVALID_INPUT"
               ? 400
               : 500;
-        return reply.status(status).send({ error: result.error });
+        return reply.status(status).send({
+          error: {
+            code: result.error.code,
+            message: result.error.message,
+            details: result.error.meta,
+          },
+          correlationId: req.correlationId,
+        });
       }
-      return reply.status(201).send({ data: result.value });
+      return reply.status(201).send({ data: result.data, correlationId: req.correlationId });
     },
   );
 }

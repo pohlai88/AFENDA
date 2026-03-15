@@ -3,6 +3,7 @@ import {
   boolean,
   date,
   pgTable,
+  timestamp,
   uniqueIndex,
   uuid,
   varchar,
@@ -33,6 +34,7 @@ export const hrmEmploymentRecords = pgTable(
     employmentStatus: employmentStatusEnum("employment_status").default("draft").notNull(),
     payrollStatus: varchar("payroll_status", { length: 50 }).default("inactive").notNull(),
     isPrimary: boolean("is_primary").default(true).notNull(),
+    impactAssessmentStatus: varchar("impact_assessment_status", { length: 50 }).default("none"),
     ...metadataColumns,
   },
   (t) => ({
@@ -100,6 +102,10 @@ export const hrmEmploymentContracts = pgTable(
     contractStartDate: date("contract_start_date").notNull(),
     contractEndDate: date("contract_end_date"),
     documentFileId: uuid("document_file_id"),
+    contractStatus: varchar("contract_status", { length: 50 }).default("active"),
+    signedBy: uuid("signed_by"),
+    signedAt: timestamp("signed_at", { withTimezone: true }),
+    documentChecksum: varchar("document_checksum", { length: 128 }),
     ...metadataColumns,
   },
   (t) => ({
@@ -111,6 +117,22 @@ export const hrmEmploymentContracts = pgTable(
   }),
 );
 
+export const hrmEmployeeDocuments = pgTable(
+  "hrm_employee_documents",
+  {
+    ...orgColumns,
+    employmentId: uuid("employment_id").notNull().references(() => hrmEmploymentRecords.id),
+    documentType: varchar("document_type", { length: 80 }).notNull(),
+    fileReference: varchar("file_reference", { length: 512 }).notNull(),
+    issuedAt: date("issued_at"),
+    expiresAt: date("expires_at"),
+    ...metadataColumns,
+  },
+  (t) => ({
+    employmentIdx: index("hrm_employee_documents_employment_idx").on(t.orgId, t.employmentId),
+  }),
+);
+
 export const hrmEmploymentRecordsRelations = relations(hrmEmploymentRecords, ({ one, many }) => ({
   employee: one(hrmEmployeeProfiles, {
     fields: [hrmEmploymentRecords.employeeId],
@@ -119,4 +141,5 @@ export const hrmEmploymentRecordsRelations = relations(hrmEmploymentRecords, ({ 
   assignments: many(hrmWorkAssignments),
   statusHistory: many(hrmEmploymentStatusHistory),
   contracts: many(hrmEmploymentContracts),
+  documents: many(hrmEmployeeDocuments),
 }));

@@ -139,6 +139,30 @@ export async function fetchAttendanceRecords(params?: {
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 
+export async function fetchRosterAssignments(params?: {
+  employmentId?: string;
+  shiftId?: string;
+  status?: string;
+  workDateFrom?: string;
+  workDateTo?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.employmentId) query.set("employmentId", params.employmentId);
+  if (params?.shiftId) query.set("shiftId", params.shiftId);
+  if (params?.status) query.set("status", params.status);
+  if (params?.workDateFrom) query.set("workDateFrom", params.workDateFrom);
+  if (params?.workDateTo) query.set("workDateTo", params.workDateTo);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/attendance/roster-assignments${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR roster assignments API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
 export async function fetchLeaveRequests(params?: {
   employmentId?: string;
   status?: string;
@@ -219,6 +243,115 @@ export async function fetchSalaryHistory(params?: {
   const qs = query.toString();
   const res = await hrmFetch(`/v1/hrm/compensation/salary-history${qs ? `?${qs}` : ""}`);
   if (!res.ok) throw new Error(`HR salary history API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchReviewCycles(params?: {
+  status?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/performance/review-cycles${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR review cycles API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchSuccessionPlans(params?: {
+  positionId?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.positionId) query.set("positionId", params.positionId);
+  if (params?.status) query.set("status", params.status);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/talent/succession-plans${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR succession plans API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchSuccessorsForPosition(
+  positionId: string,
+  params?: { successionPlanId?: string; limit?: number; offset?: number },
+) {
+  const query = new URLSearchParams();
+  if (params?.successionPlanId) query.set("successionPlanId", params.successionPlanId);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(
+    `/v1/hrm/talent/positions/${positionId}/successors${qs ? `?${qs}` : ""}`,
+  );
+  if (!res.ok)
+    throw new Error(`HR successors API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchTalentProfile(employmentId: string) {
+  const res = await hrmFetch(`/v1/hrm/talent/profiles/${employmentId}`);
+  if (!res.ok)
+    throw new Error(`HR talent profile API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchCourses(params?: {
+  courseType?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.courseType) query.set("courseType", params.courseType);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/learning/courses${qs ? `?${qs}` : ""}`);
+  if (!res.ok) throw new Error(`HR courses API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchEnrollments(params?: {
+  employmentId?: string;
+  courseId?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}) {
+  const query = new URLSearchParams();
+  if (params?.employmentId) query.set("employmentId", params.employmentId);
+  if (params?.courseId) query.set("courseId", params.courseId);
+  if (params?.status) query.set("status", params.status);
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(`/v1/hrm/learning/enrollments${qs ? `?${qs}` : ""}`);
+  if (!res.ok)
+    throw new Error(`HR enrollments API error ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<HrmApiSuccess<unknown>>;
+}
+
+export async function fetchCertificationsByEmployee(
+  employmentId: string,
+  params?: { limit?: number; offset?: number },
+) {
+  const query = new URLSearchParams();
+  if (typeof params?.limit === "number") query.set("limit", String(params.limit));
+  if (typeof params?.offset === "number") query.set("offset", String(params.offset));
+  const qs = query.toString();
+  const res = await hrmFetch(
+    `/v1/hrm/learning/employees/${employmentId}/certifications${qs ? `?${qs}` : ""}`,
+  );
+  if (!res.ok)
+    throw new Error(`HR certifications API error ${res.status}: ${await res.text()}`);
   return res.json() as Promise<HrmApiSuccess<unknown>>;
 }
 

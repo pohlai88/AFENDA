@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { CreateJobCommandSchema, CreateJobResultSchema } from "@afenda/contracts";
 import { createJob } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,18 +9,9 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const CreateJobBodySchema = z.object({
-  jobCode: z.string().min(1).max(50).optional(),
-  jobTitle: z.string().min(1).max(255),
-  status: z.string().max(50).optional(),
-});
+const CreateJobBodySchema = CreateJobCommandSchema.omit({ idempotencyKey: true });
 
-const CreateJobResponseSchema = makeSuccessSchema(
-  z.object({
-    jobId: z.string().uuid(),
-    jobCode: z.string(),
-  }),
-);
+const CreateJobResponseSchema = makeSuccessSchema(CreateJobResultSchema);
 
 export async function hrCreateJobRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
-import { z } from "zod";
+import { HireEmployeeCommandSchema, HireEmployeeResultSchema } from "@afenda/contracts";
 import { hireEmployee } from "@afenda/core";
 import {
   ApiErrorResponseSchema,
@@ -9,35 +9,11 @@ import {
   requireAuth,
 } from "../../../helpers/responses.js";
 
-const HireEmployeeBodySchema = z.object({
-  personId: z.string().uuid(),
-  employeeCode: z.string().min(1).max(50).optional(),
-  workerType: z.enum(["employee", "contractor", "intern", "director"]),
-  legalEntityId: z.string().uuid(),
-  employmentType: z.enum(["permanent", "contract", "temporary", "internship", "outsourced"]),
-  hireDate: z.string(),
-  startDate: z.string(),
-  probationEndDate: z.string().optional(),
-  contract: z
-    .object({
-      contractNumber: z.string().max(80).optional(),
-      contractType: z.string().max(50),
-      contractStartDate: z.string(),
-      contractEndDate: z.string().optional(),
-      documentFileId: z.string().uuid().optional(),
-    })
-    .optional(),
+const HireEmployeeBodySchema = HireEmployeeCommandSchema.omit({
+  idempotencyKey: true,
 });
 
-const HireEmployeeResponseSchema = makeSuccessSchema(
-  z.object({
-    employeeId: z.string().uuid(),
-    employmentId: z.string().uuid(),
-    workAssignmentId: z.string().uuid(),
-    contractId: z.string().uuid().optional(),
-    onboardingPlanId: z.string().uuid().optional(),
-  }),
-);
+const HireEmployeeResponseSchema = makeSuccessSchema(HireEmployeeResultSchema);
 
 export async function hrHireEmployeeRoutes(app: FastifyInstance) {
   const typed = app.withTypeProvider<ZodTypeProvider>();
