@@ -1,14 +1,9 @@
 "use client";
 
 /**
- * Landing-page-only UI primitives.
- *
- * These are standalone dark-theme wrappers for the public marketing page.
- * They intentionally diverge from the ERP design system because the landing
- * page uses an independent dark-terminal aesthetic (Bloomberg / Linear style).
- *
- * shadcn-exempt: Marketing page intentionally uses raw elements for the
- * standalone dark-theme system that doesn't share the ERP component library.
+ * Landing-page UI primitives — AFENDA design tokens only.
+ * Uses semantic utilities (bg-primary, border-border, text-foreground, etc.)
+ * so marketing stays aligned with the design system (L0–L4).
  */
 
 import React from "react";
@@ -28,19 +23,19 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "md", ...props }, ref) => {
     return (
-      /* shadcn-exempt: landing-page standalone dark-theme button */
       <button
         ref={ref}
         className={cn(
           "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "disabled:pointer-events-none disabled:opacity-50",
           {
-            "bg-teal-500 text-slate-950 hover:bg-teal-400 shadow-[0_0_15px_rgba(20,184,166,0.3)] hover:shadow-[0_0_25px_rgba(20,184,166,0.5)]":
+            "bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm":
               variant === "default",
-            "border border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-white":
+            "border border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground":
               variant === "outline",
-            "hover:bg-slate-800 hover:text-white text-slate-300": variant === "ghost",
+            "text-foreground-secondary hover:bg-accent hover:text-accent-foreground":
+              variant === "ghost",
             "h-8 px-3 text-xs": size === "sm",
             "h-10 px-4 py-2": size === "md",
             "h-12 px-8 text-base": size === "lg",
@@ -54,13 +49,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "LandingButton";
 
-/* ── Card ────────────────────────────────────────────────────────────────── */
+/* ── Card (L2) ───────────────────────────────────────────────────────────── */
 export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        "rounded-xl border border-slate-800 bg-slate-900/50 text-slate-100 shadow-sm backdrop-blur-sm",
+        "rounded-xl border border-border bg-card text-card-foreground shadow-sm backdrop-blur-sm",
         className,
       )}
       {...props}
@@ -80,11 +75,11 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
       ref={ref}
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors",
-        "focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2",
+        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
         {
-          "border-transparent bg-teal-500/10 text-teal-400": variant === "default",
-          "border-transparent bg-slate-800 text-slate-100": variant === "secondary",
-          "text-slate-100 border border-slate-700": variant === "outline",
+          "border-transparent bg-primary-soft text-primary": variant === "default",
+          "border-transparent bg-muted text-muted-foreground": variant === "secondary",
+          "border border-border text-foreground": variant === "outline",
         },
         className,
       )}

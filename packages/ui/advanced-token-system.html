@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFENDA Advanced Token System — Premium spacing + full utilization</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--background);
+        color: var(--foreground);
+        line-height: 1.6;
+      }
+
+      /*
+       * AFENDA Advanced Token System
+       * Combines: (1) premium spacing & luxury feel from dark-token.html
+       *           (2) full mixing/merging/incremental patterns from dark-token-system.html
+       * Synced with packages/ui/src/styles/_tokens-dark.css
+       */
+      .theme {
+        /* ─── Premium spacing scale (luxury, comfortable rhythm) ─── */
+        --space-page-y: 4rem;
+        --space-page-x: 2.5rem;
+        --space-section: 4rem;
+        --space-block: 2rem;
+        --space-inline: 1.25rem;
+        --space-tight: 0.75rem;
+        --space-card: 1.75rem;
+        --space-hero: 2.75rem;
+        --space-grid: 1.75rem;
+        --radius-section: 24px;
+        --radius-card: 20px;
+        --radius-tight: 14px;
+
+        /* ─── Core atmosphere / text ─── */
+        --background: oklch(0.18 0.014 250);
+        --foreground: oklch(0.94 0.005 250);
+        --foreground-secondary: oklch(0.77 0.01 250);
+        --foreground-tertiary: oklch(0.64 0.009 250);
+        --foreground-quaternary: oklch(0.54 0.008 250);
+        --text-primary: var(--foreground);
+        --text-secondary: var(--foreground-secondary);
+        --text-tertiary: var(--foreground-tertiary);
+        --text-quaternary: var(--foreground-quaternary);
+
+        /* ─── L0–L4 surface architecture ─── */
+        --surface-0: var(--background);
+        --surface-25: oklch(0.182 0.014 252);
+        --surface-50: oklch(0.188 0.014 251);
+        --surface-75: oklch(0.194 0.014 250);
+        --surface-100: oklch(0.198 0.0145 250);
+        --surface-150: oklch(0.204 0.015 250);
+        --surface-200: oklch(0.214 0.016 250);
+        --surface-250: oklch(0.228 0.017 250);
+        --surface-275: oklch(0.236 0.0175 249);
+        --surface-300: oklch(0.244 0.018 249);
+        --surface-350: oklch(0.260 0.019 248);
+        --surface-375: oklch(0.248 0.018 248);
+        --surface-400: oklch(0.256 0.0185 248);
+        --surface-425: oklch(0.264 0.019 247);
+        --surface-450: oklch(0.272 0.0195 247);
+        --surface-475: oklch(0.280 0.020 247);
+        --surface-500: oklch(0.288 0.0205 246);
+        --surface-l0: var(--surface-0);
+        --surface-l1: var(--surface-200);
+        --surface-l2: var(--surface-300);
+        --surface-l3: var(--surface-400);
+        --surface-l4: var(--surface-500);
+
+        --icon-muted: var(--foreground-tertiary);
+        --icon-default: var(--foreground-secondary);
+        --icon-emphasis: oklch(0.76 0.10 190);
+        --icon-success: oklch(0.74 0.14 155);
+        --icon-warning: oklch(0.80 0.12 85);
+        --icon-danger: oklch(0.66 0.17 25);
+        --icon-info: oklch(0.74 0.10 200);
+
+        --card: var(--surface-250);
+        --popover: var(--surface-400);
+        --modal: var(--surface-500);
+        --sheet: var(--surface-375);
+        --drawer: var(--surface-350);
+        --tooltip: var(--surface-425);
+
+        --border-subtle: oklch(0.35 0.014 250 / 0.28);
+        --border: oklch(0.38 0.015 250 / 0.52);
+        --border-strong: oklch(0.46 0.018 250 / 0.60);
+        --border-stronger: oklch(0.54 0.02 250 / 0.68);
+        --ring: oklch(0.76 0.10 190);
+        --ring-soft: color-mix(in oklab, var(--ring), transparent 72%);
+        --selection: oklch(0.76 0.10 190 / 0.22);
+        --overlay-hover: color-mix(in oklab, var(--foreground), transparent 95%);
+        --overlay-active: color-mix(in oklab, var(--foreground), transparent 91%);
+        --overlay-selected: color-mix(in oklab, var(--primary), transparent 86%);
+        --overlay-focus: color-mix(in oklab, var(--ring), transparent 80%);
+        --scrim: oklch(0.08 0.003 250 / 0.62);
+
+        --primary: oklch(0.76 0.10 190);
+        --primary-foreground: oklch(0.22 0.02 190);
+        --primary-soft: oklch(0.28 0.024 190);
+        --interactive: oklch(0.76 0.08 228);
+        --interactive-foreground: oklch(0.22 0.02 228);
+        --interactive-soft: oklch(0.28 0.025 228);
+        --premium: oklch(0.80 0.05 85);
+        --premium-foreground: oklch(0.24 0.02 85);
+        --premium-soft: oklch(0.28 0.024 85);
+        --secondary: oklch(0.238 0.016 250);
+        --secondary-foreground: var(--foreground);
+        --muted: oklch(0.222 0.016 250);
+        --muted-foreground: var(--foreground-secondary);
+
+        --success: oklch(0.74 0.14 155);
+        --warning: oklch(0.80 0.12 85);
+        --info: oklch(0.74 0.10 200);
+        --destructive: oklch(0.66 0.17 25);
+        --status-draft: oklch(0.74 0.006 250);
+        --status-pending: oklch(0.80 0.12 85);
+        --status-approved: oklch(0.76 0.08 220);
+        --status-posted: oklch(0.73 0.14 150);
+        --status-overdue: oklch(0.67 0.17 25);
+
+        --grid: oklch(0.205 0.015 250);
+        --grid-border: oklch(0.35 0.014 250 / 0.42);
+        --grid-header: color-mix(in oklab, white, transparent 97%);
+        --grid-hover: var(--overlay-hover);
+        --row-even: color-mix(in oklab, var(--foreground), transparent 98.2%);
+        --sidebar: oklch(0.192 0.014 250);
+        --sidebar-accent: oklch(0.225 0.016 250);
+        --topbar: oklch(0.198 0.0145 250);
+        --field-bg: color-mix(in oklab, white, transparent 97%);
+        --field-bg-hover: color-mix(in oklab, white, transparent 95%);
+        --field-border: var(--border);
+        --field-border-focus: oklch(0.58 0.05 220 / 0.60);
+        --field-placeholder: var(--foreground-quaternary);
+        --chart-1: oklch(0.76 0.09 195);
+        --chart-2: oklch(0.76 0.08 228);
+        --chart-3: oklch(0.81 0.11 85);
+        --chart-4: oklch(0.74 0.11 305);
+        --chart-5: oklch(0.71 0.13 25);
+        --chart-6: oklch(0.74 0.12 145);
+        --chart-7: oklch(0.74 0.06 255);
+        --chart-8: oklch(0.75 0.08 330);
+        --shadow-sm: 0 4px 12px oklch(0 0 0 / 0.12);
+        --shadow-md: 0 8px 24px oklch(0 0 0 / 0.18);
+        --shadow-lg: 0 18px 42px oklch(0 0 0 / 0.24);
+        --shadow-modal: 0 30px 88px oklch(0 0 0 / 0.32), 0 0 0 1px oklch(0 0 0 / 0.06);
+        --radius-sm: 12px;
+        --radius-md: 16px;
+        --radius-lg: 20px;
+        --radius-xl: 24px;
+        min-height: 100vh;
+      }
+
+      /* ─── Page: premium container rhythm ─── */
+      .page {
+        width: min(1200px, calc(100vw - 2 * var(--space-page-x)));
+        margin: 0 auto;
+        padding: var(--space-page-y) var(--space-page-x);
+        padding-bottom: 5rem;
+      }
+
+      /* ─── Hero: generous padding, calm presence ─── */
+      .hero {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-section);
+        background:
+          linear-gradient(135deg, color-mix(in oklab, var(--primary), transparent 90%), transparent 38%),
+          linear-gradient(180deg, color-mix(in oklab, white, transparent 98.5%), color-mix(in oklab, white, transparent 99.2%)),
+          var(--surface-100);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-hero);
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 12% 5%, color-mix(in oklab, var(--interactive), transparent 88%), transparent 32%),
+          radial-gradient(circle at 88% 8%, color-mix(in oklab, var(--premium), transparent 90%), transparent 28%);
+        pointer-events: none;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-tight);
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        background: color-mix(in oklab, var(--primary), transparent 88%);
+        border: 1px solid color-mix(in oklab, var(--primary), transparent 74%);
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.2fr 0.85fr;
+        gap: var(--space-block);
+        margin-top: var(--space-block);
+      }
+      h1, h2, h3, h4 { margin: 0; letter-spacing: -0.03em; }
+      h1 {
+        font-size: clamp(2rem, 4.5vw, 3.25rem);
+        line-height: 1.08;
+        max-width: 12ch;
+      }
+      p { margin: 0; color: var(--text-secondary); line-height: 1.6; }
+      .hero-copy p {
+        margin-top: 1.25rem;
+        font-size: 1rem;
+        max-width: 42ch;
+        margin-bottom: 0.25rem;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-inline);
+        margin-top: var(--space-block);
+      }
+      .btn {
+        appearance: none;
+        border: none;
+        cursor: default;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+        min-height: 2.75rem;
+        padding: 0 1.25rem;
+        border-radius: var(--radius-tight);
+        font-weight: 600;
+        font-size: 0.875rem;
+        box-shadow: var(--shadow-sm);
+      }
+      .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+      .btn-secondary { background: var(--secondary); color: var(--secondary-foreground); border: 1px solid var(--border); }
+      .hero-panel {
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-card);
+        background: color-mix(in oklab, white, transparent 98.2%);
+        padding: var(--space-card);
+        display: grid;
+        gap: var(--space-inline);
+      }
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-inline);
+      }
+      .metric {
+        padding: var(--space-inline);
+        border-radius: var(--radius-md);
+        background: var(--surface-l2);
+        border: 1px solid var(--border-subtle);
+      }
+      .metric .label {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .metric .value { margin-top: 0.5rem; font-size: 1.25rem; font-weight: 700; }
+      .footer-note {
+        margin-top: var(--space-block);
+        padding: var(--space-inline) var(--space-card);
+        border-radius: var(--radius-card);
+        background: color-mix(in oklab, var(--primary), transparent 92%);
+        border: 1px solid color-mix(in oklab, var(--primary), transparent 78%);
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+        line-height: 1.55;
+      }
+
+      /* ─── Sections: clear separation, premium padding ─── */
+      .section {
+        margin-top: var(--space-section);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-section);
+        background: color-mix(in oklab, white, transparent 98.9%);
+        box-shadow: var(--shadow-md);
+        padding: var(--space-block);
+      }
+      .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-block);
+        margin-bottom: var(--space-block);
+      }
+      .section-title { font-size: 1.75rem; }
+      .kicker {
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+      .subtle-note { color: var(--text-tertiary); font-size: 0.875rem; }
+
+      /* ─── Layer grid: incremental pattern, comfortable gaps ─── */
+      .layer-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: var(--space-grid);
+      }
+      .layer-card {
+        border-radius: var(--radius-card);
+        padding: var(--space-card);
+        border: 1px solid var(--border-subtle);
+        min-height: 220px;
+        position: relative;
+        overflow: hidden;
+      }
+      .layer-card h3 { font-size: 1.125rem; }
+      .layer-card .level {
+        display: inline-flex;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 999px;
+        background: color-mix(in oklab, white, transparent 93%);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-subtle);
+        margin-bottom: 1rem;
+      }
+      .layer-card p { margin-bottom: 0.75rem; }
+      .layer-card ul {
+        padding-left: 1.25rem;
+        margin: 0;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      .surface-0 { background: var(--surface-l0); }
+      .surface-1 { background: var(--surface-l1); }
+      .surface-2 { background: var(--surface-l2); box-shadow: var(--shadow-sm); }
+      .surface-3 { background: var(--surface-l3); box-shadow: var(--shadow-md); }
+      .surface-4 { background: var(--surface-l4); box-shadow: var(--shadow-modal); }
+
+      /* ─── Demo shell: sidebar + main ─── */
+      .demo-shell {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: var(--space-block);
+      }
+      .sidebar {
+        background: var(--sidebar);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-card);
+        padding: var(--space-inline);
+      }
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: var(--space-inline);
+        padding: var(--space-inline);
+        border-radius: var(--radius-md);
+        background: var(--sidebar-accent);
+        border: 1px solid var(--border-subtle);
+      }
+      .logo {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, var(--primary), var(--interactive));
+        box-shadow: 0 0 0 1px color-mix(in oklab, white, transparent 82%);
+      }
+      .nav-list { display: grid; gap: var(--space-tight); margin-top: var(--space-inline); }
+      .nav-item {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-tight);
+        color: var(--text-secondary);
+        border: 1px solid transparent;
+      }
+      .nav-item.active {
+        background: var(--overlay-selected);
+        color: var(--foreground);
+        border-color: color-mix(in oklab, var(--primary), transparent 74%);
+      }
+      .main-stage { display: grid; gap: var(--space-block); }
+      .topbar {
+        background: var(--topbar);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-card);
+        padding: 1rem var(--space-inline);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .chip-row, .token-grid, .status-grid, .guideline-grid, .component-grid, .viz-grid {
+        display: grid;
+        gap: var(--space-inline);
+      }
+      .chip-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .chip {
+        border-radius: var(--radius-md);
+        padding: var(--space-inline);
+        border: 1px solid var(--border-subtle);
+      }
+      .chip strong { display: block; margin-bottom: 0.375rem; }
+      .panel-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: var(--space-block);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-card);
+        padding: var(--space-card);
+        box-shadow: var(--shadow-sm);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--grid-border);
+        background: var(--grid);
+      }
+      th, td {
+        text-align: left;
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid var(--grid-border);
+        font-size: 0.875rem;
+      }
+      th {
+        background: var(--grid-header);
+        color: var(--text-tertiary);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.6875rem;
+      }
+      tbody tr:nth-child(even) { background: var(--row-even); }
+      tbody tr:hover { background: var(--grid-hover); }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 1.875rem;
+        padding: 0 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      .s-draft { background: color-mix(in oklab, var(--status-draft), transparent 80%); color: var(--status-draft); }
+      .s-pending { background: color-mix(in oklab, var(--status-pending), transparent 82%); color: var(--status-pending); }
+      .s-approved { background: color-mix(in oklab, var(--status-approved), transparent 82%); color: var(--status-approved); }
+      .s-posted { background: color-mix(in oklab, var(--status-posted), transparent 82%); color: var(--status-posted); }
+      .s-overdue { background: color-mix(in oklab, var(--status-overdue), transparent 84%); color: var(--status-overdue); }
+      .mini-stack { display: grid; gap: var(--space-inline); }
+      .input, .select, .textarea {
+        width: 100%;
+        background: var(--field-bg);
+        border: 1px solid var(--field-border);
+        color: var(--foreground);
+        border-radius: var(--radius-tight);
+        padding: 0.75rem 1rem;
+        outline: none;
+      }
+      .input::placeholder, .textarea::placeholder { color: var(--field-placeholder); }
+      .input:focus, .select:focus, .textarea:focus {
+        border-color: var(--field-border-focus);
+        box-shadow: 0 0 0 3px var(--ring-soft);
+      }
+      .textarea { min-height: 6rem; resize: vertical; }
+      .floating-stack {
+        position: relative;
+        min-height: 340px;
+        background: linear-gradient(180deg, var(--surface-200), var(--surface-100));
+        border-radius: var(--radius-section);
+        border: 1px solid var(--border-subtle);
+        overflow: hidden;
+      }
+      .float-card, .popover, .modal {
+        position: absolute;
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-card);
+        backdrop-filter: blur(18px);
+      }
+      .float-card {
+        top: var(--space-block);
+        left: var(--space-inline);
+        width: 240px;
+        background: var(--card);
+        padding: var(--space-inline);
+        box-shadow: var(--shadow-sm);
+      }
+      .popover {
+        top: 4.5rem;
+        right: var(--space-inline);
+        width: 240px;
+        background: color-mix(in oklab, var(--popover), transparent 6%);
+        padding: var(--space-inline);
+        box-shadow: var(--shadow-lg);
+      }
+      .modal {
+        left: 50%;
+        bottom: var(--space-inline);
+        transform: translateX(-50%);
+        width: min(420px, calc(100% - 2 * var(--space-inline)));
+        background: var(--modal);
+        padding: var(--space-inline);
+        box-shadow: var(--shadow-modal);
+      }
+      .token-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .token-card, .guide-card, .component-card, .viz-card {
+        border-radius: var(--radius-card);
+        padding: var(--space-card);
+        border: 1px solid var(--border-subtle);
+        background: var(--surface-200);
+      }
+      .swatch-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-tight);
+        margin-top: 1rem;
+      }
+      .swatch {
+        min-height: 4rem;
+        border-radius: var(--radius-tight);
+        border: 1px solid color-mix(in oklab, white, transparent 88%);
+        padding: 0.625rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        font-size: 0.75rem;
+        color: var(--foreground);
+      }
+      .guideline-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .guide-card ul {
+        margin: 1rem 0 0;
+        padding-left: 1.25rem;
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+      .component-grid { grid-template-columns: 1.1fr 0.9fr; }
+      .status-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .status-demo {
+        border-radius: var(--radius-md);
+        padding: var(--space-inline);
+        border: 1px solid var(--border-subtle);
+        background: var(--surface-200);
+      }
+      .viz-grid { grid-template-columns: 1fr 1fr; }
+      .bar-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: var(--space-inline);
+        height: 10rem;
+        padding-top: 1rem;
+      }
+      .bar {
+        flex: 1;
+        border-radius: 12px 12px 4px 4px;
+        min-height: 1.25rem;
+      }
+      .legend {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-secondary);
+        font-size: 0.8125rem;
+      }
+      .dot { width: 0.75rem; height: 0.75rem; border-radius: 999px; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.75rem;
+        padding: 0.125rem 0.375rem;
+        border-radius: 6px;
+        background: color-mix(in oklab, white, transparent 95%);
+        border: 1px solid var(--border-subtle);
+      }
+      @media (max-width: 1100px) {
+        .hero-grid, .demo-shell, .panel-grid, .component-grid, .viz-grid,
+        .token-grid, .guideline-grid, .layer-grid, .chip-row, .status-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="theme">
+      <main class="page">
+        <section class="hero">
+          <span class="eyebrow">AFENDA Advanced · Premium spacing + full token utilization</span>
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <h1>Dark mode with premium feel and full system depth.</h1>
+              <p>
+                This demo unites the comfortable, luxurious spacing of the true-layer preview with the complete mixing, merging, and incremental patterns of the token system: L0→L4 surfaces, semantic lanes, status semantics, grids, and floating UI.
+              </p>
+              <div class="cta-row">
+                <button class="btn btn-primary">Primary / truth lane</button>
+                <button class="btn btn-secondary">Secondary / neutral</button>
+              </div>
+              <div class="footer-note">
+                Use <code>--space-*</code> tokens for rhythm. Use <code>--surface-l0</code> through <code>--surface-l4</code> for depth. Keep spacing generous and hierarchy clear.
+              </div>
+            </div>
+            <div class="hero-panel">
+              <div class="kicker">Architectural health</div>
+              <div class="metric-grid">
+                <div class="metric">
+                  <div class="label">Spacing</div>
+                  <div class="value">Premium scale</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Depth</div>
+                  <div class="value">5 layers</div>
+                </div>
+                <div class="metric">
+                  <div class="label">Lanes</div>
+                  <div class="value">Brand / Ops / Gov</div>
+                </div>
+                <div class="metric">
+                  <div class="label">ERP</div>
+                  <div class="value">Grids + Forms</div>
+                </div>
+              </div>
+              <p>
+                Comfort and clarity come from consistent spacing and true layer separation—not from crowding or border noise.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Core principle</div>
+              <h2 class="section-title">The 4-layer dark system</h2>
+            </div>
+            <div class="subtle-note">Depth communicates hierarchy before borders or shadows. Spacing gives each layer room to breathe.</div>
+          </div>
+          <div class="layer-grid">
+            <article class="layer-card surface-0">
+              <span class="level">L0 · Atmosphere</span>
+              <h3>Background / recess</h3>
+              <p>App frame, page backdrop, negative space.</p>
+              <ul>
+                <li><code>--surface-l0</code>, <code>--background</code></li>
+                <li>Shell canvas, gutters</li>
+              </ul>
+            </article>
+            <article class="layer-card surface-1">
+              <span class="level">L1 · Operating</span>
+              <h3>Work area / page plane</h3>
+              <p>Dashboards, forms, data modules.</p>
+              <ul>
+                <li><code>--surface-l1</code>, <code>--surface-100</code>–<code>250</code></li>
+              </ul>
+            </article>
+            <article class="layer-card surface-2">
+              <span class="level">L2 · Elevated</span>
+              <h3>Cards / widgets</h3>
+              <p>KPI cards, filters, inspectors.</p>
+              <ul>
+                <li><code>--surface-l2</code>, <code>--card</code></li>
+              </ul>
+            </article>
+            <article class="layer-card surface-3">
+              <span class="level">L3 · Floating</span>
+              <h3>Popover / sheet</h3>
+              <p>Transient UI. Pair with <code>--scrim</code> when overlaying.</p>
+              <ul>
+                <li><code>--surface-l3</code>, <code>--popover</code>, <code>--sheet</code></li>
+              </ul>
+            </article>
+            <article class="layer-card surface-4">
+              <span class="level">L4 · Modal</span>
+              <h3>Critical overlay</h3>
+              <p>Modals, blocking dialogs. <code>--shadow-modal</code>.</p>
+              <ul>
+                <li><code>--surface-l4</code>, <code>--modal</code></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Demonstration</div>
+              <h2 class="section-title">Layer system in a real ERP shell</h2>
+            </div>
+          </div>
+          <div class="demo-shell">
+            <aside class="sidebar">
+              <div class="brand-lockup">
+                <div class="logo"></div>
+                <div>
+                  <div style="font-weight:700">AFENDA</div>
+                  <div class="subtle-note">Truth Engine Console</div>
+                </div>
+              </div>
+              <div class="nav-list">
+                <div class="nav-item active">Finance Dashboard</div>
+                <div class="nav-item">Accounts Payable</div>
+                <div class="nav-item">Treasury</div>
+                <div class="nav-item">Controls & Audit</div>
+                <div class="nav-item">Supplier Portal</div>
+              </div>
+            </aside>
+            <div class="main-stage">
+              <div class="topbar">
+                <div>
+                  <strong>March close control tower</strong>
+                  <div class="subtle-note">L1 shell, L2 cards, L3/L4 above.</div>
+                </div>
+                <div class="status-pill s-approved">Operator live</div>
+              </div>
+              <div class="chip-row">
+                <div class="chip" style="background:var(--primary-soft); border-color: color-mix(in oklab, var(--primary), transparent 70%)">
+                  <strong>Brand lane</strong>
+                  Truth, primary CTA, focal actions
+                </div>
+                <div class="chip" style="background:var(--interactive-soft); border-color: color-mix(in oklab, var(--interactive), transparent 70%)">
+                  <strong>Operator lane</strong>
+                  Active controls, links, in-flow actions
+                </div>
+                <div class="chip" style="background:var(--premium-soft); border-color: color-mix(in oklab, var(--premium), transparent 70%)">
+                  <strong>Institutional lane</strong>
+                  Governance, trust, premium signals
+                </div>
+                <div class="chip" style="background:var(--muted)">
+                  <strong>Neutral lane</strong>
+                  Structural UI that should not shout
+                </div>
+              </div>
+              <div class="panel-grid">
+                <div class="card">
+                  <div class="kicker">Data grid</div>
+                  <h3 style="margin-bottom:1rem">Journal queue</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Document</th>
+                        <th>Entity</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>JV-2026-0318</td>
+                        <td>MY-HQ</td>
+                        <td><span class="status-pill s-draft">Draft</span></td>
+                        <td>USD 48,200</td>
+                      </tr>
+                      <tr>
+                        <td>AP-2026-8821</td>
+                        <td>VN-OPS</td>
+                        <td><span class="status-pill s-pending">Pending</span></td>
+                        <td>USD 9,410</td>
+                      </tr>
+                      <tr>
+                        <td>GL-2026-4040</td>
+                        <td>SG-HOLD</td>
+                        <td><span class="status-pill s-approved">Approved</span></td>
+                        <td>USD 180,990</td>
+                      </tr>
+                      <tr>
+                        <td>AR-2026-1192</td>
+                        <td>ID-COMM</td>
+                        <td><span class="status-pill s-posted">Posted</span></td>
+                        <td>USD 64,720</td>
+                      </tr>
+                      <tr>
+                        <td>INV-2026-0911</td>
+                        <td>TH-DIST</td>
+                        <td><span class="status-pill s-overdue">Overdue</span></td>
+                        <td>USD 12,780</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card">
+                  <div class="kicker">Form</div>
+                  <h3 style="margin-bottom:1rem">Approval note</h3>
+                  <div class="mini-stack">
+                    <input class="input" placeholder="Journal title" />
+                    <select class="select">
+                      <option>Choose reviewer</option>
+                      <option>Controller</option>
+                      <option>Finance Manager</option>
+                    </select>
+                    <textarea class="textarea" placeholder="Add reviewer context or posting rationale"></textarea>
+                    <button class="btn btn-primary" style="width: fit-content">Submit for review</button>
+                  </div>
+                </div>
+              </div>
+              <div class="floating-stack">
+                <div class="float-card">
+                  <div class="kicker">L2 card</div>
+                  <h3>KPI card</h3>
+                  <p style="margin-top:0.625rem">Elevated, part of the working plane.</p>
+                </div>
+                <div class="popover">
+                  <div class="kicker">L3 popover</div>
+                  <h3>Command quick action</h3>
+                  <p style="margin-top:0.625rem">Floating context, higher than cards.</p>
+                </div>
+                <div class="modal">
+                  <div class="kicker">L4 modal</div>
+                  <h3>Critical confirmation</h3>
+                  <p style="margin-top:0.625rem">Use for authority, risk acknowledgment, or irreversible action.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Token utilization</div>
+              <h2 class="section-title">Where each token family is used</h2>
+            </div>
+          </div>
+          <div class="guideline-grid">
+            <article class="guide-card">
+              <h3>1. Surface tokens</h3>
+              <ul>
+                <li>Use surface tokens for spatial depth only.</li>
+                <li>L0 → L4 for importance and containment.</li>
+                <li>Most ERP screens between L1 and L2.</li>
+              </ul>
+            </article>
+            <article class="guide-card">
+              <h3>2. Semantic lanes</h3>
+              <ul>
+                <li><code>--primary</code> truth, product identity, major CTA.</li>
+                <li><code>--interactive</code> operator action, navigation.</li>
+                <li><code>--premium</code> governance, high-trust moments.</li>
+              </ul>
+            </article>
+            <article class="guide-card">
+              <h3>3. Status tokens</h3>
+              <ul>
+                <li>Status only for real workflow state.</li>
+                <li>Soft backgrounds, readable in dense grids.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Lanes</div>
+              <h2 class="section-title">Semantic lane swatches</h2>
+            </div>
+            <div class="subtle-note">Brand, operator, institutional.</div>
+          </div>
+          <div class="token-grid">
+            <article class="token-card">
+              <h3>Brand / truth lane</h3>
+              <p>Primary CTA, truth statements, hero anchors.</p>
+              <div class="swatch-row">
+                <div class="swatch" style="background: var(--primary)">--primary</div>
+                <div class="swatch" style="background: var(--primary-soft)">--primary-soft</div>
+                <div class="swatch" style="background: color-mix(in oklab, var(--primary), transparent 84%)">overlay</div>
+              </div>
+            </article>
+            <article class="token-card">
+              <h3>Operator lane</h3>
+              <p>Links, filters, active tabs, focus.</p>
+              <div class="swatch-row">
+                <div class="swatch" style="background: var(--interactive)">--interactive</div>
+                <div class="swatch" style="background: var(--interactive-soft)">--interactive-soft</div>
+                <div class="swatch" style="background: color-mix(in oklab, var(--interactive), transparent 84%)">overlay</div>
+              </div>
+            </article>
+            <article class="token-card">
+              <h3>Institutional lane</h3>
+              <p>Governance, trust, compliance.</p>
+              <div class="swatch-row">
+                <div class="swatch" style="background: var(--premium); color: var(--premium-foreground)">--premium</div>
+                <div class="swatch" style="background: var(--premium-soft)">--premium-soft</div>
+                <div class="swatch" style="background: color-mix(in oklab, var(--premium), transparent 84%)">overlay</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">ERP statuses</div>
+              <h2 class="section-title">Workflow semantics</h2>
+            </div>
+          </div>
+          <div class="status-grid">
+            <div class="status-demo"><div class="status-pill s-draft">Draft</div><p style="margin-top:0.625rem">Preparatory state.</p></div>
+            <div class="status-demo"><div class="status-pill s-pending">Pending</div><p style="margin-top:0.625rem">Awaiting review.</p></div>
+            <div class="status-demo"><div class="status-pill s-approved">Approved</div><p style="margin-top:0.625rem">Control gate passed.</p></div>
+            <div class="status-demo"><div class="status-pill s-posted">Posted</div><p style="margin-top:0.625rem">Ledger completion.</p></div>
+            <div class="status-demo"><div class="status-pill s-overdue">Overdue</div><p style="margin-top:0.625rem">Operational risk.</p></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Dataviz</div>
+              <h2 class="section-title">Charts separate from workflow state</h2>
+            </div>
+          </div>
+          <div class="viz-grid">
+            <article class="viz-card">
+              <h3>Palette preview</h3>
+              <div class="bar-chart">
+                <div class="bar" style="height: 58%; background: var(--chart-1)"></div>
+                <div class="bar" style="height: 72%; background: var(--chart-2)"></div>
+                <div class="bar" style="height: 46%; background: var(--chart-3)"></div>
+                <div class="bar" style="height: 80%; background: var(--chart-4)"></div>
+                <div class="bar" style="height: 38%; background: var(--chart-5)"></div>
+                <div class="bar" style="height: 66%; background: var(--chart-6)"></div>
+                <div class="bar" style="height: 54%; background: var(--chart-7)"></div>
+                <div class="bar" style="height: 74%; background: var(--chart-8)"></div>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><span class="dot" style="background:var(--chart-1)"></span>Chart 1</div>
+                <div class="legend-item"><span class="dot" style="background:var(--chart-2)"></span>Chart 2</div>
+                <div class="legend-item"><span class="dot" style="background:var(--chart-3)"></span>Chart 3</div>
+                <div class="legend-item"><span class="dot" style="background:var(--chart-4)"></span>Chart 4</div>
+              </div>
+            </article>
+            <article class="viz-card">
+              <h3>Usage guideline</h3>
+              <div class="mini-stack" style="margin-top:1rem">
+                <p><strong>Chart tokens</strong> for comparison, series, thresholds. Do not reuse status colors as chart palette.</p>
+                <p><strong>Reserve red/green</strong> only where positive/negative is meaningful (variances, gains/losses).</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <div class="kicker">Implementation</div>
+              <h2 class="section-title">How to apply tokens</h2>
+            </div>
+          </div>
+          <div class="component-grid">
+            <article class="component-card">
+              <h3>Recommended mapping</h3>
+              <div class="mini-stack" style="margin-top:1rem">
+                <p><strong>App shell:</strong> <code>--background</code>, <code>--sidebar</code>, <code>--topbar</code></p>
+                <p><strong>Sections:</strong> <code>--surface-100</code>–<code>200</code></p>
+                <p><strong>Cards:</strong> <code>--card</code>, <code>--surface-275</code>–<code>350</code></p>
+                <p><strong>Floating:</strong> <code>--popover</code>, <code>--sheet</code>, <code>--modal</code>, <code>--scrim</code></p>
+                <p><strong>Spacing:</strong> <code>--space-*</code> for premium rhythm.</p>
+              </div>
+            </article>
+            <article class="component-card">
+              <h3>Rules of discipline</h3>
+              <div class="mini-stack" style="margin-top:1rem">
+                <p>1. Surface hierarchy solves depth before glow or border tricks.</p>
+                <p>2. Spacing gives luxury; keep <code>--space-section</code> and <code>--space-card</code> generous.</p>
+                <p>3. Reserve premium for governance and trust, not generic emphasis.</p>
+                <p>4. Most screens: 80% neutral, 15% semantic, 5% dramatic.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -40,6 +40,7 @@
     "next-themes": "catalog:",
     "pg": "catalog:",
     "qrcode": "catalog:",
+    "@radix-ui/react-slot": "catalog:",
     "radix-ui": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

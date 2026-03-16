@@ -43,6 +43,9 @@
   "js/ts.inlayHints.variableTypes.enabled": false,
   "js/ts.inlayHints.returnTypes.enabled": false,
 
+  // ── Total TypeScript (syntax-guide hints: educational only; disable to reduce noise) ─
+  "totalTypeScript.hideAllTips": true,
+
   // ── ESLint (flat config — eslint.config.js at root) ─────────────────────────
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "typescriptreact"],
@@ -59,6 +62,7 @@
   "tailwindCSS.lint.invalidConfigPath": "error",
   "tailwindCSS.lint.invalidTailwindDirective": "error",
   "tailwindCSS.lint.recommendedVariantOrder": "warning",
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
 
   // ── File associations ────────────────────────────────────────────────────────
   "files.associations": {

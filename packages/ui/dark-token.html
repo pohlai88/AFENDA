@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atmosphere Graphite v1 — True Layer Preview</title>
+  <style>
+    /* ─────────────────────────────────────────────────────────────────────────
+       Synced with packages/ui/src/styles/_tokens-dark.css
+       True 4-layer architecture: L0 (atmosphere) → L4 (modal). Use layer aliases
+       (--surface-l0 … --surface-l4) and icon tokens (--icon-default, --icon-emphasis)
+       for full utilization.
+       ───────────────────────────────────────────────────────────────────────── */
+    .dark {
+      --background: oklch(0.18 0.014 250);
+      --foreground: oklch(0.94 0.005 250);
+      --foreground-secondary: oklch(0.77 0.01 250);
+      --foreground-tertiary: oklch(0.64 0.009 250);
+      --foreground-quaternary: oklch(0.54 0.008 250);
+
+      /* L0 — deep background, coolest */
+      --surface-0: var(--background);
+      --surface-25: oklch(0.182 0.014 252);
+      --surface-50: oklch(0.188 0.014 251);
+      --surface-75: oklch(0.194 0.014 250);
+
+      /* L1 — operating surfaces */
+      --surface-100: oklch(0.198 0.0145 250);
+      --surface-150: oklch(0.204 0.015 250);
+      --surface-200: oklch(0.214 0.016 250);
+      --surface-250: oklch(0.228 0.017 250);
+
+      /* L2 — elevated content */
+      --surface-275: oklch(0.236 0.0175 249);
+      --surface-300: oklch(0.244 0.018 249);
+      --surface-350: oklch(0.260 0.019 248);
+
+      /* L3 — floating context */
+      --surface-375: oklch(0.248 0.018 248);
+      --surface-400: oklch(0.256 0.0185 248);
+      --surface-425: oklch(0.264 0.019 247);
+
+      /* L4 — modal / critical overlays, lightest */
+      --surface-450: oklch(0.272 0.0195 247);
+      --surface-475: oklch(0.280 0.020 247);
+      --surface-500: oklch(0.288 0.0205 246);
+
+      --surface-l0: var(--surface-0);
+      --surface-l1: var(--surface-200);
+      --surface-l2: var(--surface-300);
+      --surface-l3: var(--surface-400);
+      --surface-l4: var(--surface-500);
+
+      --icon-muted: var(--foreground-tertiary);
+      --icon-default: var(--foreground-secondary);
+      --icon-emphasis: oklch(0.76 0.10 190);
+      --icon-success: oklch(0.74 0.14 155);
+      --icon-warning: oklch(0.80 0.12 85);
+      --icon-danger: oklch(0.66 0.17 25);
+      --icon-info: oklch(0.74 0.10 200);
+
+      --card: var(--surface-250);
+      --popover: var(--surface-400);
+      --modal: var(--surface-500);
+
+      --border-subtle: oklch(0.35 0.014 250 / 0.28);
+      --border: oklch(0.38 0.015 250 / 0.52);
+      --border-strong: oklch(0.46 0.018 250 / 0.60);
+
+      --primary: oklch(0.76 0.10 190);
+      --primary-foreground: oklch(0.22 0.02 190);
+      --interactive: oklch(0.76 0.08 228);
+      --interactive-foreground: oklch(0.22 0.02 228);
+      --premium: oklch(0.80 0.05 85);
+      --premium-foreground: oklch(0.24 0.02 85);
+
+      --status-pending: oklch(0.80 0.12 85);
+      --status-pending-foreground: oklch(0.24 0.02 85);
+      --status-pending-bg: oklch(0.28 0.04 85);
+
+      --status-approved: oklch(0.76 0.08 220);
+      --status-approved-foreground: oklch(0.22 0.02 220);
+      --status-approved-bg: oklch(0.27 0.035 220);
+
+      --scrim: oklch(0.08 0.003 250 / 0.62);
+      --shadow-sm: 0 4px 12px oklch(0 0 0 / 0.12);
+      --shadow-md: 0 8px 24px oklch(0 0 0 / 0.18);
+      --shadow-popover: 0 18px 44px oklch(0 0 0 / 0.26), 0 0 0 1px oklch(0 0 0 / 0.05);
+      --shadow-modal: 0 30px 88px oklch(0 0 0 / 0.32), 0 0 0 1px oklch(0 0 0 / 0.06);
+
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────────
+       DEMO STRUCTURAL STYLES (Mapping tokens to CSS)
+       ───────────────────────────────────────────────────────────────────────── */
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.5;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+    h1, h2, h3, h4 { margin-top: 0; font-weight: 500; }
+    p { color: var(--foreground-secondary); margin-bottom: 1.5rem; }
+    
+    .text-sm { font-size: 0.875rem; color: var(--foreground-tertiary); }
+    .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--foreground-quaternary); margin-bottom: 0.5rem; display: block; }
+
+    /* Layout Elements */
+    .grid { display: grid; gap: 2rem; }
+    .grid-cols-2 { grid-template-columns: 1fr 1fr; }
+    .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .flex { display: flex; gap: 1rem; align-items: center; }
+
+    /* Surface Layers — use tokens for true depth (lightness + hue progression) */
+    .l0-atmosphere { background-color: var(--surface-l0); padding: 2rem; border-radius: var(--radius-lg); border: 1px dashed var(--border-subtle); position: relative;}
+    .l1-operating { background-color: var(--surface-100); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-top: 1rem;}
+    .l2-card { background-color: var(--surface-l2); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-top: 1rem;}
+    .l3-popover { background-color: var(--surface-l3); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); box-shadow: var(--shadow-popover); position: absolute; top: 20%; right: -2rem; width: 200px; z-index: 10; }
+    
+    /* Semantic Buttons */
+    .btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: opacity 0.2s;}
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+    .btn-interactive { background: var(--interactive); color: var(--interactive-foreground); }
+    .btn-premium { background: var(--premium); color: var(--premium-foreground); }
+
+    /* Semantic Pills/Badges */
+    .badge { padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.75rem; font-weight: 500; }
+    .badge-pending { background: var(--status-pending-bg); color: var(--status-pending-foreground); border: 1px solid color-mix(in oklab, var(--status-pending), transparent 70%);}
+    .badge-approved { background: var(--status-approved-bg); color: var(--status-approved-foreground); border: 1px solid color-mix(in oklab, var(--status-approved), transparent 70%);}
+
+    /* Modals (L4) — highest layer token */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: var(--scrim); z-index: 50; align-items: center; justify-content: center; }
+    .modal-backdrop.active { display: flex; }
+    .l4-modal { background: var(--surface-l4); padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-strong); box-shadow: var(--shadow-modal); width: 100%; max-width: 400px; position: relative; }
+  </style>
+</head>
+<body class="dark">
+
+  <div class="container">
+    <div style="margin-bottom: 4rem;">
+      <h1>Atmosphere Graphite v1</h1>
+      <p>A premium, deep-layered dark mode architecture designed for long-session ERP readability. Notice the subtle shifts in lightness rather than relying solely on borders for separation.</p>
+    </div>
+
+    <h2 style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">1. Elevation Architecture in Practice</h2>
+    <p>How the L0 to L4 surfaces stack contextually.</p>
+    
+    <div class="l0-atmosphere">
+      <span class="label">L0: Atmosphere (--surface-l0 / --surface-0)</span>
+      <span class="text-sm">The deepest recess of the app shell. Used for outer window backgrounds.</span>
+
+      <div class="l1-operating">
+        <span class="label">L1: Operating Surface (--surface-100)</span>
+        <span class="text-sm">The primary canvas. Workspaces, main data grids, and shell navigation live here.</span>
+
+        <div class="grid grid-cols-2" style="margin-top: 1.5rem;">
+          <div class="l2-card">
+            <span class="label">L2: Elevated Cards (--surface-l2 / --card)</span>
+            <span class="text-sm">Standard content containers, metrics, and segmented data blocks. Creates logical grouping without visual noise.</span>
+          </div>
+          
+          <div class="l2-card" style="position: relative;">
+            <span class="label">L2: Interactive Card</span>
+            <span class="text-sm">Click the button below to trigger the L4 Modal overlay.</span>
+            <br><br>
+            <button class="btn btn-interactive" onclick="toggleModal()">Trigger L4 Modal</button>
+
+            <div class="l3-popover">
+              <span class="label">L3: Floating Context (--popover)</span>
+              <span class="text-sm">Used for dropdowns, tooltips, and command palettes. Casts a larger shadow.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br><br><br>
+
+    <h2 style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-top: 2rem;">2. Distinct Semantic Lanes</h2>
+    <p>Separating the brand identity from operator interactions and institutional/governance features.</p>
+
+    <div class="grid grid-cols-3">
+      <div class="l2-card">
+        <span class="label">Brand Truth (--primary)</span>
+        <h3 style="color: var(--primary)">Brand Lane</h3>
+        <p class="text-sm">Used for marketing-aligned components, primary SaaS submission buttons, and core branding elements.</p>
+        <button class="btn btn-primary">Primary Action</button>
+      </div>
+
+      <div class="l2-card">
+        <span class="label">Operator Interaction (--interactive)</span>
+        <h3 style="color: var(--interactive)">Operator Lane</h3>
+        <p class="text-sm">Used for heavy day-to-day workflow: data grid interactions, filters, inline edits, and shell navigation.</p>
+        <button class="btn btn-interactive">Edit Record</button>
+      </div>
+
+      <div class="l2-card">
+        <span class="label">Institutional Governance (--premium)</span>
+        <h3 style="color: var(--premium)">Premium Lane</h3>
+        <p class="text-sm">Used for compliance, audit logs, finalized reporting, and executive dashboards.</p>
+        <button class="btn btn-premium">Sign & Approve</button>
+      </div>
+    </div>
+
+    <br><br><br>
+
+    <h2 style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-top: 2rem;">3. ERP Lifecycle Context</h2>
+    <p>Utilizing the granular, specific status tokens for complex workflows.</p>
+
+    <div class="l1-operating flex">
+      <span class="text-sm">Invoice #INV-2026-004</span>
+      <span class="badge badge-pending">Pending Review</span>
+      <span style="flex-grow: 1;"></span>
+      <span class="text-sm">Purchase Order #PO-9921</span>
+      <span class="badge badge-approved">Approved</span>
+    </div>
+
+  </div>
+
+  <div class="modal-backdrop" id="demoModal" onclick="toggleModal()">
+    <div class="l4-modal" onclick="event.stopPropagation()">
+      <span class="label">L4: Critical Overlay (--surface-l4 / --modal)</span>
+      <h3>Confirm Action</h3>
+      <p>This modal sits on the highest Z-index, backed by the <code>--scrim</code> token to push the L0-L3 context into the background.</p>
+      <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+        <button class="btn" style="background: transparent; color: var(--foreground); border: 1px solid var(--border);" onclick="toggleModal()">Cancel</button>
+        <button class="btn btn-interactive" onclick="toggleModal()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleModal() {
+      const modal = document.getElementById('demoModal');
+      modal.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

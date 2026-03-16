@@ -1,0 +1,453 @@
+/* ==========================================================================
+   MARKETING INFO — PREMIUM DARK ARCHITECTURE
+   ========================================================================== */
+
+[data-marketing-info] {
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      1200px 760px at 100% -18%,
+      color-mix(in oklab, var(--interactive, oklch(0.76 0.08 228)), transparent 92%),
+      transparent 65%
+    ),
+    radial-gradient(
+      820px 540px at -10% 12%,
+      color-mix(in oklab, var(--primary, oklch(0.76 0.1 190)), transparent 94%),
+      transparent 70%
+    ),
+    var(--surface-l0, oklch(0.18 0.014 250));
+  color: var(--foreground, oklch(0.94 0.005 250));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+     SHELL & LAYOUT
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-page {
+  position: relative;
+}
+
+[data-marketing-info] .mi-shell {
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: var(--space-page-x, 2.5rem);
+  padding-top: var(--space-page-y, 5rem);
+  padding-bottom: 6rem;
+}
+
+[data-marketing-info] .mi-article {
+  width: 100%;
+  margin-inline: auto;
+}
+
+[data-marketing-info] .mi-article--narrow {
+  max-width: 52rem;
+}
+
+[data-marketing-info] .mi-article--wide {
+  max-width: 74rem;
+}
+
+/* --------------------------------------------------------------------------
+     HEADER (Clean, Architectural, No Gradients)
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-tight, 0.75rem);
+  margin-bottom: var(--space-block, 2.5rem);
+}
+
+[data-marketing-info] .mi-kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--foreground-quaternary, oklch(0.54 0.008 250));
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+[data-marketing-info] .mi-title {
+  margin: 0 0 var(--space-tight, 0.75rem) 0;
+  color: var(--foreground, oklch(0.94 0.005 250));
+  font-size: clamp(2rem, 4.8vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+[data-marketing-info] .mi-description {
+  margin: 0;
+  color: var(--foreground-secondary, oklch(0.77 0.01 250));
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+[data-marketing-info] .mi-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: var(--space-inline, 1.5rem);
+}
+
+[data-marketing-info] .mi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+     L1: OPERATING SURFACE (The Canvas)
+     Matches `.l1-operating` from benchmark
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-l1 {
+  background-color: var(--surface-l1, oklch(0.198 0.0145 250));
+  padding: var(--space-card, 2rem);
+  border-radius: var(--radius-card, 20px);
+  border: 1px solid var(--border-subtle, oklch(0.35 0.014 250 / 0.28));
+  margin-top: var(--space-inline, 1.5rem);
+}
+
+/* --------------------------------------------------------------------------
+     L2: ELEVATED CARDS
+     Matches `.l2-card` from benchmark
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-l2, oklch(0.228 0.017 250));
+  padding: var(--space-card, 2rem);
+  border-radius: var(--radius-tight, 14px);
+  border: 1px solid var(--border, oklch(0.38 0.015 250 / 0.52));
+  box-shadow: var(--shadow-sm, 0 4px 12px oklch(0 0 0 / 0.12));
+}
+
+[data-marketing-info] .mi-card--muted {
+  background-color: transparent;
+  border-color: var(--border-subtle);
+  box-shadow: none;
+}
+
+[data-marketing-info] .mi-card--raised {
+  background-color: var(--surface-l3, oklch(0.244 0.018 249));
+  box-shadow: var(--shadow-md, 0 8px 24px oklch(0 0 0 / 0.18));
+}
+
+[data-marketing-info] .mi-card--premium {
+  background: linear-gradient(
+    160deg,
+    color-mix(
+      in oklab,
+      var(--surface-l3, oklch(0.244 0.018 249)),
+      var(--premium, oklch(0.8 0.05 85)) 10%
+    ),
+    var(--surface-l3, oklch(0.244 0.018 249)) 45%,
+    var(--surface-l2, oklch(0.228 0.017 250))
+  );
+  border-color: color-mix(
+    in oklab,
+    var(--premium, oklch(0.8 0.05 85)),
+    var(--border-strong, oklch(0.46 0.018 250 / 0.6)) 74%
+  );
+  box-shadow: var(--shadow-md, 0 8px 24px oklch(0 0 0 / 0.18));
+}
+
+[data-marketing-info] .mi-card-header {
+  margin-bottom: var(--space-inline, 1.5rem);
+}
+
+[data-marketing-info] .mi-card-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+[data-marketing-info] .mi-card-body {
+  color: var(--foreground-secondary, oklch(0.77 0.01 250));
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  flex: 1; /* Allow body to grow and fill available space */
+}
+
+[data-marketing-info] .mi-card-copy {
+  margin: 0;
+}
+
+[data-marketing-info] .mi-card-copy + .mi-card-list {
+  margin-top: 0.85rem;
+}
+
+/* --------------------------------------------------------------------------
+     SECTIONS & GRIDS
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-section {
+  margin-top: var(--space-section, 5rem);
+}
+
+[data-marketing-info] .mi-section:first-child {
+  margin-top: 0;
+}
+
+[data-marketing-info] .mi-section-header {
+  margin-bottom: var(--space-block, 2.5rem);
+}
+
+[data-marketing-info] .mi-section-title {
+  margin: 0 0 1rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--foreground);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+[data-marketing-info] .mi-section-description {
+  margin: 0;
+  color: var(--foreground-secondary);
+  font-size: 0.9875rem;
+  line-height: 1.6;
+  max-width: 72ch;
+}
+
+[data-marketing-info] .mi-grid {
+  display: grid;
+  gap: var(--space-block, 2.5rem);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  align-items: stretch; /* Items in same row match height */
+}
+
+[data-marketing-info] .mi-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+[data-marketing-info] .mi-grid--1 {
+  grid-template-columns: 1fr;
+}
+
+[data-marketing-info] .mi-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+[data-marketing-info] .mi-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Force grid items to stretch full height */
+[data-marketing-info] .mi-grid > li,
+[data-marketing-info] .mi-grid > * {
+  height: 100%;
+}
+
+/* Make cards fill their containers */
+[data-marketing-info] .mi-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 980px) {
+  [data-marketing-info] .mi-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  [data-marketing-info] .mi-grid--2,
+  [data-marketing-info] .mi-grid--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+     LISTS & TYPOGRAPHY
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-card-list {
+  margin: 0.85rem 0 0 0;
+  padding-left: 1.25rem;
+  color: var(--foreground-secondary);
+  line-height: 1.65;
+}
+
+[data-marketing-info] .mi-card-list li {
+  margin-bottom: 0.5rem;
+}
+
+[data-marketing-info] .mi-card-list li strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+[data-marketing-info] .mi-prose {
+  color: var(--foreground-secondary);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+[data-marketing-info] .mi-prose p {
+  margin: 0;
+}
+
+[data-marketing-info] .mi-prose > * + * {
+  margin-top: 1.5rem;
+}
+
+[data-marketing-info] .mi-prose strong {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+[data-marketing-info] .mi-separator {
+  width: 100%;
+  height: 1px;
+  margin-block: var(--space-section, 5rem);
+  border: 0;
+  background: var(--border-subtle);
+}
+
+[data-marketing-info] .mi-content > .mi-separator {
+  margin-block: 2rem;
+}
+
+[data-marketing-info] .mi-content > .mi-separator + .mi-section {
+  margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+     KICKERS & BADGES (Matching Benchmark)
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-card-kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+[data-marketing-info] .mi-card-kicker--primary {
+  color: var(--primary, oklch(0.76 0.1 190));
+}
+
+[data-marketing-info] .mi-card-kicker--interactive {
+  color: var(--interactive, oklch(0.76 0.08 228));
+}
+
+[data-marketing-info] .mi-card-kicker--premium {
+  color: var(--premium, oklch(0.8 0.05 85));
+}
+
+[data-marketing-info] .mi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+[data-marketing-info] .mi-badge--primary {
+  background: color-mix(in oklab, var(--primary), transparent 85%);
+  color: var(--primary);
+  border: 1px solid color-mix(in oklab, var(--primary), transparent 70%);
+}
+
+[data-marketing-info] .mi-badge--premium {
+  background: color-mix(in oklab, var(--premium), transparent 85%);
+  color: var(--premium);
+  border: 1px solid color-mix(in oklab, var(--premium), transparent 70%);
+}
+
+/* --------------------------------------------------------------------------
+     FOOTER / CTA
+     -------------------------------------------------------------------------- */
+
+[data-marketing-info] .mi-cta {
+  background: linear-gradient(
+    150deg,
+    color-mix(
+      in oklab,
+      var(--surface-l2, oklch(0.228 0.017 250)),
+      var(--premium, oklch(0.8 0.05 85)) 6%
+    ),
+    var(--surface-l1, oklch(0.198 0.0145 250)) 45%,
+    var(--surface-l1, oklch(0.198 0.0145 250))
+  );
+  padding: var(--space-card, 2rem);
+  border-radius: var(--radius-card, 20px);
+  border: 1px solid var(--border-subtle, oklch(0.35 0.014 250 / 0.28));
+}
+
+[data-marketing-info] .mi-cta-title {
+  margin: 0;
+  color: var(--foreground, oklch(0.94 0.005 250));
+  font-size: clamp(1.35rem, 2.5vw, 1.6rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+[data-marketing-info] .mi-cta-body {
+  margin: 0.9rem 0 0 0;
+  color: var(--foreground-secondary, oklch(0.77 0.01 250));
+}
+
+[data-marketing-info] .mi-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: var(--space-inline, 1.5rem);
+}
+
+[data-marketing-info] .mi-footer {
+  margin-top: var(--space-section, 5rem);
+}
+
+@media (max-width: 768px) {
+  [data-marketing-info] .mi-shell {
+    padding-inline: 1rem;
+    padding-top: 3.5rem;
+    padding-bottom: 4rem;
+  }
+
+  [data-marketing-info] .mi-title {
+    max-width: none;
+  }
+
+  [data-marketing-info] .mi-header {
+    margin-bottom: 2.5rem;
+  }
+
+  [data-marketing-info] .mi-l1,
+  [data-marketing-info] .mi-card,
+  [data-marketing-info] .mi-cta {
+    padding: 1.25rem;
+  }
+}

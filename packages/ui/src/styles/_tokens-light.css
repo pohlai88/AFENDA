@@ -53,6 +53,15 @@
   --text-ghost: var(--foreground-quaternary);
   --text-inverse: oklch(0.96 0.003 250);
 
+  /* Icon tints by context — parity with dark for consistent hierarchy */
+  --icon-muted: var(--foreground-tertiary);
+  --icon-default: var(--foreground-secondary);
+  --icon-emphasis: var(--primary);
+  --icon-success: var(--success);
+  --icon-warning: var(--warning);
+  --icon-danger: var(--destructive);
+  --icon-info: var(--info);
+
   /* ═══════════════════════════════════════════════════════════════════════
      1. SURFACE ARCHITECTURE
      ═══════════════════════════════════════════════════════════════════════ */
@@ -85,6 +94,13 @@
   --surface-450: oklch(0.994 0.0035 250);
   --surface-475: oklch(0.996 0.003 250);
   --surface-500: oklch(0.998 0.0025 250);
+
+  /* Layer aliases for semantic use (marketing, shell, modals) */
+  --surface-l0: var(--surface-0);
+  --surface-l1: var(--surface-200);
+  --surface-l2: var(--surface-300);
+  --surface-l3: var(--surface-400);
+  --surface-l4: var(--surface-500);
 
   --card: oklch(0.975 0.004 250);
   --card-foreground: var(--foreground);

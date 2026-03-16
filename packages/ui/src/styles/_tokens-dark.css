@@ -60,53 +60,69 @@
      Layered to create true depth, not fake depth from borders alone
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* L0 / deep background recesses */
+  /* L0 / deep background recesses — coolest, most recessed */
   --surface-0: var(--background);
-  --surface-25: oklch(0.186 0.014 250);
-  --surface-50: oklch(0.19 0.014 250);
-  --surface-75: oklch(0.196 0.014 250);
+  --surface-25: oklch(0.182 0.014 252);
+  --surface-50: oklch(0.188 0.014 251);
+  --surface-75: oklch(0.194 0.014 250);
 
   /* L1 / operating surfaces */
-  --surface-100: oklch(0.19 0.014 250);
-  --surface-150: oklch(0.198 0.0145 250);
-  --surface-175: oklch(0.201 0.015 250);
-  --surface-200: oklch(0.205 0.015 250);
-  --surface-225: oklch(0.214 0.0155 250);
-  --surface-250: oklch(0.222 0.016 250);
+  --surface-100: oklch(0.198 0.0145 250);
+  --surface-150: oklch(0.204 0.015 250);
+  --surface-175: oklch(0.208 0.0155 250);
+  --surface-200: oklch(0.214 0.016 250);
+  --surface-225: oklch(0.220 0.0165 250);
+  --surface-250: oklch(0.228 0.017 250);
 
-  /* L2 / elevated content surfaces */
-  --surface-275: oklch(0.23 0.016 250);
-  --surface-300: oklch(0.238 0.017 250);
-  --surface-325: oklch(0.246 0.017 250);
-  --surface-350: oklch(0.254 0.018 250);
+  /* L2 / elevated content surfaces — clear step up from L1 */
+  --surface-275: oklch(0.236 0.0175 249);
+  --surface-300: oklch(0.244 0.018 249);
+  --surface-325: oklch(0.252 0.0185 248);
+  --surface-350: oklch(0.260 0.019 248);
 
-  /* L3 / floating context */
-  --surface-375: oklch(0.242 0.0165 250);
-  --surface-400: oklch(0.248 0.017 250);
-  --surface-425: oklch(0.256 0.017 250);
+  /* L3 / floating context — popovers, dropdowns */
+  --surface-375: oklch(0.248 0.018 248);
+  --surface-400: oklch(0.256 0.0185 248);
+  --surface-425: oklch(0.264 0.019 247);
 
-  /* L4 / modal / critical overlays */
-  --surface-450: oklch(0.262 0.0175 250);
-  --surface-475: oklch(0.268 0.018 250);
-  --surface-500: oklch(0.274 0.018 250);
+  /* L4 / modal / critical overlays — lightest, most forward */
+  --surface-450: oklch(0.272 0.0195 247);
+  --surface-475: oklch(0.280 0.020 247);
+  --surface-500: oklch(0.288 0.0205 246);
 
-  /* Primary component surfaces */
-  --card: oklch(0.215 0.015 250);
+  /* Layer aliases for semantic use (marketing, shell, modals) */
+  --surface-l0: var(--surface-0);
+  --surface-l1: var(--surface-200);
+  --surface-l2: var(--surface-300);
+  --surface-l3: var(--surface-400);
+  --surface-l4: var(--surface-500);
+
+  /* Icon tints by context — use for consistent icon hierarchy on dark */
+  --icon-muted: var(--foreground-tertiary);
+  --icon-default: var(--foreground-secondary);
+  --icon-emphasis: var(--primary);
+  --icon-success: var(--success);
+  --icon-warning: var(--warning);
+  --icon-danger: var(--destructive);
+  --icon-info: var(--info);
+
+  /* Primary component surfaces — aligned to L1/L2/L3/L4 */
+  --card: var(--surface-250);
   --card-foreground: var(--foreground);
 
-  --popover: oklch(0.235 0.016 250);
+  --popover: var(--surface-400);
   --popover-foreground: var(--foreground);
 
-  --modal: oklch(0.245 0.016 250);
+  --modal: var(--surface-500);
   --modal-foreground: var(--foreground);
 
-  --sheet: oklch(0.232 0.016 250);
+  --sheet: var(--surface-375);
   --sheet-foreground: var(--foreground);
 
-  --drawer: oklch(0.228 0.016 250);
+  --drawer: var(--surface-350);
   --drawer-foreground: var(--foreground);
 
-  --tooltip: oklch(0.258 0.017 250);
+  --tooltip: var(--surface-425);
   --tooltip-foreground: var(--foreground);
 
   /* Glass / translucent surfaces */

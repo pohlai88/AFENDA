@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AFENDA Premium — Layering & Spacing</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+
+      /* ─────────────────────────────────────────────────────────────────────────
+         USER DESIGN TOKENS (Unchanged)
+         ───────────────────────────────────────────────────────────────────────── */
+      .theme {
+        /* Premium spacing scale */
+        --space-page-y: 5rem;
+        --space-page-x: 2.5rem;
+        --space-section: 5rem;
+        --space-block: 2.5rem;
+        --space-inline: 1.5rem;
+        --space-tight: 0.75rem;
+        --space-card: 2rem;
+        
+        --radius-section: 24px;
+        --radius-card: 20px;
+        --radius-tight: 14px;
+
+        /* Core atmosphere */
+        --background: oklch(0.18 0.014 250);
+        --foreground: oklch(0.94 0.005 250);
+        --foreground-secondary: oklch(0.77 0.01 250);
+        --foreground-tertiary: oklch(0.64 0.009 250);
+        --foreground-quaternary: oklch(0.54 0.008 250);
+
+        /* Surface Architecture */
+        --surface-0: var(--background);
+        --surface-100: oklch(0.198 0.0145 250);
+        --surface-200: oklch(0.214 0.016 250);
+        --surface-250: oklch(0.228 0.017 250);
+        --surface-300: oklch(0.244 0.018 249);
+        --surface-400: oklch(0.256 0.0185 248);
+        --surface-500: oklch(0.288 0.0205 246);
+
+        --surface-l0: var(--surface-0);
+        --surface-l1: var(--surface-100);
+        --surface-l2: var(--surface-250);
+        --surface-l3: var(--surface-400);
+        --surface-l4: var(--surface-500);
+
+        /* Component Surfaces */
+        --card: var(--surface-l2);
+        --popover: var(--surface-l3);
+        --modal: var(--surface-l4);
+
+        /* Borders */
+        --border-subtle: oklch(0.35 0.014 250 / 0.28);
+        --border: oklch(0.38 0.015 250 / 0.52);
+        --border-strong: oklch(0.46 0.018 250 / 0.60);
+
+        /* Semantic Lanes */
+        --primary: oklch(0.76 0.10 190);
+        --primary-foreground: oklch(0.22 0.02 190);
+        --interactive: oklch(0.76 0.08 228);
+        --interactive-foreground: oklch(0.22 0.02 228);
+        --premium: oklch(0.80 0.05 85);
+        --premium-foreground: oklch(0.24 0.02 85);
+
+        /* ERP Statuses */
+        --status-pending: oklch(0.80 0.12 85);
+        --status-approved: oklch(0.76 0.08 220);
+        --status-overdue: oklch(0.67 0.17 25);
+
+        /* Shadows & Overlays */
+        --shadow-sm: 0 4px 12px oklch(0 0 0 / 0.12);
+        --shadow-md: 0 8px 24px oklch(0 0 0 / 0.18);
+        --shadow-popover: 0 18px 44px oklch(0 0 0 / 0.26), 0 0 0 1px oklch(0 0 0 / 0.05);
+        --shadow-modal: 0 30px 88px oklch(0 0 0 / 0.32), 0 0 0 1px oklch(0 0 0 / 0.06);
+        --scrim: oklch(0.08 0.003 250 / 0.62);
+
+        min-height: 100vh;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────────────
+         PREMIUM BASE STYLES
+         ───────────────────────────────────────────────────────────────────────── */
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: var(--background);
+        color: var(--foreground);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        max-width: 1000px; /* Kept slightly narrower for premium line-lengths */
+        margin: 0 auto;
+        padding: var(--space-page-y) var(--space-page-x);
+      }
+
+      h1, h2, h3 { margin: 0; font-weight: 500; letter-spacing: -0.02em; }
+      h1 { font-size: 2.5rem; line-height: 1.1; margin-bottom: var(--space-tight); }
+      h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: var(--space-block); }
+      p { color: var(--foreground-secondary); margin: 0 0 var(--space-inline) 0; max-width: 65ch; }
+      
+      .kicker { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--foreground-quaternary); margin-bottom: 0.5rem; display: block; font-weight: 600; }
+
+      /* ─────────────────────────────────────────────────────────────────────────
+         NESTED ARCHITECTURE DEMONSTRATION
+         ───────────────────────────────────────────────────────────────────────── */
+      .l0-atmosphere { 
+        background-color: var(--surface-l0); 
+        padding: var(--space-card); 
+        border-radius: var(--radius-section); 
+        border: 1px dashed var(--border-subtle); 
+      }
+      
+      .l1-operating { 
+        background-color: var(--surface-l1); 
+        padding: var(--space-card); 
+        border-radius: var(--radius-card); 
+        border: 1px solid var(--border-subtle); 
+        margin-top: var(--space-inline); 
+      }
+      
+      .l2-card { 
+        background-color: var(--surface-l2); 
+        padding: var(--space-card); 
+        border-radius: var(--radius-tight); 
+        border: 1px solid var(--border); 
+        box-shadow: var(--shadow-sm); 
+      }
+      
+      .l3-popover { 
+        background-color: var(--surface-l3); 
+        padding: var(--space-inline); 
+        border-radius: var(--radius-tight); 
+        border: 1px solid var(--border-strong); 
+        box-shadow: var(--shadow-popover); 
+        position: absolute; 
+        top: 2rem; 
+        right: -3rem; 
+        width: 260px; 
+        z-index: 10; 
+      }
+
+      /* Layout Tools */
+      .grid { display: grid; gap: var(--space-block); }
+      .grid-2 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+      /* Controls */
+      .btn { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; font-size: 0.875rem; transition: opacity 0.2s;}
+      .btn:hover { opacity: 0.9; }
+      .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+      .btn-interactive { background: var(--interactive); color: var(--interactive-foreground); }
+      .btn-premium { background: var(--premium); color: var(--premium-foreground); }
+
+      /* Badges */
+      .badge { padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+      .badge-pending { background: color-mix(in oklab, var(--status-pending), transparent 85%); color: var(--status-pending); border: 1px solid color-mix(in oklab, var(--status-pending), transparent 70%);}
+      .badge-approved { background: color-mix(in oklab, var(--status-approved), transparent 85%); color: var(--status-approved); border: 1px solid color-mix(in oklab, var(--status-approved), transparent 70%);}
+
+      /* Modals */
+      .modal-backdrop { display: none; position: fixed; inset: 0; background: var(--scrim); z-index: 50; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+      .modal-backdrop.active { display: flex; }
+      .l4-modal { background: var(--surface-l4); padding: var(--space-card); border-radius: var(--radius-card); border: 1px solid var(--border-strong); box-shadow: var(--shadow-modal); width: 100%; max-width: 450px; }
+
+    </style>
+  </head>
+  <body class="theme">
+
+    <main class="page">
+      <header style="margin-bottom: var(--space-section);">
+        <span class="kicker">AFENDA Token System</span>
+        <h1>Premium Depth & Rhythm</h1>
+        <p>This layout removes visual noise to demonstrate how your <code>--space-*</code> tokens and <code>--surface-*</code> architecture create a comfortable, high-end ERP environment naturally, without relying on forced borders or cramped grids.</p>
+      </header>
+
+      <section style="margin-bottom: var(--space-section);">
+        <h2>1. The 4-Layer Architecture in Context</h2>
+        
+        <div class="l0-atmosphere">
+          <span class="kicker">L0: Atmosphere (--surface-l0)</span>
+          <p style="font-size: 0.875rem;">The deepest recess of the page. Holds the outermost shell.</p>
+
+          <div class="l1-operating">
+            <span class="kicker">L1: Operating Surface (--surface-l1)</span>
+            <p style="font-size: 0.875rem;">The primary canvas. Workspaces and data modules live here.</p>
+
+            <div class="grid grid-2" style="margin-top: var(--space-block);">
+              <div class="l2-card">
+                <span class="kicker">L2: Elevated Cards (--surface-l2)</span>
+                <p style="font-size: 0.875rem; margin-bottom: 0;">Creates logical grouping inside the L1 workspace.</p>
+              </div>
+              
+              <div class="l2-card" style="position: relative;">
+                <span class="kicker">L2: Interactive Context</span>
+                <p style="font-size: 0.875rem;">Click below to trigger the L4 Modal overlay.</p>
+                <button class="btn btn-interactive" onclick="toggleModal()">Trigger L4 Modal</button>
+
+                <div class="l3-popover">
+                  <span class="kicker">L3: Floating Context (--surface-l3)</span>
+                  <p style="font-size: 0.875rem; margin-bottom: 0;">Dropdowns and tooltips. Notice the heavier shadow pulling it off the page.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style="margin-bottom: var(--space-section);">
+        <h2>2. Semantic Lanes</h2>
+        <p>Separating interaction intent using generous padding (<code>--space-card</code>).</p>
+
+        <div class="grid grid-3">
+          <div class="l2-card">
+            <span class="kicker" style="color: var(--primary);">Brand / Truth</span>
+            <h3>Primary Action</h3>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Core branding and focal actions.</p>
+            <button class="btn btn-primary" style="width: 100%;">Submit Data</button>
+          </div>
+
+          <div class="l2-card">
+            <span class="kicker" style="color: var(--interactive);">Operator</span>
+            <h3>Workflow Action</h3>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Day-to-day data grid interactions.</p>
+            <button class="btn btn-interactive" style="width: 100%;">Edit Record</button>
+          </div>
+
+          <div class="l2-card">
+            <span class="kicker" style="color: var(--premium);">Institutional</span>
+            <h3>Governance</h3>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">High-trust moments and audits.</p>
+            <button class="btn btn-premium" style="width: 100%;">Sign & Approve</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. ERP Lifecycle Readability</h2>
+        <p>Soft status backgrounds allow for rapid scanning in dense table views without causing eye strain.</p>
+
+        <div class="l1-operating" style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <span class="kicker">Invoice #INV-2026-004</span>
+            <span style="font-weight: 500;">Q1 Enterprise Licensing</span>
+          </div>
+          <span class="badge badge-pending">Pending Review</span>
+        </div>
+
+        <div class="l1-operating" style="display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-tight);">
+          <div>
+            <span class="kicker">Purchase Order #PO-9921</span>
+            <span style="font-weight: 500;">Hardware Procurement</span>
+          </div>
+          <span class="badge badge-approved">Approved</span>
+        </div>
+      </section>
+
+    </main>
+
+    <div class="modal-backdrop" id="demoModal" onclick="toggleModal()">
+      <div class="l4-modal" onclick="event.stopPropagation()">
+        <span class="kicker">L4: Critical Overlay (--surface-l4)</span>
+        <h3 style="margin-bottom: 1rem;">Confirm Authorization</h3>
+        <p>This modal halts the workflow. The <code>--scrim</code> token obscures L0–L3 to force focus onto this top layer.</p>
+        <div style="display: flex; justify-content: flex-end; gap: var(--space-tight); margin-top: var(--space-card);">
+          <button class="btn" style="background: transparent; color: var(--foreground); border: 1px solid var(--border);" onclick="toggleModal()">Cancel</button>
+          <button class="btn btn-interactive" onclick="toggleModal()">Authorize</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleModal() {
+        const modal = document.getElementById('demoModal');
+        modal.classList.toggle('active');
+      }
+    </script>
+  </body>
+</html>

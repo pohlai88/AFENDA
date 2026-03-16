@@ -1,8 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
 import {
   AddEmploymentContractCommandSchema,
   AddEmploymentContractResultSchema,
+  DateSchema,
+  UuidSchema,
 } from "@afenda/contracts";
 import { addEmploymentContract } from "@afenda/core";
 import {
@@ -12,10 +15,20 @@ import {
   requireOrg,
 } from "../../../helpers/responses.js";
 
-const BodySchema = AddEmploymentContractCommandSchema.omit({
-  idempotencyKey: true,
-  employmentId: true,
-});
+// Manual body schema (can't use .omit() or .pick() on schemas with .refine())
+const BodySchema = z
+  .object({
+    contractNumber: z.string().trim().min(1).max(80),
+    contractType: z.string().trim().min(1).max(50),
+    contractStartDate: DateSchema,
+    contractEndDate: DateSchema.optional(),
+    documentFileId: UuidSchema.optional(),
+  })
+  .refine(
+    (data) =>
+      !data.contractEndDate || data.contractEndDate >= data.contractStartDate,
+    { message: "contractEndDate must be >= contractStartDate", path: ["contractEndDate"] },
+  );
 
 const ResponseSchema = makeSuccessSchema(AddEmploymentContractResultSchema);
 

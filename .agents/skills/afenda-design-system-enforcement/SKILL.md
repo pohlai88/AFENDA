@@ -1,198 +1,118 @@
 ---
 name: afenda-design-system-enforcement
-description: Enforces correct use of AFENDA design tokens, dark/light theme parity, and shadcn-based UI styling. Use when editing styles, themes, components, or visual states.
+description: Enforces correct use of AFENDA design tokens, the L0–L4 premium elevation architecture, semantic lanes, and generous spatial rhythm. Use when editing styles, themes, layouts, or visual states.
 category: ui
 priority: high
 ---
 
 # AFENDA Design System Enforcement
 
-Use this skill to keep UI work aligned with the AFENDA token system and avoid visual drift.
+Use this skill to keep UI work aligned with the AFENDA premium token system. The core philosophy is **comfort and clarity through true layered depth and generous spacing**—avoiding cramped layouts, border fatigue, and visual noise.
 
 ## When to invoke
 
 Invoke this skill when the request involves:
-
-- adding or modifying colors, spacing, radii, shadows, or motion
-- editing theme files or Tailwind theme mappings
-- building or restyling UI components in web or ui packages
-- fixing hardcoded color violations
-- introducing new semantic or status tokens
+- Adding or modifying colors, spacing, radii, shadows, or motion.
+- Adjusting layout density, padding, or spatial rhythm.
+- Editing theme files or Tailwind theme mappings.
+- Building or restyling UI components in web or ui packages.
+- Fixing hardcoded color violations or contrast issues.
+- Introducing new semantic or status tokens.
 
 ## Source of truth
 
 Treat these files as canonical token sources:
-
 - `packages/ui/src/styles/_tokens-light.css`
 - `packages/ui/src/styles/_tokens-dark.css`
 
-Follow project-wide architecture guidance from:
+**Full utilization demos (Premium Architecture):**
+- `packages/ui/advanced-token-system.html` — The primary reference for combining premium spacing (`--space-*`), luxury feel, physical nesting, and the L0→L4 architecture.
 
+Follow project-wide architecture guidance from:
 - `AGENTS.md`
 - `.github/copilot-instructions.md`
 
-Auth-specific enforcement references:
+## 1. Mandatory Surface Architecture (L0–L4)
 
-- `docs/auth/auth-ui-layer-matrix.md`
-- `tools/gates/auth-design-system.mjs`
+When working in dark mode, depth is created by subtle shifts in lightness, not just borders. ALWAYS select surfaces through the 4-layer architecture:
 
-## Mandatory dark surface contract (L0-L4)
+- **L0 Atmosphere (`--surface-l0`, `--background`):** The deepest recess of the app shell. Used for outer window backgrounds and gutters.
+- **L1 Operating Plane (`--surface-l1`, `--surface-100` to `250`):** The primary working canvas. Dashboards, main data grids, and forms live here.
+- **L2 Elevated Content (`--surface-l2`, `--card`):** Standard content containers, KPI cards, and segmented data blocks. Creates logical grouping inside L1.
+- **L3 Floating Context (`--surface-l3`, `--popover`, `--sheet`):** Transient UI like dropdowns, tooltips, and command palettes. Must cast `--shadow-popover`.
+- **L4 Critical Overlays (`--surface-l4`, `--modal`):** Blocking dialogs. Must use `--shadow-modal` and be backed by the `--scrim` token to push L0–L3 into the background.
 
-When working in dark mode, ALWAYS select surfaces through the 4-layer architecture in `packages/ui/src/styles/_tokens-dark.css`:
+### Forbidden Layer Mistakes
+* **Do not flatten depth:** Do not put L2 cards directly on an L0 background if an L1 operating plane is structurally required.
+* **Do not jump layers:** Do not use L4 values for normal cards, or place modal surfaces on L2.
+* **Do not fake depth:** Do not replace layer separation with stronger borders or glowing shadows. Rely on the physical nesting of surface tokens.
 
-- L0 atmosphere/background recesses: `--background`, `--surface-0`, `--surface-25` to `--surface-75`
-- L1 operating surfaces: `--surface-100` to `--surface-250`
-- L2 elevated content: `--surface-275` to `--surface-350`
-- L3 floating context: `--surface-375` to `--surface-425`
-- L4 modal/critical overlays: `--surface-450` to `--surface-500`
+## 2. Premium Spacing & Rhythm
 
-Use this default component mapping unless an existing pattern in the same feature says otherwise:
+Comfortable, luxurious UI requires negative space. Use the established spatial scale to give the eye room to rest.
 
-- App/page background shell: L0
-- Main working regions, forms, data-grid containers: L1
-- Cards and raised panels: L2
-- Popovers, dropdowns, non-blocking floating UI: L3
-- Modals, dialogs, blocking overlays, critical stacks: L4
+* `--space-section` (5rem): Use between major page regions or totally distinct conceptual blocks.
+* `--space-block` (2.5rem): Use between related but distinct groupings (e.g., separating a header from a data grid).
+* `--space-card` (2rem): Use for internal padding of premium elevated components.
+* `--space-inline` (1.5rem): Use for standard component gaps and grid column separation.
+* `--space-tight` (0.75rem): Use for tight component locking (e.g., an icon next to text).
 
-Prefer semantic aliases when available (`--card`, `--popover`, `--modal`, `--sheet`, `--drawer`, `--tooltip`) because they already sit on the intended layer.
+**Rule:** Do not hardcode `rem` or `px` values for layout padding/margins if a `--space-*` token is semantically appropriate.
 
-### Forbidden layer mistakes
+## 3. Strict Semantic Lanes
 
-- Do not place modal/dialog surfaces on L2 or L3.
-- Do not use L4 values for normal cards or page sections.
-- Do not jump multiple layers for decorative contrast only.
-- Do not create one-off `oklch(...)` surfaces when a layer token exists.
-- Do not replace layer separation with stronger borders/shadows alone.
+Do not mix interaction intents. Map visuals to the correct lane before choosing tokens:
 
-### Layer progression rule
+* **Brand / Truth Lane (`--primary`):** Used for marketing-aligned components, primary SaaS submission buttons, and core branding elements.
+* **Operator Lane (`--interactive`):** Used for heavy day-to-day workflow: data grid interactions, filters, inline edits, links, and shell navigation.
+* **Institutional Lane (`--premium`):** Used for governance, audit logs, compliance, finalized reporting, and high-trust executive actions.
+* **Neutral Lane (`--secondary`, `--muted`):** Structural UI that should not draw attention.
 
-Within one view, depth should progress gradually:
+### Dataviz & Status Constraints
+* **Global Status:** `--success`, `--warning`, `--destructive`. Only use soft backgrounds (`--*-soft` or `color-mix`) for dense grids to prevent eye strain.
+* **Dataviz (`--chart-*`):** STRICTLY reserved for charts, comparisons, and series. **Never** use chart tokens for workflow statuses, badges, or buttons.
 
-- Base page starts at L0/L1
-- Content elevation moves to L2
-- Temporary floating UI uses L3
-- Blocking/critical context uses L4
+## 4. Auth Ecosystem Profile
 
-If a component appears visually out of place, fix layer selection first, then borders/shadows.
+When working on auth routes/components (`apps/web/src/app/auth`), use this fixed mapping:
 
-## Auth ecosystem profile (required for `apps/web/src/app/auth`)
-
-When working on auth routes/components, use this fixed mapping:
-
-- auth shell background: L0 to L1 transition
-- auth panels (`EmailAuthPanel`, `ForgotPasswordPanel`, etc.): L2
-- inline status/feedback: semantic overlays (`--success-soft`, `--destructive-soft`, `--overlay-interactive`)
-- no L4 usage in standard auth pages unless a true blocking modal is introduced
+* Auth shell background: L0 to L1 transition.
+* Auth panels (`EmailAuthPanel`, etc.): L2.
+* Inline status/feedback: semantic overlays (`--success-soft`, `--destructive-soft`).
+* No L4 usage in standard auth pages unless a true blocking modal is introduced.
 
 Use shared surface primitives from `apps/web/src/app/auth/_components/surface-styles.ts`.
 
-### Auth hard rules
+## Workflow & Quality Gates
 
-- No raw color literals in auth TSX (`#hex`, `rgb()`, `hsl()`, `oklch()`).
-- Card-based auth panels must apply `authCardSurfaceStyle`.
-- If a card intentionally diverges, mark with `auth-surface-exempt` and rationale.
-- Do not use chart/viz tokens in auth UI.
+### Step 1: Assign the Depth Layer
+Before picking colors, assign the component to L0, L1, L2, L3, or L4. Verify that neighboring components are at the same or adjacent layers.
 
-## Workflow
+### Step 2: Establish Rhythm
+Apply the correct `--space-*` tokens for padding and gaps. Ensure the layout is not cramped.
 
-### Step 1: Classify the request
+### Step 3: Check Lane Semantics
+Decide if the action is Brand, Operator, or Institutional. Apply the corresponding token family.
 
-Choose one path before editing:
-
-1. **Token consumption**: component/page should use existing tokens only.
-2. **Token extension**: new semantic need requires adding token(s).
-3. **Token correction**: existing token usage is inconsistent or inaccessible.
-
-If path is unclear, prefer token consumption and only extend when there is no suitable existing token.
-
-### Step 2: Choose the depth layer first (dark mode)
-
-Before picking brand/status colors, assign the component to L0/L1/L2/L3/L4:
-
-1. Identify component role: base, operating, elevated, floating, or blocking.
-2. Select the nearest layer token (or semantic alias tied to that layer).
-3. Verify neighboring components are at same or adjacent layers.
-4. Only after depth is correct, apply lane semantics (`--primary*`, `--interactive*`, `--status-*`, etc.).
-
-### Step 3: Check lane and semantics
-
-Map visuals to the correct lane before choosing tokens:
-
-- brand/truth: `--primary*`
-- operator interaction: `--interactive*`
-- governance/premium: `--premium*`
-- global status: `--success*`, `--warning*`, `--info*`, `--destructive*`
-- ERP lifecycle/domain states: `--status-*`, `--recon-*`, `--compliance-*`, etc.
-- dataviz-only palette: `--chart-*`, `--viz-*` (never for workflow badges/buttons)
-
-### Step 4: Edit with parity discipline
-
-If introducing or changing tokens:
-
-1. Update the right token file section(s) using existing naming patterns.
-2. Keep dark/light parity unless intentionally one-sided for mode-specific behavior.
-3. Preserve the surface/elevation architecture (L0-L4) and avoid ad-hoc layer values.
-4. Keep aliases synced when needed (`--text-*`, semantic variants, soft/bg/foreground triplets).
-5. Do not nest `@theme` inside `.dark`.
-
-### Step 5: Apply tokens in UI correctly
-
-When styling components:
-
-- use semantic utilities mapped from tokens (`bg-background`, `text-foreground`, etc.)
-- avoid raw hex/rgb/hsl literals in components
-- avoid ad-hoc inline styles for colors/shadows when tokens exist
-- use shadcn components from `@afenda/ui` rather than raw form primitives
-
-### Step 6: Validate quality gates
-
-Before finishing:
-
-1. Search for hardcoded color regressions in edited files.
-2. Confirm layer fit (L0-L4) for each edited surface.
-3. Confirm no forbidden layer jumps (example: L1 straight to L4 for non-modal UI).
-4. Confirm semantic fit (status vs chart vs lane usage).
-5. Confirm focus/interactive states still use tokenized ring/overlay values.
-6. Confirm disabled, hover, active, and selected states remain token-driven.
-7. Run relevant checks when available (`pnpm typecheck`, `pnpm check:all` for larger changes).
+### Step 4: Validate
+1.  Search for hardcoded color regressions (`#hex`, `rgb()`, `oklch()`) in edited files.
+2.  Confirm no forbidden layer jumps.
+3.  Confirm interaction/focus states still use tokenized ring/overlay values.
+4.  Run relevant checks (`pnpm typecheck`, `pnpm check:all`).
 
 For auth changes, run the dedicated check:
-
 ```bash
 node tools/gates/auth-design-system.mjs
-```
 
-Recommended quick scans:
+Completion Checklist
+[ ] No hardcoded colors or raw layout measurements introduced.
 
-```bash
-rg -n "#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})|rgba?\(|hsla?\(|oklch\(" apps/web/src/app/auth
-rg -n "<Card" apps/web/src/app/auth/_components
-```
+[ ] Every edited surface maps to the correct L0–L4 layer and physical nesting is logical.
 
-## Completion checklist
+[ ] Spacing tokens (--space-*) are used to maintain premium rhythm.
 
-- [ ] No hardcoded colors introduced.
-- [ ] Every edited surface is mapped to the correct L0-L4 layer.
-- [ ] No non-modal component uses L4 surfaces.
-- [ ] Tokens chosen from correct semantic lane.
-- [ ] Dark/light behavior remains coherent.
-- [ ] Surface depth model preserved.
-- [ ] Interaction and focus states remain accessible and tokenized.
-- [ ] UI components follow shadcn + AFENDA conventions.
+[ ] Tokens are chosen from the correct semantic lane (Brand vs Operator vs Institutional).
 
-## Common mistakes to avoid
+[ ] Dataviz tokens are not bleeding into workflow statuses.
 
-- using `--chart-*` tokens for status chips, banners, or workflow actions
-- creating new `--status-*` tokens when an equivalent already exists
-- assigning modal/dialog UI to L2/L3 instead of L4
-- flattening depth by putting cards/popovers/modals on one shared surface value
-- adding only dark token values without validating light mode counterpart
-- introducing one-off shadows/radii instead of token values
-- bypassing semantic tokens with direct color literals
-
-## Related skills
-
-- `@tailwind-v4-shadcn`
-- `@shadcn-ui`
-- `@accessibility`
-- `@ui-design-system`
+[ ] Modals (L4) properly utilize --scrim to obscure lower layers.

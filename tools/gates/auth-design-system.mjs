@@ -19,7 +19,10 @@ import { reportSuccess, reportViolations } from "../lib/reporter.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = resolve(__dirname, "../..");
-const AUTH_DIR = resolve(ROOT, "apps/web/src/app/auth");
+const AUTH_DIR_CANDIDATES = [
+  resolve(ROOT, "apps/web/src/app/(public)/auth"),
+  resolve(ROOT, "apps/web/src/app/auth"),
+];
 const MATRIX_DOC = resolve(ROOT, "docs/auth/auth-ui-layer-matrix.md");
 
 const RULE_DOCS = {
@@ -29,7 +32,7 @@ const RULE_DOCS = {
   },
   AUTH_CARD_SURFACE_REQUIRED: {
     why: "Card-based auth panels must render on the shared L2 auth surface contract.",
-    docs: "Use authCardSurfaceStyle from apps/web/src/app/auth/_components/surface-styles.ts.",
+    docs: "Use the shared auth-card-surface class contract via AuthPanelFrame.",
   },
 };
 
@@ -62,9 +65,14 @@ function getLineNumber(content, idx) {
 function main() {
   const t0 = performance.now();
   const violations = [];
+  const AUTH_DIR = AUTH_DIR_CANDIDATES.find((candidate) => existsSync(candidate));
 
-  if (!existsSync(AUTH_DIR)) {
-    console.error(`Missing auth directory: ${AUTH_DIR}`);
+  if (!AUTH_DIR) {
+    console.error(
+      `Missing auth directory: ${AUTH_DIR_CANDIDATES.map((candidate) =>
+        relative(ROOT, candidate),
+      ).join(" or ")}`,
+    );
     process.exit(1);
   }
 
@@ -100,15 +108,19 @@ function main() {
         file: rel,
         line: getLineNumber(content, match.index),
         message: `Raw color literal found: ${token}`,
-        fix: "Replace literal color with AFENDA token or shared surface style from auth/_components/surface-styles.ts.",
+        fix: "Replace literal color with AFENDA tokens and shared auth surface classes.",
       });
       break;
     }
 
     // Rule 2: card-based auth components must use shared surface style.
-    if (rel.includes("apps/web/src/app/auth/_components/") && content.includes("<Card")) {
+    if (
+      (rel.includes("apps/web/src/app/auth/_components/") ||
+        rel.includes("apps/web/src/app/(public)/auth/_components/")) &&
+      content.includes("<Card")
+    ) {
       const exempt = content.includes("auth-surface-exempt");
-      const hasSharedStyle = content.includes("authCardSurfaceStyle");
+      const hasSharedStyle = content.includes("auth-card-surface");
 
       if (!exempt && !hasSharedStyle) {
         violations.push({
@@ -116,7 +128,7 @@ function main() {
           file: rel,
           line: getLineNumber(content, content.indexOf("<Card")),
           message: "Card detected without shared auth surface style.",
-          fix: "Import and apply authCardSurfaceStyle, or add // auth-surface-exempt with rationale.",
+          fix: "Apply auth-card-surface (prefer via AuthPanelFrame), or add // auth-surface-exempt with rationale.",
         });
       }
     }

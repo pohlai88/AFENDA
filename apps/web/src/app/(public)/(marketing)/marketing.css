@@ -19,39 +19,41 @@
   --mk-nav-height: 96px;
 
   /* Re-enable ligatures disabled by ERP _base.css */
-  font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
   letter-spacing: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
 
   /* Override design system CSS variables for this subtree */
-  --mk-bg:                 #0B0D12;
-  --mk-bg-alt:             #060810;
-  --mk-bg-deep:            #070910;
-  --mk-bg-card:            #06080A;
-  --mk-bg-terminal:        #080A0F;
+  --mk-bg: #0b0d12;
+  --mk-bg-alt: #060810;
+  --mk-bg-deep: #070910;
+  --mk-bg-card: #06080a;
+  --mk-bg-terminal: #080a0f;
 
-  --mk-text:               #f8fafc;
-  --mk-text-muted:         #94a3b8;
-  --mk-text-dim:           #64748b;
-  --mk-text-ghost:         #475569;
+  --mk-text: #f8fafc;
+  --mk-text-muted: #94a3b8;
+  --mk-text-dim: #64748b;
+  --mk-text-ghost: #475569;
 
-  --mk-border:             rgba(30, 41, 59, 0.5);
-  --mk-border-strong:      rgba(51, 65, 85, 0.8);
+  --mk-border: rgba(30, 41, 59, 0.5);
+  --mk-border-strong: rgba(51, 65, 85, 0.8);
 
-  --mk-emerald:            #10b981;
-  --mk-emerald-light:      #34d399;
-  --mk-teal:               #14b8a6;
-  --mk-teal-light:         #2dd4bf;
-  --mk-cyan:               #06b6d4;
-  --mk-cyan-light:         #22d3ee;
+  --mk-emerald: #10b981;
+  --mk-emerald-light: #34d399;
+  --mk-teal: #14b8a6;
+  --mk-teal-light: #2dd4bf;
+  --mk-cyan: #06b6d4;
+  --mk-cyan-light: #22d3ee;
 
   /* Override ERP tokens so design system components don't bleed */
-  --background:            var(--mk-bg);
-  --foreground:            var(--mk-text);
-  --selection:             rgba(20, 184, 166, 0.3);
-  --selection-foreground:  #99f6e4;
+  --background: var(--mk-bg);
+  --foreground: var(--mk-text);
+  --selection: rgba(20, 184, 166, 0.3);
+  --selection-foreground: #99f6e4;
 }
 
 /* Reset design-system universal border & scrollbar on marketing subtree */
@@ -61,7 +63,9 @@
   border-color: var(--mk-border);
   scrollbar-width: auto;
   scrollbar-color: auto;
-  font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
 }
 
 /* Override design system body styles that leak through inheritance */
@@ -76,7 +80,6 @@
   background-color: var(--selection);
   color: var(--selection-foreground);
 }
-
 
 /* ── 2. SECTION CONTAINERS ─────────────────────────────────────────────── */
 
@@ -143,7 +146,6 @@
   }
 }
 
-
 /* ── 3. TYPOGRAPHY ─────────────────────────────────────────────────────── */
 
 /* Mono HUD label — used extensively for section badges, status text */
@@ -204,7 +206,6 @@
   color: var(--mk-text-muted);
 }
 
-
 /* ── 4. ATMOSPHERIC EFFECTS ────────────────────────────────────────────── */
 
 /* Background grid pattern for hero and sections */
@@ -238,7 +239,6 @@
   position: absolute;
   border-radius: 9999px;
 }
-
 
 /* ── 5. CARD PATTERNS ──────────────────────────────────────────────────── */
 
@@ -286,7 +286,6 @@
   background-color: #334155;
 }
 
-
 /* ── 6. BADGE ──────────────────────────────────────────────────────────── */
 
 .mk-badge {
@@ -304,7 +303,6 @@
   text-transform: uppercase;
   color: rgba(45, 212, 191, 0.9);
 }
-
 
 /* ── 7. ICON CONTAINERS ────────────────────────────────────────────────── */
 
@@ -327,7 +325,6 @@
   height: 2.25rem;
   border-radius: 0.5rem;
 }
-
 
 /* ── 8. BUTTONS ────────────────────────────────────────────────────────── */
 
@@ -377,7 +374,6 @@
   color: white;
 }
 
-
 /* ── 9. NAV ────────────────────────────────────────────────────────────── */
 
 .mk-nav {
@@ -408,7 +404,6 @@
   color: #e2e8f0;
 }
 
-
 /* ── 10. FLOATING HUD LABELS ───────────────────────────────────────────── */
 
 .mk-hud-label {
@@ -435,13 +430,16 @@
 }
 
 @media (min-width: 640px) {
-  .mk-hud-connector { width: 3rem; }
+  .mk-hud-connector {
+    width: 3rem;
+  }
 }
 
 @media (min-width: 1024px) {
-  .mk-hud-connector { width: 4rem; }
+  .mk-hud-connector {
+    width: 4rem;
+  }
 }
-
 
 /* ── 11. LIVE STATUS INDICATORS ────────────────────────────────────────── */
 
@@ -474,7 +472,8 @@
 }
 
 @keyframes mk-ping {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(2);
     opacity: 0;
   }
@@ -492,7 +491,9 @@
   color: white;
   font-size: 0.875rem;
   text-decoration: none;
-  transition: left 0.2s, box-shadow 0.2s;
+  transition:
+    left 0.2s,
+    box-shadow 0.2s;
 }
 
 .mk-skip-link:focus {
@@ -523,15 +524,26 @@
 
 /* Declaration popup — eye-grabbing animations */
 @keyframes declaration-border-shine {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes declaration-glow-pulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
 }
-
 
 /* ── 12. DIAGRAM UTILITIES ─────────────────────────────────────────────── */
 
@@ -545,7 +557,6 @@
   outline: none;
 }
 
-
 /* ── 13. RESPONSIVE SECTION SPACING ────────────────────────────────────── */
 
 @media (min-width: 768px) {
@@ -554,7 +565,6 @@
     padding-bottom: 10rem;
   }
 }
-
 
 /* ── 14. PRINT — Hide marketing chrome ─────────────────────────────────── */
 

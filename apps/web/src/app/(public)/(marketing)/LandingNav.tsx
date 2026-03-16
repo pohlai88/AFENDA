@@ -48,7 +48,7 @@ export function LandingNav() {
               <a
                 key={link.label}
                 href={link.href}
-                className="text-sm tracking-wide text-slate-500 transition-colors hover:text-slate-200"
+                className="text-sm tracking-wide text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
               </a>
